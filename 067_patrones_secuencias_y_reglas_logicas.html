@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Detective de Patrones - Pensamiento Lógico</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary: #6C5CE7;
+            --secondary: #A29BFE;
+            --accent: #FD79A8;
+            --bg: #F0F3F7;
+            --text: #2D3436;
+            --white: #FFFFFF;
+            --success: #00B894;
+            --error: #D63031;
+            --subject: #E17055;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 15px;
+            overflow: hidden;
+        }
+
+        .app-container {
+            background: var(--white);
+            width: 100%;
+            max-width: 600px;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border-bottom: 8px solid var(--primary);
+            padding: 24px;
+            position: relative;
+            max-height: 98vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .badge {
+            background: var(--subject);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: inline-block;
+            margin: 0 auto 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        h1 { font-size: clamp(1.4rem, 5vw, 1.8rem); margin-bottom: 10px; color: var(--primary); text-align: center; }
+
+        /* --- PANTALLAS --- */
+        .screen { display: none; flex-direction: column; height: 100%; }
+        .screen.active { display: flex; }
+
+        .objetivo-box {
+            background-color: #F8F9FE;
+            border: 2px solid var(--secondary);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            font-size: clamp(0.95rem, 3.5vw, 1.1rem);
+            line-height: 1.5;
+            color: var(--primary);
+            text-align: left;
+        }
+
+        .btn-main {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 6px 0 var(--secondary);
+            margin: 10px auto;
+            display: block;
+            transition: all 0.2s;
+        }
+        .btn-main:active { transform: translateY(3px); box-shadow: none; }
+
+        /* --- JUEGO --- */
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background: #EEE;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .sequence-display {
+            background: #F8F9FE;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            border: 2px dashed var(--secondary);
+            flex-wrap: wrap;
+            min-height: 110px;
+        }
+
+        .shape {
+            font-size: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+        }
+
+        .missing-slot {
+            width: 50px;
+            height: 50px;
+            background: #FFF;
+            border: 3px solid var(--accent);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--accent);
+            font-size: 1.5rem;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .option-card {
+            background: white;
+            border: 2px solid #E5E8E8;
+            padding: 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 2.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 0 #E5E8E8;
+        }
+        .option-card:active { transform: translateY(2px); box-shadow: none; }
+
+        /* --- VENTANA DE RETROALIMENTACIÓN (MODAL) --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 400px;
+            padding: 30px;
+            border-radius: 24px;
+            text-align: center;
+            animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-top: 8px solid var(--success);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-icon { font-size: 4rem; margin-bottom: 15px; }
+        .modal-title { font-size: 1.5rem; font-weight: 800; color: var(--success); margin-bottom: 10px; }
+        .modal-text { font-size: 1rem; line-height: 1.5; color: #555; margin-bottom: 20px; }
+
+        /* --- MENSAJE DE ERROR --- */
+        .error-hint {
+            margin-top: 15px;
+            color: var(--error);
+            font-weight: bold;
+            font-size: 0.9rem;
+            min-height: 20px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- PANTALLA INICIAL -->
+        <div id="screen-start" class="screen active">
+            <div class="badge">Pensamiento Lógico</div>
+            <h1>Detective de Patrones</h1>
+            
+            <div class="objetivo-box">
+                <strong>🎯 El Sentido del Ejercicio:</strong><br><br>
+                Este recurso desarrolla la <strong>abstracción</strong> y la <strong>comprensión de algoritmos</strong>. Al identificar patrones, el estudiante entrena su cerebro para reconocer reglas lógicas necesarias en matemáticas y programación.
+                <br><br>
+                <strong>Misión:</strong> Observa la serie, descubre la regla y elige la pieza faltante.
+            </div>
+
+            <button class="btn-main" onclick="startApp()">¡Iniciar Investigación! 🔎</button>
+        </div>
+
+        <!-- PANTALLA DE JUEGO -->
+        <div id="screen-game" class="screen">
+            <div class="badge">Nivel <span id="current-level">1</span> de 5</div>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+
+            <div class="sequence-display" id="sequence-box">
+                <!-- Se genera dinámicamente -->
+            </div>
+
+            <p style="font-size: 0.75rem; font-weight: bold; color: #888; text-transform: uppercase; margin-bottom: 8px; text-align: center;">
+                ¿Qué figura completa el patrón?
+            </p>
+
+            <div class="options-grid" id="options-box">
+                <!-- Se genera dinámicamente -->
+            </div>
+
+            <div class="error-hint" id="error-message">¡Casi! Intenta de nuevo.</div>
+        </div>
+
+    </div>
+
+    <!-- VENTANA EMERGENTE (MODAL) -->
+    <div class="modal-overlay" id="feedback-modal">
+        <div class="modal-content">
+            <div class="modal-icon">🌟</div>
+            <div class="modal-title">¡Excelente!</div>
+            <div class="modal-text" id="modal-logic-text">Explicación lógica aquí.</div>
+            <button class="btn-main" id="btn-modal-next" onclick="nextLevel()">Siguiente ➡️</button>
+            <button class="btn-main" id="btn-modal-finish" style="display:none" onclick="resetApp()">Cerrar y Reiniciar 🏠</button>
+        </div>
+    </div>
+
+    <script>
+        const levels = [
+            {
+                pattern: ["🍎", "🍐", "🍎", "🍐", "🍎"],
+                missing: "🍐",
+                options: ["🍎", "🍐", "🍌"],
+                logic: "Has identificado un <b>patrón alternado (A-B)</b>. La regla nos dice que después de cada manzana siempre debe seguir una pera."
+            },
+            {
+                pattern: ["🔴", "🔴", "🔵", "🔴", "🔴"],
+                missing: "🔵",
+                options: ["🔴", "🔵", "🟢"],
+                logic: "¡Perfecto! Este es un <b>patrón de repetición (A-A-B)</b>. Necesitábamos el círculo azul para completar el segundo grupo de tres."
+            },
+            {
+                pattern: ["🐱", "🐱", "🐶", "🐶", "🐱"],
+                missing: "🐱",
+                options: ["🐶", "🐱", "🐭"],
+                logic: "¡Logrado! Es un <b>patrón de pares</b>. La regla indica que cada animal debe aparecer dos veces seguidas antes de cambiar."
+            },
+            {
+                pattern: ["🔼", "⏺️", "🔽", "🔼", "⏺️"],
+                missing: "🔽",
+                options: ["🔼", "⏺️", "🔽"],
+                logic: "¡Detective estrella! Es un <b>patrón de tres elementos (A-B-C)</b>. El triángulo invertido cierra el ciclo de las tres formas."
+            },
+            {
+                pattern: ["1️⃣", "2️⃣", "3️⃣", "1️⃣", "2️⃣"],
+                missing: "3️⃣",
+                options: ["3️⃣", "4️⃣", "5️⃣"],
+                logic: "¡Magnífico! Has identificado una <b>secuencia numérica cíclica</b>. El algoritmo se reinicia cada tres números."
+            }
+        ];
+
+        let currentIdx = 0;
+        let isLocked = false;
+
+        function startApp() {
+            document.getElementById('screen-start').classList.remove('active');
+            document.getElementById('screen-game').classList.add('active');
+            loadLevel();
+        }
+
+        function loadLevel() {
+            isLocked = false;
+            hideModal();
+            const level = levels[currentIdx];
+            document.getElementById('current-level').textContent = currentIdx + 1;
+            document.getElementById('error-message').style.opacity = '0';
+
+            // Render Secuencia
+            const seqBox = document.getElementById('sequence-box');
+            seqBox.innerHTML = '';
+            level.pattern.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'shape';
+                div.textContent = item;
+                seqBox.appendChild(div);
+            });
+            // Añadir slot vacío
+            const slot = document.createElement('div');
+            slot.className = 'missing-slot';
+            slot.id = 'target-slot';
+            slot.textContent = '?';
+            seqBox.appendChild(slot);
+
+            // Render Opciones
+            const optBox = document.getElementById('options-box');
+            optBox.innerHTML = '';
+            level.options.forEach(opt => {
+                const card = document.createElement('div');
+                card.className = 'option-card';
+                card.textContent = opt;
+                card.onclick = () => checkAnswer(opt, card);
+                optBox.appendChild(card);
+            });
+
+            updateProgress();
+        }
+
+        function checkAnswer(selected, element) {
+            if (isLocked) return;
+            const level = levels[currentIdx];
+
+            if (selected === level.missing) {
+                isLocked = true;
+                // Rellenar slot visualmente antes del modal
+                const slot = document.getElementById('target-slot');
+                slot.textContent = selected;
+                slot.style.animation = 'none';
+                slot.style.borderColor = 'var(--success)';
+                slot.style.backgroundColor = '#E8F8F5';
+
+                showModal(level.logic);
+            } else {
+                element.style.borderColor = 'var(--error)';
+                document.getElementById('error-message').style.opacity = '1';
+                setTimeout(() => {
+                    element.style.borderColor = '#E5E8E8';
+                    document.getElementById('error-message').style.opacity = '0';
+                }, 800);
+            }
+        }
+
+        function showModal(text) {
+            const modal = document.getElementById('feedback-modal');
+            const logicText = document.getElementById('modal-logic-text');
+            const btnNext = document.getElementById('btn-modal-next');
+            const btnFinish = document.getElementById('btn-modal-finish');
+
+            logicText.innerHTML = text;
+            modal.style.display = 'flex';
+
+            if (currentIdx === levels.length - 1) {
+                btnNext.style.display = 'none';
+                btnFinish.style.display = 'block';
+                celebrar();
+            } else {
+                btnNext.style.display = 'block';
+                btnFinish.style.display = 'none';
+            }
+        }
+
+        function hideModal() {
+            document.getElementById('feedback-modal').style.display = 'none';
+        }
+
+        function nextLevel() {
+            currentIdx++;
+            loadLevel();
+        }
+
+        function updateProgress() {
+            const bar = document.getElementById('progress-bar');
+            bar.style.width = (currentIdx / levels.length * 100) + '%';
+        }
+
+        function celebrar() {
+            confetti({
+                particleCount: 200,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#6C5CE7', '#FD79A8', '#00B894']
+            });
+        }
+
+        function resetApp() {
+            currentIdx = 0;
+            hideModal();
+            document.getElementById('screen-game').classList.remove('active');
+            document.getElementById('screen-start').classList.add('active');
+        }
+    </script>
+</body>
+</html>

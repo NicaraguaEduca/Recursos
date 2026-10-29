@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cazadores de Sustantivos: Nica Relax</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+
+        :root {
+            /* Colores originales mantenidos */
+            --sky-top: #4facfe;
+            --sky-bot: #00f2fe;
+            --basket-color: #8d6e63;
+            --basket-dark: #5d4037;
+            --common-tag: #ff9f43;
+            --proper-tag: #5f27cd;
+            --grass-top: #a8e063;
+            --grass-bot: #56ab2f;
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            margin: 0; padding: 0;
+            overflow: hidden;
+            background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bot) 100%);
+            height: 100vh; width: 100vw;
+            user-select: none; touch-action: none;
+        }
+
+        /* --- NUEVO: CAPA DE PAISAJE (Fondo) --- */
+        .scenery-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 5; /* Detrás del juego (10) pero sobre el fondo */
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        /* Nubes Animadas */
+        .cloud-container {
+            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+        }
+        .cloud {
+            fill: #FFFFFF; 
+            filter: drop-shadow(0 8px 5px rgba(0,0,0,0.1));
+            opacity: 0.9;
+        }
+        .cloud-slow { animation: moveClouds 60s linear infinite; }
+        .cloud-fast {
+            animation: moveClouds 35s linear infinite;
+            transform: scale(0.8);
+            opacity: 0.7; 
+        }
+        @keyframes moveClouds {
+            from { transform: translateX(100%); }
+            to { transform: translateX(-150%); }
+        }
+
+        /* Montañas Low Poly (Geometría basada en tu imagen) */
+        .mountains-svg {
+            position: absolute; bottom: 80px; /* Justo sobre el pasto */
+            left: 0; width: 100%; height: auto;
+            max-height: 70%;
+            filter: drop-shadow(0 0 10px rgba(0,0,0,0.1));
+        }
+
+        /* --- HUD --- */
+        .hud {
+            position: absolute; top: 0; left: 0; width: 100%;
+            padding: 15px; box-sizing: border-box;
+            display: flex; justify-content: space-between; align-items: flex-start;
+            z-index: 50; pointer-events: none;
+        }
+
+        .lives-container { font-size: 2rem; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2)); }
+
+        .score-container {
+            background: white; padding: 8px 20px; border-radius: 50px;
+            font-size: 1.5rem; font-weight: 700; color: #333;
+            box-shadow: 0 4px 0 #ddd;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .score-label { font-size: 0.8rem; color: #777; font-weight: 600; text-transform: uppercase;}
+
+        /* --- AREA DE JUEGO --- */
+        .game-area {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10;
+        }
+
+        .falling-item {
+            position: absolute; background: white; padding: 10px 20px;
+            border-radius: 15px; font-size: 1.1rem; font-weight: 700; color: #2c3e50;
+            box-shadow: 0 4px 0 #bdc3c7; cursor: grab; border: 2px solid #fff;
+            white-space: nowrap;
+        }
+        .falling-item:active { 
+            cursor: grabbing; transform: scale(1.1); z-index: 100; 
+            box-shadow: 0 2px 0 #bdc3c7; background: #fff9c4;
+        }
+
+        .falling-heart {
+            position: absolute; font-size: 3rem; cursor: pointer; z-index: 80;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.2));
+            animation: beat 0.8s infinite;
+        }
+        @keyframes beat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+
+        /* --- SUELO --- */
+        .ground {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 120px;
+            background: linear-gradient(180deg, var(--grass-top) 0%, var(--grass-bot) 100%);
+            border-top: 6px solid #7cb342;
+            border-radius: 50% 50% 0 0 / 20px 20px 0 0;
+            z-index: 15;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+        }
+
+        /* --- CANASTAS --- */
+        .baskets-container {
+            position: absolute; bottom: 15px; left: 0; width: 100%; height: 180px;
+            display: flex; z-index: 20; padding: 0 10px; box-sizing: border-box; gap: 20px;
+        }
+
+        .basket-zone {
+            flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; position: relative;
+        }
+
+        .basket-graphic {
+            width: 130px; height: 90px;
+            background: 
+                repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.1) 10px, rgba(0,0,0,0.1) 20px),
+                linear-gradient(to bottom, var(--basket-color), var(--basket-dark));
+            border-radius: 10px 10px 40px 40px; border: 4px solid #3e2723;
+            position: relative; box-shadow: 0 10px 15px rgba(0,0,0,0.4);
+            display: flex; justify-content: center; align-items: center;
+        }
+        
+        .basket-graphic::before {
+            content: ''; position: absolute; top: -50px; left: 15px; right: 15px; height: 60px;
+            border: 8px solid #5d4037; border-bottom: none; border-radius: 50px 50px 0 0; z-index: -1;
+        }
+
+        .basket-label {
+            position: absolute; top: 25px; background: white; padding: 5px 12px; border-radius: 8px;
+            font-weight: 800; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        .basket-zone.common .basket-label { color: var(--common-tag); border: 2px solid var(--common-tag); }
+        .basket-zone.proper .basket-label { color: var(--proper-tag); border: 2px solid var(--proper-tag); }
+        .basket-zone.highlight .basket-graphic { transform: scale(1.1) translateY(-5px); filter: brightness(1.2); }
+
+        /* --- PANTALLAS --- */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 200; text-align: center; color: white; padding: 20px; backdrop-filter: blur(8px);
+        }
+
+        .btn-main {
+            background: #ffca28; color: #333; border: none; padding: 15px 50px; font-size: 1.5rem; border-radius: 50px;
+            font-family: 'Fredoka', sans-serif; font-weight: 700; margin-top: 30px; cursor: pointer;
+            box-shadow: 0 6px 0 #ff6f00; transition: transform 0.1s;
+        }
+        .btn-main:active { transform: translateY(6px); box-shadow: none; }
+
+        #feedback-modal { background: rgba(0,0,0,0.95); z-index: 300; }
+        .fb-box {
+            background: white; color: #333; padding: 30px; border-radius: 20px;
+            max-width: 400px; border-bottom: 8px solid #e74c3c;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hud">
+        <div class="lives-container" id="lives-display">❤️❤️❤️</div>
+        <div class="score-container">
+            <span class="score-label">Puntos</span>
+            <span id="score">0</span>
+        </div>
+    </div>
+
+    <div class="scenery-layer">
+        
+        <div class="cloud-container cloud-slow" style="top: 5%;">
+            <svg viewBox="0 0 400 200" width="220" height="110" class="cloud">
+                <path d="M50,120 Q30,120 20,100 Q10,70 40,50 Q50,20 90,20 Q120,10 150,40 Q180,20 220,50 Q250,40 280,70 Q310,60 330,90 Q350,120 310,120 Z" />
+            </svg>
+        </div>
+        
+        <div class="cloud-container cloud-fast" style="top: 15%; animation-delay: -15s;">
+             <svg viewBox="0 0 400 200" width="160" height="90" class="cloud" style="left: 40%;">
+                <path d="M40,100 Q30,70 60,50 Q80,20 120,30 Q150,10 190,40 Q220,30 250,60 Q280,50 300,90 Q320,110 280,110 Z" />
+            </svg>
+        </div>
+
+        <svg class="mountains-svg" viewBox="0 0 1200 600" preserveAspectRatio="none">
+            <path d="M0,600 L200,300 L400,600 L600,250 L800,600 L1000,350 L1200,600 Z" 
+                  fill="#37474f" opacity="0.6"/>
+            
+            <path d="M-100,600 L200,150 L500,600 Z" fill="#455a64"/> 
+            <path d="M200,150 L350,600 L500,600 Z" fill="#263238" opacity="0.3"/> <path d="M300,600 L600,50 L900,600 Z" fill="#546e7a"/>
+            <path d="M600,50 L750,600 L900,600 Z" fill="#37474f" opacity="0.4"/> <path d="M700,600 L1000,200 L1300,600 Z" fill="#455a64"/>
+            <path d="M1000,200 L1150,600 L1300,600 Z" fill="#263238" opacity="0.3"/> <path d="M0,600 
+                     L20,550 L40,600 L60,530 L80,600 
+                     L110,500 L140,600 L170,520 L200,600 
+                     L250,480 L300,600 L350,500 L400,600 
+                     L450,550 L500,600 L550,520 L600,600
+                     L650,500 L700,600 L750,530 L800,600
+                     L850,490 L900,600 L950,550 L1000,600 
+                     L1050,500 L1100,600 L1150,540 L1200,600 Z" 
+                  fill="#1b5e20"/>
+        </svg>
+    </div>
+
+    <div class="overlay" id="start-screen">
+        <div style="font-size: 5rem; margin-bottom: 20px;">🏹📝</div>
+        <h1 style="font-size: 2.5rem;">Cazadores de Sustantivos</h1>
+        <p style="font-size: 1.3rem; max-width: 500px; line-height: 1.6;">
+            ¡Clasifica las palabras de nuestra tierra!<br><br>
+            Arrastra las palabras a su canasta.<br>
+            ¡Toca el ❤️ para ganar vidas!
+        </p>
+        <button class="btn-main" onclick="startGame()">¡A Jugar!</button>
+    </div>
+
+    <div class="overlay" id="end-screen" style="display: none;">
+        <div style="font-size: 6rem;">🏁</div>
+        <h1>¡Buen trabajo!</h1>
+        <p style="font-size: 1.5rem;">Lograste: <strong id="final-score" style="color:#ffca28">0</strong> puntos</p>
+        <button class="btn-main" onclick="location.reload()">Jugar de Nuevo</button>
+    </div>
+
+    <div class="overlay" id="feedback-modal" style="display: none;">
+        <div class="fb-box">
+            <h2 style="color: #e74c3c;">¡Fíjate bien!</h2>
+            <h1 id="fb-word" style="font-size: 2rem; margin: 10px 0; color: #2c3e50;">Palabra</h1>
+            <p id="fb-text" style="font-size: 1.1rem; line-height: 1.4;">Explicación...</p>
+            <button class="btn-main" onclick="resumeGame()" style="font-size: 1rem; padding: 10px 30px;">Continuar</button>
+        </div>
+    </div>
+
+    <div class="game-area" id="game-area"></div>
+
+    <div class="ground"></div>
+
+    <div class="baskets-container">
+        <div class="basket-zone common" id="basket-common">
+            <div class="basket-graphic"><div class="basket-label">Comunes</div></div>
+        </div>
+        <div class="basket-zone proper" id="basket-proper">
+            <div class="basket-graphic"><div class="basket-label">Propios</div></div>
+        </div>
+    </div>
+
+<script>
+    // --- PALABRAS NICA ---
+    const wordsDB = [
+        { text: "nacatamal", type: "common" },
+        { text: "rosquilla", type: "common" },
+        { text: "pinolillo", type: "common" },
+        { text: "hamaca", type: "common" },
+        { text: "volcán", type: "common" },
+        { text: "guardabarranco", type: "common" },
+        { text: "madroño", type: "common" },
+        { text: "lago", type: "common" },
+        { text: "maíz", type: "common" },
+        { text: "gallina", type: "common" },
+        { text: "pupitre", type: "common" },
+        { text: "escuela", type: "common" },
+        { text: "Nicaragua", type: "proper" },
+        { text: "Rubén Darío", type: "proper" },
+        { text: "Managua", type: "proper" },
+        { text: "Ometepe", type: "proper" },
+        { text: "Cocibolca", type: "proper" },
+        { text: "Momotombo", type: "proper" },
+        { text: "Masaya", type: "proper" },
+        { text: "Granada", type: "proper" },
+        { text: "Güegüense", type: "proper" },
+        { text: "San Juan", type: "proper" },
+        { text: "pinol", type: "common" },
+        { text: "pulpería", type: "common" },
+        { text: "chinela", type: "common" },
+        { text: "Purísima", type: "proper" },
+        { text: "Tipitapa", type: "proper" },
+        { text: "Chinandega", type: "proper" },
+        { text: "Estelí", type: "proper" }
+    ];
+
+    // Variables
+    let score = 0;
+    let lives = 3;
+    let correctCount = 0; // Contador de aciertos para la dificultad
+    let isPaused = false;
+
+    // Configuración de Velocidad
+    let baseFallSpeed = 1.5; 
+    let spawnRate = 2500; 
+    
+    let spawnTimer = null;
+    let activeItems = [];
+    let lastHeartTime = 0;
+
+    // DOM
+    const gameArea = document.getElementById('game-area');
+    const scoreEl = document.getElementById('score');
+    const livesEl = document.getElementById('lives-display');
+    const basketCommon = document.getElementById('basket-common');
+    const basketProper = document.getElementById('basket-proper');
+
+    function startGame() {
+        document.getElementById('start-screen').style.display = 'none';
+        resetGame();
+        gameLoop();
+        requestAnimationFrame(updatePhysics);
+    }
+
+    function resetGame() {
+        score = 0;
+        lives = 3;
+        correctCount = 0;
+        baseFallSpeed = 1.5; // Velocidad inicial
+        spawnRate = 2500;
+        
+        activeItems.forEach(el => el.remove());
+        activeItems = [];
+        updateHUD();
+        isPaused = false;
+    }
+
+    function gameLoop() {
+        if (!isPaused) {
+            spawnItem();
+        }
+        spawnTimer = setTimeout(gameLoop, spawnRate);
+    }
+
+    function spawnItem() {
+        const now = Date.now();
+        if (Math.random() < 0.05 && (now - lastHeartTime > 12000) && lives < 5) {
+            createHeart();
+            lastHeartTime = now;
+        } else {
+            createWord();
+        }
+    }
+
+    function createWord() {
+        const data = wordsDB[Math.floor(Math.random() * wordsDB.length)];
+        const el = document.createElement('div');
+        el.className = 'falling-item';
+        el.innerText = data.text;
+        
+        const maxLeft = window.innerWidth - 140;
+        const randomLeft = Math.random() * (maxLeft - 20) + 20;
+
+        el.style.left = randomLeft + 'px';
+        el.style.top = '-70px';
+        
+        el.dataset.y = -70;
+        el.dataset.speed = baseFallSpeed + (Math.random() * 0.3); 
+        el.dataset.type = data.type; 
+        el.dataset.kind = 'word';
+        el.dataset.isDragging = 'false';
+
+        setupDrag(el); 
+        gameArea.appendChild(el);
+        activeItems.push(el);
+    }
+
+    function createHeart() {
+        const el = document.createElement('div');
+        el.className = 'falling-heart';
+        el.innerText = '💖';
+        const maxLeft = window.innerWidth - 60;
+        const randomLeft = Math.random() * (maxLeft - 20) + 20;
+        el.style.left = randomLeft + 'px';
+        el.style.top = '-70px';
+        el.dataset.y = -70;
+        el.dataset.speed = baseFallSpeed * 1.2; 
+        el.dataset.kind = 'heart';
+        el.onclick = () => collectHeart(el);
+        el.ontouchstart = (e) => { e.preventDefault(); collectHeart(el); };
+        gameArea.appendChild(el);
+        activeItems.push(el);
+    }
+
+    function updatePhysics() {
+        if (!isPaused) {
+            for (let i = 0; i < activeItems.length; i++) {
+                let el = activeItems[i];
+                if (el.dataset.isDragging === 'true') continue;
+
+                let y = parseFloat(el.dataset.y);
+                let speed = parseFloat(el.dataset.speed);
+
+                y += speed;
+                el.dataset.y = y;
+                el.style.top = y + 'px';
+
+                if (y > window.innerHeight - 130) {
+                    if (el.dataset.kind === 'word') {
+                        missWord(el);
+                    } else {
+                        el.remove();
+                    }
+                    activeItems.splice(i, 1);
+                    i--;
+                }
+            }
+        }
+        if (lives > 0) requestAnimationFrame(updatePhysics);
+    }
+
+    // --- CONTROL DE DIFICULTAD PROGRESIVO (Estilo Dino) ---
+    function checkProgression() {
+        // Aumenta la velocidad gradualmente según los aciertos
+        if (correctCount === 10) {
+            baseFallSpeed = 2.0; 
+            spawnRate = 2200;
+        } 
+        else if (correctCount === 15) {
+            baseFallSpeed = 2.5; 
+            spawnRate = 2000;
+        }
+        else if (correctCount === 25) {
+            baseFallSpeed = 3.0; 
+            spawnRate = 1800;
+        }
+        else if (correctCount === 40) {
+            baseFallSpeed = 4.0; 
+            spawnRate = 1400;
+        }
+    }
+
+    function setupDrag(el) {
+        let offsetX, offsetY;
+
+        const start = (e) => {
+            if (isPaused) return;
+            el.dataset.isDragging = 'true';
+            el.style.zIndex = 100;
+            el.style.transform = "scale(1.1) rotate(-5deg)";
+            
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const rect = el.getBoundingClientRect();
+            offsetX = clientX - rect.left;
+            offsetY = clientY - rect.top;
+        };
+
+        const move = (e) => {
+            if (el.dataset.isDragging !== 'true') return;
+            e.preventDefault(); 
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            el.style.left = (clientX - offsetX) + 'px';
+            el.style.top = (clientY - offsetY) + 'px';
+            el.dataset.y = clientY - offsetY;
+            highlightBaskets(clientX, clientY);
+        };
+
+        const end = (e) => {
+            if (el.dataset.isDragging !== 'true') return;
+            el.dataset.isDragging = 'false';
+            el.style.transform = "scale(1) rotate(0deg)";
+            el.style.zIndex = 10;
+            const rect = el.getBoundingClientRect();
+            checkDrop(el, rect.left + rect.width/2, rect.top + rect.height/2);
+            basketCommon.classList.remove('highlight');
+            basketProper.classList.remove('highlight');
+        };
+
+        el.addEventListener('mousedown', start);
+        window.addEventListener('mousemove', move);
+        window.addEventListener('mouseup', end);
+        el.addEventListener('touchstart', start, {passive: false});
+        el.addEventListener('touchmove', move, {passive: false});
+        el.addEventListener('touchend', end);
+    }
+
+    function highlightBaskets(x, y) {
+        basketCommon.classList.remove('highlight');
+        basketProper.classList.remove('highlight');
+        if (y > window.innerHeight - 200) {
+            if (x < window.innerWidth / 2) basketCommon.classList.add('highlight');
+            else basketProper.classList.add('highlight');
+        }
+    }
+
+    function checkDrop(el, x, y) {
+        if (y > window.innerHeight - 200) {
+            const isLeft = x < window.innerWidth / 2; 
+            const type = el.dataset.type;
+
+            if ((isLeft && type === 'common') || (!isLeft && type === 'proper')) {
+                success(el);
+            } else {
+                fail(el);
+            }
+        }
+    }
+
+    function success(el) {
+        score += 5;
+        correctCount++; 
+        
+        checkProgression(); // Verificamos si toca aumentar velocidad
+
+        updateHUD();
+        el.remove();
+        
+        const idx = activeItems.indexOf(el);
+        if (idx > -1) activeItems.splice(idx, 1);
+        
+        const rect = el.getBoundingClientRect();
+        confetti({ particleCount: 20, spread: 40, origin: { x: rect.left/window.innerWidth, y: rect.top/window.innerHeight } });
+    }
+
+    function fail(el) {
+        isPaused = true;
+        clearTimeout(spawnTimer); 
+
+        // NOTA: NO cambiamos la velocidad aquí, se mantiene igual (estilo Dino)
+
+        document.getElementById('feedback-modal').style.display = 'flex';
+        document.getElementById('fb-word').innerText = el.innerText;
+        
+        const exp = document.getElementById('fb-text');
+        if (el.dataset.type === 'common') {
+            exp.innerHTML = "Es un <strong>Sustantivo Común</strong>.<br>Son cosas generales (como 'rosquilla' o 'volcán').<br>¡Va en la canasta naranja!";
+        } else {
+            exp.innerHTML = "Es un <strong>Sustantivo Propio</strong>.<br>Son nombres únicos (como 'Ometepe' o 'María').<br>¡Va en la canasta morada!";
+        }
+
+        lives--;
+        updateHUD();
+        el.remove();
+        const idx = activeItems.indexOf(el);
+        if (idx > -1) activeItems.splice(idx, 1);
+    }
+
+    function missWord(el) {
+        lives--;
+        // La velocidad se mantiene normal (no se reduce)
+        updateHUD();
+        el.style.background = "#e74c3c";
+        el.style.color = "white";
+        setTimeout(() => el.remove(), 200);
+        if (lives <= 0) gameOver();
+    }
+
+    function collectHeart(el) {
+        lives++;
+        score += 5;
+        updateHUD();
+        confetti({ particleCount: 30, spread: 30, origin: { x: parseFloat(el.style.left)/window.innerWidth, y: parseFloat(el.style.top)/window.innerHeight }, colors: ['#ff4757'] });
+        el.remove();
+        const idx = activeItems.indexOf(el);
+        if (idx > -1) activeItems.splice(idx, 1);
+    }
+
+    function resumeGame() {
+        document.getElementById('feedback-modal').style.display = 'none';
+        if (lives > 0) {
+            isPaused = false;
+            gameLoop();
+            requestAnimationFrame(updatePhysics);
+        } else {
+            gameOver();
+        }
+    }
+
+    function updateHUD() {
+        let hearts = "";
+        for(let i=0; i<lives; i++) hearts += "❤️";
+        livesEl.innerText = hearts;
+        scoreEl.innerText = score;
+    }
+
+    function gameOver() {   
+        isPaused = true;
+        clearTimeout(spawnTimer);
+        document.getElementById('end-screen').style.display = 'flex';
+        document.getElementById('final-score').innerText = score;
+    }
+</script>
+</body>
+</html>

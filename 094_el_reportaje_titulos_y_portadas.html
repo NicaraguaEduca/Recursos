@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Portadas - El Reportaje</title>
+    
+    <!-- Fuentes Google: Oswald (Titulares de Periódico), Courier Prime (Máquina de escribir) y Outfit (General) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Oswald:wght@500;700&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuración de Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        news: ['Oswald', 'sans-serif'],
+                        typewriter: ['Courier Prime', 'monospace'],
+                    },
+                    colors: {
+                        press: {
+                            red: '#E63946',
+                            blue: '#1D3557',
+                            lightBlue: '#457B9D',
+                            yellow: '#FFCA3A',
+                            paper: '#F1FAEE',
+                            ink: '#111111',
+                            gray: '#A8DADC'
+                        }
+                    },
+                    boxShadow: {
+                        'hard': '8px 8px 0px 0px #111111',
+                        'hard-sm': '4px 4px 0px 0px #111111',
+                        'hard-hover': '2px 2px 0px 0px #111111',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Estilos Neo-Brutalistas / Periódico */
+        .neo-border { border: 4px solid #111111; }
+        .neo-border-thick { border: 8px solid #111111; }
+        
+        .btn-neo {
+            border: 4px solid #111111;
+            box-shadow: 4px 4px 0px 0px #111111;
+            transition: all 0.15s ease-out;
+        }
+        @media (min-width: 768px) {
+            .btn-neo {
+                box-shadow: 6px 6px 0px 0px #111111;
+            }
+        }
+        .btn-neo:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px 0px #111111;
+        }
+        @media (min-width: 768px) {
+            .btn-neo:hover {
+                box-shadow: 4px 4px 0px 0px #111111;
+            }
+        }
+        .btn-neo:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px 0px #111111;
+        }
+
+        /* Animaciones para SPA */
+        .screen-enter { animation: slideIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .screen-exit { animation: slideOut 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards; }
+
+        @keyframes slideIn {
+            0% { opacity: 0; transform: translateX(50px) scale(0.95); }
+            100% { opacity: 1; transform: translateX(0) scale(1); }
+        }
+        @keyframes slideOut {
+            0% { opacity: 1; transform: translateX(0) scale(1); }
+            100% { opacity: 0; transform: translateX(-50px) scale(0.95); }
+        }
+
+        /* Animaciones Interactivas */
+        .shake-error { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
+        .pop-in { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.5) forwards; }
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.5); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Utilidades de Fondo (Tramas de periódico) */
+        .bg-halftone {
+            background-color: #F1FAEE;
+            background-image: radial-gradient(#A8DADC 15%, transparent 16%), radial-gradient(#A8DADC 15%, transparent 16%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+        /* Componentes del Juego */
+        .fragment-btn {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .fragment-btn.selected {
+            background-color: #FFCA3A;
+            transform: scale(1.05) translateY(-4px);
+            box-shadow: 4px 4px 0px #111111;
+            border-color: #111111;
+        }
+        .fragment-btn.used {
+            opacity: 0.3;
+            pointer-events: none;
+            filter: grayscale(100%);
+            box-shadow: none;
+            transform: none;
+        }
+
+        .newspaper-slot {
+            border: 3px dashed #1D3557;
+            background-color: rgba(255, 255, 255, 0.5);
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .newspaper-slot:hover {
+            background-color: #FFCA3A;
+            border-style: solid;
+        }
+        .newspaper-slot.highlight {
+            animation: pulse-border 1.5s infinite;
+        }
+        .newspaper-slot.solved {
+            border: none;
+            background-color: transparent;
+            cursor: default;
+            animation: none;
+        }
+
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(255, 202, 58, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 202, 58, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 202, 58, 0); }
+        }
+    </style>
+</head>
+<body class="bg-press-ink text-press-ink h-[100dvh] w-full overflow-hidden flex items-center justify-center font-sans selection:bg-press-yellow selection:text-press-ink">
+
+    <!-- CONTENEDOR PRINCIPAL TIPO APP -->
+    <div class="relative w-full h-full flex overflow-hidden bg-press-paper">
+        
+        <!-- PANTALLA 1: INICIO (PORTADA) -->
+        <section id="screen-1" class="absolute inset-0 bg-halftone flex flex-col items-center justify-center p-4 md:p-6 z-[60] overflow-y-auto">
+            <div class="bg-white neo-border-thick p-6 md:p-14 shadow-hard flex flex-col items-center max-w-4xl w-full text-center transform -rotate-1 my-auto relative">
+                
+                <!-- Etiqueta superior -->
+                <div class="absolute -top-5 bg-press-red text-white font-news px-6 py-2 text-xl md:text-3xl tracking-widest neo-border uppercase">
+                    Exclusiva Mundial
+                </div>
+                
+                <h2 class="text-xl md:text-3xl font-typewriter font-bold mt-4 mb-2 text-press-blue uppercase tracking-widest">
+                    El Reportaje - 6to Grado
+                </h2>
+                
+                <h1 class="text-5xl sm:text-6xl md:text-8xl lg:text-[7rem] font-news leading-[0.9] mb-4 md:mb-8 text-press-ink uppercase border-y-8 border-press-ink py-4 w-full">
+                    Editor de <br> <span class="text-press-lightBlue">Portadas</span>
+                </h1>
+                
+                <p class="text-base sm:text-xl md:text-2xl font-medium mb-6 md:mb-10 max-w-2xl text-gray-800 leading-relaxed font-typewriter">
+                    ¡Felicidades por tu ascenso a <strong>Editor Jefe</strong>! Tu misión de hoy es diseñar los titulares y las entradas de las noticias más impactantes utilizando la regla de las "5 W".
+                </p>
+                
+                <button onclick="goToScreen(2)" class="btn-neo bg-press-yellow text-press-ink text-2xl sm:text-3xl md:text-4xl font-news px-6 py-3 md:px-10 md:py-5 uppercase hover:scale-105 active:scale-95 shrink-0 flex items-center gap-3">
+                    <span class="text-3xl">📰</span> Entrar a la Redacción
+                </button>
+            </div>
+        </section>
+
+        <!-- PANTALLA 2: TEORÍA - ESTRUCTURA -->
+        <section id="screen-2" class="absolute inset-0 bg-press-blue flex flex-col items-center justify-center p-4 md:p-6 z-[50] hidden overflow-y-auto">
+            <div class="bg-press-paper neo-border-thick p-6 md:p-12 shadow-hard w-full max-w-5xl flex flex-col md:flex-row gap-6 md:gap-12 items-center rotate-1 my-auto">
+                <div class="text-[5rem] md:text-[10rem] flex-shrink-0 animate-bounce">🗞️</div>
+                <div class="flex flex-col text-center md:text-left w-full">
+                    <h2 class="text-4xl sm:text-5xl md:text-6xl font-news mb-4 md:mb-6 text-press-red uppercase">Estructura del Reportaje</h2>
+                    
+                    <div class="bg-white p-4 neo-border mb-4">
+                        <h3 class="font-news text-2xl md:text-3xl uppercase text-press-lightBlue">1. El Titular (Título)</h3>
+                        <p class="font-typewriter font-bold text-lg md:text-xl">Debe ser corto, llamativo y atrapar al lector al instante.</p>
+                    </div>
+
+                    <div class="bg-white p-4 neo-border">
+                        <h3 class="font-news text-2xl md:text-3xl uppercase text-press-lightBlue">2. La Entrada (Lead)</h3>
+                        <p class="font-typewriter font-bold text-lg md:text-xl mb-2">Es el primer párrafo de la noticia. Resumen lo más importante.</p>
+                        <p class="bg-press-yellow font-bold p-2 text-center neo-border">¡Debe responder a las famosas "5 W"!</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap justify-center gap-4 mt-6 md:mt-10">
+                <button onclick="goToScreen(1)" class="btn-neo bg-white text-press-ink text-xl sm:text-2xl md:text-3xl font-news uppercase px-6 py-3 md:px-8 md:py-4 shrink-0 hover:scale-105">
+                    ⬅ Volver
+                </button>
+                <button onclick="goToScreen(3)" class="btn-neo bg-press-yellow text-press-ink text-xl sm:text-2xl md:text-3xl font-news uppercase px-8 py-3 md:px-12 md:py-4 shrink-0 hover:scale-105">
+                    Ver las 5 W ➡
+                </button>
+            </div>
+        </section>
+
+        <!-- PANTALLA 3: TEORÍA - LAS 5 W -->
+        <section id="screen-3" class="absolute inset-0 bg-press-red flex flex-col items-center justify-start md:justify-center p-4 md:p-6 z-[40] hidden overflow-y-auto">
+            <div class="bg-press-paper neo-border-thick p-4 md:p-10 shadow-hard w-full max-w-6xl flex flex-col items-center text-center my-auto">
+                <h2 class="text-4xl sm:text-5xl md:text-6xl font-news mb-6 text-press-ink uppercase border-b-4 border-press-ink pb-2 inline-block">Las 5 "W" del Periodismo</h2>
+                
+                <p class="text-lg md:text-2xl font-typewriter font-bold mb-8 text-gray-800 max-w-4xl">
+                    Todo buen reportaje debe responder estas 5 preguntas en su <strong class="bg-press-yellow px-2">Entrada</strong> para que el lector se entere de todo rápidamente.
+                </p>
+
+                <!-- Cuadrícula 5 W -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 w-full mb-6">
+                    <div class="bg-white neo-border p-4 flex items-center gap-4 shadow-hard-sm transform hover:-translate-y-1 transition-transform">
+                        <div class="text-4xl bg-press-gray p-3 rounded-full neo-border">🧑</div>
+                        <div class="text-left">
+                            <span class="font-news text-2xl uppercase block text-press-blue">¿Quién?</span>
+                            <span class="font-typewriter font-bold text-sm">El protagonista.</span>
+                        </div>
+                    </div>
+                    <div class="bg-white neo-border p-4 flex items-center gap-4 shadow-hard-sm transform hover:-translate-y-1 transition-transform">
+                        <div class="text-4xl bg-press-gray p-3 rounded-full neo-border">💥</div>
+                        <div class="text-left">
+                            <span class="font-news text-2xl uppercase block text-press-blue">¿Qué?</span>
+                            <span class="font-typewriter font-bold text-sm">El suceso o evento.</span>
+                        </div>
+                    </div>
+                    <div class="bg-white neo-border p-4 flex items-center gap-4 shadow-hard-sm transform hover:-translate-y-1 transition-transform">
+                        <div class="text-4xl bg-press-gray p-3 rounded-full neo-border">⏰</div>
+                        <div class="text-left">
+                            <span class="font-news text-2xl uppercase block text-press-blue">¿Cuándo?</span>
+                            <span class="font-typewriter font-bold text-sm">El tiempo/fecha.</span>
+                        </div>
+                    </div>
+                    <div class="bg-white neo-border p-4 flex items-center gap-4 shadow-hard-sm transform hover:-translate-y-1 transition-transform">
+                        <div class="text-4xl bg-press-gray p-3 rounded-full neo-border">📍</div>
+                        <div class="text-left">
+                            <span class="font-news text-2xl uppercase block text-press-blue">¿Dónde?</span>
+                            <span class="font-typewriter font-bold text-sm">El lugar del hecho.</span>
+                        </div>
+                    </div>
+                    <div class="bg-white neo-border p-4 flex items-center gap-4 shadow-hard-sm transform hover:-translate-y-1 transition-transform lg:col-span-2 lg:mx-auto lg:w-1/2">
+                        <div class="text-4xl bg-press-gray p-3 rounded-full neo-border">❓</div>
+                        <div class="text-left">
+                            <span class="font-news text-2xl uppercase block text-press-blue">¿Por qué?</span>
+                            <span class="font-typewriter font-bold text-sm">La causa del suceso.</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="flex flex-wrap justify-center gap-4 mt-6 md:mt-8">
+                <button onclick="goToScreen(2)" class="btn-neo bg-white text-press-ink text-xl sm:text-2xl md:text-3xl font-news uppercase px-6 py-3 md:px-8 md:py-4 shrink-0 hover:scale-105">
+                    ⬅ Volver
+                </button>
+                <button onclick="startGame()" class="btn-neo bg-press-ink text-white text-xl sm:text-3xl md:text-4xl font-news uppercase px-8 py-3 md:px-12 md:py-4 animate-pulse shrink-0">
+                    Ir a la Imprenta 🖨️
+                </button>
+            </div>
+        </section>
+
+        <!-- PANTALLA 4: EL JUEGO (EDITOR DE PORTADAS) -->
+        <section id="screen-4" class="absolute inset-0 bg-press-gray flex flex-col z-[20] hidden">
+            
+            <!-- Header Juego -->
+            <div class="bg-press-ink text-white p-3 md:p-4 flex justify-between items-center z-10 shadow-md">
+                <div class="font-news text-xl md:text-3xl tracking-wider flex items-center gap-2">
+                    <button onclick="goToScreen(3)" class="bg-white text-press-ink px-2 py-1 rounded text-sm md:text-lg hover:-translate-y-1 transition-transform">⬅ VOLVER</button>
+                    <span class="hidden sm:inline ml-4 uppercase text-press-yellow">Mesa de Edición</span>
+                </div>
+                <div id="progress-bar" class="flex gap-2 text-2xl md:text-4xl">
+                    <span id="star-0" class="opacity-50 grayscale">📰</span>
+                    <span id="star-1" class="opacity-50 grayscale">📰</span>
+                </div>
+            </div>
+
+            <!-- Área del Juego principal -->
+            <div class="flex-grow flex flex-col md:flex-row gap-4 p-4 md:p-6 overflow-hidden">
+                
+                <!-- PANEL IZQUIERDO: EL PERIÓDICO (Donde se colocan las piezas) -->
+                <div class="w-full md:w-3/5 bg-white neo-border-thick flex flex-col h-full shadow-hard overflow-y-auto relative">
+                    <!-- Cabecera Periódico -->
+                    <div class="border-b-4 border-press-ink p-4 text-center">
+                        <h1 class="font-news text-4xl md:text-6xl uppercase tracking-tighter">El Diario Escolar</h1>
+                        <p class="font-typewriter text-sm border-y-2 border-press-ink mt-2 py-1">Edición Especial | <span id="news-level">Noticia 1</span></p>
+                    </div>
+
+                    <!-- Cuerpo del Periódico -->
+                    <div class="p-6 flex flex-col gap-6 flex-grow">
+                        
+                        <!-- Slot TITULAR -->
+                        <div class="flex flex-col items-center mb-4 w-full">
+                            <span class="font-typewriter text-xs text-press-red font-bold uppercase tracking-widest mb-1">Coloca el Titular aquí:</span>
+                            <div id="slot-titulo" class="newspaper-slot w-full min-h-[60px] md:min-h-[80px]" onclick="handleSlotClick('titulo')">
+                                <span class="font-news text-xl md:text-3xl text-gray-400 uppercase">[ TÍTULO LLAMATIVO ]</span>
+                            </div>
+                        </div>
+
+                        <!-- Cuerpol (Entrada) -->
+                        <div class="flex flex-col w-full relative">
+                            <span class="font-typewriter text-xs text-press-blue font-bold uppercase tracking-widest mb-2 border-b-2 border-press-blue inline-block w-max">Párrafo de Entrada (Lead):</span>
+                            
+                            <div class="font-typewriter text-lg md:text-xl leading-relaxed flex flex-wrap gap-2 items-center align-middle">
+                                <div id="slot-cuando" class="newspaper-slot inline-flex px-3 min-w-[120px]" onclick="handleSlotClick('cuando')">
+                                    <span class="text-sm text-gray-400">[¿Cuándo?]</span>
+                                </div>
+                                <span>,</span>
+                                <div id="slot-quien" class="newspaper-slot inline-flex px-3 min-w-[150px]" onclick="handleSlotClick('quien')">
+                                    <span class="text-sm text-gray-400">[¿Quién?]</span>
+                                </div>
+                                <div id="slot-que" class="newspaper-slot inline-flex px-3 min-w-[180px]" onclick="handleSlotClick('que')">
+                                    <span class="text-sm text-gray-400">[¿Qué hizo?]</span>
+                                </div>
+                                <div id="slot-donde" class="newspaper-slot inline-flex px-3 min-w-[150px]" onclick="handleSlotClick('donde')">
+                                    <span class="text-sm text-gray-400">[¿Dónde?]</span>
+                                </div>
+                                <div id="slot-porque" class="newspaper-slot inline-flex px-3 min-w-[200px]" onclick="handleSlotClick('porque')">
+                                    <span class="text-sm text-gray-400">[¿Por qué?]</span>
+                                </div>
+                                <span>.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL DERECHO: LAS PIEZAS (Teletipo/Fragmentos) -->
+                <div class="w-full md:w-2/5 bg-press-paper neo-border-thick flex flex-col h-1/2 md:h-full shadow-hard overflow-hidden relative">
+                    <div class="bg-press-blue text-white p-3 text-center border-b-4 border-press-ink">
+                        <h2 class="font-news text-xl md:text-2xl uppercase tracking-widest">Cables de Noticias</h2>
+                        <p class="font-typewriter text-xs text-press-gray">1. Toca un fragmento <br> 2. Toca su lugar en el periódico</p>
+                    </div>
+                    
+                    <div id="fragments-container" class="p-4 flex flex-col gap-3 overflow-y-auto flex-grow bg-halftone">
+                        <!-- Botones inyectados por JS -->
+                    </div>
+
+                    <!-- Feedback de error in-panel -->
+                    <div id="game-feedback" class="absolute bottom-0 w-full bg-press-red text-white p-3 font-news text-xl md:text-2xl text-center transform translate-y-full transition-transform duration-300 border-t-4 border-press-ink z-20">
+                        Error
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PANTALLA 5: VICTORIA -->
+        <section id="screen-5" class="absolute inset-0 bg-press-yellow flex flex-col items-center justify-center p-4 md:p-6 z-[10] hidden overflow-y-auto">
+            <div class="bg-white neo-border-thick p-6 md:p-16 shadow-hard w-full max-w-4xl flex flex-col items-center text-center transform rotate-1 relative my-auto">
+                <div class="absolute -top-10 -left-6 md:-top-16 md:-left-16 text-[5rem] md:text-[8rem] pop-in">📸</div>
+                <div class="absolute -bottom-6 -right-4 md:-bottom-10 md:-right-10 text-[4rem] md:text-[6rem] pop-in" style="animation-delay: 0.2s">📰</div>
+
+                <div class="text-[5rem] sm:text-[7rem] md:text-[10rem] mb-2 pop-in leading-none" style="animation-delay: 0.4s">🏆</div>
+                <h2 class="text-4xl sm:text-5xl md:text-[6rem] font-news mb-4 text-press-ink uppercase tracking-tight leading-none">¡Premio Pulitzer!</h2>
+                <p class="text-lg sm:text-xl md:text-3xl font-typewriter font-bold mb-8 text-gray-800 max-w-2xl">
+                    Has redactado las entradas perfectas respondiendo a las 5W. El periódico está listo para imprimirse.
+                </p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <button onclick="goToScreen(1)" class="btn-neo bg-white text-press-ink text-xl sm:text-2xl md:text-3xl font-news uppercase px-6 py-3 md:px-8 md:py-4 shrink-0 hover:scale-105">
+                        🏠 INICIO
+                    </button>
+                    <button onclick="location.reload()" class="btn-neo bg-press-blue text-white text-xl sm:text-2xl md:text-3xl font-news uppercase px-8 py-3 md:px-12 md:py-4 shrink-0 hover:scale-105">
+                        NUEVA EDICIÓN 🔄
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- SCRIPT DE NAVEGACIÓN Y LÓGICA DEL JUEGO -->
+    <script>
+        // Navegación SPA
+        function goToScreen(screenNumber) {
+            const screens = document.querySelectorAll('section');
+            let currentScreen = Array.from(screens).find(s => !s.classList.contains('hidden') && s.id !== `screen-${screenNumber}`);
+            
+            if (currentScreen) {
+                currentScreen.classList.remove('screen-enter');
+                currentScreen.classList.add('screen-exit');
+                setTimeout(() => {
+                    currentScreen.classList.add('hidden');
+                    showNextScreen(screenNumber);
+                }, 400); 
+            } else {
+                showNextScreen(screenNumber);
+            }
+        }
+
+        function showNextScreen(screenNumber) {
+            const nextScreen = document.getElementById(`screen-${screenNumber}`);
+            nextScreen.classList.remove('hidden', 'screen-exit');
+            nextScreen.classList.add('screen-enter');
+        }
+
+        // --- LÓGICA DEL JUEGO (Editor de Portadas) ---
+
+        // Levels Data
+        const gameData = [
+            {
+                titleLabel: "Noticia 1",
+                fragments: [
+                    { id: 'titulo', text: "¡DINOSAURIO EN LA ESCUELA!", type: "titulo" },
+                    { id: 'quien', text: "Los alumnos de sexto", type: "quien" },
+                    { id: 'que', text: "encontraron un hueso gigante", type: "que" },
+                    { id: 'cuando', text: "Esta mañana", type: "cuando" },
+                    { id: 'donde', text: "en el patio trasero", type: "donde" },
+                    { id: 'porque', text: "mientras plantaban un árbol", type: "porque" }
+                ]
+            },
+            {
+                titleLabel: "Noticia 2",
+                fragments: [
+                    { id: 'titulo', text: "¡ROBOT CAMPEÓN DE ORTOGRAFÍA!", type: "titulo" },
+                    { id: 'quien', text: "El robot escolar", type: "quien" },
+                    { id: 'que', text: "ganó el concurso de deletreo", type: "que" },
+                    { id: 'cuando', text: "Ayer por la tarde", type: "cuando" },
+                    { id: 'donde', text: "en la biblioteca municipal", type: "donde" },
+                    { id: 'porque', text: "porque tiene un diccionario en su disco duro", type: "porque" }
+                ]
+            }
+        ];
+
+        let currentLevel = 0;
+        let selectedFragment = null; // Guarda el botón seleccionado del panel derecho
+        let filledSlotsCount = 0;
+        const totalSlots = 6;
+
+        // DOM Elements
+        const fragmentsContainer = document.getElementById('fragments-container');
+        const feedbackEl = document.getElementById('game-feedback');
+        const newsLevelLabel = document.getElementById('news-level');
+        const slots = {
+            titulo: document.getElementById('slot-titulo'),
+            cuando: document.getElementById('slot-cuando'),
+            quien: document.getElementById('slot-quien'),
+            que: document.getElementById('slot-que'),
+            donde: document.getElementById('slot-donde'),
+            porque: document.getElementById('slot-porque')
+        };
+
+        // Textos originales de los slots para resetear
+        const originalSlotContents = {
+            titulo: '<span class="font-news text-xl md:text-3xl text-gray-400 uppercase">[ TÍTULO LLAMATIVO ]</span>',
+            cuando: '<span class="text-sm text-gray-400">[¿Cuándo?]</span>',
+            quien: '<span class="text-sm text-gray-400">[¿Quién?]</span>',
+            que: '<span class="text-sm text-gray-400">[¿Qué hizo?]</span>',
+            donde: '<span class="text-sm text-gray-400">[¿Dónde?]</span>',
+            porque: '<span class="text-sm text-gray-400">[¿Por qué?]</span>'
+        };
+
+        function startGame() {
+            goToScreen(4);
+            currentLevel = 0;
+            updateStars();
+            loadLevel();
+        }
+
+        function updateStars() {
+            for(let i=0; i<2; i++){
+                const star = document.getElementById(`star-${i}`);
+                if (i < currentLevel) {
+                    star.classList.remove('opacity-50', 'grayscale');
+                    star.classList.add('drop-shadow-lg');
+                } else {
+                    star.classList.add('opacity-50', 'grayscale');
+                    star.classList.remove('drop-shadow-lg');
+                }
+            }
+        }
+
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function loadLevel() {
+            if (currentLevel >= gameData.length) {
+                setTimeout(() => goToScreen(5), 500);
+                return;
+            }
+
+            const data = gameData[currentLevel];
+            newsLevelLabel.innerText = data.titleLabel;
+            selectedFragment = null;
+            filledSlotsCount = 0;
+
+            // 1. Resetear Slots del Periódico
+            Object.keys(slots).forEach(key => {
+                const slot = slots[key];
+                slot.innerHTML = originalSlotContents[key];
+                slot.className = key === 'titulo' 
+                    ? 'newspaper-slot w-full min-h-[60px] md:min-h-[80px]' 
+                    : 'newspaper-slot inline-flex px-3 min-w-[120px]';
+                // Añadir highlight animation para indicar interactividad
+                slot.classList.add('highlight');
+            });
+
+            // 2. Generar Fragmentos desordenados
+            fragmentsContainer.innerHTML = '';
+            const shuffledFragments = shuffleArray(data.fragments);
+
+            shuffledFragments.forEach(frag => {
+                const btn = document.createElement('button');
+                btn.className = 'fragment-btn bg-white border-2 border-press-ink p-3 text-left shadow-sm hover:shadow-md font-typewriter font-bold text-sm md:text-base';
+                
+                // Si es el título, hacerlo visualmente distinto
+                if(frag.type === 'titulo') {
+                    btn.classList.remove('font-typewriter', 'text-sm');
+                    btn.classList.add('font-news', 'text-lg', 'uppercase', 'text-press-red');
+                }
+
+                btn.innerText = frag.text;
+                btn.dataset.type = frag.type;
+                
+                btn.onclick = () => handleFragmentSelect(btn);
+                fragmentsContainer.appendChild(btn);
+            });
+        }
+
+        // Paso 1: El usuario selecciona un fragmento del panel derecho
+        function handleFragmentSelect(btn) {
+            if (btn.classList.contains('used')) return;
+
+            // Deseleccionar anterior
+            if (selectedFragment) {
+                selectedFragment.classList.remove('selected');
+            }
+
+            // Seleccionar nuevo
+            selectedFragment = btn;
+            selectedFragment.classList.add('selected');
+        }
+
+        // Paso 2: El usuario toca el slot vacío en el periódico
+        function handleSlotClick(slotType) {
+            const slotEl = slots[slotType];
+
+            // Ignorar si el slot ya está resuelto
+            if (slotEl.classList.contains('solved')) return;
+
+            // Si toca un slot sin haber seleccionado un fragmento antes
+            if (!selectedFragment) {
+                showFeedback("⚠️ Primero selecciona una pieza amarilla de la derecha.", "bg-press-yellow", "text-press-ink");
+                slotEl.classList.add('shake-error');
+                setTimeout(() => slotEl.classList.remove('shake-error'), 500);
+                return;
+            }
+
+            // Verificar si el fragmento seleccionado corresponde a este slot
+            if (selectedFragment.dataset.type === slotType) {
+                // ACIERTO
+                slotEl.classList.remove('newspaper-slot', 'highlight');
+                slotEl.classList.add('solved', 'pop-in');
+
+                // Inyectar el texto en el periódico
+                if (slotType === 'titulo') {
+                    slotEl.innerHTML = `<span class="font-news text-3xl md:text-5xl lg:text-6xl text-press-ink uppercase leading-none tracking-tighter text-center">${selectedFragment.innerText}</span>`;
+                } else {
+                    slotEl.innerHTML = `<span class="font-typewriter text-lg md:text-xl font-bold bg-press-yellow/30 px-1">${selectedFragment.innerText}</span>`;
+                }
+
+                // Desactivar el botón original
+                selectedFragment.classList.remove('selected');
+                selectedFragment.classList.add('used');
+                selectedFragment = null;
+
+                filledSlotsCount++;
+
+                // Verificar si se completó el nivel
+                if (filledSlotsCount === totalSlots) {
+                    setTimeout(() => {
+                        currentLevel++;
+                        updateStars();
+                        loadLevel();
+                    }, 2000); // 2 segundos para admirar la portada terminada
+                }
+
+            } else {
+                // ERROR
+                slotEl.classList.add('shake-error');
+                slotEl.style.backgroundColor = 'rgba(230, 57, 70, 0.2)'; // press-red transparente
+                slotEl.style.borderColor = '#E63946';
+                
+                showFeedback("❌ Esa pieza no responde a esa pregunta.", "bg-press-red", "text-white");
+
+                setTimeout(() => {
+                    slotEl.classList.remove('shake-error');
+                    slotEl.style.backgroundColor = '';
+                    slotEl.style.borderColor = '';
+                }, 1000);
+            }
+        }
+
+        // Mostrar barra de feedback en el panel derecho
+        function showFeedback(text, bgClass, textClass) {
+            feedbackEl.innerText = text;
+            feedbackEl.className = `absolute bottom-0 w-full p-3 font-news text-lg md:text-xl text-center transform transition-transform duration-300 border-t-4 border-press-ink z-20 ${bgClass} ${textClass}`;
+            
+            // Slide up
+            feedbackEl.classList.remove('translate-y-full');
+            
+            setTimeout(() => {
+                feedbackEl.classList.add('translate-y-full');
+            }, 2500);
+        }
+
+        // Inicializar pantalla 1 al cargar
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('screen-1').classList.add('screen-enter');
+        });
+
+    </script>
+</body>
+</html>

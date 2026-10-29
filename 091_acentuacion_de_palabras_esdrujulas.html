@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lluvia de Tildes - Palabras Esdrújulas</title>
+    
+    <!-- Fuentes Google: Outfit (Pesos 500 y 900) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuración de Tailwind y animaciones -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        pastel: {
+                            sky: '#90E0EF',
+                            blue: '#00B4D8',
+                            navy: '#03045E',
+                            yellow: '#FFF3B0',
+                            coral: '#FF8787',
+                            green: '#06D6A0',
+                            light: '#F8F9FA'
+                        }
+                    },
+                    boxShadow: {
+                        'mega': '0 35px 60px -15px rgba(0, 0, 0, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Animaciones Personalizadas */
+        .float-slow { animation: float 6s ease-in-out infinite; }
+        .float-fast { animation: float 4s ease-in-out infinite reverse; }
+        .rain-drop { animation: rainDrop 3s linear infinite; }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes rainDrop {
+            0% { transform: translateY(-10px); opacity: 0.8; }
+            50% { transform: translateY(10px); opacity: 1; }
+            100% { transform: translateY(-10px); opacity: 0.8; }
+        }
+
+        .pop-in { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.5); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .shake-error { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
+        /* Tipografías fluidas */
+        .hero-title {
+            font-size: clamp(2.8rem, 10vw, 8rem);
+            line-height: 1;
+        }
+        .section-title {
+            font-size: clamp(2.2rem, 8vw, 6rem);
+            line-height: 1.1;
+        }
+        .hero-text {
+            font-size: clamp(1.2rem, 4vw, 2.5rem);
+            line-height: 1.3;
+        }
+
+        /* Limpieza visual */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .tonica {
+            color: #00B4D8; /* pastel-blue */
+            text-transform: uppercase;
+        }
+
+        /* Track de progreso sticky */
+        .progress-scale {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-pastel-light text-pastel-navy antialiased overflow-x-hidden selection:bg-pastel-yellow selection:text-pastel-navy w-full max-w-[100vw]">
+
+    <!-- SECCIÓN 1: HERO (100vh) -->
+    <section class="relative w-full min-h-screen bg-pastel-sky flex flex-col items-center justify-center p-6 md:p-12 lg:p-24 overflow-hidden">
+        <!-- Decorativos -->
+        <div class="absolute top-10 left-10 text-6xl md:text-8xl opacity-60 float-slow">🌧️</div>
+        <div class="absolute bottom-20 right-10 text-6xl md:text-9xl opacity-90 float-fast">🧺</div>
+        <div class="absolute top-32 right-20 text-6xl opacity-50 float-slow">☔</div>
+        
+        <div class="relative z-10 text-center w-full max-w-none flex flex-col items-center">
+            <span class="bg-pastel-navy text-pastel-sky px-4 py-2 md:px-8 md:py-4 rounded-[2rem] text-sm md:text-2xl lg:text-4xl font-black tracking-widest uppercase mb-4 md:mb-8 shadow-mega transform -rotate-2">
+                Ortografía - 5to Grado
+            </span>
+            <h1 class="font-black text-pastel-navy hero-title mb-4 md:mb-8 drop-shadow-md px-2">
+                Lluvia de
+                <br>
+                <span class="text-white drop-shadow-lg">Tildes</span>
+            </h1>
+            <p class="font-medium text-pastel-navy hero-text max-w-6xl px-4">
+                ¡Atrapa las palabras que llevan la fuerza en la <strong>antepenúltima</strong> sílaba!
+            </p>
+        </div>
+
+        <div class="absolute bottom-4 md:bottom-10 animate-bounce text-4xl md:text-6xl text-pastel-navy">
+            👇
+        </div>
+    </section>
+
+    <!-- SECCIÓN 2: EXPLICACIÓN (100vh) -->
+    <section class="w-full min-h-screen bg-pastel-yellow text-pastel-navy flex flex-col items-center justify-center p-6 md:p-12 lg:p-24">
+        <h2 class="font-black section-title mb-8 md:mb-16 text-center text-pastel-navy px-2">
+            ¿Qué son las Esdrújulas?
+        </h2>
+        
+        <div class="bg-white text-pastel-navy p-8 md:p-12 lg:p-20 rounded-[2rem] md:rounded-[4rem] shadow-mega transform transition duration-500 hover:scale-105 w-full max-w-6xl">
+            <div class="text-6xl md:text-8xl lg:text-[8rem] mb-4 md:mb-8 text-center float-slow">💡</div>
+            <p class="font-medium text-2xl md:text-4xl lg:text-5xl text-center leading-relaxed">
+                Son las palabras donde el golpe de voz cae en la <strong class="text-white bg-pastel-blue px-4 py-1 rounded-3xl shadow-md uppercase">antepenúltima</strong> sílaba. (¡Tres lugares antes del final!)
+            </p>
+            
+            <div class="mt-12 flex flex-col items-center justify-center gap-8 md:gap-16">
+                <div class="flex gap-2 md:gap-4 items-end">
+                    <!-- Sílaba Antepenúltima Destacada -->
+                    <div class="text-4xl md:text-6xl lg:text-8xl font-black text-white bg-pastel-coral px-6 py-4 rounded-[2rem] shadow-lg transform -translate-y-4 rotate-2">MÚ</div>
+                    <div class="text-3xl md:text-5xl lg:text-7xl font-black text-gray-400">- si -</div>
+                    <div class="text-3xl md:text-5xl lg:text-7xl font-black text-gray-400">ca</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN 3: LA REGLA DE ORO (100vh) -->
+    <section class="w-full min-h-screen bg-pastel-blue text-white flex flex-col items-center justify-center p-6 md:p-12 lg:p-24">
+        <div class="text-[5rem] md:text-[8rem] mb-6 float-fast">⭐</div>
+        <h2 class="font-black section-title mb-8 text-center text-white px-2 drop-shadow-lg">
+            La Regla de Oro
+        </h2>
+        
+        <div class="bg-pastel-navy text-white p-8 md:p-16 lg:p-24 rounded-[3rem] md:rounded-[5rem] shadow-mega w-full max-w-5xl text-center transform hover:scale-[1.02] transition-transform">
+            <h3 class="font-black text-4xl md:text-6xl lg:text-8xl mb-8 text-pastel-yellow">¡TODAS LLEVAN TILDE!</h3>
+            <p class="font-medium text-2xl md:text-4xl lg:text-5xl leading-tight">
+                Así de fácil. Si la fuerza está en la antepenúltima sílaba, <strong>siempre</strong> debes dibujarle la tilde (´).
+            </p>
+            
+            <div class="mt-12 flex flex-wrap justify-center gap-6">
+                <span class="bg-white/20 px-8 py-4 rounded-full font-black text-2xl md:text-4xl">pá - ja - ro</span>
+                <span class="bg-white/20 px-8 py-4 rounded-full font-black text-2xl md:text-4xl">cír - cu - lo</span>
+                <span class="bg-white/20 px-8 py-4 rounded-full font-black text-2xl md:text-4xl">rá - pi - do</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN 4: CALL TO ACTION AL JUEGO (100vh) -->
+    <section class="w-full min-h-screen bg-pastel-light flex flex-col items-center justify-center p-6 md:p-12 lg:p-24 relative overflow-hidden">
+        <div class="absolute top-10 left-4 md:top-20 md:left-20 text-6xl md:text-9xl float-fast opacity-80">💧</div>
+        <div class="absolute bottom-10 right-4 md:bottom-20 md:right-20 text-6xl md:text-9xl float-slow opacity-80">💧</div>
+
+        <div class="text-[6rem] md:text-[10rem] mb-4 animate-bounce drop-shadow-xl z-10">🧺</div>
+        <h2 class="font-black hero-title text-pastel-navy text-center mb-10 md:mb-16 drop-shadow-sm z-10 px-2">
+            ¡Prepara tu red!
+        </h2>
+        
+        <button onclick="startGame()" class="z-10 group relative bg-pastel-coral text-white font-black text-2xl md:text-4xl lg:text-6xl px-8 py-6 md:px-16 md:py-12 rounded-[2rem] md:rounded-[4rem] shadow-mega transition-all duration-300 hover:scale-110 hover:-translate-y-2 md:hover:-translate-y-4 hover:shadow-[0_50px_70px_-15px_rgba(0,0,0,0.3)] max-w-[90vw]">
+            <span class="absolute inset-0 w-full h-full rounded-[2rem] md:rounded-[4rem] border-4 md:border-8 border-pastel-coral opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"></span>
+            <span class="whitespace-nowrap">Atrapar Esdrújulas 🌧️</span>
+        </button>
+    </section>
+
+    <!-- OVERLAY DEL JUEGO INTERACTIVO (Pantalla Completa Fija) -->
+    <div id="game-overlay" class="fixed inset-0 bg-pastel-sky z-50 hidden flex-col w-full h-full no-scrollbar overflow-y-auto">
+        
+        <!-- HEADER Y TRACK STICKY -->
+        <div class="sticky top-0 z-30 w-full bg-pastel-sky/95 backdrop-blur-md shadow-md flex flex-col items-center border-b border-white/30">
+            <!-- Header -->
+            <div class="w-full p-4 md:px-8 md:py-4 flex justify-between items-center">
+                <h2 class="text-pastel-navy font-black text-xl md:text-3xl lg:text-5xl truncate pr-4 drop-shadow-sm">Lluvia de Tildes</h2>
+                <button onclick="closeGame()" class="text-pastel-navy text-xl md:text-3xl lg:text-5xl hover:text-pastel-coral transition-colors font-black bg-white/40 w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center shrink-0">X</button>
+            </div>
+
+            <!-- TRACK DE LA CANASTA (Progreso 6 palabras) STICKY -->
+            <div class="relative w-full max-w-4xl pb-4 pt-2 flex justify-between items-center px-4 md:px-12">
+                <div class="absolute left-8 right-8 md:left-16 md:right-16 h-1 bg-pastel-navy/10 top-1/2 -translate-y-1/2 z-0 rounded-full"></div>
+                <div id="prog-0" class="progress-scale z-10 text-3xl md:text-5xl opacity-40 grayscale">💧</div>
+                <div id="prog-1" class="progress-scale z-10 text-3xl md:text-5xl opacity-40 grayscale">💧</div>
+                <div id="prog-2" class="progress-scale z-10 text-3xl md:text-5xl opacity-40 grayscale">💧</div>
+                <div id="prog-3" class="progress-scale z-10 text-3xl md:text-5xl opacity-40 grayscale">💧</div>
+                <div id="prog-4" class="progress-scale z-10 text-3xl md:text-5xl opacity-40 grayscale">💧</div>
+                <div id="prog-5" class="progress-scale z-10 text-3xl md:text-5xl opacity-40 grayscale">💧</div>
+            </div>
+        </div>
+
+        <!-- Área de Juego (Grid de gotas) -->
+        <div class="flex-grow flex flex-col items-center justify-start p-4 md:p-8 relative w-full mt-4">
+            
+            <p class="text-pastel-navy font-bold text-lg md:text-2xl lg:text-3xl mb-8 text-center px-2 max-w-4xl bg-white/40 py-4 px-8 rounded-3xl backdrop-blur-sm">
+                Toca las gotas que tengan palabras <strong class="text-pastel-blue text-xl md:text-4xl uppercase">Esdrújulas</strong> para atraparlas. <br>
+                <span class="text-pastel-navy font-black mt-3 inline-block bg-pastel-yellow p-3 rounded-xl shadow-md">¡Recuerda! TODAS deben llevar tilde.</span>
+            </p>
+
+            <!-- Contenedor dinámico de Gotas -->
+            <div id="drops-container" class="flex flex-wrap justify-center gap-4 md:gap-8 w-full max-w-6xl px-2 pb-12">
+                <!-- Botones inyectados por JS -->
+            </div>
+
+        </div>
+
+        <!-- Pantalla de Victoria (Fixed & Fullscreen, sin scroll) -->
+        <div id="victory-screen" class="fixed inset-0 bg-pastel-blue z-50 hidden flex-col items-center justify-center p-6 overflow-hidden h-[100dvh] w-[100dvw] m-0">
+            <div class="text-[6rem] md:text-[10rem] animate-bounce mb-2 md:mb-6">🧺✨</div>
+            <h2 class="font-black text-white text-4xl md:text-6xl lg:text-7xl text-center mb-4">¡Canasta Llena!</h2>
+            <p class="text-pastel-light font-medium text-lg md:text-2xl lg:text-3xl text-center mb-8 px-2 max-w-4xl">Atrapaste todas las esdrújulas. ¡Eres un maestro de las tildes!</p>
+            <button onclick="closeGame()" class="bg-pastel-yellow text-pastel-navy font-black text-lg md:text-2xl lg:text-3xl px-8 py-4 md:px-12 md:py-6 rounded-[2rem] shadow-xl hover:scale-110 transition-transform max-w-full">
+                Volver a la clase
+            </button>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT DEL JUEGO -->
+    <script>
+        // Data del juego: 6 Esdrújulas (Correctas), 6 Otras (Incorrectas)
+        const wordData = [
+            // Esdrújulas
+            { word: "música", isEsdrujula: true },
+            { word: "pájaro", isEsdrujula: true },
+            { word: "océano", isEsdrujula: true },
+            { word: "plátano", isEsdrujula: true },
+            { word: "cámara", isEsdrujula: true },
+            { word: "brújula", isEsdrujula: true },
+            // Otras
+            { word: "reloj", isEsdrujula: false },     // Aguda
+            { word: "zapato", isEsdrujula: false },    // Grave
+            { word: "árbol", isEsdrujula: false },     // Grave con tilde (trampa visual)
+            { word: "canción", isEsdrujula: false },   // Aguda con tilde (trampa visual)
+            { word: "papel", isEsdrujula: false },     // Aguda
+            { word: "computadora", isEsdrujula: false } // Grave
+        ];
+
+        let foundCount = 0;
+        const totalEsdrujulas = 6;
+        let isAnimating = false; // Prevents spam clicking
+
+        // Elementos DOM
+        const gameOverlay = document.getElementById('game-overlay');
+        const victoryScreen = document.getElementById('victory-screen');
+        const dropsContainer = document.getElementById('drops-container');
+
+        function startGame() {
+            gameOverlay.classList.remove('hidden');
+            gameOverlay.classList.add('flex');
+            document.body.style.overflow = 'hidden'; 
+            foundCount = 0;
+            resetProgressTrack();
+            initDrops();
+        }
+
+        function closeGame() {
+            gameOverlay.classList.add('hidden');
+            gameOverlay.classList.remove('flex');
+            document.body.style.overflow = 'auto'; 
+            victoryScreen.classList.add('hidden');
+            victoryScreen.classList.remove('flex');
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function resetProgressTrack() {
+            for(let i=0; i<6; i++){
+                const prog = document.getElementById(`prog-${i}`);
+                prog.className = "progress-scale z-10 text-3xl md:text-5xl opacity-40 grayscale";
+                prog.innerText = "💧";
+            }
+        }
+
+        function updateProgressTrack() {
+            for(let i=0; i<foundCount; i++){
+                const prog = document.getElementById(`prog-${i}`);
+                prog.classList.remove('opacity-40', 'grayscale');
+                prog.classList.add('opacity-100', 'drop-shadow-lg', 'scale-110');
+                prog.innerText = "🧺"; // Canasta llena
+            }
+        }
+
+        function initDrops() {
+            dropsContainer.innerHTML = '';
+            
+            // Shuffle data
+            let shuffledWords = shuffleArray([...wordData]);
+
+            shuffledWords.forEach((item, index) => {
+                const dropBtn = document.createElement('button');
+                
+                // Diseño tipo Gota de Lluvia (Rain Drop) con Tailwind
+                // Usamos rounded-full y padding alto para darle forma de píldora/gota gruesa
+                dropBtn.className = 'relative flex items-center justify-center bg-white text-pastel-navy font-black text-2xl md:text-4xl lg:text-5xl px-8 py-10 md:px-12 md:py-16 rounded-[4rem] rounded-tr-xl shadow-[0_15px_30px_rgba(0,180,216,0.2)] hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,180,216,0.4)] active:translate-y-2 transition-all duration-300 w-[45%] md:w-[30%] lg:w-[22%] rain-drop border-4 border-transparent break-words';
+                
+                // Variar el delay de la animación para que no caigan todas al mismo tiempo
+                dropBtn.style.animationDelay = `${Math.random() * 2}s`;
+                
+                dropBtn.innerText = item.word;
+                dropBtn.onclick = () => handleDropClick(dropBtn, item);
+                
+                dropsContainer.appendChild(dropBtn);
+            });
+        }
+
+        function handleDropClick(btn, item) {
+            // Prevenir clic si ya está resuelto o animando un error
+            if (btn.classList.contains('solved') || btn.classList.contains('failed') || isAnimating) return;
+
+            if (item.isEsdrujula) {
+                // ACIERTO
+                btn.classList.add('solved');
+                btn.classList.remove('bg-white', 'text-pastel-navy', 'rain-drop', 'hover:-translate-y-2');
+                btn.classList.add('bg-pastel-green', 'text-white', 'scale-105', 'shadow-none');
+                
+                // Quitar la animación de lluvia y hacer pop-in del icono
+                btn.style.animation = 'none';
+                
+                const icon = document.createElement('span');
+                icon.innerText = '🧺';
+                icon.className = 'absolute -top-6 -right-4 text-5xl md:text-6xl pop-in drop-shadow-md';
+                btn.appendChild(icon);
+
+                foundCount++;
+                updateProgressTrack();
+
+                if (foundCount === totalEsdrujulas) {
+                    setTimeout(() => {
+                        victoryScreen.classList.remove('hidden');
+                        victoryScreen.classList.add('flex', 'pop-in');
+                    }, 800);
+                }
+
+            } else {
+                // ERROR
+                isAnimating = true; // Bloquea momentáneamente
+                btn.classList.add('failed');
+                
+                btn.classList.remove('bg-white', 'text-pastel-navy');
+                btn.classList.add('bg-pastel-coral', 'text-white', 'shake-error');
+                
+                // Efecto de agua salpicando al fallar
+                const splash = document.createElement('span');
+                splash.innerText = '💦';
+                splash.className = 'absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-4xl pop-in';
+                btn.appendChild(splash);
+
+                // Restaurar estado
+                setTimeout(() => {
+                    btn.classList.remove('bg-pastel-coral', 'text-white', 'shake-error', 'failed');
+                    btn.classList.add('bg-white', 'text-pastel-navy');
+                    if (btn.contains(splash)) btn.removeChild(splash);
+                    isAnimating = false;
+                }, 1000);
+            }
+        }
+    </script>
+</body>
+</html>

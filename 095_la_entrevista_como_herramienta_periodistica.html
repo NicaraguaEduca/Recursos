@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mosaico de Voces | ¡Reporteros en Acción!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Lora:ital,wght@0,400;0,700;1,400&family=Bangers&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --paper-bg: #fffdf0; 
+            --main-border: 4px solid #1e293b;
+            --neon-blue: #22d3ee;
+            --neon-yellow: #facc15;
+            --neon-purple: #a855f7;
+        }
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #f0abfc;
+            background-image: radial-gradient(#d946ef 1px, transparent 1px);
+            background-size: 25px 25px;
+            color: #1e293b;
+            font-size: 18px;
+            touch-action: manipulation;
+        }
+        
+        .font-comic { font-family: 'Bangers', cursive; letter-spacing: 1px; }
+        .font-serif { font-family: 'Lora', serif; }
+        
+        section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        .neo-card {
+            background: white;
+            border: var(--main-border);
+            box-shadow: 8px 8px 0px 0px #1e293b;
+            transition: all 0.2s;
+        }
+
+        .newspaper-container {
+            background-color: var(--paper-bg);
+            border: var(--main-border);
+            box-shadow: 15px 15px 0px 0px #1e293b;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .newspaper-container::before {
+            content: "PRIMICIA";
+            position: absolute;
+            top: 20px;
+            right: -30px;
+            background: #ef4444;
+            color: white;
+            padding: 5px 40px;
+            transform: rotate(45deg);
+            font-weight: 900;
+            font-size: 14px;
+            z-index: 10;
+        }
+
+        .draggable-item {
+            cursor: pointer;
+            border: 3px solid #1e293b;
+            box-shadow: 4px 4px 0px 0px #1e293b;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 1.1rem;
+            line-height: 1.4;
+            user-select: none;
+            touch-action: none;
+        }
+
+        /* Clase para cuando un item está seleccionado en móvil */
+        .selected-item {
+            background-color: #fef08a !important;
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0px 10px 20px rgba(0,0,0,0.2), 4px 4px 0px 0px #1e293b !important;
+            border-color: #a855f7 !important;
+        }
+
+        .draggable-item.dragging {
+            opacity: 0.8;
+            transform: scale(1.1) rotate(2deg);
+        }
+
+        .drop-zone {
+            min-height: 110px;
+            border: 3px dashed #cbd5e1;
+            background: rgba(255,255,255,0.4);
+            border-radius: 1.5rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .drop-zone.over, .drop-zone.waiting {
+            background-color: rgba(254, 240, 138, 0.6);
+            border-color: #1e293b;
+            border-style: dashed;
+            animation: pulse-border 1.5s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% { border-color: #1e293b; }
+            50% { border-color: #a855f7; transform: scale(1.01); }
+            100% { border-color: #1e293b; }
+        }
+
+        .correct { border: 4px solid #22c55e !important; box-shadow: 4px 4px 0px 0px #166534 !important; background-color: #f0fdf4 !important; }
+        .incorrect { border: 4px solid #ef4444 !important; box-shadow: 4px 4px 0px 0px #991b1b !important; background-color: #fef2f2 !important; }
+
+        .step-bubble {
+            background: #1e293b;
+            color: white;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: 900;
+            font-size: 1.2rem;
+        }
+
+        /* Estilo para el banco de datos en móvil */
+        @media (max-width: 1024px) {
+            #editor { padding-bottom: 5rem; }
+            .newspaper-container { margin-bottom: 2rem; }
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+
+    <!-- SECCIÓN 1: BIENVENIDA -->
+    <section class="bg-cyan-400">
+        <div class="absolute top-10 font-black text-slate-900 bg-white border-4 border-slate-900 px-6 py-2 -rotate-2 text-xl">
+            ZONA DE PRENSA: 6to GRADO
+        </div>
+        
+        <div class="z-10 text-center px-4">
+            <h1 class="text-7xl md:text-9xl font-comic text-white drop-shadow-[8px_8px_0px_#1e293b] leading-none mb-6">
+                MOSAICO DE<br><span class="text-yellow-300">VOCES</span>
+            </h1>
+            <div class="bg-white border-4 border-slate-900 p-8 neo-card inline-block max-w-2xl">
+                <p class="text-2xl md:text-3xl font-bold text-slate-700 leading-tight">
+                    ¡Oye, Reportero! 🎤 Antes de armar la noticia, vamos a aprender los secretos de un Reportaje Pro.
+                </p>
+            </div>
+        </div>
+
+        <a href="#academia" class="mt-12 bg-purple-500 hover:bg-purple-600 text-white border-4 border-slate-900 p-6 rounded-full shadow-[6px_6px_0px_0px_#1e293b] transition-all active:translate-y-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="white" viewBox="0 0 256 256" class="animate-bounce"><path d="M205.66,149.66l-72,72a8,8,0,0,1-11.32,0l-72-72a8,8,0,0,1,11.32-11.32L120,196.69V40a8,8,0,0,1,16,0V196.69l58.34-58.35a8,8,0,0,1,11.32,11.32Z"></path></svg>
+        </a>
+    </section>
+
+    <!-- SECCIÓN 2: ACADEMIA DE REPORTEROS -->
+    <section id="academia" class="bg-white py-20">
+        <div class="max-w-6xl w-full px-6">
+            <h2 class="text-6xl font-comic text-center text-slate-900 mb-6 tracking-tight italic">🏫 ACADEMIA DE REPORTEROS</h2>
+            <p class="text-center text-slate-500 font-black mb-16 uppercase tracking-widest text-lg">Entrenamiento Nivel 1: El Cuerpo del Reportaje</p>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- El Gancho -->
+                <div class="neo-card p-8 border-blue-500">
+                    <div class="step-bubble mb-6 bg-blue-500">1</div>
+                    <h3 class="font-black text-2xl mb-4 uppercase">🪝 El Gancho (Inicio)</h3>
+                    <p class="text-slate-700 text-lg leading-relaxed">
+                        Todo reportaje empieza con un párrafo donde cuentas **qué está pasando**. ¡Debes atrapar al lector desde la primera palabra!
+                    </p>
+                </div>
+
+                <!-- El Puente -->
+                <div class="neo-card p-8 border-purple-500">
+                    <div class="step-bubble mb-6 bg-purple-500">2</div>
+                    <h3 class="font-black text-2xl mb-4 uppercase">🌉 El Puente (Cuerpo)</h3>
+                    <p class="text-slate-700 text-lg leading-relaxed">
+                        Para unir lo que tú dices con lo que dicen los demás, usa **conectores**. 
+                        Ejemplo: <span class="bg-purple-100 px-1 font-bold">"Sin embargo..."</span>.
+                    </p>
+                </div>
+
+                <!-- La Cita -->
+                <div class="neo-card p-8 border-yellow-500">
+                    <div class="step-bubble mb-6 bg-yellow-500">3</div>
+                    <h3 class="font-black text-2xl mb-4 uppercase">💬 La Cita (Pruebas)</h3>
+                    <p class="text-slate-700 text-lg leading-relaxed">
+                        No inventes lo que dicen los vecinos. Ponlo entre **comillas (" ")**. Esto indica que lo dijo el entrevistado.
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-16 flex justify-center">
+                <a href="#editor" class="bg-yellow-400 border-4 border-slate-900 px-12 py-5 font-black uppercase text-xl shadow-[6px_6px_0px_0px_#1e293b] hover:bg-yellow-300">
+                    ¡Entendido! Ir al desafío ➔
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN 3: LABORATORIO DE REDACCIÓN -->
+    <section id="editor" class="bg-slate-50 border-t-8 border-slate-900">
+        <div class="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-10">
+            
+            <!-- BANCO DE FRAGMENTOS -->
+            <div class="lg:col-span-4 flex flex-col h-full bg-indigo-500 border-4 border-slate-900 rounded-3xl shadow-[10px_10px_0px_0px_#1e293b] overflow-hidden">
+                <div class="bg-slate-900 text-white p-6 flex justify-between items-center">
+                    <h3 class="font-comic text-2xl">BANCO DE DATOS</h3>
+                    <span class="bg-cyan-400 text-slate-900 text-xs px-3 py-1 font-black rounded border-2 border-slate-900 uppercase">Toca o Arrastra</span>
+                </div>
+                
+                <div id="fragment-bank" class="p-6 flex-1 overflow-y-auto space-y-6 custom-scroll bg-indigo-400">
+                    <div draggable="true" data-id="1" class="draggable-item p-5 bg-white rounded-2xl" data-type="periodista">
+                        <span class="inline-block bg-blue-100 text-blue-700 text-xs font-black px-2 py-1 rounded-full mb-3 uppercase">Puente / Conexión</span>
+                        Pero la municipalidad tiene otra versión. El alcalde explica que el retraso se debe a materiales que no han llegado al país.
+                    </div>
+                    
+                    <div draggable="true" data-id="2" class="draggable-item p-5 bg-white rounded-2xl italic font-serif" data-type="cita">
+                        <span class="inline-block bg-orange-100 text-orange-700 text-xs font-black px-2 py-1 rounded-full mb-3 uppercase">Cita: Vecina</span>
+                        "Estamos muy preocupados. El parque está lleno de maleza y los juegos están rotos. Los niños no tienen dónde jugar".
+                    </div>
+
+                    <div draggable="true" data-id="3" class="draggable-item p-5 bg-white rounded-2xl" data-type="periodista">
+                        <span class="inline-block bg-blue-100 text-blue-700 text-xs font-black px-2 py-1 rounded-full mb-3 uppercase">El Gancho / Inicio</span>
+                        En el barrio San José, un grupo de vecinos está alzando la voz. El parque central hoy luce triste y abandonado.
+                    </div>
+
+                    <div draggable="true" data-id="4" class="draggable-item p-5 bg-white rounded-2xl italic font-serif" data-type="cita">
+                        <span class="inline-block bg-orange-100 text-orange-700 text-xs font-black px-2 py-1 rounded-full mb-3 uppercase">Cita: Alcalde</span>
+                        "Pedimos paciencia. En cuanto lleguen las piezas nuevas, los juegos serán reparados y el parque quedará como nuevo".
+                    </div>
+                    
+                    <div draggable="true" data-id="5" class="draggable-item p-5 bg-white rounded-2xl" data-type="periodista">
+                        <span class="inline-block bg-blue-100 text-blue-700 text-xs font-black px-2 py-1 rounded-full mb-3 uppercase">Cierre del Reporte</span>
+                        Por ahora, el parque seguirá en silencio. Vecinos y autoridades esperan que la solución llegue muy pronto.
+                    </div>
+                </div>
+            </div>
+
+            <!-- PERIÓDICO INTERACTIVO -->
+            <div class="lg:col-span-8 flex flex-col h-full">
+                <div class="newspaper-container flex-1 rounded-[3rem] p-8 md:p-12 flex flex-col">
+                    <header class="border-b-[8px] border-slate-900 pb-8 mb-12 text-center">
+                        <h2 class="font-comic text-5xl md:text-7xl text-slate-900 leading-tight">
+                            PARQUE SAN JOSÉ:<br>¿QUÉ ESTÁ PASANDO?
+                        </h2>
+                    </header>
+
+                    <div class="space-y-8" id="drop-zones-container">
+                        <div id="zone-1" class="drop-zone flex items-center justify-center text-slate-400 text-sm font-black uppercase text-center p-6" data-order="3">
+                            1. Pon aquí EL GANCHO (inicio)
+                        </div>
+
+                        <div id="zone-2" class="drop-zone flex items-center justify-center text-slate-400 text-sm font-black uppercase text-center p-6" data-order="2">
+                            2. Aquí va LA CITA de los vecinos
+                        </div>
+
+                        <div id="zone-3" class="drop-zone flex items-center justify-center text-slate-400 text-sm font-black uppercase text-center p-6" data-order="1">
+                            3. Arrastra EL PUENTE del periodista
+                        </div>
+
+                        <div id="zone-4" class="drop-zone flex items-center justify-center text-slate-400 text-sm font-black uppercase text-center p-6" data-order="4">
+                            4. Pon LA CITA de la autoridad
+                        </div>
+
+                        <div id="zone-5" class="drop-zone flex items-center justify-center text-slate-400 text-sm font-black uppercase text-center p-6" data-order="5">
+                            5. El CIERRE final de la noticia
+                        </div>
+                    </div>
+
+                    <div class="mt-12 text-center">
+                        <button id="check-btn" class="bg-purple-500 text-white border-4 border-slate-900 px-12 py-6 rounded-3xl font-black uppercase text-2xl shadow-[8px_8px_0px_0px_#1e293b] hover:translate-y-[-4px] active:translate-y-[2px] transition-all w-full md:w-auto">
+                            🚀 PUBLICAR REPORTAJE
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL POP-UP -->
+    <div id="modal" class="fixed inset-0 bg-slate-900/90 backdrop-blur z-50 hidden items-center justify-center p-6">
+        <div class="bg-white border-8 border-slate-900 rounded-[3.5rem] max-w-lg w-full p-12 text-center shadow-[20px_20px_0px_0px_#a855f7]">
+            <div id="modal-icon" class="text-9xl mb-6">🗞️</div>
+            <h4 id="modal-title" class="text-5xl font-comic text-slate-900 mb-6 tracking-tight">¡ALTO AHÍ!</h4>
+            <p id="modal-text" class="text-slate-600 font-bold mb-10 text-xl">...</p>
+            <button onclick="closeModal()" class="w-full bg-cyan-400 border-4 border-slate-900 py-5 rounded-2xl font-black uppercase text-2xl shadow-[6px_6px_0px_0px_#1e293b]">¡DALE!</button>
+        </div>
+    </div>
+
+    <script>
+        const draggables = document.querySelectorAll('.draggable-item');
+        const zones = document.querySelectorAll('.drop-zone');
+        const modal = document.getElementById('modal');
+        let selectedItem = null;
+
+        // Lógica de interacción híbrida (Click/Touch y Drag)
+        draggables.forEach(item => {
+            // Drag and Drop Tradicional
+            item.addEventListener('dragstart', () => {
+                item.classList.add('dragging');
+                selectedItem = item;
+            });
+
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging');
+            });
+
+            // Lógica de "Tocar y Soltar" para móvil
+            item.addEventListener('click', (e) => {
+                // Si ya estaba seleccionado, lo deseleccionamos
+                if (selectedItem === item) {
+                    item.classList.remove('selected-item');
+                    selectedItem = null;
+                    zones.forEach(z => z.classList.remove('waiting'));
+                    return;
+                }
+
+                // Limpiar selecciones anteriores
+                draggables.forEach(d => d.classList.remove('selected-item'));
+                
+                // Seleccionar el nuevo
+                selectedItem = item;
+                item.classList.add('selected-item');
+                
+                // Hacer que las zonas de destino brillen
+                zones.forEach(z => z.classList.add('waiting'));
+
+                // Feedback visual de que se puede bajar
+                if (window.innerWidth < 1024) {
+                    // Opcional: scroll suave hacia las zonas si es necesario
+                }
+            });
+        });
+
+        zones.forEach(zone => {
+            // Drag Tradicional
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                zone.classList.add('over');
+            });
+
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('over');
+            });
+
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                handleDrop(zone);
+            });
+
+            // "Tocar para soltar"
+            zone.addEventListener('click', () => {
+                if (selectedItem) {
+                    handleDrop(zone);
+                }
+            });
+        });
+
+        function handleDrop(zone) {
+            if (!selectedItem) return;
+
+            // Si la zona ya tiene algo, lo devolvemos al banco
+            if (zone.children.length > 0) {
+                const existing = zone.children[0];
+                if (existing.classList.contains('draggable-item')) {
+                    document.getElementById('fragment-bank').appendChild(existing);
+                }
+            }
+
+            // Insertar el item
+            zone.innerHTML = '';
+            const newItem = selectedItem.cloneNode(true);
+            
+            // Re-vincular eventos al clon si es necesario o simplemente mover el original
+            // Para evitar problemas de IDs duplicados o pérdida de eventos, movemos el original:
+            zone.appendChild(selectedItem);
+            
+            // Limpiar estados
+            selectedItem.classList.remove('selected-item', 'dragging');
+            selectedItem = null;
+            zones.forEach(z => {
+                z.classList.remove('over', 'waiting');
+            });
+        }
+
+        document.getElementById('check-btn').addEventListener('click', () => {
+            let corrects = 0;
+            let filled = 0;
+            const total = zones.length;
+
+            zones.forEach(zone => {
+                if (zone.children.length > 0) {
+                    filled++;
+                    const item = zone.children[0];
+                    const expectedId = zone.getAttribute('data-order');
+                    const actualId = item.getAttribute('data-id');
+
+                    if (expectedId === actualId) {
+                        item.classList.add('correct');
+                        item.classList.remove('incorrect');
+                        corrects++;
+                    } else {
+                        item.classList.add('incorrect');
+                        item.classList.remove('correct');
+                    }
+                }
+            });
+
+            if (filled < total) {
+                showModal('¡FALTAN PIEZAS!', 'Un reportero estrella nunca deja la noticia a medias. ¡Toca un bloque y luego su lugar!', '✍️');
+            } else if (corrects === total) {
+                showModal('¡PRIMERA PLANA!', '¡Increíble! Has aprendido a usar los ganchos y los puentes. Tu reportaje es digno de un premio.', '🏆');
+            } else {
+                showModal('REVISIÓN EDITORIAL', 'El orden no es el correcto. ¡Lee la historia de nuevo y cambia los bloques de lugar!', '🕵️');
+            }
+        });
+
+        function showModal(title, text, icon) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-text').innerText = text;
+            document.getElementById('modal-icon').innerText = icon;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Permitir devolver items al banco al tocarlos dentro del periódico
+        document.getElementById('drop-zones-container').addEventListener('click', (e) => {
+            const item = e.target.closest('.draggable-item');
+            if (item && item.parentElement.classList.contains('drop-zone') && !selectedItem) {
+                document.getElementById('fragment-bank').appendChild(item);
+                item.classList.remove('correct', 'incorrect');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rutas Migratorias | Era de Hielo</title>
+    
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/topojson-client@3"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Montserrat:wght@400;600;700&display=swap');
+        
+        :root {
+            /* PALETA INSTITUCIONAL UI (Panel Izquierdo) */
+            --bg-deep: #081226;
+            --ice-blue: #38bdf8;
+            --fire-orange: #f97316;
+            
+            /* NUEVA PALETA REALISTA MAPA ANTIGUO (Panel Derecho) */
+            --vintage-ocean: #d7c9ad;  /* Color pergamino base */
+            --vintage-land: #ebdcc0;   /* Tierra un poco más clara, como papel desgastado */
+            --vintage-border: #9b8566; /* Tinta sepia para los bordes */
+            --vintage-graticule: rgba(139, 115, 85, 0.25); /* Líneas de coordenadas desvanecidas */
+        }
+
+        body { 
+            font-family: 'Montserrat', sans-serif; 
+            background: var(--bg-deep);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(56, 189, 248, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(56, 189, 248, 0.08), transparent 25%);
+            color: white; margin: 0; padding: 0; 
+            display: flex; align-items: center; justify-content: center; 
+            height: 100dvh; overflow: hidden;
+        }
+
+        .title-font { font-family: 'Cinzel', serif; }
+
+        /* Contenedor Principal */
+        .app-container {
+            width: 98vw; max-width: 1150px; height: 94dvh; 
+            background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px);
+            border-radius: 1.2rem; border: 2px solid rgba(56, 189, 248, 0.3);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 30px rgba(56, 189, 248, 0.1);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        /* HEADER */
+        .header-panel {
+            flex-shrink: 0; padding: 0.8rem 1.5rem; border-bottom: 2px solid rgba(56, 189, 248, 0.4);
+            display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(90deg, #040b16 0%, #0f172a 100%);
+        }
+
+        /* LAYOUT CENTRAL */
+        .main-content {
+            flex-grow: 1; display: flex; flex-direction: row; min-height: 0;
+            overflow: hidden; 
+        }
+
+        /* PANEL IZQUIERDO: MISIONES */
+        .mission-panel {
+            width: 35%; padding: 1.5rem; display: flex; flex-direction: column;
+            justify-content: flex-start; 
+            border-right: 2px solid rgba(56, 189, 248, 0.2);
+            overflow-y: auto; scroll-behavior: smooth; z-index: 20;
+        }
+        .mission-panel::-webkit-scrollbar { width: 5px; }
+        .mission-panel::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.5); border-radius: 10px; }
+
+        /* PANEL DERECHO: MAPA D3 Y DIBUJO */
+        .map-panel {
+            width: 65%; position: relative; display: flex; align-items: center; justify-content: center;
+            touch-action: none; background-color: var(--vintage-ocean); overflow: hidden;
+        }
+
+        /* --- ESTÉTICA DE MAPA ANTIGUO MEJORADA --- */
+        .vintage-texture {
+            position: absolute; inset: 0; z-index: 1; pointer-events: none; 
+            opacity: 0.35; mix-blend-mode: multiply;
+            /* Filtro SVG que genera textura de papel rugoso/marmoleado */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+        
+        .spotlight-overlay {
+            position: absolute; inset: 0; z-index: 15; pointer-events: none;
+            /* Sombra circular sutil: transparente al centro, ligeramente marrón oscuro a los bordes */
+            background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(90, 65, 35, 0.5) 100%);
+            box-shadow: inset 0 0 60px rgba(60, 40, 15, 0.4);
+        }
+
+        /* ESTILOS DEL MAPA D3 (Color Pergamino Antiguo) */
+        .land { fill: var(--vintage-land); stroke: var(--vintage-border); stroke-width: 1px; }
+        .graticule { fill: none; stroke: var(--vintage-graticule); stroke-width: 0.5px; stroke-dasharray: 4 4; }
+        
+        /* Zona Glacial Norte (Parece pintura blanca descolorida sobre el papel) */
+        .glacier { fill: rgba(255, 255, 255, 0.5); filter: blur(8px); pointer-events: none; mix-blend-mode: overlay; }
+
+        /* NODOS DE TRAZADO */
+        .node-start, .node-end { cursor: pointer; }
+        .node-circle { fill: rgba(15, 23, 42, 0.9); stroke: var(--ice-blue); stroke-width: 3px; }
+        .node-pulse { fill: none; stroke: var(--ice-blue); stroke-width: 2px; animation: pulse 2s infinite; }
+        .node-icon { font-size: 1.5rem; text-anchor: middle; dominant-baseline: central; pointer-events: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        
+        .node-end .node-circle { stroke: var(--fire-orange); }
+        .node-end .node-pulse { stroke: var(--fire-orange); }
+
+        @keyframes pulse { 0% { r: 15; opacity: 1; } 100% { r: 35; opacity: 0; } }
+
+        /* TRAZO DEL USUARIO */
+        .user-line {
+            fill: none; stroke: var(--ice-blue); stroke-width: 6px; 
+            stroke-linecap: round; stroke-linejoin: round;
+            opacity: 0.9; filter: drop-shadow(0 0 8px var(--ice-blue));
+            pointer-events: none;
+        }
+
+        /* RUTA HISTÓRICA ANIMADA (Fuego) */
+        .historic-route {
+            fill: none; stroke: url(#fireGradient); stroke-width: 5px;
+            stroke-dasharray: 10 8; stroke-linecap: round;
+            filter: drop-shadow(0 0 10px var(--fire-orange));
+        }
+
+        /* Tarjetas de Datos UI Institucional */
+        .data-card {
+            background: rgba(15, 23, 42, 0.8); border: 1px solid #334155;
+            padding: 1.2rem; border-radius: 1rem; margin-bottom: 1rem;
+            border-left: 4px solid var(--ice-blue);
+        }
+
+        /* INTRO MODAL */
+        .intro-modal {
+            position: absolute; inset: 0; z-index: 100;
+            background: rgba(4, 11, 22, 0.95); backdrop-filter: blur(8px);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 2rem; text-align: center;
+        }
+
+        /* RESPONSIVE CELULAR */
+        @media (max-width: 768px) {
+            .app-container { height: 100dvh; width: 100vw; border-radius: 0; border: none; }
+            .main-content { flex-direction: column; }
+            .map-panel { width: 100%; height: 50%; border-bottom: 2px solid rgba(56, 189, 248, 0.3); }
+            .mission-panel { width: 100%; height: 50%; padding: 1rem; }
+            .node-icon { font-size: 1.2rem; }
+        }
+
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="app" v-cloak class="w-full h-full flex justify-center items-center relative">
+    
+    <div v-if="showIntro" class="intro-modal animate__animated animate__fadeIn">
+        <div class="bg-slate-900 p-6 md:p-10 rounded-[2rem] max-w-2xl w-full border-2 border-sky-400 shadow-[0_0_50px_rgba(56,189,248,0.2)] relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-sky-300 via-sky-500 to-orange-500"></div>
+            
+            <div class="text-6xl mb-4 animate__animated animate__pulse animate__infinite">❄️</div>
+            <h1 class="title-font text-3xl md:text-5xl text-white mb-2 uppercase tracking-wide">Poblamiento de América</h1>
+            <p class="text-sky-300 font-bold mb-6 uppercase tracking-widest text-xs">Simulador de Rutas Migratorias</p>
+            
+            <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 mb-8 text-left">
+                <h3 class="font-bold text-white mb-2 flex items-center gap-2 text-sm">
+                    <span>🎯</span> Objetivo Histórico:
+                </h3>
+                <p class="text-slate-300 text-sm mb-4 leading-relaxed">
+                    Comprender las principales teorías sobre cómo los primeros seres humanos llegaron y poblaron el continente americano durante la última Edad de Hielo.
+                </p>
+                <div class="flex items-start gap-3 text-xs text-slate-400 bg-slate-900 p-3 rounded-lg border border-slate-700 shadow-inner">
+                    <span class="text-lg text-orange-400">✍️</span> 
+                    <span><b>MECÁNICA:</b> Usa tu dedo o el mouse para dibujar y conectar el punto de origen (Azul) con el destino (Naranja). ¡Traza el camino de nuestros ancestros!</span>
+                </div>
+            </div>
+            
+            <button @click="initMap" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-black text-lg px-8 py-4 rounded-xl shadow-[0_4px_0_#0284c7] active:translate-y-1 active:shadow-none transition-all uppercase tracking-widest">
+                INICIAR EXPEDICIÓN
+            </button>
+        </div>
+    </div>
+
+    <div class="app-container">
+        
+        <header class="header-panel">
+            <div class="flex flex-col">
+                <span class="title-font text-lg md:text-xl font-bold text-white tracking-wide">ARCHIVOS GLACIALES</span>
+                <span class="text-[9px] text-sky-400 uppercase tracking-widest font-mono">Registro Arqueológico</span>
+            </div>
+            <div class="bg-slate-800 px-3 py-1 rounded-lg border border-slate-600 font-mono text-xs text-white shrink-0">
+                Teoría: <span class="text-orange-400 font-bold">{{ currentMission + 1 }} / {{ missions.length }}</span>
+            </div>
+        </header>
+
+        <div class="main-content">
+            
+            <div class="mission-panel" ref="missionPanelRef">
+                <div v-if="!isCompleted" class="flex flex-col w-full pb-4">
+                    
+                    <div class="data-card shadow-lg shrink-0 animate__animated animate__fadeInRight">
+                        <div class="flex justify-between items-start mb-2">
+                            <p class="text-[10px] text-sky-400 uppercase font-bold tracking-widest flex items-center gap-1">
+                                <span class="text-orange-400">🔥</span> {{ missions[currentMission].theoryName }}
+                            </p>
+                        </div>
+                        <h2 class="text-base md:text-lg font-bold text-white leading-snug mb-2">
+                            {{ missions[currentMission].scenario }}
+                        </h2>
+                        
+                        <div v-if="!feedbackSuccess" class="mt-4 bg-slate-900/80 p-3 rounded-lg border border-sky-500/50 flex items-center justify-center gap-3 animate-pulse">
+                            <span class="text-2xl">👆</span>
+                            <span class="text-xs font-bold text-sky-300 uppercase tracking-widest">Dibuja la ruta en el mapa</span>
+                        </div>
+                    </div>
+
+                    <div v-if="showFeedback" class="mt-2 p-4 rounded-xl text-sm font-bold text-left animate__animated animate__zoomIn border shrink-0 relative shadow-lg bg-slate-800 border-orange-500">
+                        
+                        <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                            <span class="text-2xl">📜</span>
+                            <span class="uppercase tracking-widest text-xs text-orange-400">Ruta Histórica Confirmada</span>
+                        </div>
+                        
+                        <p class="mb-4 leading-relaxed text-sm font-medium text-slate-200">{{ missions[currentMission].feedbackText }}</p>
+                        
+                        <button @click="nextMission" class="w-full py-3 bg-orange-600/80 hover:bg-orange-500 rounded-lg text-white transition-colors uppercase tracking-widest text-xs font-black shadow-md border border-orange-400/50">
+                            {{ isLast ? 'Finalizar Expedición' : 'Siguiente Teoría ➔' }}
+                        </button>
+                    </div>
+                </div>
+
+                <div v-else class="h-full flex flex-col justify-center text-center animate__animated animate__zoomIn pb-4">
+                    <div class="text-6xl mb-4">🗿</div>
+                    <h2 class="title-font text-2xl text-white mb-2">¡Poblamiento Completado!</h2>
+                    <p class="text-slate-300 text-sm mb-6 px-2 leading-relaxed">
+                        Has trazado con éxito las rutas que nuestros ancestros recorrieron para poblar el continente americano. La historia humana es una historia de movimiento.
+                    </p>
+                    <button @click="resetApp" class="bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded-xl shadow-md uppercase tracking-widest text-sm transition-all shrink-0">
+                        Nuevo Recorrido
+                    </button>
+                </div>
+
+            </div>
+
+            <div class="map-panel" ref="mapContainer"
+                 @mousedown="startDrawing" @mousemove="draw" @mouseup="stopDrawing" @mouseleave="stopDrawing"
+                 @touchstart="startDrawing" @touchmove="draw" @touchend="stopDrawing">
+                
+                <div class="vintage-texture"></div>
+
+                <div v-if="isLoading" class="absolute flex flex-col items-center z-30">
+                    <div class="w-10 h-10 border-4 border-sky-500/30 border-t-sky-400 rounded-full animate-spin mb-3"></div>
+                </div>
+                
+                <svg ref="mapSvg" width="100%" height="100%" class="relative z-10">
+                    <defs>
+                        <linearGradient id="fireGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#f59e0b" />
+                            <stop offset="50%" stop-color="#f97316" />
+                            <stop offset="100%" stop-color="#ef4444" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+
+                <div class="spotlight-overlay"></div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+const { createApp, ref, computed, nextTick } = Vue;
+
+createApp({
+    setup() {
+        const showIntro = ref(true);
+        const isLoading = ref(true);
+        const mapContainer = ref(null);
+        const mapSvg = ref(null);
+        const missionPanelRef = ref(null); 
+        
+        const currentMission = ref(0);
+        const showFeedback = ref(false);
+        const feedbackSuccess = ref(false);
+        const isCompleted = ref(false);
+
+        // Variables de Dibujo (Tracing)
+        const isDrawing = ref(false);
+        const userPathCoords = ref([]); 
+        
+        let projection, path, svg, gMap, gDraw, gUI;
+        let startNodePixel = { x: 0, y: 0 };
+        let endNodePixel = { x: 0, y: 0 };
+
+        // MISIONES: TEORÍAS DEL POBLAMIENTO
+        const missions = [
+            {
+                theoryName: "Teoría Asiática (Estrecho de Bering)",
+                scenario: "Durante la última glaciación, el nivel del mar bajó. Traza la ruta desde Siberia (Asia) cruzando el hielo hasta Alaska (Norteamérica).",
+                startCoords: [140, 65], // Siberia
+                endCoords: [-150, 65],  // Alaska
+                startIcon: "🛖", endIcon: "🏹",
+                feedbackText: "¡Teoría de Alex Hrdlička confirmada! Los primeros humanos cruzaron a pie el 'Puente de Beringia', un corredor de tierra y hielo que conectó Asia y América hace unos 15,000 años."
+            },
+            {
+                theoryName: "Teoría de la Ruta Costera",
+                scenario: "No todos caminaron por el hielo interior. Traza la ruta en bote desde las costas de Alaska bordeando el Océano Pacífico hasta llegar a Sudamérica.",
+                startCoords: [-145, 55], // Costa Alaska
+                endCoords: [-75, -35],   // Costa Chile
+                startIcon: "🛶", endIcon: "🔥",
+                feedbackText: "¡Ruta Costera trazada! Nuevas investigaciones sugieren que muchos migrantes usaron botes para bordear la costa del Pacífico, avanzando más rápido hacia el sur donde el clima era menos extremo."
+            },
+            {
+                theoryName: "Teoría Oceánica (Ruta Transpacífica)",
+                scenario: "El antropólogo Paul Rivet sugirió otra vía. Traza la ruta de navegación desde las islas de la Polinesia (Oceanía) atravesando el Pacífico hasta Suramérica.",
+                startCoords: [-160, -20], // Polinesia
+                endCoords: [-80, -10],    // Perú
+                startIcon: "⛵", endIcon: "🌽",
+                feedbackText: "¡Teoría de Paul Rivet ilustrada! Rivet argumentó que, además de Bering, hábiles navegantes de la Polinesia y Melanesia cruzaron el Océano Pacífico en canoas para poblar Sudamérica."
+            }
+        ];
+
+        const isLast = computed(() => currentMission.value === missions.length - 1);
+
+        const initMap = () => {
+            showIntro.value = false;
+            nextTick(() => { drawBaseMap(); });
+        };
+
+        const drawBaseMap = async () => {
+            const width = mapContainer.value.clientWidth;
+            const height = mapContainer.value.clientHeight;
+
+            svg = d3.select(mapSvg.value);
+            svg.selectAll(".layer").remove(); 
+
+            projection = d3.geoMercator()
+                .scale((width) / 5) 
+                .translate([width / 2, height / 1.6])
+                .rotate([-150, 0]); 
+
+            path = d3.geoPath().projection(projection);
+
+            gMap = svg.append("g").attr("class", "layer map-layer");
+            gDraw = svg.append("g").attr("class", "layer draw-layer"); 
+            gUI = svg.append("g").attr("class", "layer ui-layer");     
+
+            // Dibujar Coordenadas Antiguas (Graticule)
+            const graticule = d3.geoGraticule();
+            gMap.append("path")
+                .datum(graticule)
+                .attr("class", "graticule")
+                .attr("d", path);
+
+            try {
+                const worldData = await d3.json("https://unpkg.com/world-atlas@2.0.2/countries-110m.json");
+                const countries = topojson.feature(worldData, worldData.objects.countries).features;
+
+                gMap.selectAll(".land")
+                    .data(countries).enter().append("path")
+                    .attr("class", "land").attr("d", path);
+
+                gMap.append("rect")
+                    .attr("x", 0).attr("y", 0)
+                    .attr("width", width).attr("height", height * 0.25)
+                    .attr("class", "glacier");
+
+                isLoading.value = false;
+                setupMissionUI();
+            } catch (error) {
+                console.error(error);
+                alert("Error cargando cartografía histórica.");
+            }
+        };
+
+        const setupMissionUI = () => {
+            gDraw.selectAll("*").remove();
+            gUI.selectAll("*").remove();
+            userPathCoords.value = [];
+            showFeedback.value = false;
+            feedbackSuccess.value = false;
+
+            const mission = missions[currentMission.value];
+            
+            const sProj = projection(mission.startCoords);
+            const eProj = projection(mission.endCoords);
+            
+            if(!sProj || !eProj) return; 
+
+            startNodePixel = { x: sProj[0], y: sProj[1] };
+            endNodePixel = { x: eProj[0], y: eProj[1] };
+
+            drawNode(startNodePixel, mission.startIcon, 'node-start');
+            drawNode(endNodePixel, mission.endIcon, 'node-end');
+        };
+
+        const drawNode = (pixelPos, icon, className) => {
+            const node = gUI.append("g")
+                .attr("class", className)
+                .attr("transform", `translate(${pixelPos.x},${pixelPos.y})`);
+
+            node.append("circle").attr("class", "node-pulse").attr("r", 15);
+            node.append("circle").attr("class", "node-circle").attr("r", 16);
+            node.append("text").attr("class", "node-icon").text(icon);
+        };
+        
+        const getPointerPos = (evt) => {
+            let e = evt.touches ? evt.changedTouches[0] : evt;
+            const rect = mapSvg.value.getBoundingClientRect();
+            return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        };
+
+        const startDrawing = (event) => {
+            if (feedbackSuccess.value || isCompleted.value) return;
+            const pos = getPointerPos(event);
+            const distToStart = Math.hypot(pos.x - startNodePixel.x, pos.y - startNodePixel.y);
+            
+            if (distToStart < 40) {
+                isDrawing.value = true;
+                userPathCoords.value = [pos];
+                gDraw.selectAll(".user-line").remove();
+                gDraw.append("polyline").attr("class", "user-line").attr("points", `${pos.x},${pos.y}`);
+            }
+        };
+
+        const draw = (event) => {
+            if (!isDrawing.value) return;
+            if (event.cancelable) event.preventDefault(); 
+            
+            const pos = getPointerPos(event);
+            userPathCoords.value.push(pos);
+
+            const pointsStr = userPathCoords.value.map(p => `${p.x},${p.y}`).join(" ");
+            gDraw.select(".user-line").attr("points", pointsStr);
+        };
+
+        const stopDrawing = (event) => {
+            if (!isDrawing.value) return;
+            isDrawing.value = false;
+            
+            const pos = getPointerPos(event);
+            const distToEnd = Math.hypot(pos.x - endNodePixel.x, pos.y - endNodePixel.y);
+            
+            if (distToEnd < 50) {
+                handleSuccess();
+            } else {
+                gDraw.select(".user-line").transition().duration(500).style("opacity", 0).remove();
+            }
+        };
+
+        const handleSuccess = () => {
+            feedbackSuccess.value = true;
+            showFeedback.value = true;
+            gDraw.selectAll(".user-line").remove();
+            
+            const mission = missions[currentMission.value];
+            const routeFeature = { type: "LineString", coordinates: [mission.startCoords, mission.endCoords] };
+
+            const routePath = gUI.insert("path", ".node-start")
+                .datum(routeFeature)
+                .attr("class", "historic-route")
+                .attr("d", path);
+
+            const totalLength = routePath.node().getTotalLength();
+            routePath
+                .attr("stroke-dasharray", totalLength + " " + totalLength)
+                .attr("stroke-dashoffset", totalLength)
+                .transition().duration(1500).ease(d3.easeCubicInOut)
+                .attr("stroke-dashoffset", 0)
+                .on("end", function() {
+                    d3.select(this).attr("stroke-dasharray", "15 10");
+                });
+            
+            try { confetti({ particleCount: 150, spread: 60, origin: { y: 0.6 } }); } catch(e){}
+
+            nextTick(() => {
+                if (missionPanelRef.value) {
+                    missionPanelRef.value.scrollTo({ top: missionPanelRef.value.scrollHeight, behavior: 'smooth' });
+                }
+            });
+        };
+
+        const nextMission = () => {
+            if (!isLast.value) {
+                currentMission.value++;
+                setupMissionUI();
+            } else {
+                isCompleted.value = true;
+                gDraw.selectAll("*").remove();
+                gUI.selectAll("*").remove();
+            }
+        };
+
+        const resetApp = () => {
+            currentMission.value = 0;
+            isCompleted.value = false;
+            setupMissionUI();
+        };
+
+        window.addEventListener('resize', () => {
+            if (!showIntro.value && !isLoading.value) drawBaseMap();
+        });
+
+        return { 
+            showIntro, isLoading, mapContainer, mapSvg, missionPanelRef,
+            currentMission, missions, showFeedback, feedbackSuccess, isCompleted, isLast,
+            initMap, nextMission, resetApp,
+            startDrawing, draw, stopDrawing
+        };
+    }
+}).mount('#app');
+</script>
+</body>
+</html>

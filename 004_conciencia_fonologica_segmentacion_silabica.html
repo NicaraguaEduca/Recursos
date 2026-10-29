@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sila-Bot Pro | Conciencia Fonológica</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --glass: rgba(255, 255, 255, 0.95);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #1f2937;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* Pantalla de Inicio / Instrucciones */
+        #intro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+
+        .intro-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.2);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        /* Panel Superior Docente */
+        .admin-panel {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .highlight-admin {
+            box-shadow: 0 0 20px gold;
+            border: 2px solid gold;
+            transform: scale(1.02);
+        }
+
+        input {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        /* Contenedor Principal */
+        .card {
+            background: var(--glass);
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            text-align: center;
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+        }
+
+        #robot {
+            font-size: 100px;
+            display: block;
+            margin: 0 auto 20px;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1));
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .word-box {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .word-display {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Botón de Escuchar */
+        .btn-listen {
+            background: white;
+            border: 2px solid var(--secondary);
+            color: var(--secondary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        button {
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+
+        button:disabled {
+            background-color: #d1d5db !important;
+            color: #9ca3af !important;
+            cursor: not-allowed;
+            box-shadow: none !important;
+        }
+
+        .btn-start { background: white; color: var(--primary); font-size: 1.5rem; margin-top: 20px; padding: 20px 40px; }
+        .btn-jump { background: var(--primary); color: white; box-shadow: 0 4px 0 #4338ca; }
+        .btn-check { background: var(--success); color: white; box-shadow: 0 4px 0 #15803d; }
+        
+        button:active { transform: translateY(4px); box-shadow: none; }
+
+        #feedback { margin-top: 25px; font-size: 1.1rem; min-height: 50px; line-height: 1.4; }
+
+        .score-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: gold;
+            padding: 10px 15px;
+            border-radius: 50%;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        #post-activity-actions {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-next { background: var(--secondary); color: white; }
+        .btn-write { background: #4b5563; color: white; }
+    </style>
+</head>
+<body>
+
+    <div id="intro-screen">
+        <div class="intro-card">
+            <h1 style="font-size: 2.5rem; margin-bottom: 10px;">🤖 Sila-Bot</h1>
+            <h2 style="color: #c7d2fe; margin-bottom: 20px;">¡Misión: Conciencia Fonológica!</h2>
+            
+            <div style="text-align: left; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px;">
+                <p><strong>🎯 Objetivo:</strong> Aprender a separar palabras en sílabas de forma rítmica.</p>
+                <p><strong>📝 Instrucciones:</strong></p>
+                <ul style="padding-left: 20px;">
+                    <li>Escucha la palabra cargada.</li>
+                    <li>Haz que el robot salte por cada sílaba que escuches.</li>
+                    <li>¡Verifica para ganar puntos!</li>
+                </ul>
+            </div>
+
+            <button class="btn-start" onclick="startGame()">¡A JUGAR!</button>
+        </div>
+    </div>
+
+    <div class="admin-panel" id="admin-bar">
+        <input type="text" id="new-word" placeholder="Nueva palabra...">
+        <button onclick="updateWord()" style="background: var(--secondary); color: white; padding: 10px 20px;">Cargar</button>
+    </div>
+
+    <div class="card">
+        <div class="score-badge" id="score">0</div>
+        <div id="robot">🤖</div>
+        
+        <div class="word-box">
+            <div class="word-display" id="word-display">ESTRELLA</div>
+            <button class="btn-listen" id="btn-listen" onclick="listenWord()" title="Escuchar palabra">🔊</button>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-jump" id="btn-jump" onclick="handleJump()">¡Saltar!</button>
+            <button class="btn-check" id="btn-check" onclick="validate()">Comprobar</button>
+        </div>
+
+        <div id="feedback">¡Presiona saltar por cada sílaba!</div>
+
+        <div id="post-activity-actions">
+            <button class="btn-next" onclick="loadPrecargada()">🎲 Nueva Palabra</button>
+            <button class="btn-write" onclick="focusInput()">✍️ Escribe tu Palabra</button>
+        </div>
+    </div>
+
+    <script>
+        let secretSyllables = ["es", "tre", "lla"];
+        let jumps = 0;
+        let score = 0;
+        const synth = window.speechSynthesis;
+        const palabrasPrecargadas = ["MARIPOSA", "SOL", "ELEFANTE", "HELADO", "ESCUELA", "ZAPATO", "VEGETAL"];
+
+        function startGame() {
+            document.getElementById('intro-screen').style.transform = "translateY(-100%)";
+            speak("¡Hola! Soy Sila-Bot. Ayúdame a saltar por las sílabas.");
+        }
+
+        function speak(text, rate = 0.9) {
+            if (synth.speaking) synth.cancel();
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'es-ES';
+            utter.rate = rate;
+            synth.speak(utter);
+        }
+
+        function listenWord() {
+            const word = document.getElementById('word-display').innerText;
+            speak(word, 0.7); 
+        }
+
+        function splitSyllables(word) {
+            const regex = /[^aeiouáéíóúü]*[aeiouáéíóúü]+(?:[^aeiouáéíóúü](?=[^aeiouáéíóúü][aeiouáéíóúü])|[^aeiouáéíóúü](?![aeiouáéíóúü])|(?=[aeiouáéíóúü]))?/gi;
+            let result = word.match(regex);
+            if (result) {
+                const lastIndex = result.length - 1;
+                const fullMatchedLength = result.join('').length;
+                if (fullMatchedLength < word.length) {
+                    result[lastIndex] += word.substring(fullMatchedLength);
+                }
+            }
+            return result || [word];
+        }
+
+        function updateWord() {
+            const input = document.getElementById('new-word');
+            if(!input.value) return;
+            const word = input.value.trim().toUpperCase();
+            
+            resetGameFlow();
+            
+            document.getElementById('word-display').innerText = word;
+            secretSyllables = splitSyllables(word);
+            jumps = 0;
+            document.getElementById('feedback').innerText = "Palabra lista. ¡Vamos!";
+            speak(word);
+            input.value = "";
+            document.getElementById('admin-bar').classList.remove('highlight-admin');
+        }
+
+        function handleJump() {
+            jumps++;
+            const robot = document.getElementById('robot');
+            robot.style.transform = "translateY(-80px)";
+            setTimeout(() => robot.style.transform = "translateY(0)", 200);
+            speak(jumps.toString());
+        }
+
+        function validate() {
+            const fb = document.getElementById('feedback');
+            const word = document.getElementById('word-display').innerText;
+            
+            if (jumps === secretSyllables.length) {
+                score++;
+                document.getElementById('score').innerText = score;
+                const result = `¡Excelente! ${word} tiene ${jumps} sílabas: ${secretSyllables.join(' - ')}.`;
+                fb.innerHTML = `<span style="color:var(--success)">${result}</span>`;
+                
+                // SE ELIMINÓ EL "TARÁN". SOLO DICE EL RESULTADO ORIGINAL.
+                speak(result);
+                
+                const robot = document.getElementById('robot');
+                robot.style.transform = "scale(1.2) rotate(360deg)";
+                setTimeout(() => robot.style.transform = "scale(1)", 500);
+
+                document.getElementById('btn-jump').disabled = true;
+                document.getElementById('btn-check').disabled = true;
+                document.getElementById('post-activity-actions').style.display = 'flex';
+
+            } else {
+                const retry = `Casi, pero ${word} no tiene ${jumps} sílabas. ¡Inténtalo de nuevo!`;
+                fb.innerHTML = `<span style="color:var(--danger)">${retry}</span>`;
+                speak(retry);
+                jumps = 0;
+            }
+        }
+
+        function resetGameFlow() {
+            document.getElementById('btn-jump').disabled = false;
+            document.getElementById('btn-check').disabled = false;
+            document.getElementById('post-activity-actions').style.display = 'none';
+            document.getElementById('feedback').innerText = "¡Presiona saltar por cada sílaba!";
+            jumps = 0;
+        }
+
+        function loadPrecargada() {
+            const randomWord = palabrasPrecargadas[Math.floor(Math.random() * palabrasPrecargadas.length)];
+            resetGameFlow();
+            document.getElementById('word-display').innerText = randomWord;
+            secretSyllables = splitSyllables(randomWord);
+            speak(randomWord);
+        }
+
+        function focusInput() {
+            const adminBar = document.getElementById('admin-bar');
+            const input = document.getElementById('new-word');
+            adminBar.classList.add('highlight-admin');
+            input.focus();
+            speak("Escribe tu palabra en la barra superior");
+        }
+    </script>
+</body>
+</html>

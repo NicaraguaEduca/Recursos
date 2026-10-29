@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Reportero en Acción 🎤</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Public+Sans:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --red: #e11d48;
+            --dark: #0f172a;
+            --blue: #3b82f6;
+            --paper: #f8fafc;
+            --green: #10b981;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Public Sans', sans-serif; }
+        h1, h2, h3, .btn-main { font-family: 'Unbounded', sans-serif; text-transform: uppercase; }
+
+        body {
+            background: #f1f5f9;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            color: var(--dark);
+        }
+
+        .navbar {
+            height: 60px;
+            background: var(--dark);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            border-bottom: 4px solid var(--red);
+            flex-shrink: 0;
+        }
+
+        .pantalla {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        h1 { font-size: clamp(1.5rem, 4vw, 3rem); text-align: center; margin-bottom: 1rem; color: var(--dark); }
+        h2 { font-size: clamp(1.2rem, 3vw, 2rem); margin-bottom: 1.5rem; text-align: center; }
+        p { font-size: clamp(0.9rem, 1.5vw, 1.2rem); line-height: 1.4; color: #475569; }
+
+        .ficha {
+            background: white;
+            border: 3px dashed var(--blue);
+            border-radius: 20px;
+            padding: 25px;
+            max-width: 800px;
+            width: 100%;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+
+        .patio-grid {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .card {
+            background: white;
+            border: 4px solid var(--dark);
+            border-radius: 25px;
+            padding: 30px;
+            width: 280px;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: 12px 12px 0 var(--blue);
+            transition: 0.3s;
+            position: relative;
+        }
+        .card:hover { transform: translateY(-5px); box-shadow: 12px 12px 0 var(--red); }
+        .card.hecho { opacity: 0.5; transform: scale(0.95); box-shadow: 5px 5px 0 #cbd5e1; border-color: #cbd5e1; }
+
+        .badge {
+            position: absolute; top: -15px; right: -15px;
+            background: var(--red); color: white; width: 45px; height: 45px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 900; border: 3px solid white;
+        }
+
+        .modal {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.9);
+            z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px;
+        }
+        .modal-content {
+            background: white; width: 100%; max-width: 900px; border-radius: 30px;
+            display: grid; grid-template-columns: 300px 1fr; border: 8px solid var(--blue);
+            max-height: 85vh; overflow: hidden;
+        }
+        .modal-side { background: var(--blue); color: white; padding: 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .modal-main { padding: 40px; overflow-y: auto; display: flex; flex-direction: column; justify-content: center; }
+
+        .cita {
+            background: #f8fafc; border: 3px solid #e2e8f0; padding: 20px;
+            border-radius: 20px; margin: 10px 0; font-size: 1.1rem; font-weight: 700;
+            cursor: pointer; transition: 0.2s;
+        }
+        .cita:hover { border-color: var(--blue); background: #eff6ff; }
+
+        .btn-main {
+            background: var(--red); color: white; padding: 15px 40px; font-size: 1.4rem;
+            border-radius: 15px; border: none; cursor: pointer; box-shadow: 0 6px 0 #9f1239;
+        }
+
+        .periodico {
+            background: white; width: 100%; max-width: 750px; padding: 40px;
+            border: 1px solid #ddd; box-shadow: 15px 15px 0 rgba(0,0,0,0.05);
+            max-height: 75vh; overflow-y: auto;
+        }
+
+        @media (max-width: 850px) {
+            body { overflow-y: auto; height: auto; }
+            .pantalla { height: auto; min-height: calc(100vh - 60px); padding: 15px; justify-content: flex-start; }
+            .patio-grid { flex-direction: column; align-items: center; }
+            .card { width: 100%; padding: 20px; }
+            .modal-content { grid-template-columns: 1fr; max-height: 95vh; }
+            .modal-side { padding: 15px; flex-direction: row; gap: 15px; }
+            .modal-side div { font-size: 3rem !important; }
+            .modal-main { padding: 20px; }
+            .btn-main { font-size: 1.1rem; width: 100%; }
+        }
+
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+        .error { animation: shake 0.4s; border-color: var(--red) !important; background: #fee2e2 !important; }
+    </style>
+</head>
+<body x-data="game()">
+
+    <nav class="navbar">
+        <div style="font-weight: 900; letter-spacing: -1px; font-size: clamp(0.8rem, 2vw, 1.2rem);">🗞️ REPORTERO PRO</div>
+        <div style="background: var(--red); padding: 5px 15px; border-radius: 20px; font-weight: 900; font-size: 0.9rem;">
+            LOGROS: <span x-text="revisados"></span>/3
+        </div>
+    </nav>
+
+    <main class="pantalla" x-show="paso === 'inicio'">
+        <div style="font-size: 4rem;">🎤</div>
+        <h1>NOTICIA DE ÚLTIMA HORA</h1>
+        
+        <div class="ficha">
+            <p><b>📚 MATERIA:</b> Lengua (El Reportaje y Citas Textuales).</p>
+            <p><b>🎯 OBJETIVO:</b> Diferenciar hechos de opiniones personales.</p>
+            <p><b>🧒 GRADO:</b> 3º a 6º de Primaria.</p>
+            <hr style="margin: 15px 0; border: none; border-top: 1px solid #e2e8f0;">
+            <p style="color: var(--blue); font-weight: 700;">¡El huerto escolar ha crecido! Entrevista a los testigos y elige solo la frase que cuente algo que realmente pasó.</p>
+        </div>
+
+        <button class="btn-main" @click="paso = 'patio'">COMENZAR MISIÓN</button>
+    </main>
+
+    <main class="pantalla" x-show="paso === 'patio'" x-transition>
+        <h2>¿A quién quieres entrevistar?</h2>
+        <div class="patio-grid">
+            <template x-for="p in personajes" :key="p.id">
+                <div class="card" :class="p.hecho && 'hecho'" @click="abrir(p)">
+                    <template x-if="p.hecho"><div class="badge">✔</div></template>
+                    <div style="font-size: 5rem;" x-text="p.emoji"></div>
+                    <h3 style="font-size: 1.2rem; margin: 10px 0;" x-text="p.nombre"></h3>
+                    <p style="font-size: 0.8rem; font-weight: 900; color: var(--blue);" x-text="p.rol"></p>
+                </div>
+            </template>
+        </div>
+
+        <button class="btn-main" x-show="revisados >= 3" 
+                style="margin-top: 30px; background: var(--green); box-shadow: 0 6px 0 #065f46;" 
+                @click="paso = 'fin'">ESCRIBIR PORTADA</button>
+    </main>
+
+    <div class="modal" x-show="modal" x-transition>
+        <div class="modal-content">
+            <div class="modal-side">
+                <div style="font-size: 8rem;" x-text="pSel?.emoji"></div>
+                <h2 style="color: white;" x-text="pSel?.nombre"></h2>
+                <p style="color: white; opacity: 0.8; font-size: 0.9rem;" x-text="pSel?.rol"></p>
+            </div>
+            <div class="modal-main">
+                <h2 style="color: var(--blue); margin-bottom: 10px; font-size: 1.3rem;">"¡Hola, periodista!"</h2>
+                <p style="margin-bottom: 20px;">Escucha bien y elige la frase que sea una <b>noticia real</b>:</p>
+                
+                <template x-for="(cita, idx) in pSel?.citas">
+                    <div class="cita" :id="'c-'+idx" @click="validar(cita, idx)" x-text="'“' + cita.t + '”'"></div>
+                </template>
+
+                <div id="error-box" style="display:none; color: var(--red); font-weight: 800; font-size: 0.95rem; margin-top: 15px; border: 3px solid var(--red); padding: 12px; border-radius: 12px; background: #fff1f2; text-align: center;">
+                    🔍 <b>¡Casi lo tienes!</b> Pero eso es solo un sentimiento o un gusto. ¡Busca una frase que cuente un <b>dato importante</b> para la noticia!
+                </div>
+                
+                <button class="btn-main" style="margin-top:15px; background: #64748b; font-size: 0.9rem; box-shadow: 0 4px 0 #334155;" @click="modal = false">REVISAR NOTAS</button>
+            </div>
+        </div>
+    </div>
+
+    <main class="pantalla" x-show="paso === 'fin'" x-transition>
+        <div class="periodico">
+            <div style="text-align: center; border-bottom: 6px double #000; padding-bottom: 15px; margin-bottom: 20px;">
+                <h1 style="margin: 0; font-size: 2rem;">EL ECO ESCOLAR</h1>
+                <p style="color: var(--red); font-weight: 900; font-size: 0.8rem;">EDICIÓN ESPECIAL: ¡NUESTRO HUERTO ES GENIAL!</p>
+            </div>
+            
+            <template x-for="c in elegidas">
+                <div style="margin-bottom: 25px; border-left: 6px solid var(--blue); padding-left: 20px;">
+                    <p style="font-size: 1.2rem; font-style: italic; color: #1e293b;">"<span x-text="c.t"></span>"</p>
+                    <p style="color: var(--red); font-weight: 900; font-size: 0.9rem; margin-top: 5px;">— <span x-text="c.autor"></span></p>
+                </div>
+            </template>
+        </div>
+        <button class="btn-main" style="margin-top: 20px;" @click="location.reload()">NUEVO REPORTAJE</button>
+    </main>
+
+    <script>
+        function game() {
+            return {
+                paso: 'inicio', modal: false, revisados: 0, pSel: null, elegidas: [],
+                personajes: [
+                    { id: 1, nombre: 'SR. MANUEL', emoji: '👨‍🌾', rol: 'EL JARDINERO', hecho: false, citas: [
+                        { t: 'Hemos usado 50 sacos de tierra y tardamos 120 horas en preparar todo.', ok: true },
+                        { t: 'Pienso que las lechugas son más felices cuando les canto por la mañana.', ok: false }
+                    ]},
+                    { id: 2, nombre: 'CARLOTA', emoji: '👧', rol: 'ALUMNA DE 5º', hecho: false, citas: [
+                        { t: 'Un equipo de 5 alumnos regará las plantas cada mañana usando un sistema de goteo.', ok: true },
+                        { t: 'Creo que el color verde de las hojas es el más bonito de todo el patio.', ok: false }
+                    ]},
+                    { id: 3, nombre: 'DIRECTORA', emoji: '👩‍🏫', rol: 'DIRECCIÓN', hecho: false, citas: [
+                        { t: 'El proyecto se pagó con la feria del libro y la cosecha se venderá en junio.', ok: true },
+                        { t: 'Espero que el huerto sea el rincón más lindo para que todos descansen.', ok: false }
+                    ]}
+                ],
+                abrir(p) {
+                    if (p.hecho) return;
+                    this.pSel = p;
+                    this.modal = true;
+                    document.getElementById('error-box').style.display = 'none';
+                },
+                validar(cita, idx) {
+                    const el = document.getElementById('c-'+idx);
+                    if (cita.ok) {
+                        confetti({ particleCount: 150, spread: 70 });
+                        this.elegidas.push({ t: cita.t, autor: this.pSel.nombre });
+                        this.pSel.hecho = true;
+                        this.revisados++;
+                        setTimeout(() => this.modal = false, 800);
+                    } else {
+                        el.classList.add('error');
+                        document.getElementById('error-box').style.display = 'block';
+                        setTimeout(() => el.classList.remove('error'), 1000);
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

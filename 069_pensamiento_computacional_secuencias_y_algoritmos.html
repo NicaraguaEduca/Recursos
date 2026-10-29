@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>El Camino del Robot - Pensamiento Computacional</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary: #0984e3;
+            --secondary: #74b9ff;
+            --accent: #fdcb6e;
+            --bg: #dfe6e9;
+            --text: #2d3436;
+            --white: #ffffff;
+            --success: #00b894;
+            --error: #d63031;
+            --subject: #6c5ce7;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        .app-container {
+            background: var(--white);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border-bottom: 8px solid var(--primary);
+            padding: 20px;
+            position: relative;
+            max-height: 98vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .badge {
+            background: var(--subject);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            display: inline-block;
+            margin: 0 auto 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        h1 { font-size: clamp(1.2rem, 5vw, 1.6rem); margin-bottom: 8px; color: var(--primary); text-align: center; }
+
+        /* --- PANTALLAS --- */
+        .screen { display: none; flex-direction: column; height: 100%; overflow-y: auto; }
+        .screen.active { display: flex; }
+
+        .objetivo-box {
+            background-color: #f0f7ff;
+            border: 2px solid var(--secondary);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            font-size: clamp(0.9rem, 3.5vw, 1.05rem);
+            line-height: 1.5;
+            color: var(--primary);
+            text-align: left;
+        }
+
+        .btn-main {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 5px 0 #0652dd;
+            margin: 10px auto;
+            display: block;
+            transition: all 0.2s;
+        }
+        .btn-main:active { transform: translateY(3px); box-shadow: none; }
+        .btn-main:disabled { background: #b2bec3; box-shadow: 0 5px 0 #636e72; cursor: not-allowed; }
+
+        /* --- TABLERO --- */
+        .grid-game {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin: 0 auto 15px;
+            background: #f1f2f6;
+            padding: 8px;
+            border-radius: 15px;
+            width: fit-content;
+        }
+
+        .cell {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            position: relative;
+            border: 1px solid #eee;
+        }
+        .cell.wall { background: #636e72; color: #fff; }
+        .cell.goal { background: #e1f7d5; border: 2px solid var(--success); }
+        .cell.start { background: #fffbe6; }
+
+        .robot {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
+        }
+
+        /* --- CONTROLES --- */
+        .controls-area {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 20px;
+            border: 1px solid #eee;
+        }
+
+        .arrows-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            max-width: 160px;
+            margin: 0 auto 15px;
+        }
+
+        .btn-arrow {
+            background: white;
+            border: 2px solid #dfe6e9;
+            border-radius: 12px;
+            font-size: 1.4rem;
+            height: 45px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #dfe6e9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-arrow:active { transform: translateY(2px); box-shadow: none; }
+
+        .sequence-list {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            min-height: 40px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            background: white;
+            padding: 5px;
+            border-radius: 10px;
+            border: 1px inset #eee;
+        }
+        .seq-step {
+            width: 28px;
+            height: 28px;
+            background: var(--secondary);
+            color: white;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+        .seq-step.executing {
+            background: var(--accent);
+            transform: scale(1.3);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        /* --- MODAL --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 380px;
+            padding: 30px;
+            border-radius: 24px;
+            text-align: center;
+            border-top: 8px solid var(--success);
+            animation: slideUp 0.4s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .modal-icon { font-size: 3.5rem; margin-bottom: 10px; }
+        .modal-title { font-size: 1.4rem; font-weight: 800; color: var(--success); margin-bottom: 10px; }
+        .modal-text { font-size: 1rem; color: #444; margin-bottom: 25px; line-height: 1.5; text-align: left; background: #f9f9f9; padding: 15px; border-radius: 15px;}
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- PANTALLA INICIAL: EL SENTIDO DEL EJERCICIO -->
+        <div id="screen-start" class="screen active">
+            <div class="badge">Pensamiento Lógico</div>
+            <h1>El Camino del Robot</h1>
+            
+            <div class="objetivo-box">
+                <strong>🎯 El Sentido de este Reto:</strong><br><br>
+                Este ejercicio desarrolla tu <strong>pensamiento computacional</strong>. Aprenderás a:
+                <br>• <strong>Anticipar:</strong> Ver el camino antes de caminar.
+                <br>• <strong>Secuenciar:</strong> Ordenar pasos lógicos para lograr un fin.
+                <br>• <strong>Programar:</strong> Crear un algoritmo que un robot pueda seguir.
+                <br><br>
+                <strong>Misión:</strong> Crea la lista de pasos para que el robot llegue a la meta 🏁 sin chocar con los muros 🧱.
+            </div>
+
+            <button class="btn-main" onclick="startApp()">¡Empezar a Programar! 🤖</button>
+        </div>
+
+        <!-- PANTALLA DE JUEGO -->
+        <div id="screen-game" class="screen">
+            <div class="badge">Nivel <span id="current-lvl">1</span> de 3</div>
+            
+            <div class="grid-game" id="grid">
+                <!-- Dinámico -->
+            </div>
+
+            <div class="controls-area">
+                <p style="font-size: 0.75rem; font-weight: bold; color: #666; text-transform: uppercase; margin-bottom: 8px; text-align: center;">Tu Algoritmo de Navegación:</p>
+                <div class="sequence-list" id="sequence"></div>
+                
+                <div class="arrows-grid">
+                    <div></div>
+                    <button class="btn-arrow" onclick="addStep('up')">⬆️</button>
+                    <div></div>
+                    <button class="btn-arrow" onclick="addStep('left')">⬅️</button>
+                    <button class="btn-arrow" onclick="addStep('down')">⬇️</button>
+                    <button class="btn-arrow" onclick="addStep('right')">➡️</button>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: center; margin-top: 5px;">
+                    <button class="btn-main" style="background:#e67e22; box-shadow: 0 5px 0 #d35400; margin:0;" onclick="clearSequence()">❌ Borrar</button>
+                    <button class="btn-main" id="btn-run" style="margin:0;" onclick="runRobot()">🚀 Ejecutar</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL DE RETROALIMENTACIÓN -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-content" id="modal-content">
+            <div class="modal-icon" id="modal-icon">🌟</div>
+            <div class="modal-title" id="modal-title">¡Excelente!</div>
+            <div class="modal-text" id="modal-text">Mensaje aquí.</div>
+            
+            <button class="btn-main" id="btn-modal-next" onclick="nextLevel()">Siguiente Reto ➡️</button>
+            <button class="btn-main" id="btn-modal-retry" onclick="retryLevel()" style="background:var(--error); box-shadow: 0 5px 0 #b33939;">Revisar Algoritmo 🔄</button>
+            <button class="btn-main" id="btn-modal-finish" onclick="resetApp()" style="display:none">Finalizar y Reiniciar 🏠</button>
+        </div>
+    </div>
+
+    <script>
+        const levels = [
+            {
+                grid: [['S', '.', '.', '.'], ['.', 'W', 'W', '.'], ['.', '.', '.', 'G']],
+                start: [0, 0], goal: [2, 3],
+                logic: "<b>¡Logrado!</b> Has creado una <b>secuencia lineal</b> efectiva. Lograste anticipar los giros necesarios para evitar los obstáculos fijos."
+            },
+            {
+                grid: [['S', '.', 'W', '.'], ['W', '.', 'W', '.'], ['G', '.', '.', '.']],
+                start: [0, 0], goal: [2, 0],
+                logic: "<b>¡Gran trabajo!</b> Este algoritmo requería una <b>ruta en zigzag</b>. Has demostrado que puedes planificar cambios de dirección precisos."
+            },
+            {
+                grid: [['.', '.', 'W', 'S'], ['.', 'W', '.', '.'], ['G', '.', '.', 'W']],
+                start: [0, 3], goal: [2, 0],
+                logic: "<b>¡Nivel Experto!</b> Has resuelto un laberinto con <b>lógica espacial avanzada</b>. Tu capacidad para depurar el camino mentalmente es excelente."
+            }
+        ];
+
+        let currentIdx = 0;
+        let sequence = [];
+        let isRunning = false;
+        let robotPos = [0, 0];
+
+        function startApp() {
+            document.getElementById('screen-start').classList.remove('active');
+            document.getElementById('screen-game').classList.add('active');
+            loadLevel();
+        }
+
+        function loadLevel() {
+            const level = levels[currentIdx];
+            robotPos = [...level.start];
+            sequence = [];
+            isRunning = false;
+            document.getElementById('current-lvl').textContent = currentIdx + 1;
+            renderGrid();
+            renderSequence();
+            hideModal();
+            document.getElementById('btn-run').disabled = false;
+        }
+
+        function renderGrid() {
+            const gridEl = document.getElementById('grid');
+            const level = levels[currentIdx];
+            gridEl.innerHTML = '';
+            gridEl.style.gridTemplateColumns = `repeat(${level.grid[0].length}, 1fr)`;
+
+            level.grid.forEach((row, rIdx) => {
+                row.forEach((cell, cIdx) => {
+                    const div = document.createElement('div');
+                    div.className = 'cell';
+                    if (cell === 'W') div.className += ' wall';
+                    if (cell === 'G') div.className += ' goal';
+                    if (cell === 'S') div.className += ' start';
+                    
+                    if (rIdx === robotPos[0] && cIdx === robotPos[1]) {
+                        div.innerHTML = '<span class="robot">🤖</span>';
+                    } else {
+                        if (cell === 'W') div.textContent = '🧱';
+                        if (cell === 'G') div.textContent = '🏁';
+                    }
+                    gridEl.appendChild(div);
+                });
+            });
+        }
+
+        function addStep(dir) {
+            if (sequence.length >= 10 || isRunning) return;
+            sequence.push(dir);
+            renderSequence();
+        }
+
+        function renderSequence() {
+            const seqEl = document.getElementById('sequence');
+            const icons = { up: '⬆️', down: '⬇️', left: '⬅️', right: '➡️' };
+            seqEl.innerHTML = '';
+            sequence.forEach((step, idx) => {
+                const div = document.createElement('div');
+                div.className = 'seq-step';
+                div.id = `step-${idx}`;
+                div.textContent = icons[step];
+                seqEl.appendChild(div);
+            });
+        }
+
+        function clearSequence() {
+            if (isRunning) return;
+            sequence = [];
+            renderSequence();
+        }
+
+        async function runRobot() {
+            if (sequence.length === 0 || isRunning) return;
+            isRunning = true;
+            document.getElementById('btn-run').disabled = true;
+            
+            const level = levels[currentIdx];
+            robotPos = [...level.start];
+
+            for (let i = 0; i < sequence.length; i++) {
+                const step = sequence[i];
+                
+                // Retroalimentación visual del paso actual
+                document.querySelectorAll('.seq-step').forEach(s => s.classList.remove('executing'));
+                document.getElementById(`step-${i}`).classList.add('executing');
+
+                if (step === 'up') robotPos[0]--;
+                if (step === 'down') robotPos[0]++;
+                if (step === 'left') robotPos[1]--;
+                if (step === 'right') robotPos[1]++;
+
+                renderGrid();
+                await new Promise(r => setTimeout(r, 600));
+
+                // Verificar colisión
+                if (robotPos[0] < 0 || robotPos[0] >= level.grid.length || 
+                    robotPos[1] < 0 || robotPos[1] >= level.grid[0].length ||
+                    level.grid[robotPos[0]][robotPos[1]] === 'W') {
+                    showModal("<b>¡Colisión detectada!</b> 💥<br><br>El robot ha chocado o se ha salido del mapa. Esto se llama un 'error de lógica'. Debes <b>depurar</b> tu algoritmo ajustando el orden de las flechas.", "¡Cuidado!", "❌", false);
+                    return;
+                }
+            }
+
+            // Verificar si llegó a la meta
+            if (robotPos[0] === level.goal[0] && robotPos[1] === level.goal[1]) {
+                showModal(level.logic, "¡Objetivo Logrado!", "🏆", true);
+            } else {
+                showModal("<b>Algoritmo Incompleto</b> 🧐<br><br>El robot se detuvo antes de llegar a la meta. Tu secuencia funciona, pero le faltan pasos para alcanzar la bandera.", "Casi llegas", "🤔", false);
+            }
+        }
+
+        function showModal(text, title, icon, success) {
+            document.getElementById('modal').style.display = 'flex';
+            document.getElementById('modal-text').innerHTML = text;
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-icon').textContent = icon;
+            
+            const btnNext = document.getElementById('btn-modal-next');
+            const btnRetry = document.getElementById('btn-modal-retry');
+            const btnFinish = document.getElementById('btn-modal-finish');
+            const content = document.getElementById('modal-content');
+
+            if (success) {
+                content.style.borderTopColor = "var(--success)";
+                document.getElementById('modal-title').style.color = "var(--success)";
+                if (currentIdx === levels.length - 1) {
+                    btnNext.style.display = 'none';
+                    btnRetry.style.display = 'none';
+                    btnFinish.style.display = 'block';
+                    celebrar();
+                } else {
+                    btnNext.style.display = 'block';
+                    btnRetry.style.display = 'none';
+                    btnFinish.style.display = 'none';
+                }
+            } else {
+                content.style.borderTopColor = "var(--error)";
+                document.getElementById('modal-title').style.color = "var(--error)";
+                btnNext.style.display = 'none';
+                btnRetry.style.display = 'block';
+                btnFinish.style.display = 'none';
+            }
+        }
+
+        function hideModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        function nextLevel() {
+            currentIdx++;
+            loadLevel();
+        }
+
+        function retryLevel() {
+            loadLevel();
+        }
+
+        function resetApp() {
+            currentIdx = 0;
+            hideModal();
+            document.getElementById('screen-game').classList.remove('active');
+            document.getElementById('screen-start').classList.add('active');
+        }
+
+        function celebrar() {
+            confetti({ particleCount: 200, spread: 70, origin: { y: 0.6 } });
+        }
+    </script>
+</body>
+</html>

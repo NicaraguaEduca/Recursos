@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Misión: El Tesoro del Abecedario 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --wood-dark: #5D4037;
+            --wood-light: #8D6E63;
+            --gold: #FFD700;
+            --gold-shadow: #B7950B;
+            --ocean-bg: radial-gradient(circle, #4facfe 0%, #0089ff 100%);
+            --info-blue: #00d4ff; /* Color celeste para mensajes de ánimo */
+        }
+
+        body {
+            font-family: 'Fredoka One', cursive;
+            background: var(--ocean-bg);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            width: 100%;
+            border-bottom: 4px solid var(--gold);
+        }
+
+        h1 { margin: 0; font-size: 2.2rem; }
+        #instruction-text { 
+            margin: 5px 0; 
+            font-size: 1.2rem; 
+            color: var(--gold); 
+            min-height: 1.5em;
+            transition: color 0.3s ease;
+        }
+
+        #game-stage {
+            flex-grow: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: 20px;
+        }
+
+        #chests-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            width: 98%;
+        }
+
+        .chest-slot {
+            width: 100px; 
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            position: relative;
+        }
+
+        .chest-svg {
+            width: 100%;
+            height: auto;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.4));
+            transition: transform 0.3s;
+            z-index: 2;
+        }
+
+        .lid { transition: transform 0.6s ease; transform-origin: bottom; }
+        .open .lid { transform: translateY(-22px) rotateX(-45deg) scaleY(0.4); opacity: 0.8; }
+
+        .chest-letter-reveal {
+            position: absolute;
+            top: 15px;
+            font-size: 2.5rem;
+            color: var(--gold);
+            text-shadow: 3px 3px 0 #000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease 0.3s;
+            z-index: 1;
+        }
+
+        .open + .chest-letter-reveal { opacity: 1; transform: translateY(-15px); }
+
+        #letters-pit {
+            background: rgba(0,0,0,0.15);
+            border-radius: 25px;
+            padding: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            width: 90%;
+            min-height: 100px;
+        }
+
+        .coin-letter {
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle at 30% 30%, #FFEB3B, #F9A825);
+            border-radius: 50%;
+            border: 4px solid #FFF176;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            color: #5D4037;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+            touch-action: none;
+            z-index: 10;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.92);
+            z-index: 3000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .guide-box {
+            background: white;
+            color: #333;
+            padding: 25px;
+            border-radius: 20px;
+            max-width: 450px;
+            text-align: left;
+            border: 5px solid var(--gold);
+            font-family: 'Fredoka One', cursive;
+        }
+
+        .guide-box h3 { color: var(--wood-dark); margin-top: 0; text-align: center; font-size: 1.5rem; }
+        .guide-box p { margin: 8px 0; font-size: 0.95rem; }
+        .guide-box b { color: #d35400; }
+
+        button {
+            padding: 15px 25px;
+            font-family: inherit;
+            background: var(--gold);
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            margin-top: 15px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 var(--gold-shadow);
+            width: 280px;
+        }
+
+        button:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--gold-shadow); }
+        .btn-challenge { background: #4CAF50; box-shadow: 0 5px 0 #2E7D32; color: white; }
+
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(8px); } }
+        .error-shake { animation: shake 0.3s ease-in-out; }
+    </style>
+</head>
+<body>
+
+<div id="welcome-modal" class="modal" style="display: flex;">
+    <div class="guide-box">
+        <h3>📜 Guía para el Docente</h3>
+        <p><b>Propósito:</b> Desarrollar el Recuerdo Activo de la secuencia alfabética.</p>
+        <p><b>Desafío:</b> El niño debe identificar el orden lógico sin pistas textuales.</p>
+        <p><b>Andamiaje:</b> Tras 3 errores, el sistema ofrece un refuerzo musical automático.</p>
+        <p><b>Recomendación:</b> Permita que el niño se equivoque; el error es parte del aprendizaje.</p>
+        <div style="text-align:center;">
+            <button onclick="startGame()">¡Comenzar Misión!</button>
+        </div>
+    </div>
+</div>
+
+<header>
+    <h1>🏴‍☠️ MISIÓN: ABECEDARIO</h1>
+    <div id="instruction-text">¡Abre todos los cofres en orden!</div>
+</header>
+
+<div id="game-stage">
+    <div id="chests-row"></div>
+    <div id="letters-pit"></div>
+</div>
+
+<div id="video-modal" class="modal">
+    <h2 style="color: var(--gold);">¡Repasemos juntos!</h2>
+    <div id="video-container"></div>
+    <button onclick="closeVideo()">¡Ya la sé! Volver al juego</button>
+</div>
+
+<div id="final-screen" class="modal">
+    <h2 style="font-size: 3rem; color: var(--gold);">¡LO LOGRASTE!</h2>
+    <div id="next-level-btn-container">
+        <button class="btn-challenge" onclick="loadLevel(2)">Prueba uno más difícil</button>
+    </div>
+    <button onclick="location.reload()">Jugar de nuevo</button>
+</div>
+
+<script>
+    let currentAlphabet = ['A', 'B', 'C', 'D', 'E'];
+    let currentStep = 0;
+    let errorCount = 0;
+    const errorMessages = [
+        "¡Sigue intentando, tú puedes!",
+        "¡Casi lo tienes! ¿Qué letra sigue?",
+        "¡Recuerda cuál letra sigue en el orden!",
+        "¡No te rindas, tú eres un gran pirata!"
+    ];
+
+    function startGame() {
+        document.getElementById('welcome-modal').style.display = 'none';
+        loadLevel(1);
+    }
+
+    function loadLevel(level) {
+        document.getElementById('final-screen').style.display = 'none';
+        const chestRow = document.getElementById('chests-row');
+        const pit = document.getElementById('letters-pit');
+        const instruction = document.getElementById('instruction-text');
+        
+        chestRow.innerHTML = '';
+        pit.innerHTML = '';
+        currentStep = 0;
+        errorCount = 0;
+        instruction.style.color = "var(--gold)";
+
+        if(level === 2) {
+            currentAlphabet = ['P', 'Q', 'R', 'S', 'T', 'U'];
+            document.getElementById('next-level-btn-container').style.display = 'none';
+            instruction.textContent = "¡Nivel Experto! Ordena de la P a la U";
+        } else {
+            currentAlphabet = ['A', 'B', 'C', 'D', 'E'];
+            instruction.textContent = "¡Abre todos los cofres en orden!";
+        }
+
+        currentAlphabet.forEach(letra => {
+            const slot = document.createElement('div');
+            slot.className = 'chest-slot';
+            slot.innerHTML = `
+                <svg class="chest-svg" viewBox="0 0 100 80">
+                    <g class="lid">
+                        <path d="M5,40 Q5,10 50,10 Q95,10 95,40 L95,45 L5,45 Z" fill="#8D6E63" stroke="#5D4037" stroke-width="3"/>
+                        <rect x="42" y="30" width="16" height="15" fill="#FFD700" rx="2" />
+                    </g>
+                    <path d="M5,45 L95,45 L90,75 Q90,78 85,78 L15,78 Q10,78 10,75 Z" fill="#5D4037" stroke="#3E2723" stroke-width="3"/>
+                    <circle cx="50" cy="55" r="5" fill="#3E2723" />
+                </svg>
+                <div class="chest-letter-reveal">${letra}</div>
+            `;
+            chestRow.appendChild(slot);
+        });
+
+        [...currentAlphabet].sort(() => Math.random() - 0.5).forEach(char => {
+            const coin = document.createElement('div');
+            coin.className = 'coin-letter';
+            coin.textContent = char;
+            coin.dataset.value = char;
+            setupDrag(coin);
+            pit.appendChild(coin);
+        });
+    }
+
+    function setupDrag(el) {
+        let startX, startY, initialX, initialY;
+        el.onpointerdown = (e) => {
+            e.preventDefault();
+            el.setPointerCapture(e.pointerId);
+            const rect = el.getBoundingClientRect();
+            initialX = rect.left; initialY = rect.top;
+            startX = e.clientX; startY = e.clientY;
+            el.style.position = 'fixed';
+            el.style.left = initialX + 'px'; el.style.top = initialY + 'px';
+            
+            el.onpointermove = (ev) => {
+                el.style.left = (initialX + (ev.clientX - startX)) + 'px';
+                el.style.top = (initialY + (ev.clientY - startY)) + 'px';
+            };
+
+            el.onpointerup = (ev) => {
+                checkDrop(el, ev.clientX, ev.clientY);
+                el.onpointermove = null; el.onpointerup = null;
+            };
+        };
+    }
+
+    function checkDrop(el, x, y) {
+        const slots = document.querySelectorAll('.chest-slot');
+        const targetSlot = slots[currentStep];
+        const rect = targetSlot.getBoundingClientRect();
+        const instruction = document.getElementById('instruction-text');
+        const isInside = (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom);
+
+        if (isInside && el.dataset.value === currentAlphabet[currentStep]) {
+            targetSlot.querySelector('.chest-svg').classList.add('open');
+            el.remove();
+            currentStep++;
+            errorCount = 0;
+            instruction.textContent = "¡Bien hecho!";
+            instruction.style.color = "white";
+            if (currentStep === currentAlphabet.length) celebrate();
+        } else {
+            if (isInside) {
+                errorCount++;
+                if(errorCount >= 3) {
+                    showVideo();
+                } else {
+                    // Muestra mensaje de error en celeste/azul
+                    instruction.textContent = errorMessages[Math.floor(Math.random() * errorMessages.length)];
+                    instruction.style.color = "var(--info-blue)";
+                    targetSlot.classList.add('error-shake');
+                    setTimeout(() => targetSlot.classList.remove('error-shake'), 400);
+                }
+            }
+            el.style.position = 'static';
+        }
+    }
+
+    function celebrate() {
+        // Confeti al instante del último acierto
+        const duration = 3 * 1000;
+        const end = Date.now() + duration;
+
+        (function frame() {
+            confetti({
+                particleCount: 5,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: ['#FFD700', '#FFFFFF', '#00d4ff']
+            });
+            confetti({
+                particleCount: 5,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 },
+                colors: ['#FFD700', '#FFFFFF', '#00d4ff']
+            });
+
+            if (Date.now() < end) {
+                requestAnimationFrame(frame);
+            }
+        }());
+
+        // Confeti central cuando aparece el modal
+        setTimeout(() => { 
+            document.getElementById('final-screen').style.display = 'flex'; 
+            confetti({
+                particleCount: 150,
+                spread: 100,
+                origin: { y: 0.6 }
+            });
+        }, 1000);
+    }
+
+    function showVideo() {
+        const videoId = "9I0f_G_I_Ww"; 
+        document.getElementById('video-container').innerHTML = 
+            `<iframe width="320" height="180" src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allowfullscreen></iframe>`;
+        document.getElementById('video-modal').style.display = 'flex';
+    }
+
+    function closeVideo() {
+        document.getElementById('video-container').innerHTML = ""; 
+        document.getElementById('video-modal').style.display = 'none';
+        errorCount = 0;
+        document.getElementById('instruction-text').textContent = "¡Inténtalo de nuevo!";
+    }
+</script>
+</body>
+</html>

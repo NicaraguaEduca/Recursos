@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Constructor de Reglas | ECO Final</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&family=Grandstander:wght@900&display=swap');
+        
+        :root {
+            --build-orange: #fb923c;
+            --build-blue: #38bdf8;
+            --build-green: #4ade80;
+            --dark: #1e293b;
+        }
+
+        body { 
+            font-family: 'Fredoka', sans-serif; 
+            background: #cbd5e1;
+            margin: 0; height: 100dvh; 
+            display: flex; align-items: center; justify-content: center; 
+            overflow: hidden;
+        }
+
+        .app-container {
+            width: 98vw; height: 96dvh; max-width: 1000px;
+            background: white; border: 4px solid var(--dark);
+            border-radius: 2rem; box-shadow: 8px 8px 0px var(--dark);
+            display: flex; flex-direction: column; overflow: hidden;
+            position: relative;
+        }
+
+        @media (min-width: 768px) {
+            .workspace { display: flex; flex-direction: row; flex: 1; min-height: 0; }
+            .materials { width: 45%; border-right: 4px solid var(--dark); }
+            .blueprint { width: 55%; }
+        }
+        @media (max-width: 767px) {
+            .workspace { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+            .materials { height: 40%; border-bottom: 4px solid var(--dark); }
+            .blueprint { height: 60%; }
+        }
+
+        .hero-font { font-family: 'Grandstander', cursive; }
+
+        .block-card {
+            background: white; border: 3px solid var(--dark);
+            border-radius: 1rem; box-shadow: 0 4px 0 var(--dark);
+            padding: 0.6rem; transition: 0.1s; cursor: pointer;
+        }
+        .block-card.selected { background: var(--build-green); opacity: 0.4; pointer-events: none; }
+
+        .rule-line {
+            background: #fff; border-left: 6px solid var(--build-blue);
+            padding: 0.6rem; margin-bottom: 0.5rem; border-radius: 0.5rem;
+            display: flex; align-items: center; gap: 0.5rem; border: 1px solid #eee;
+        }
+
+        .scroll-bg {
+            background: #fff9db; 
+            background-image: linear-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 100% 2.5rem;
+            border: 3px solid #f59e0b;
+        }
+
+        /* POPUP DE RETROALIMENTACIÓN MEJORADO */
+        .feedback-overlay {
+            position: absolute; inset: 0; z-index: 100;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center; padding: 1rem;
+        }
+
+        .feedback-card {
+            background: white; border: 5px solid var(--dark);
+            border-radius: 2rem; padding: 1.5rem; width: 100%; max-width: 400px;
+            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="app" v-cloak>
+    <div class="app-container">
+        
+        <div v-if="gameState === 'start'" class="absolute inset-0 z-50 bg-white p-6 flex flex-col items-center justify-center text-center">
+            <h1 class="hero-font text-5xl text-orange-500 mb-2 uppercase">Constructor</h1>
+            <p class="font-bold text-slate-500 mb-6 uppercase text-sm">Contenido: Convivencia Igualitaria</p>
+            <div class="bg-blue-50 border-2 border-dashed border-blue-200 p-4 rounded-2xl max-w-sm mb-6">
+                <p class="text-slate-700 font-bold text-sm leading-tight">
+                    Elige 5 bloques que promuevan la igualdad para completar tu código de aula. ¡Cuidado con los bloques trampa!
+                </p>
+            </div>
+            <button @click="initGame" class="bg-orange-500 text-white font-black text-2xl px-12 py-5 rounded-2xl border-b-4 border-orange-700 active:translate-y-1 active:border-b-0">
+                ¡COMENZAR!
+            </button>
+        </div>
+
+        <header class="bg-dark text-white p-3 flex justify-between items-center shrink-0">
+            <h2 class="hero-font text-xl">PLAN DE AULA</h2>
+            <div class="bg-orange-500 px-4 py-1 rounded-lg font-black text-sm">
+                {{ selectedRules.length }} / 5
+            </div>
+        </header>
+
+        <div v-if="gameState === 'playing'" class="workspace">
+            <div class="materials p-3 bg-slate-50 overflow-y-auto custom-scroll">
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Toca para añadir:</p>
+                <div class="grid grid-cols-1 gap-2">
+                    <div v-for="rule in randomizedRules" :key="rule.id" @click="tryAddRule(rule)"
+                         class="block-card flex items-center gap-3 animate__animated animate__fadeInUp"
+                         :class="{'selected': isSelected(rule)}">
+                        <span class="text-2xl">{{ rule.emoji }}</span>
+                        <p class="font-bold text-slate-800 text-xs md:text-sm leading-tight">{{ rule.text }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="blueprint p-4 flex flex-col min-h-0">
+                <div class="scroll-bg rounded-xl p-4 flex-grow flex flex-col min-h-0 shadow-inner">
+                    <div class="overflow-y-auto flex-grow custom-scroll pr-1">
+                        <div v-if="selectedRules.length === 0" class="h-full flex items-center justify-center text-slate-400 text-center text-xs italic">
+                            Toca bloques para construir tu código...
+                        </div>
+                        <transition-group name="list">
+                            <div v-for="(rule, index) in selectedRules" :key="rule.id" class="rule-line animate__animated animate__fadeInLeft">
+                                <span class="bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">{{ index + 1 }}</span>
+                                <p class="font-bold text-slate-800 text-xs">{{ rule.text }}</p>
+                                <button @click="removeRule(index)" class="ml-auto text-slate-300">✕</button>
+                            </div>
+                        </transition-group>
+                    </div>
+                    <button v-if="selectedRules.length === 5" @click="finishBuilding" class="mt-3 w-full bg-green-500 text-white font-black py-3 rounded-xl border-b-4 border-green-700 uppercase text-sm">
+                        ✅ FINALIZAR CÓDIGO
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="showWarning" class="feedback-overlay animate__animated animate__fadeIn">
+            <div class="feedback-card animate__animated animate__zoomIn">
+                <div class="text-6xl mb-2">💡</div>
+                <h3 class="text-2xl font-black text-red-500 mb-2 uppercase">REVISIÓN NECESARIA</h3>
+                <p class="text-slate-600 text-sm font-bold mb-4 leading-snug">
+                    Esta regla no es igualitaria porque excluye a algunos compañeros o da privilegios injustos. ¡Lee con atención!
+                </p>
+                <div class="bg-red-50 p-3 rounded-xl border-2 border-red-100 mb-6 text-xs italic font-bold text-red-700">
+                    "{{ lastWrongRule }}"
+                </div>
+                <button @click="showWarning = false" class="w-full py-4 bg-orange-500 text-white font-black rounded-xl text-lg shadow-lg border-b-4 border-orange-700 active:translate-y-1 active:border-b-0">
+                    ¡ENTENDIDO!
+                </button>
+            </div>
+        </div>
+
+        <div v-if="gameState === 'complete'" class="absolute inset-0 z-50 bg-[#7ED957] p-6 flex flex-col items-center justify-center text-center">
+            <div class="text-7xl mb-4">📜</div>
+            <h1 class="hero-font text-4xl text-dark mb-4 uppercase">¡PLAN APROBADO!</h1>
+            <p class="text-sm font-bold text-slate-800 mb-6 italic">Has creado un ambiente de respeto e igualdad.</p>
+            <button @click="resetGame" class="bg-dark text-white font-black text-xl px-10 py-4 rounded-xl shadow-xl">REINICIAR</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+const { createApp, ref } = Vue;
+
+createApp({
+    setup() {
+        const gameState = ref('start');
+        const selectedRules = ref([]);
+        const randomizedRules = ref([]);
+        const showWarning = ref(false);
+        const lastWrongRule = ref('');
+
+        const allRules = [
+            { id: 1, text: "Niños y niñas participan por igual en todo", emoji: "🤝", isCorrect: true },
+            { id: 2, text: "Escuchamos con respeto a cada compañero", emoji: "👂", isCorrect: true },
+            { id: 3, text: "Compartimos materiales sin distinción", emoji: "🎨", isCorrect: true },
+            { id: 4, text: "Limpieza repartida entre todos por igual", emoji: "🧹", isCorrect: true },
+            { id: 5, text: "Mismos turnos para hablar y jugar", emoji: "⏳", isCorrect: true },
+            { id: 6, text: "Solo los niños eligen a qué jugar", emoji: "🚫", isCorrect: false },
+            { id: 7, text: "Niñas ordenan siempre el aula sola", emoji: "🚫", isCorrect: false },
+            { id: 8, text: "Solo escuchamos a los de mejores notas", emoji: "🚫", isCorrect: false },
+            { id: 9, text: "Materiales nuevos solo para unos pocos", emoji: "🚫", isCorrect: false },
+            { id: 10, text: "No dejamos participar al que es diferente", emoji: "🚫", isCorrect: false }
+        ];
+
+        const initGame = () => {
+            selectedRules.value = [];
+            randomizedRules.value = [...allRules].sort(() => Math.random() - 0.5);
+            gameState.value = 'playing';
+        };
+
+        const tryAddRule = (rule) => {
+            if (isSelected(rule)) return;
+            if (!rule.isCorrect) {
+                lastWrongRule.value = rule.text;
+                showWarning.value = true;
+                return;
+            }
+            if (selectedRules.value.length < 5) selectedRules.value.push(rule);
+        };
+
+        const removeRule = (index) => { selectedRules.value.splice(index, 1); };
+        const isSelected = (rule) => selectedRules.value.some(r => r.id === rule.id);
+        const finishBuilding = () => {
+            confetti({ particleCount: 150, spread: 60, origin: { y: 0.8 } });
+            gameState.value = 'complete';
+        };
+        const resetGame = () => { gameState.value = 'start'; };
+
+        return { gameState, selectedRules, randomizedRules, showWarning, lastWrongRule, tryAddRule, removeRule, isSelected, finishBuilding, resetGame, initGame };
+    }
+}).mount('#app');
+</script>
+</body>
+</html>

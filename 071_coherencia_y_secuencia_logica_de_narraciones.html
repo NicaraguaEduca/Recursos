@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Estudio de Cine Pro - Coherencia Narrativa</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        
+        :root {
+            --primary: #E74C3C; 
+            --secondary: #2C3E50;
+            --accent: #F1C40F;  
+            --background: #121212; 
+            --card-bg: #FFFFFF;
+            --text: #2C3E50;
+            --success: #27AE60;
+            --subject-color: #9B59B6; 
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            color: #EEE;
+            text-align: center;
+            padding: 10px;
+            margin: 0;
+            user-select: none; 
+            -webkit-user-select: none;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .tarjeta {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 650px;
+            padding: 20px;
+            border-radius: 25px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            box-sizing: border-box;
+            border-top: 10px solid var(--primary);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            color: var(--text);
+            max-height: 98vh;
+            overflow-y: auto;
+        }
+
+        .badge-asignatura {
+            background-color: var(--subject-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: inline-block;
+            margin: 0 auto 10px auto;
+            text-transform: uppercase;
+        }
+
+        h1 { margin: 0 0 5px 0; color: var(--primary); font-size: clamp(1.2rem, 4.5vw, 1.8rem); font-weight: 800; }
+
+        /* --- PANTALLA DE INICIO --- */
+        #pantalla-inicio .icono-grande { font-size: 4rem; margin-bottom: 15px; }
+        
+        .objetivo-caja {
+            background-color: #FDF2F2;
+            border: 2px solid var(--primary);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            font-size: clamp(0.9rem, 3.5vw, 1.1rem);
+            line-height: 1.5;
+            color: #943126;
+            text-align: left;
+        }
+
+        .btn-accion {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: clamp(1rem, 4vw, 1.2rem);
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #943126;
+            font-weight: bold;
+            transition: all 0.2s;
+            width: 100%;
+            max-width: 280px;
+            margin: 10px auto;
+            text-transform: uppercase;
+            display: block;
+        }
+        .btn-accion:active { transform: translateY(4px); box-shadow: 0 2px 0 #943126; }
+        .btn-accion:disabled { background: #BDC3C7; box-shadow: 0 6px 0 #95A5A6; cursor: not-allowed; }
+
+        /* --- ÁREA DE JUEGO --- */
+        #area-juego { display: none; }
+        
+        .paso-indicador {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #7F8C8D;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .pregunta-titulo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--secondary);
+            line-height: 1.2;
+        }
+
+        .opciones-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .opcion-card {
+            background: #F8F9F9;
+            border: 3px solid #E5E8E8;
+            border-radius: 15px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 100px;
+        }
+
+        .opcion-card.selected {
+            border-color: var(--primary);
+            background-color: #FDEDEC;
+            transform: scale(1.03);
+        }
+
+        .opcion-icono { font-size: 2.2rem; margin-bottom: 8px; }
+        .opcion-label { font-size: 0.85rem; font-weight: bold; line-height: 1.2; }
+
+        /* --- PANTALLA FINAL (EL GUION) --- */
+        #pantalla-final { display: none; }
+        
+        .guion-box {
+            background: #fdfdfd;
+            border: 2px solid #ddd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: left;
+            font-family: 'Courier New', Courier, monospace;
+            color: #333;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+
+        .guion-seccion { margin-bottom: 15px; }
+        .guion-label { font-weight: bold; color: var(--primary); text-transform: uppercase; font-size: 0.8rem; display: block; margin-bottom: 3px;}
+        .guion-texto { font-size: 1rem; line-height: 1.4; display: block; }
+        .guion-texto span { background: #fff9c4; padding: 0 4px; border-radius: 3px; font-weight: bold;}
+
+    </style>
+</head>
+<body>
+
+    <!-- PANTALLA DE INICIO -->
+    <div id="pantalla-inicio" class="tarjeta">
+        <div class="badge-asignatura">Lengua y Literatura</div>
+        <div class="icono-grande">🎬</div>
+        <h1>Estudio de Cine Pro</h1>
+        
+        <div class="objetivo-caja">
+            <strong>🎯 El Desafío de la Coherencia:</strong><br><br>
+            ¡Bienvenido al set! Una buena película debe tener sentido. Tus elecciones iniciales afectarán los problemas y soluciones que aparecerán después. ¡Debes pensar como un guionista profesional!
+        </div>
+
+        <button class="btn-accion" onclick="iniciarJuego()">¡Empezar Rodaje! ✍️</button>
+    </div>
+
+    <!-- ÁREA DE JUEGO -->
+    <div id="area-juego" class="tarjeta">
+        <div class="paso-indicador" id="paso-texto">Paso 1 de 4</div>
+        <div class="pregunta-titulo" id="pregunta-texto">¿Dónde ocurre la historia?</div>
+        
+        <div class="opciones-grid" id="contenedor-opciones">
+            <!-- Dinámico -->
+        </div>
+
+        <button class="btn-accion" id="btn-siguiente" onclick="avanzar()" disabled>Siguiente Paso ➡️</button>
+    </div>
+
+    <!-- PANTALLA FINAL (EL GUION) -->
+    <div id="pantalla-final" class="tarjeta">
+        <div class="badge-asignatura">Guion Final Aprobado</div>
+        <h1>¡Gran Estreno!</h1>
+        
+        <div class="guion-box">
+            <div class="guion-seccion">
+                <span class="guion-label">🎬 Escena 1: El Ambiente</span>
+                <span class="guion-texto">La cámara se abre mostrando <span id="res-escenario">...</span>.</span>
+            </div>
+            <div class="guion-seccion">
+                <span class="guion-label">👤 Escena 2: El Protagonista</span>
+                <span class="guion-texto">Allí encontramos a <span id="res-personaje">...</span>, quien parece muy concentrado.</span>
+            </div>
+            <div class="guion-seccion">
+                <span class="guion-label">⚠️ Escena 3: El Conflicto</span>
+                <span class="guion-texto">Pero de pronto, <span id="res-problema">...</span>. ¡La situación es crítica!</span>
+            </div>
+            <div class="guion-seccion">
+                <span class="guion-label">💡 Escena 4: La Solución Lógica</span>
+                <span class="guion-texto">Rápidamente, el protagonista decide <span id="res-solucion">...</span> y logra resolver el problema.</span>
+            </div>
+        </div>
+
+        <button class="btn-accion" onclick="reiniciarJuego()">🔄 Crear Nueva Película</button>
+    </div>
+
+    <script>
+        // MOTOR DE LÓGICA RELACIONAL
+        const datosCine = {
+            escenarios: [
+                { id: "mar", label: "El Océano Profundo", icono: "🌊" },
+                { id: "espacio", label: "La Estación Espacial", icono: "🚀" },
+                { id: "selva", label: "La Selva Amazónica", icono: "🌴" },
+                { id: "castillo", label: "El Castillo Medieval", icono: "🏰" }
+            ],
+            personajes: {
+                mar: [
+                    { id: "p1", label: "Una Sirena Valiente", icono: "🧜‍♀️" },
+                    { id: "p2", label: "Un Buzo Experto", icono: "🤿" }
+                ],
+                espacio: [
+                    { id: "p3", label: "Un Robot Explorador", icono: "🤖" },
+                    { id: "p4", label: "Un Astronauta Novato", icono: "👨‍🚀" }
+                ],
+                selva: [
+                    { id: "p5", label: "Un Mono Inventor", icono: "🐒" },
+                    { id: "p6", label: "Una Exploradora", icono: "🤠" }
+                ],
+                castillo: [
+                    { id: "p7", label: "Un Caballero Real", icono: "🛡️" },
+                    { id: "p8", label: "Un Fantasma Amigable", icono: "👻" }
+                ]
+            },
+            problemas: {
+                mar: [
+                    { id: "c1", label: "una red de pesca lo atrapa", icono: "🥅" },
+                    { id: "c2", label: "se pierde en una cueva oscura", icono: "🌑" }
+                ],
+                espacio: [
+                    { id: "c3", label: "se agota el oxígeno de reserva", icono: "💨" },
+                    { id: "c4", label: "un meteorito golpea la nave", icono: "☄️" }
+                ],
+                selva: [
+                    { id: "c5", label: "un jaguar hambriento aparece", icono: "🐆" },
+                    { id: "c6", label: "el puente de madera se rompe", icono: "🌉" }
+                ],
+                castillo: [
+                    { id: "c7", label: "el dragón bloquea la salida", icono: "🐉" },
+                    { id: "c8", label: "la corona real desaparece", icono: "👑" }
+                ]
+            },
+            soluciones: {
+                c1: [{ label: "usar un coral afilado para cortar", icono: "✂️" }, { label: "pedir ayuda a un delfín", icono: "🐬" }],
+                c2: [{ label: "encender una medusa brillante", icono: "💡" }, { label: "seguir el rastro de burbujas", icono: "🫧" }],
+                c3: [{ label: "reparar la manguera con cinta", icono: "🩹" }, { label: "activar el modo de ahorro", icono: "🔋" }],
+                c4: [{ label: "encender los motores de escape", icono: "🔥" }, { label: "activar el escudo láser", icono: "🛡️" }],
+                c5: [{ label: "distraerlo con frutas dulces", icono: "🍎" }, { label: "subirse a la rama más alta", icono: "🌳" }],
+                c6: [{ label: "usar una liana para columpiarse", icono: "🌿" }, { label: "construir una balsa de troncos", icono: "🪵" }],
+                c7: [{ label: "ofrecerle un pastel de cristal", icono: "🍰" }, { label: "contarle un chiste gracioso", icono: "🤣" }],
+                c8: [{ label: "seguir las huellas del ladrón", icono: "👣" }, { label: "usar un imán mágico", icono: "🧲" }]
+            }
+        };
+
+        let pasoActual = 0;
+        let elecciones = {};
+        let seleccionActual = null;
+
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const areaJuego = document.getElementById('area-juego');
+        const pantallaFinal = document.getElementById('pantalla-final');
+        const contenedorOpciones = document.getElementById('contenedor-opciones');
+        const btnSiguiente = document.getElementById('btn-siguiente');
+        const pasoTexto = document.getElementById('paso-texto');
+        const preguntaTexto = document.getElementById('pregunta-texto');
+
+        function iniciarJuego() {
+            pantallaInicio.style.display = 'none';
+            pantallaFinal.style.display = 'none';
+            areaJuego.style.display = 'flex';
+            pasoActual = 0;
+            elecciones = {};
+            cargarPaso();
+        }
+
+        function cargarPaso() {
+            btnSiguiente.disabled = true;
+            seleccionActual = null;
+            contenedorOpciones.innerHTML = '';
+            
+            let opciones = [];
+            let titulo = "";
+
+            switch(pasoActual) {
+                case 0:
+                    titulo = "¿En qué ambiente filmamos?";
+                    opciones = datosCine.escenarios;
+                    break;
+                case 1:
+                    titulo = "¿Quién será el protagonista?";
+                    opciones = datosCine.personajes[elecciones.escenario.id];
+                    break;
+                case 2:
+                    titulo = "¡Cuidado! ¿Qué problema surge?";
+                    opciones = datosCine.problemas[elecciones.escenario.id];
+                    break;
+                case 3:
+                    titulo = "¿Cómo lo resuelve con lógica?";
+                    opciones = datosCine.soluciones[elecciones.problema.id];
+                    break;
+            }
+
+            pasoTexto.textContent = `Paso ${pasoActual + 1} de 4`;
+            preguntaTexto.textContent = titulo;
+
+            opciones.forEach(opc => {
+                const card = document.createElement('div');
+                card.classList.add('opcion-card');
+                card.innerHTML = `
+                    <div class="opcion-icono">${opc.icono}</div>
+                    <div class="opcion-label">${opc.label}</div>
+                `;
+                card.onclick = () => {
+                    document.querySelectorAll('.opcion-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    seleccionActual = opc;
+                    btnSiguiente.disabled = false;
+                };
+                contenedorOpciones.appendChild(card);
+            });
+        }
+
+        function avanzar() {
+            const claves = ["escenario", "personaje", "problema", "solucion"];
+            elecciones[claves[pasoActual]] = seleccionActual;
+
+            if (pasoActual < 3) {
+                pasoActual++;
+                cargarPaso();
+            } else {
+                mostrarResultado();
+            }
+        }
+
+        function mostrarResultado() {
+            areaJuego.style.display = 'none';
+            pantallaFinal.style.display = 'flex';
+            
+            document.getElementById('res-escenario').textContent = elecciones.escenario.label;
+            document.getElementById('res-personaje').textContent = elecciones.personaje.label;
+            document.getElementById('res-problema').textContent = elecciones.problema.label;
+            document.getElementById('res-solucion').textContent = elecciones.solucion.label;
+            
+            celebrar();
+        }
+
+        function reiniciarJuego() { iniciarJuego(); }
+
+        function celebrar() {
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#E74C3C', '#F1C40F', '#9B59B6'] });
+        }
+    </script>
+</body>
+</html>

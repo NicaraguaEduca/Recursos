@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Semáforo de los Puntos - Niveles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            /* Colores ajustados para el tema nocturno */
+            --bg-color: #2c3e50;
+            --text-panel: #ecf0f1;
+            --slot-bg: #bdc3c7;
+            --correct-green: #2ecc71;
+            --correct-yellow: #f1c40f;
+            --correct-red: #e74c3c;
+            --btn-next: #3498db;
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden; /* Evitar scroll horizontal por el fondo */
+            background-color: var(--bg-color);
+        }
+
+        /* --- FONDO CIUDAD SVG --- */
+        .city-background {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1; /* Se queda atrás de todo */
+            pointer-events: none;
+        }
+
+        /* --- HEADER Y SEMÁFORO HORIZONTAL --- */
+        header {
+            width: 100%;
+            /* Fondo semi-transparente para que se lea sobre la ciudad */
+            background: rgba(44, 62, 80, 0.8);
+            backdrop-filter: blur(5px);
+            padding: 15px 0;
+            display: flex; flex-direction: column; align-items: center;
+            border-bottom: 4px solid #34495e;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        h1 { margin: 0; font-size: 2rem; color: white; margin-bottom: 15px; text-shadow: 2px 2px 0 #000; }
+
+        .traffic-light-container {
+            background: #222;
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: flex; gap: 20px;
+            border: 4px solid #555;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }
+
+        .light {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: #444; 
+            box-shadow: inset 0 0 10px black;
+            transition: all 0.4s;
+            border: 2px solid #333;
+        }
+
+        .light.red.active { background: #ff4757; box-shadow: 0 0 15px #ff4757, inset 0 0 5px white; }
+        .light.yellow.active { background: #ffa502; box-shadow: 0 0 15px #ffa502, inset 0 0 5px white; }
+        .light.green.active { background: #2ed573; box-shadow: 0 0 15px #2ed573, inset 0 0 5px white; }
+
+        /* --- AREA DE TEXTO --- */
+        .game-area {
+            width: 90%; max-width: 800px;
+            position: relative;
+            display: flex; flex-direction: column; align-items: center;
+            padding-bottom: 50px;
+        }
+
+        .level-indicator {
+            color: #bdc3c7; font-weight: bold; margin-bottom: 10px; letter-spacing: 2px;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        .text-sheet {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            font-size: 1.4rem; line-height: 2.2;
+            position: relative;
+            background-image: linear-gradient(#eee 1px, transparent 1px);
+            background-size: 100% 2.2em; 
+            border-top: 10px solid #ecf0f1;
+            width: 100%; box-sizing: border-box;
+            transition: transform 0.3s;
+        }
+
+        .text-sentence { display: inline; transition: all 0.5s; }
+        
+        .break-line { 
+            display: block; 
+            margin-top: 20px; 
+            padding-top: 10px;
+            border-top: 2px dashed #bdc3c7; 
+        }
+
+        .point-slot {
+            display: inline-block;
+            width: 30px; height: 30px;
+            background: var(--slot-bg);
+            border-radius: 50%;
+            vertical-align: middle;
+            margin: 0 6px;
+            cursor: pointer;
+            border: 3px dashed #7f8c8d;
+            text-align: center; line-height: 30px;
+            transition: transform 0.2s, background 0.3s;
+            position: relative; top: -3px;
+        }
+        .point-slot:hover { transform: scale(1.15); border-color: #333; background: #dfe6e9; }
+        .point-slot.filled { border: none; color: white; font-weight: bold; pointer-events: none; }
+
+        /* --- BOTÓN SIGUIENTE NIVEL --- */
+        .next-level-btn {
+            margin-top: 20px;
+            padding: 15px 40px;
+            background: var(--btn-next);
+            color: white; border: none;
+            border-radius: 50px;
+            font-size: 1.5rem; font-weight: bold; font-family: 'Fredoka', sans-serif;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #2980b9;
+            display: none;
+            animation: bounce 1s infinite;
+        }
+        .next-level-btn:hover { background: #5dade2; }
+        .next-level-btn:active { transform: translateY(6px); box-shadow: none; }
+
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        /* --- MENSAJE FINAL --- */
+        .final-victory-msg {
+            display: none; 
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(44, 62, 80, 0.95);
+            padding: 40px 60px;
+            border-radius: 30px;
+            z-index: 2000;
+            text-align: center;
+            border: 5px solid #fff;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            animation: popIn 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+        }
+
+        .final-text {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 4rem; 
+            color: var(--correct-yellow); 
+            margin: 0;
+            font-weight: 700;
+            text-shadow: 4px 4px 0 #d35400; 
+            letter-spacing: 2px;
+        }
+        
+        .final-subtext {
+            color: white; font-size: 1.5rem; margin-top: 10px;
+        }
+
+        .restart-btn {
+            background: #16a085;
+            color: white; border: none;
+            padding: 10px 30px; font-size: 1.2rem;
+            border-radius: 50px;
+            font-family: 'Fredoka', sans-serif;
+            cursor: pointer; margin-top: 25px; font-weight: bold;
+            box-shadow: 0 5px 0 #0e6655;
+            transition: transform 0.1s;
+        }
+        .restart-btn:active { transform: translateY(5px); box-shadow: none; }
+
+        /* --- MODAL POPUP --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 100;
+            display: none; justify-content: center; align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background: white; width: 90%; max-width: 450px;
+            padding: 25px; border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 5px solid #34495e;
+            animation: popInSimple 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        }
+        @keyframes popInSimple { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        @keyframes popIn { 
+            from { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 
+            to { transform: translate(-50%, -50%) scale(1); opacity: 1; } 
+        }
+
+        .modal-title { margin-top: 0; color: #2c3e50; font-size: 1.5rem; margin-bottom: 20px; }
+
+        .tools-grid { display: flex; flex-direction: column; gap: 15px; }
+
+        .tool-btn {
+            display: flex; align-items: center; gap: 15px;
+            padding: 15px 20px;
+            border: none; border-radius: 15px;
+            cursor: pointer;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.1rem; font-weight: bold;
+            text-align: left;
+            background: #f1f2f6;
+            transition: transform 0.1s, background 0.2s, opacity 0.3s;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+        }
+        
+        .tool-btn:active { transform: translateY(4px); box-shadow: none; }
+        .tool-btn:hover { background: #dfe4ea; }
+
+        .tool-btn.locked { opacity: 0.4; pointer-events: none; filter: grayscale(0.8); }
+
+        .tool-btn.highlight {
+            border: 3px solid #2ecc71;
+            background: #e8f8f5;
+            box-shadow: 0 0 15px rgba(46, 204, 113, 0.5);
+            animation: pulse-green 1.5s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+
+        .dot-icon { width: 25px; height: 25px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.1); flex-shrink: 0;}
+        .bg-green { background: var(--correct-green); }
+        .bg-yellow { background: var(--correct-yellow); }
+        .bg-red { background: var(--correct-red); }
+
+        .float-msg {
+            position: absolute; background: #2c3e50; color: white;
+            padding: 5px 15px; border-radius: 20px; font-size: 1rem;
+            pointer-events: none; animation: floatUp 1s forwards;
+            z-index: 10;
+        }
+        @keyframes floatUp { 
+            0% { opacity:1; transform: translateY(0); } 
+            100% { opacity:0; transform: translateY(-30px); } 
+        }
+
+        .error-icon { font-size: 3rem; margin-bottom: 10px; display: block; }
+        .error-btn { background: #e74c3c; color: white; border:none; padding: 10px 25px; border-radius: 50px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 15px; box-shadow: 0 4px 0 #c0392b;}
+        .error-btn:active { transform: translateY(4px); box-shadow: none; }
+
+    </style>
+</head>
+<body>
+
+    <svg class="city-background" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+        <defs>
+            <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" style="stop-color:#0b1d2e"/>
+                <stop offset="100%" style="stop-color:#2c3e50"/>
+            </linearGradient>
+            <linearGradient id="roadGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" style="stop-color:#555"/>
+                <stop offset="100%" style="stop-color:#222"/>
+            </linearGradient>
+        </defs>
+        
+        <rect width="800" height="600" fill="url(#skyGrad)"/>
+
+        <circle cx="100" cy="50" r="1.5" fill="white" opacity="0.8"/>
+        <circle cx="200" cy="100" r="1" fill="white" opacity="0.6"/>
+        <circle cx="500" cy="40" r="1.5" fill="white" opacity="0.7"/>
+        <circle cx="700" cy="80" r="1" fill="white" opacity="0.5"/>
+        <circle cx="50" cy="200" r="1" fill="white" opacity="0.4"/>
+
+        <path d="M0 450 L50 450 L50 350 L100 350 L100 450 L150 450 L150 380 L200 380 L200 450 L800 450 L800 600 L0 600 Z" fill="#1a252f"/>
+        
+        <path d="M50 450 L80 450 L80 250 L150 250 L150 450 L200 450 L200 300 L280 300 L280 450 L350 450 L350 200 L420 200 L420 450 L500 450 L500 320 L580 320 L580 450 L650 450 L650 280 L720 280 L720 450 L800 450 L800 600 L0 600 Z" fill="#34495e"/>
+
+        <rect x="90" y="270" width="10" height="10" fill="#f1c40f" opacity="0.6"/>
+        <rect x="120" y="300" width="10" height="10" fill="#f1c40f" opacity="0.6"/>
+        <rect x="370" y="220" width="10" height="10" fill="#f1c40f" opacity="0.6"/>
+        <rect x="370" y="350" width="10" height="10" fill="#f1c40f" opacity="0.6"/>
+        <rect x="520" y="340" width="10" height="10" fill="#f1c40f" opacity="0.6"/>
+
+        <rect x="0" y="450" width="800" height="150" fill="url(#roadGrad)"/>
+        <line x1="0" y1="525" x2="800" y2="525" stroke="#ecf0f1" stroke-width="4" stroke-dasharray="30 30" opacity="0.5"/>
+    </svg>
+
+    <header>
+        <h1>🚦 El Semáforo de los Puntos</h1>
+        <div class="traffic-light-container">
+            <div class="light red active" id="light-red"></div>
+            <div class="light yellow" id="light-yellow"></div>
+            <div class="light green" id="light-green"></div>
+        </div>
+        <p style="color:white; margin-top:10px; font-size: 1.1rem;">Completa el texto para poner el semáforo en verde.</p>
+    </header>
+
+    <div class="game-area">
+        <div class="level-indicator" id="level-indicator">NIVEL 1</div>
+        
+        <div class="text-sheet" id="text-sheet">
+            <span class="text-sentence">El guardabarranco volaba muy feliz</span>
+            <div class="point-slot" data-type="seguido" id="slot-1" onclick="openToolSelector(1)"></div>
+            
+            <span class="text-sentence" id="sentence-2">Buscaba semillas para comer en el campo</span>
+            <div class="point-slot" data-type="aparte" id="slot-2" onclick="openToolSelector(2)"></div>
+
+            <span class="text-sentence" id="sentence-3">De pronto, vio un árbol gigante y descansó</span>
+            <div class="point-slot" data-type="final" id="slot-3" onclick="openToolSelector(3)"></div>
+        </div>
+
+        <button class="next-level-btn" id="next-level-btn" onclick="startLevel2()">¡Siguiente Nivel! ➡️</button>
+    </div>
+
+    <div class="modal-overlay" id="tool-modal" onclick="closeModal(event)">
+        <div class="modal-content">
+            <h2 class="modal-title" id="tool-modal-title">¿Qué signo va aquí?</h2>
+            <div class="tools-grid">
+                <button class="tool-btn" id="btn-tool-seguido" onclick="selectTool('seguido')">
+                    <div class="dot-icon bg-green"></div>
+                    <div>
+                        <strong>Punto y Seguido</strong><br>
+                        <span style="font-size:0.8rem; color:#555">Sigue en la misma línea</span>
+                    </div>
+                </button>
+                <button class="tool-btn" id="btn-tool-aparte" onclick="selectTool('aparte')">
+                    <div class="dot-icon bg-yellow"></div>
+                    <div>
+                        <strong>Punto y Aparte</strong><br>
+                        <span style="font-size:0.8rem; color:#555">Cambia de párrafo (abajo)</span>
+                    </div>
+                </button>
+                <button class="tool-btn" id="btn-tool-final" onclick="selectTool('final')">
+                    <div class="dot-icon bg-red"></div>
+                    <div>
+                        <strong>Punto Final</strong><br>
+                        <span style="font-size:0.8rem; color:#555">Termina el texto</span>
+                    </div>
+                </button>
+            </div>
+            <div id="btn-cancel" style="margin-top:20px; font-size:0.9rem; color:#95a5a6; cursor:pointer;" onclick="document.getElementById('tool-modal').style.display='none'">Cancelar</div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="error-modal">
+        <div class="modal-content" style="border-color: #e74c3c;">
+            <span class="error-icon">🤔</span>
+            <h2 class="modal-title" style="color: #e74c3c;">¡Piénsalo un poco más!</h2>
+            <p style="font-size: 1.1rem; color: #555; line-height: 1.5;" id="error-text">Explicación del error...</p>
+            <button class="error-btn" onclick="retryWithHint()">Intentar de nuevo</button>
+        </div>
+    </div>
+
+    <div class="final-victory-msg" id="final-msg">
+        <h1 class="final-text">¡MUY BIEN HECHO!</h1>
+        <div class="final-subtext">Has dominado los puntos 🌟</div>
+        <button class="restart-btn" onclick="resetGame()">🔄 Jugar de Nuevo</button>
+    </div>
+
+<script>
+    // Variables de estado
+    let activeSlotId = null;
+    let currentLevel = 1;
+    let progress = { 1: false, 2: false, 3: false }; 
+
+    // Referencias DOM
+    const lRed = document.getElementById('light-red');
+    const lYellow = document.getElementById('light-yellow');
+    const lGreen = document.getElementById('light-green');
+    const modal = document.getElementById('tool-modal');
+    const errorModal = document.getElementById('error-modal');
+    const btnNext = document.getElementById('next-level-btn');
+    const sheet = document.getElementById('text-sheet');
+    const levelInd = document.getElementById('level-indicator');
+    const finalMsg = document.getElementById('final-msg');
+
+    function openToolSelector(slotId, isRetry = false) {
+        if(progress[slotId] && !isRetry) return; 
+        
+        activeSlotId = slotId;
+        modal.style.display = 'flex';
+
+        if(!isRetry) {
+            resetToolButtons();
+        }
+    }
+
+    function resetToolButtons() {
+        const buttons = document.querySelectorAll('.tool-btn');
+        buttons.forEach(btn => {
+            btn.classList.remove('locked', 'highlight');
+        });
+        document.getElementById('tool-modal-title').innerText = "¿Qué signo va aquí?";
+        document.getElementById('btn-cancel').style.display = 'block';
+    }
+
+    function selectTool(toolType) {
+        if (activeSlotId === null) return;
+        
+        const slot = document.getElementById(`slot-${activeSlotId}`);
+        const correctType = slot.dataset.type;
+
+        if (toolType === correctType) {
+            modal.style.display = 'none';
+            handleSuccess(slot, activeSlotId, correctType);
+            activeSlotId = null;
+        } else {
+            modal.style.display = 'none';
+            handleErrorLogic(toolType, correctType);
+        }
+    }
+
+    function closeModal(event) {
+        if(event.target === modal) {
+            modal.style.display = 'none';
+            activeSlotId = null;
+        }
+    }
+
+    function handleSuccess(slot, id, type) {
+        progress[id] = true;
+        slot.classList.add('filled');
+        
+        if (type === 'seguido') {
+            slot.style.background = 'var(--correct-green)';
+            slot.innerHTML = '.';
+            showFeedback(slot, "¡Sigue la idea! 👍");
+        } 
+        else if (type === 'aparte') {
+            slot.style.background = 'var(--correct-yellow)';
+            slot.innerHTML = '.';
+            const nextId = parseInt(id) + 1;
+            const nextSentence = document.getElementById(`sentence-${nextId}`);
+            if(nextSentence) nextSentence.classList.add('break-line');
+            showFeedback(slot, "¡Nuevo párrafo! 📉");
+        } 
+        else if (type === 'final') {
+            slot.style.background = 'var(--correct-red)';
+            slot.innerHTML = '.';
+            showFeedback(slot, "¡Fin! 🛑");
+        }
+
+        updateTrafficLight();
+    }
+
+    function handleErrorLogic(selected, correct) {
+        const errorText = document.getElementById('error-text');
+        let msg = "";
+
+        if (selected === 'final') {
+            msg = "Elegiste <strong>Punto Final</strong>, pero el texto todavía no termina. ¡Hay más oraciones después!";
+        } else if (selected === 'aparte') {
+            if (correct === 'seguido') msg = "Elegiste <strong>Punto y Aparte</strong>, pero la siguiente oración sigue hablando de lo mismo en la misma línea.";
+            else msg = "No necesitamos cambiar de párrafo aquí.";
+        } else if (selected === 'seguido') {
+            if (correct === 'aparte') msg = "Elegiste <strong>Punto y Seguido</strong>, pero aquí terminamos un tema y empezamos otro abajo.";
+            else if (correct === 'final') msg = "El texto ya no continúa. Necesitamos cerrarlo por completo.";
+        }
+
+        errorText.innerHTML = msg;
+        errorModal.style.display = 'flex';
+    }
+
+    function retryWithHint() {
+        errorModal.style.display = 'none'; 
+        
+        openToolSelector(activeSlotId, true);
+
+        const slot = document.getElementById(`slot-${activeSlotId}`);
+        const correctType = slot.dataset.type;
+
+        const types = ['seguido', 'aparte', 'final'];
+        
+        types.forEach(type => {
+            const btn = document.getElementById(`btn-tool-${type}`);
+            if (type === correctType) {
+                btn.classList.add('highlight'); 
+                btn.classList.remove('locked');
+            } else {
+                btn.classList.add('locked'); 
+                btn.classList.remove('highlight');
+            }
+        });
+
+        document.getElementById('tool-modal-title').innerText = "¡Aquí tienes una pista!";
+        document.getElementById('btn-cancel').style.display = 'none'; 
+    }
+
+
+    function showFeedback(element, text) {
+        const tag = document.createElement('div');
+        tag.className = 'float-msg';
+        tag.innerText = text;
+        tag.style.left = (element.offsetLeft - 40) + 'px';
+        tag.style.top = (element.offsetTop - 50) + 'px';
+        sheet.appendChild(tag);
+        setTimeout(() => tag.remove(), 1000);
+    }
+
+    function updateTrafficLight() {
+        const allCorrect = Object.values(progress).every(v => v === true);
+        const someCorrect = Object.values(progress).some(v => v === true);
+
+        if (allCorrect) {
+            lRed.classList.remove('active');
+            lYellow.classList.remove('active');
+            lGreen.classList.add('active');
+            
+            setTimeout(() => {
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            }, 300);
+
+            if(currentLevel === 1) {
+                btnNext.style.display = 'block';
+            } 
+            else if (currentLevel === 2) {
+                setTimeout(() => {
+                    finalMsg.style.display = 'block'; 
+                    const duration = 3000;
+                    const end = Date.now() + duration;
+
+                    (function frame() {
+                        confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 } });
+                        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 } });
+                        if (Date.now() < end) requestAnimationFrame(frame);
+                    }());
+                }, 800);
+            }
+        } 
+        else if (someCorrect) {
+            lRed.classList.remove('active');
+            lYellow.classList.add('active');
+            lGreen.classList.remove('active');
+        } else {
+            lRed.classList.add('active');
+            lYellow.classList.remove('active');
+            lGreen.classList.remove('active');
+        }
+    }
+
+    function startLevel2() {
+        currentLevel = 2;
+        btnNext.style.display = 'none'; 
+        lRed.classList.add('active');
+        lGreen.classList.remove('active');
+        lYellow.classList.remove('active');
+        progress = { 4: false, 5: false, 6: false, 7: false, 8: false, 9: false };
+        document.getElementById('level-indicator').innerText = "NIVEL 2: EL RETO MAYOR";
+        document.getElementById('level-indicator').style.color = "#e67e22";
+
+        sheet.style.opacity = 0; 
+        setTimeout(() => {
+            sheet.innerHTML = `
+                <span class="text-sentence">El volcán Masaya es impresionante</span>
+                <div class="point-slot" data-type="seguido" id="slot-4" onclick="openToolSelector(4)"></div>
+                
+                <span class="text-sentence" id="sentence-5">Su cráter Santiago siempre humea</span>
+                <div class="point-slot" data-type="aparte" id="slot-5" onclick="openToolSelector(5)"></div>
+
+                <span class="text-sentence" id="sentence-6">Muchos turistas lo visitan de noche</span>
+                <div class="point-slot" data-type="seguido" id="slot-6" onclick="openToolSelector(6)"></div>
+
+                <span class="text-sentence" id="sentence-7">Se puede ver la lava roja brillando</span>
+                <div class="point-slot" data-type="seguido" id="slot-7" onclick="openToolSelector(7)"></div>
+
+                <span class="text-sentence" id="sentence-8">Los pericos chocoyos viven en sus muros</span>
+                <div class="point-slot" data-type="aparte" id="slot-8" onclick="openToolSelector(8)"></div>
+
+                <span class="text-sentence" id="sentence-9">Es un espectáculo único en el mundo</span>
+                <div class="point-slot" data-type="final" id="slot-9" onclick="openToolSelector(9)"></div>
+            `;
+            sheet.style.opacity = 1;
+        }, 300);
+    }
+
+    function resetGame() {
+        finalMsg.style.display = 'none';
+        currentLevel = 1;
+        progress = { 1: false, 2: false, 3: false };
+        activeSlotId = null;
+
+        lRed.classList.add('active');
+        lYellow.classList.remove('active');
+        lGreen.classList.remove('active');
+
+        levelInd.innerText = "NIVEL 1";
+        levelInd.style.color = "#bdc3c7";
+
+        sheet.style.opacity = 0;
+        setTimeout(() => {
+            sheet.innerHTML = `
+                <span class="text-sentence">El guardabarranco volaba muy feliz</span>
+                <div class="point-slot" data-type="seguido" id="slot-1" onclick="openToolSelector(1)"></div>
+                
+                <span class="text-sentence" id="sentence-2">Buscaba semillas para comer en el campo</span>
+                <div class="point-slot" data-type="aparte" id="slot-2" onclick="openToolSelector(2)"></div>
+
+                <span class="text-sentence" id="sentence-3">De pronto, vio un árbol gigante y descansó</span>
+                <div class="point-slot" data-type="final" id="slot-3" onclick="openToolSelector(3)"></div>
+            `;
+            sheet.style.opacity = 1;
+        }, 300);
+
+        btnNext.style.display = 'none';
+    }
+
+</script>
+</body>
+</html>

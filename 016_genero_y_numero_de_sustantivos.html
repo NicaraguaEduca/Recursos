@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Máquina de Género y Número</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --accent: #00cec9;
+            --machine-bg: #dfe6e9;
+            --machine-dark: #b2bec3;
+            --highlight: #ffeaa7;
+            --text-color: #2d3436;
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            margin: 0; padding: 0;
+            background-color: #f0f2f5;
+            background-image: 
+                linear-gradient(rgba(200, 200, 200, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(200, 200, 200, 0.3) 1px, transparent 1px);
+            background-size: 40px 40px;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Engranajes de fondo */
+        .bg-deco { position: absolute; opacity: 0.05; pointer-events: none; z-index: 0; }
+        .bg-gear-1 { top: -50px; left: -50px; width: 300px; height: 300px; animation: spin 60s linear infinite; }
+        .bg-gear-2 { bottom: -50px; right: -50px; width: 400px; height: 400px; animation: spin 80s linear infinite reverse; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        h1 { color: var(--primary); margin-top: 20px; text-align: center; z-index: 10; text-shadow: 2px 2px 0px white;}
+        p { color: #636e72; max-width: 600px; text-align: center; margin-bottom: 30px; padding: 10px 20px; z-index: 10; background: rgba(255,255,255,0.8); border-radius: 10px; border: 1px solid #ddd;}
+
+        .factory-container {
+            position: relative;
+            width: 100%; max-width: 950px;
+            height: 500px;
+            display: flex; justify-content: center; align-items: center;
+            border-bottom: 10px solid #cbd5e0;
+            z-index: 5;
+        }
+
+        .machine-body {
+            width: 320px; height: 380px;
+            background: var(--machine-bg);
+            border: 8px solid var(--machine-dark);
+            border-radius: 40px;
+            position: relative;
+            z-index: 20; 
+            display: flex; flex-direction: column; align-items: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            transition: transform 0.3s; 
+        }
+        .machine-body::after {
+            content: ''; position: absolute; bottom: -25px; width: 90%; height: 20px;
+            background: rgba(0,0,0,0.2); border-radius: 50%; z-index: -1;
+        }
+
+        .machine-screen {
+            width: 80%; height: 80px;
+            background: #2d3436;
+            margin-top: 30px;
+            border-radius: 10px;
+            border: 4px solid #b2bec3;
+            display: flex; justify-content: center; align-items: center;
+            color: #55efc4;
+            font-family: 'Courier New', monospace;
+            font-size: 2rem; font-weight: bold;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+            text-shadow: 0 0 5px #55efc4;
+        }
+
+        /* --- CAJA SVG --- */
+        .product-wrapper {
+            position: absolute; 
+            top: 38%; 
+            left: -250px; 
+            width: 140px; height: 140px;
+            z-index: 10; 
+            display: flex; justify-content: center; align-items: center;
+            transition: left 2s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .box-svg {
+            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.2));
+        }
+
+        .product-text {
+            position: relative; z-index: 2;
+            font-size: 1.4rem; font-weight: 900; color: #3e2723;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px 10px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-width: 80px;
+        }
+
+        .product-wrapper.finished {
+            z-index: 30;
+            left: 82% !important; 
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 20px var(--highlight));
+            transition: left 3s ease-in-out, transform 0.5s; 
+        }
+
+        /* --- BURBUJA DE EXPLICACIÓN --- */
+        .info-bubble {
+            position: absolute;
+            top: -20px; right: -20px;
+            width: 40px; height: 40px;
+            background: #0984e3;
+            color: white;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-weight: bold; font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 3px solid white;
+            z-index: 100;
+            opacity: 0;
+            transform: scale(0);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        
+        .product-wrapper.finished .info-bubble.visible {
+            opacity: 1;
+            transform: scale(1);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(9, 132, 227, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(9, 132, 227, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(9, 132, 227, 0); }
+        }
+
+        .conveyor-belt {
+            position: absolute; top: 52%; width: 100%; height: 25px;
+            background: repeating-linear-gradient(90deg, #636e72 0, #636e72 20px, #2d3436 20px, #2d3436 40px);
+            z-index: 5; transform: translateY(-50%);
+            border-top: 3px solid #b2bec3;
+            border-bottom: 3px solid #b2bec3;
+            animation: moveBelt 1s linear infinite paused;
+        }
+        @keyframes moveBelt { from { background-position: 0 0; } to { background-position: 40px 0; } }
+
+        .controls-panel {
+            background: #ffeaa7; width: 90%; padding: 15px;
+            border-radius: 15px; margin-top: 20px;
+            display: flex; flex-direction: column; gap: 15px;
+            border: 3px solid #fdcb6e;
+        }
+
+        .toggle-group {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.5); padding: 8px; border-radius: 50px;
+        }
+        .toggle-label { font-size: 0.9rem; font-weight: 700; color: #d35400; text-transform: uppercase; margin: 0 10px;}
+
+        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #fab1a0; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        input:checked + .slider { background-color: #00b894; }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        .btn-process {
+            background: #ff7675; color: white; border: none; width: 80%; padding: 15px;
+            border-radius: 50px; font-size: 1.2rem; font-weight: bold; font-family: 'Fredoka', sans-serif;
+            cursor: pointer; margin-top: auto; margin-bottom: 20px;
+            box-shadow: 0 6px 0 #d63031; transition: transform 0.1s;
+        }
+        .btn-process:active { transform: translateY(6px); box-shadow: none; }
+        .btn-process:disabled { background: #b2bec3; box-shadow: none; cursor: not-allowed; }
+
+        .highlight-text { color: #d63031; font-weight: 900; }
+        .input-area { display: flex; gap: 10px; margin-bottom: 20px; z-index: 50; }
+        select { padding: 10px; border-radius: 10px; border: 2px solid var(--primary); font-family: 'Fredoka', sans-serif; font-size: 1rem; cursor: pointer;}
+        
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both infinite; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+
+        /* --- MODAL (POPUP) --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 999;
+            display: none; justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: white; width: 90%; max-width: 400px;
+            padding: 30px; border-radius: 20px;
+            text-align: center; position: relative;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 4px solid var(--primary);
+            animation: popIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        }
+        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .modal-close {
+            position: absolute; top: 10px; right: 15px;
+            font-size: 1.5rem; cursor: pointer; color: #aaa;
+        }
+        .modal-title { color: var(--primary); margin-top: 0; font-size: 1.5rem; margin-bottom: 5px; }
+        .modal-text { font-size: 1.1rem; color: #636e72; line-height: 1.5; }
+        .modal-icon { font-size: 3rem; margin-bottom: 10px; display: block; }
+        
+        /* ESTILO PARA LA PALABRA TRANSFORMADA EN EL MODAL */
+        #modal-result-word {
+            font-size: 2rem;
+            color: #2d3436;
+            margin: 10px 0 20px 0;
+            background: #f0f2f5;
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px dashed #b2bec3;
+            display: inline-block;
+        }
+
+        /* RESPONSIVE FIX (MOBILE) */
+        @media (max-width: 768px) {
+            .factory-container { height: 400px; }
+            .machine-body { transform: scale(0.85); transform-origin: bottom center; }
+            .product-wrapper.finished { left: 65% !important; transform: scale(0.9); }
+            .product-wrapper { left: -150%; }
+        }
+    </style>
+</head>
+<body>
+
+    <svg class="bg-deco bg-gear-1" viewBox="0 0 100 100">
+        <path d="M50 0 L60 20 L80 20 L90 40 L70 50 L90 60 L80 80 L60 80 L50 100 L40 80 L20 80 L10 60 L30 50 L10 40 L20 20 L40 20 Z" fill="#333"/>
+        <circle cx="50" cy="50" r="15" fill="white"/>
+    </svg>
+    <svg class="bg-deco bg-gear-2" viewBox="0 0 100 100">
+        <path d="M50 0 L60 20 L80 20 L90 40 L70 50 L90 60 L80 80 L60 80 L50 100 L40 80 L20 80 L10 60 L30 50 L10 40 L20 20 L40 20 Z" fill="#333"/>
+        <circle cx="50" cy="50" r="15" fill="white"/>
+    </svg>
+
+    <h1>⚙️ Fábrica de Género y Número ⚙️</h1>
+    <p>1. Elige una palabra y cárgala. 2. Configura los interruptores. 3. ¡Transforma!</p>
+
+    <div class="input-area">
+        <select id="word-selector">
+            <option value="" disabled selected>Selecciona materia prima...</option>
+            <option value="gato">Gato (Regular)</option>
+            <option value="león">León (Agrega A)</option>
+            <option value="niño">Niño (Regular)</option>
+            <option value="doctor">Doctor (Profesión)</option>
+            <option value="lápiz">Lápiz (Z por C)</option>
+            <option value="actor">Actor (Irregular)</option>
+            <option value="tigre">Tigre (Esa)</option>
+            <option value="estudiante">Estudiante (Artículo)</option>
+        </select>
+        <button onclick="loadMachine()" style="padding: 10px 20px; background:var(--primary); color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold; box-shadow: 0 4px 0 #c0392b;">1. CARGAR</button>
+    </div>
+
+    <div class="factory-container">
+        <div class="conveyor-belt" id="belt"></div>
+
+        <div class="product-wrapper" id="product-wrapper">
+            <div class="info-bubble" id="info-bubble" onclick="openModal()">?</div>
+
+            <svg class="box-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="10" y="20" width="80" height="70" rx="3" fill="#D7CCC8" stroke="#8D6E63" stroke-width="2"/>
+                <rect x="10" y="25" width="80" height="15" fill="#EFEBE9" opacity="0.5"/>
+                <rect x="10" y="65" width="80" height="15" fill="#EFEBE9" opacity="0.5"/>
+                <rect x="10" y="20" width="10" height="70" fill="#A1887F" opacity="0.8"/>
+                <rect x="80" y="20" width="10" height="70" fill="#A1887F" opacity="0.8"/>
+                <circle cx="15" cy="32" r="1.5" fill="#5D4037"/>
+                <circle cx="15" cy="72" r="1.5" fill="#5D4037"/>
+                <circle cx="85" cy="32" r="1.5" fill="#5D4037"/>
+                <circle cx="85" cy="72" r="1.5" fill="#5D4037"/>
+                <rect x="25" y="45" width="50" height="15" fill="#FFF3E0" stroke="#8D6E63" stroke-width="1"/>
+            </svg>
+            <div class="product-text" id="product-text">?</div>
+        </div>
+
+        <div class="machine-body" id="machine">
+            <div class="machine-screen" id="screen">LISTO</div>
+            <div class="controls-panel">
+                <div class="toggle-group">
+                    <span class="toggle-label">Masc.</span>
+                    <label class="switch">
+                        <input type="checkbox" id="gender-switch">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">Fem.</span>
+                </div>
+                <div class="toggle-group">
+                    <span class="toggle-label">Singular</span>
+                    <label class="switch">
+                        <input type="checkbox" id="number-switch">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">Plural</span>
+                </div>
+            </div>
+            <button class="btn-process" id="btn-process" onclick="processWord()">2. TRANSFORMAR</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal(null)">&times;</span>
+            <span class="modal-icon">💡</span>
+            <h2 class="modal-title">¿Qué pasó aquí?</h2>
+            
+            <div id="modal-result-word"></div>
+
+            <p class="modal-text" id="modal-explanation">Explicación...</p>
+        </div>
+    </div>
+
+<script>
+    const dictionary = {
+        "gato": { m: "gato", f: "gata", plural: "s" },
+        "niño": { m: "niño", f: "niña", plural: "s" },
+        "león": { m: "león", f: "leona", plural: "es" }, 
+        "doctor": { m: "doctor", f: "doctora", plural: "es" },
+        "lápiz": { m: "lápiz", f: null, plural: "ices" }, 
+        "actor": { m: "actor", f: "actriz", plural: "es" },
+        "tigre": { m: "tigre", f: "tigresa", plural: "s" },
+        "estudiante": { m: "estudiante", f: "estudiante", article: true, plural: "s" } 
+    };
+
+    let currentWordKey = "";
+    let isProcessing = false;
+    let currentExplanation = ""; 
+    let finalWordForModal = ""; // Variable para guardar el resultado
+
+    const wrapper = document.getElementById('product-wrapper');
+    const textSpan = document.getElementById('product-text');
+    const belt = document.getElementById('belt');
+    const machine = document.getElementById('machine');
+    const screen = document.getElementById('screen');
+    const btnProcess = document.getElementById('btn-process');
+    const genderSwitch = document.getElementById('gender-switch'); 
+    const numberSwitch = document.getElementById('number-switch'); 
+    const bubble = document.getElementById('info-bubble');
+    const modalOverlay = document.getElementById('modal-overlay');
+    const modalText = document.getElementById('modal-explanation');
+    const modalWord = document.getElementById('modal-result-word');
+
+    function loadMachine() {
+        if(isProcessing) return;
+
+        const selector = document.getElementById('word-selector');
+        const selectedVal = selector.value;
+
+        if(!selectedVal) {
+            alert("¡Selecciona una palabra primero!");
+            return;
+        }
+
+        currentWordKey = selectedVal;
+        
+        // Reset
+        bubble.classList.remove('visible');
+        wrapper.classList.remove('finished');
+        wrapper.style.transition = 'none';
+        wrapper.style.left = '-250px'; 
+        wrapper.style.zIndex = '10';
+        
+        textSpan.innerHTML = dictionary[currentWordKey].m.toUpperCase();
+        screen.innerText = "CARGADO";
+        screen.style.color = "#55efc4";
+
+        void wrapper.offsetWidth;
+
+        setTimeout(() => {
+            wrapper.style.transition = 'left 2s cubic-bezier(0.25, 1, 0.5, 1)';
+            wrapper.style.left = '35%'; 
+        }, 50);
+    }
+
+    function processWord() {
+        if(!currentWordKey) { alert("¡Carga la máquina primero!"); return; }
+        if(isProcessing) return;
+        if (wrapper.style.left === '-250px' || wrapper.classList.contains('finished')) {
+             alert("¡Carga una nueva palabra!"); return;
+        }
+
+        isProcessing = true;
+        btnProcess.disabled = true;
+        screen.innerText = "PROCESANDO...";
+        screen.style.color = "#ffeaa7";
+        
+        machine.classList.add('shake');
+        belt.style.animationPlayState = 'running';
+
+        setTimeout(() => { finishProcessing(); }, 1500);
+    }
+
+    function finishProcessing() {
+        machine.classList.remove('shake');
+        belt.style.animationPlayState = 'paused';
+        
+        const data = dictionary[currentWordKey];
+        const isFem = genderSwitch.checked;
+        const isPlural = numberSwitch.checked;
+
+        let resultHTML = "";
+        let baseWord = "";
+        let explanation = ""; 
+
+        // 1. LOGICA DE GÉNERO
+        if (data.f === null && isFem) {
+            screen.innerText = "ERROR GÉNERO";
+            screen.style.color = "#ff7675";
+            resultHTML = data.m;
+            explanation = "¡Esta palabra no cambia! Un lápiz es un objeto y no tiene género femenino.";
+            outputResult(resultHTML, false, explanation);
+            return;
+        } else if (isFem) {
+            baseWord = data.f;
+            if(data.m === data.f) explanation = "Es una palabra neutra. Usamos 'La' para saber que es mujer, pero la palabra no cambia.";
+            else if(currentWordKey === 'actor') explanation = "¡Irregular! 'Actor' cambia totalmente a 'Actriz'.";
+            else if(currentWordKey === 'tigre') explanation = "¡Sufijo especial! A 'Tigre' le agregamos '-esa'.";
+            else if(currentWordKey === 'león' || currentWordKey === 'doctor') explanation = "¡Sencillo! Solo le agregamos una 'a' al final.";
+            else explanation = "Cambiamos la 'o' por una 'a' para el femenino.";
+        } else {
+            baseWord = data.m;
+            explanation = "Palabra original en masculino.";
+        }
+
+        // 2. LOGICA DE NÚMERO
+        if (isPlural) {
+            if (data.article) {
+                let article = isFem ? "Las " : "Los ";
+                resultHTML = `<span class='highlight-text'>${article}</span>` + baseWord + `<span class='highlight-text'>s</span>`;
+                explanation = "¡Plural! Agregamos una 's' y cambiamos el artículo a '" + article + "'.";
+            } 
+            else if (currentWordKey === "lápiz" && !isFem) {
+                resultHTML = "Láp<span class='highlight-text'>ices</span>";
+                explanation = "¡Regla de la Z! Las palabras que terminan en 'Z' cambian a 'C' antes de poner 'es'.";
+            }
+            else if (currentWordKey === "actor" && isFem) {
+                 resultHTML = "Actri<span class='highlight-text'>ces</span>";
+                 explanation = "¡Regla de la Z! 'Actriz' termina en 'Z', así que cambia a 'C' y agregamos 'es'.";
+            }
+            else {
+                let suffix = (baseWord.endsWith('a') || baseWord.endsWith('e') || baseWord.endsWith('o')) ? "s" : "es";
+                resultHTML = baseWord + `<span class='highlight-text'>${suffix}</span>`;
+                
+                if(suffix === 'es') explanation += "<br><br>Como termina en consonante, agregamos 'es' para el plural.";
+                else explanation += "<br><br>Como termina en vocal, solo agregamos una 's'.";
+            }
+        } else {
+            // Singular
+            if (data.article) {
+                let article = isFem ? "La " : "El ";
+                resultHTML = `<span class='highlight-text'>${article}</span>` + baseWord;
+            } else if (isFem && data.m !== data.f && !isPlural) {
+                let diffIndex = 0;
+                while(diffIndex < data.m.length && data.m[diffIndex] === data.f[diffIndex]) { diffIndex++; }
+                let root = data.f.substring(0, diffIndex);
+                let ending = data.f.substring(diffIndex);
+                resultHTML = root + `<span class='highlight-text'>${ending}</span>`;
+            } else {
+                resultHTML = baseWord;
+                if(!isFem) explanation = "Palabra en su forma singular original.";
+            }
+        }
+
+        outputResult(resultHTML, true, explanation);
+    }
+
+    function outputResult(html, success, explanationText) {
+        textSpan.innerHTML = html; 
+        
+        finalWordForModal = html; // GUARDAR RESULTADO PARA EL MODAL
+        currentExplanation = explanationText;
+
+        wrapper.classList.add('finished'); 
+        
+        screen.innerText = success ? "¡TERMINADO!" : "INTENTA OTRA";
+        screen.style.color = success ? "#55efc4" : "#ff7675";
+
+        setTimeout(() => {
+            isProcessing = false;
+            btnProcess.disabled = false;
+            bubble.classList.add('visible');
+        }, 2800);
+    }
+
+    function openModal() {
+        modalWord.innerHTML = finalWordForModal; // MOSTRAR PALABRA EN MODAL
+        modalText.innerHTML = currentExplanation;
+        modalOverlay.style.display = 'flex';
+    }
+
+    function closeModal(event) {
+        if(event === null || event.target === modalOverlay) {
+            modalOverlay.style.display = 'none';
+        }
+    }
+</script>
+</body>
+</html>

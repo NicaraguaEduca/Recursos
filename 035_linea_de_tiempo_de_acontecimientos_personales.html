@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Línea de Tiempo Espacial</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            margin: 0; height: 100vh;
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+            color: white; overflow: hidden; /* Evita scroll en el body, lo manejamos dentro */
+            display: flex; flex-direction: column;
+        }
+
+        /* Estrellas de fondo */
+        .stars {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0));
+            background-repeat: repeat; background-size: 200px 200px;
+            z-index: -1; opacity: 0.5; animation: twinkle 5s infinite;
+        }
+        @keyframes twinkle { 50% { opacity: 0.8; } }
+
+        /* --- HEADER --- */
+        header { text-align: center; padding: 15px; z-index: 10; flex-shrink: 0; }
+        h1 { margin: 0; color: #FFD700; text-shadow: 0 0 10px #FFD700; font-size: 1.8rem; }
+        p { color: #aab; margin: 5px 0; font-size: 0.9rem; }
+
+        /* --- PANEL DE CONTROL --- */
+        .control-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 10px; border-radius: 20px;
+            display: flex; gap: 8px; justify-content: center; align-items: center;
+            width: 90%; max-width: 800px; margin: 0 auto;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            flex-shrink: 0; /* No encoger */
+            z-index: 20;
+        }
+
+        input, select {
+            padding: 10px; border-radius: 12px; border: none;
+            font-family: 'Fredoka', sans-serif; font-weight: bold; outline: none;
+        }
+        input[type="number"] { width: 70px; text-align: center; }
+        input[type="text"] { flex-grow: 1; }
+        
+        button.add-btn {
+            background: linear-gradient(45deg, #FF512F, #DD2476);
+            color: white; border: none; padding: 10px 20px;
+            border-radius: 12px; font-weight: bold; cursor: pointer; white-space: nowrap;
+        }
+
+        /* --- LÍNEA DE TIEMPO (CONTENEDOR INTELIGENTE) --- */
+        .timeline-wrapper {
+            flex-grow: 1; 
+            position: relative;
+            overflow: auto; /* Scroll automático */
+            padding: 20px;
+            display: flex;
+            /* Por defecto Horizontal (PC) */
+            align-items: center; 
+            justify-content: flex-start;
+        }
+
+        .timeline-container {
+            display: flex; 
+            position: relative;
+            padding: 40px;
+            min-width: 100%; /* Asegura que ocupe todo */
+        }
+
+        /* La línea blanca (SVG o Div) */
+        .timeline-line {
+            position: absolute; 
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+        }
+
+        /* --- ESTILO PC (Horizontal) --- */
+        @media (min-width: 769px) {
+            .timeline-container { flex-direction: row; align-items: center; }
+            .timeline-line {
+                top: 50%; left: 0; width: 100%; height: 4px; transform: translateY(-50%);
+            }
+            .event-node { margin: 0 30px; }
+        }
+
+        /* --- ESTILO MÓVIL (Vertical) --- */
+        @media (max-width: 768px) {
+            body { height: 100%; overflow-y: auto; } /* Permitir scroll en móvil */
+            .control-panel { flex-direction: column; width: 85%; margin-bottom: 20px; }
+            input, select, button { width: 100%; box-sizing: border-box; }
+            
+            .timeline-wrapper { align-items: flex-start; justify-content: center; }
+            .timeline-container { 
+                flex-direction: column; 
+                align-items: center; 
+                padding: 20px 0; 
+                width: 100%;
+            }
+            
+            /* Línea vertical */
+            .timeline-line {
+                top: 0; left: 50%; width: 4px; height: 100%; transform: translateX(-50%);
+            }
+
+            .event-node { margin: 30px 0; }
+            
+            /* Ajuste del título para que no tape la línea */
+            .event-title { width: auto; min-width: 120px; }
+        }
+
+        /* --- PLANETAS --- */
+        .event-node {
+            position: relative; z-index: 2;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: transform 0.3s; cursor: pointer;
+            flex-shrink: 0; /* No aplastar */
+        }
+        .event-node:hover { transform: scale(1.1); }
+
+        .planet {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #4facfe, #00f2fe);
+            box-shadow: 0 0 20px rgba(79, 172, 254, 0.6);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.5rem; border: 4px solid white;
+            position: relative; z-index: 2;
+        }
+
+        .planet.p1 { background: radial-gradient(circle at 30% 30%, #ff9a9e, #fecfef); box-shadow: 0 0 20px rgba(255, 154, 158, 0.6); }
+        .planet.p2 { background: radial-gradient(circle at 30% 30%, #a18cd1, #fbc2eb); box-shadow: 0 0 20px rgba(161, 140, 209, 0.6); }
+        .planet.p3 { background: radial-gradient(circle at 30% 30%, #84fab0, #8fd3f4); box-shadow: 0 0 20px rgba(132, 250, 176, 0.6); }
+
+        .year-badge {
+            background: #FFD700; color: #333; padding: 5px 15px;
+            border-radius: 20px; font-weight: bold; margin-bottom: 10px;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+        }
+
+        .event-title {
+            background: white; color: #333; padding: 8px 15px;
+            border-radius: 15px; margin-top: 15px;
+            text-align: center; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* --- RESET BTN --- */
+        .reset-btn {
+            position: fixed; bottom: 10px; right: 10px; z-index: 100;
+            background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.3);
+            color: rgba(255,255,255,0.7); padding: 5px 10px; border-radius: 5px; 
+            cursor: pointer; font-size: 0.8rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="stars"></div>
+
+    <header>
+        <h1>🚀 Mi Viaje Espacial</h1>
+        <p>Agrega eventos a tu historia</p>
+    </header>
+
+    <div class="control-panel">
+        <input type="number" id="input-year" placeholder="Año" min="2000" max="2030">
+        <select id="input-icon">
+            <option value="👶">👶 Nacer</option>
+            <option value="🦷">🦷 Diente</option>
+            <option value="🏫">🏫 Escuela</option>
+            <option value="🚲">🚲 Bici</option>
+            <option value="🐶">🐶 Perro</option>
+            <option value="🎂">🎂 Fiesta</option>
+            <option value="🥇">🥇 Gané</option>
+        </select>
+        <input type="text" id="input-text" placeholder="¿Qué pasó?">
+        <button class="add-btn" onclick="addEvent()">+ Agregar</button>
+    </div>
+
+    <div class="timeline-wrapper">
+        <div class="timeline-container" id="timeline-container">
+            <div class="timeline-line"></div>
+            </div>
+    </div>
+
+    <button class="reset-btn" onclick="clearTimeline()">🗑️ Reiniciar</button>
+
+<script>
+    let myHistory = [
+        { year: 2018, icon: "👶", text: "Nací yo", color: "p1" },
+        { year: 2021, icon: "🏫", text: "Entré al Kinder", color: "p2" },
+        { year: 2024, icon: "🚲", text: "Aprendí Bici", color: "p3" }
+    ];
+
+    const container = document.getElementById('timeline-container');
+
+    function renderTimeline() {
+        // Guardar la línea blanca para no borrarla
+        const line = container.querySelector('.timeline-line');
+        container.innerHTML = '';
+        container.appendChild(line);
+        
+        // 1. ORDENAR
+        myHistory.sort((a, b) => a.year - b.year);
+
+        // 2. RENDERIZAR
+        myHistory.forEach((item, index) => {
+            const node = document.createElement('div');
+            node.className = 'event-node animate__animated animate__zoomIn';
+            node.style.animationDelay = `${index * 0.1}s`;
+
+            const planetClass = item.color || (index % 3 === 0 ? 'p1' : index % 3 === 1 ? 'p2' : 'p3');
+
+            node.innerHTML = `
+                <div class="year-badge">${item.year}</div>
+                <div class="planet ${planetClass}" onclick="popPlanet(this)">
+                    ${item.icon}
+                </div>
+                <div class="event-title">${item.text}</div>
+            `;
+            container.appendChild(node);
+        });
+    }
+
+    function addEvent() {
+        const yearIn = document.getElementById('input-year');
+        const iconIn = document.getElementById('input-icon');
+        const textIn = document.getElementById('input-text');
+
+        if(!yearIn.value || !textIn.value) {
+            alert("¡Faltan datos capitán!");
+            return;
+        }
+
+        const newEvent = {
+            year: parseInt(yearIn.value),
+            icon: iconIn.value,
+            text: textIn.value,
+            color: "p3" 
+        };
+
+        myHistory.push(newEvent);
+        renderTimeline();
+
+        textIn.value = '';
+        // yearIn.value = ''; // Opcional borrar año
+    }
+
+    function popPlanet(element) {
+        element.style.transform = "scale(1.4) rotate(20deg)";
+        setTimeout(() => element.style.transform = "scale(1) rotate(0deg)", 300);
+    }
+
+    function clearTimeline() {
+        if(confirm("¿Borrar todo?")) {
+            myHistory = [];
+            renderTimeline();
+        }
+    }
+
+    renderTimeline();
+
+</script>
+</body>
+</html>

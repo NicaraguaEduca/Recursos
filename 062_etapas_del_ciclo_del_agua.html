@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Guía Maestra: El Ciclo del Agua</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --blue-dark: #1A5276;
+            --blue-main: #3498DB;
+            --blue-light: #AED6F1;
+            --sun-color: #F1C40F;
+            --bg-color: #F0F4F8;
+            --text-color: #2C3E50;
+            --white: #FFFFFF;
+            --error: #E74C3C;
+            --success: #27AE60;
+            --subject-color: #2980B9;
+            --green-leaf: #2ecc71;
+            --brown-earth: #8D6E63;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        .contenedor-app {
+            background: var(--white);
+            width: 100%;
+            max-width: 650px;
+            border-radius: 24px;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.12);
+            border-bottom: 8px solid var(--blue-main);
+            padding: 20px;
+            position: relative;
+            max-height: 98vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .etiqueta-asignatura {
+            background: var(--subject-color);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: inline-block;
+            margin: 0 auto 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        h1 { font-size: clamp(1.3rem, 5vw, 1.8rem); margin-bottom: 5px; color: var(--blue-dark); text-align: center; }
+
+        /* --- PANTALLAS --- */
+        .pantalla { display: none; flex-direction: column; height: 100%; overflow-y: auto; }
+        .pantalla.activa { display: flex; }
+
+        .objetivo-contenedor {
+            background-color: #F4F9FD;
+            border: 2px solid var(--blue-light);
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--blue-dark);
+            text-align: left;
+        }
+
+        /* --- VISOR DINÁMICO --- */
+        .visor-escena {
+            width: 100%;
+            height: 240px;
+            background: linear-gradient(to bottom, #85C1E9, #D6EAF8);
+            border-radius: 20px;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+            border: 3px solid #D4E6F1;
+            flex-shrink: 0;
+        }
+
+        .sol { position: absolute; top: 15px; right: 20px; font-size: 3rem; animation: rotateSun 10s linear infinite; }
+        @keyframes rotateSun { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .goti {
+            position: absolute;
+            font-size: 2.5rem;
+            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 50;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        /* Capas del paisaje */
+        .paisaje { position: absolute; bottom: 0; width: 100%; height: 80px; transition: all 1s; }
+        .mar { position: absolute; bottom: 0; width: 100%; height: 40px; background: var(--blue-main); opacity: 0.8; z-index: 10; }
+        .tierra { position: absolute; bottom: 0; width: 60%; height: 70px; background: var(--brown-earth); z-index: 5; border-radius: 0 100px 0 0; }
+        .cesped { position: absolute; top: -10px; width: 100%; height: 15px; background: var(--green-leaf); border-radius: 20px; }
+        .arbol { position: absolute; bottom: 65px; left: 20%; font-size: 2rem; z-index: 6; }
+        .nube-capa { position: absolute; top: 40px; left: 0; width: 100%; display: flex; justify-content: center; gap: 40px; opacity: 0; transition: opacity 1s; }
+        .nube-item { font-size: 3rem; filter: grayscale(1); transition: filter 1s; }
+
+        /* Posiciones de Goti */
+        .pos-evaporacion { bottom: 20px; left: 70%; transform: scale(1); }
+        .pos-transpiracion { bottom: 80px; left: 20%; transform: scale(0.8); }
+        .pos-condensacion { top: 50px; left: 45%; transform: scale(1.2); }
+        .pos-precipitacion { top: 120px; left: 45%; transform: scale(1); }
+        .pos-infiltracion { bottom: 10px; left: 25%; transform: scale(0.7); }
+        .pos-escorrentia { bottom: 45px; left: 40%; transform: scale(0.9); }
+
+        /* --- INTERACCIÓN --- */
+        .panel-info {
+            background: #fdfdfd;
+            border: 1px solid #eee;
+            border-radius: 15px;
+            padding: 12px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .fase-titulo { font-weight: 800; color: var(--blue-dark); text-transform: uppercase; font-size: 0.85rem; margin-bottom: 4px; display: block; }
+        .fase-pregunta { font-size: 1rem; font-weight: 600; line-height: 1.3; }
+
+        .grid-opciones {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .btn-opcion {
+            background: white;
+            border: 2px solid #E5E8E8;
+            padding: 12px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left;
+            box-shadow: 0 4px 0 #E5E8E8;
+        }
+        .btn-opcion:active { transform: translateY(2px); box-shadow: none; }
+        .btn-opcion .ico { font-size: 1.4rem; flex-shrink: 0; }
+        .btn-opcion .txt { font-size: 0.85rem; font-weight: 600; color: #444; }
+
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .btn-accion {
+            background-color: var(--blue-main);
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 6px 0 var(--blue-dark);
+            margin: 10px auto;
+            display: block;
+            width: fit-content;
+        }
+        .btn-accion:active { transform: translateY(3px); box-shadow: none; }
+
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        .error-shake { animation: shake 0.3s ease; border-color: var(--error) !important; }
+
+    </style>
+</head>
+<body>
+
+    <div class="contenedor-app">
+        
+        <!-- PANTALLA INICIAL -->
+        <div id="pantalla-inicio" class="pantalla activa">
+            <div class="etiqueta-asignatura">Ciencias Naturales</div>
+            <h1>El Ciclo Infinito del Agua</h1>
+            
+            <div class="objetivo-contenedor">
+                <strong>🎯 Misión de Aprendizaje:</strong><br>
+                El agua en la Tierra nunca se gasta, ¡siempre está viajando! En este recurso aprenderás las <strong>6 etapas fundamentales</strong>: desde cómo sale de los océanos y las plantas, hasta cómo se filtra bajo el suelo. 
+                <br><br>
+                Observa las pistas del clima y ayuda a <strong>Goti</strong> a completar su viaje.
+            </div>
+
+            <button class="btn-accion" onclick="navegar('pantalla-juego')">¡Iniciar Expedición! 💧</button>
+        </div>
+
+        <!-- PANTALLA DE JUEGO -->
+        <div id="pantalla-juego" class="pantalla">
+            <div class="etiqueta-asignatura">Simulador Científico</div>
+            
+            <div class="visor-escena">
+                <div class="sol">☀️</div>
+                <div class="tierra"><div class="cesped"></div></div>
+                <div class="arbol">🌳</div>
+                <div class="mar"></div>
+                <div id="nube-capa" class="nube-capa">
+                    <span class="nube-item">☁️</span>
+                    <span class="nube-item">☁️</span>
+                </div>
+                <div id="goti" class="goti pos-evaporacion">💧</div>
+            </div>
+
+            <div class="panel-info">
+                <span class="fase-titulo" id="fase-num">Etapa 1 de 6</span>
+                <p class="fase-pregunta" id="pregunta-txt">Goti está en el océano y el sol calienta mucho. ¿Qué sucede?</p>
+            </div>
+
+            <div class="grid-opciones" id="opciones-grid">
+                <!-- Dinámico -->
+            </div>
+
+            <div class="feedback" id="feedback-txt"></div>
+
+            <button class="btn-accion" id="btn-final" style="display:none" onclick="reiniciar()">🔄 Reiniciar Ciclo</button>
+        </div>
+
+    </div>
+
+    <script>
+        const etapas = [
+            {
+                titulo: "Etapa 1: Evaporación",
+                pregunta: "El calor del sol calienta el agua líquida de los océanos. ¿En qué se convierte?",
+                pos: "pos-evaporacion",
+                icono: "💧",
+                nubeAlpha: 0,
+                nubeDark: false,
+                opciones: [
+                    { t: "Se convierte en vapor de agua y sube al aire.", i: "💨", c: true, f: "¡Correcto! El calor agita las moléculas y las convierte en gas invisible." },
+                    { t: "Se congela y se hunde en el fondo.", i: "🧊", c: false, f: "No, el calor del sol hace que el agua suba, no que se congele." }
+                ]
+            },
+            {
+                titulo: "Etapa 2: Transpiración",
+                pregunta: "¡No solo el mar aporta agua! ¿Qué hacen las plantas y árboles con el calor?",
+                pos: "pos-transpiracion",
+                icono: "💧",
+                nubeAlpha: 0.3,
+                nubeDark: false,
+                opciones: [
+                    { t: "Absorben todo el agua y no sueltan nada.", i: "🌵", c: false, f: "Las plantas también necesitan 'sudar' para refrescarse." },
+                    { t: "Sueltan vapor de agua a través de sus hojas.", i: "🍃", c: true, f: "¡Exacto! Esto se llama Transpiración y ayuda a formar nubes." }
+                ]
+            },
+            {
+                titulo: "Etapa 3: Condensación",
+                pregunta: "El vapor sube a la atmósfera donde hace mucho frío. ¿Qué le pasa al juntarse?",
+                pos: "pos-condensacion",
+                icono: "☁️",
+                nubeAlpha: 1,
+                nubeDark: false,
+                opciones: [
+                    { t: "El vapor se enfría y forma pequeñas gotas (nubes).", i: "☁️", c: true, f: "¡Muy bien! Miles de gotitas se agrupan para crear las nubes." },
+                    { t: "El vapor desaparece y se va al espacio.", i: "🚀", c: false, f: "El agua nunca deja la Tierra, se queda atrapada en la atmósfera." }
+                ]
+            },
+            {
+                titulo: "Etapa 4: Precipitación",
+                pregunta: "Las nubes se ponen oscuras y pesadas. ¿Qué ocurre por la gravedad?",
+                pos: "pos-precipitacion",
+                icono: "🌧️",
+                nubeAlpha: 1,
+                nubeDark: true,
+                opciones: [
+                    { t: "El agua cae como lluvia, nieve o granizo.", i: "🌧️", c: true, f: "¡Correcto! Dependiendo del frío, puede caer líquida o sólida." },
+                    { t: "La nube flota para siempre sin soltar agua.", i: "🎈", c: false, f: "Cuando la nube está muy cargada, el agua debe caer obligatoriamente." }
+                ]
+            },
+            {
+                titulo: "Etapa 5: Infiltración",
+                pregunta: "Goti ha caído en el suelo del bosque. ¿Hacia dónde se mueve ahora?",
+                pos: "pos-infiltracion",
+                icono: "💧",
+                nubeAlpha: 0.5,
+                nubeDark: false,
+                opciones: [
+                    { t: "Se queda seca sobre las piedras.", i: "☀️", c: false, f: "Parte se evapora, pero mucha agua entra en la tierra." },
+                    { t: "Pasa a través del suelo para formar ríos subterráneos.", i: "🕳️", c: true, f: "¡Bien hecho! Esto llena los acuíferos de donde sacamos agua potable." }
+                ]
+            },
+            {
+                titulo: "Etapa 6: Escorrentía y Recolección",
+                pregunta: "Goti corre por la superficie formando ríos. ¿Dónde termina su viaje?",
+                pos: "pos-escorrentia",
+                icono: "🌊",
+                nubeAlpha: 0,
+                nubeDark: false,
+                opciones: [
+                    { t: "Llega de nuevo al océano para repetir el ciclo.", i: "🌊", c: true, f: "¡Logrado! El viaje nunca termina, siempre vuelve al principio." },
+                    { t: "Se queda estancada en un charco para siempre.", i: "🛑", c: false, f: "Incluso en un charco, el agua acabará fluyendo o evaporándose." }
+                ]
+            }
+        ];
+
+        let indexActual = 0;
+        let bloqueado = false;
+
+        function navegar(id) {
+            document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+            document.getElementById(id).classList.add('activa');
+            if(id === 'pantalla-juego') cargarEtapa();
+        }
+
+        function cargarEtapa() {
+            bloqueado = false;
+            const etapa = etapas[indexActual];
+            const goti = document.getElementById('goti');
+            const nubes = document.getElementById('nube-capa');
+            const feedback = document.getElementById('feedback-txt');
+            const grid = document.getElementById('opciones-grid');
+
+            // Actualizar UI Visual
+            goti.className = 'goti ' + etapa.pos;
+            goti.textContent = etapa.icono;
+            nubes.style.opacity = etapa.nubeAlpha;
+            document.querySelectorAll('.nube-item').forEach(n => {
+                n.style.filter = etapa.nubeDark ? 'grayscale(0) brightness(0.5)' : 'grayscale(1) brightness(1)';
+            });
+
+            document.getElementById('fase-num').textContent = `Etapa ${indexActual + 1} de 6: ${etapa.titulo}`;
+            document.getElementById('pregunta-txt').textContent = etapa.pregunta;
+            feedback.textContent = "Analiza las opciones...";
+            feedback.style.color = "#888";
+            feedback.style.backgroundColor = "transparent";
+
+            // Botones
+            grid.innerHTML = '';
+            etapa.opciones.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-opcion';
+                btn.innerHTML = `<span class="ico">${opt.i}</span><span class="txt">${opt.t}</span>`;
+                btn.onclick = () => validar(opt, btn);
+                grid.appendChild(btn);
+            });
+        }
+
+        function validar(opt, btn) {
+            if (bloqueado) return;
+            const feedback = document.getElementById('feedback-txt');
+
+            if (opt.c) {
+                bloqueado = true;
+                feedback.textContent = opt.f;
+                feedback.style.color = "white";
+                feedback.style.backgroundColor = "var(--success)";
+                
+                setTimeout(() => {
+                    if (indexActual < etapas.length - 1) {
+                        indexActual++;
+                        cargarEtapa();
+                    } else {
+                        finalizar();
+                    }
+                }, 3000);
+            } else {
+                btn.classList.add('error-shake');
+                feedback.textContent = opt.f;
+                feedback.style.color = "white";
+                feedback.style.backgroundColor = "var(--error)";
+                setTimeout(() => {
+                    btn.classList.remove('error-shake');
+                }, 500);
+            }
+        }
+
+        function finalizar() {
+            document.getElementById('fase-num').textContent = "¡CICLO COMPLETADO!";
+            document.getElementById('pregunta-txt').textContent = "¡Eres un experto en el viaje del agua!";
+            document.getElementById('opciones-grid').innerHTML = '';
+            document.getElementById('feedback-txt').style.display = 'none';
+            document.getElementById('btn-final').style.display = 'block';
+            
+            confetti({
+                particleCount: 200,
+                spread: 80,
+                origin: { y: 0.6 },
+                colors: ['#3498DB', '#FFFFFF', '#2ECC71']
+            });
+        }
+
+        function reiniciar() {
+            indexActual = 0;
+            document.getElementById('btn-final').style.display = 'none';
+            document.getElementById('feedback-txt').style.display = 'flex';
+            cargarEtapa();
+        }
+    </script>
+</body>
+</html>

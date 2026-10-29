@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Asertivo 2.0</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
+        
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: #1e293b; 
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            color: white;
+            overflow-x: hidden;
+        }
+
+         /* --- AJUSTES DE RESPONSIVIDAD (MEDIA QUERIES) --- */
+        .app-workspace {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 3rem;
+            max-width: 1100px;
+            width: 95%;
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 1024px) {
+            .app-workspace {
+                flex-direction: column;
+                gap: 2rem;
+                width: 100%;
+                padding-bottom: 40px;
+            }
+
+            .sidebar-options {
+                width: 100% !important;
+                max-width: 500px;
+            }
+
+            .phone-container {
+                width: 100% !important;
+                max-width: 340px;
+                height: 550px !important;
+            }
+            
+            .mission-grid {
+                grid-template-columns: 1fr !important;
+                max-width: 400px;
+                margin: 0 auto;
+            }
+        }
+
+     
+
+        /* --- SISTEMA DE FICHAS --- */
+        .mission-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            width: 100%;
+        }
+
+        .mission-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 2.5rem;
+            padding: 2.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: grayscale(1);
+            opacity: 0.5;
+        }
+
+        .mission-card.completed {
+            filter: grayscale(0);
+            opacity: 1;
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .mission-card:hover {
+            transform: translateY(-10px);
+            opacity: 1;
+            filter: grayscale(0);
+        }
+
+        /* --- ESTILOS CELULAR (SEGÚN TU CÓDIGO) --- */
+        .phone-container {
+            width: 340px;
+            height: 600px;
+            background: white;
+            border: 10px solid #000;
+            border-radius: 3rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .chat-area {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            background: #e5ddd5;
+            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded51.png');
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 0.6rem 0.8rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            position: relative;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            animation: messageIn 0.3s ease-out;
+            color: #1e293b;
+        }
+
+        .msg-other { background: white; align-self: flex-start; border-bottom-left-radius: 0; }
+        .msg-user { background: #dcf8c6; align-self: flex-end; border-bottom-right-radius: 0; }
+        .msg-system { background: #fff3cd; align-self: center; font-size: 0.65rem; color: #856404; text-align: center; font-weight: bold; border-radius: 0.5rem; border: 1px solid #ffeeba; padding: 0.4rem; }
+
+        @keyframes messageIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- PANEL DERECHO (TERMINAL) --- */
+        .sidebar-options {
+            flex-grow: 1;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 2rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .option-btn {
+            background: white;
+            color: #1e293b;
+            padding: 1.2rem;
+            border-radius: 1.2rem;
+            font-weight: 700;
+            text-align: left;
+            transition: all 0.3s;
+            border: 4px solid transparent;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .option-btn:hover {
+            transform: scale(1.05) translateX(10px);
+            border-color: #3b82f6;
+        }
+
+        .status-bar {
+            height: 25px;
+            background: #075e54;
+            color: white;
+            font-size: 0.7rem;
+            padding: 0 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="app" v-cloak>
+    
+    <div v-if="!activeMission" class="max-w-5xl w-full p-8 animate__animated animate__fadeIn">
+        <div class="text-center mb-12">
+            <h1 class="text-5xl font-900 mb-4 italic uppercase">Mediador <span class="text-blue-500">ECO 2.0</span></h1>
+            <p class="text-slate-400 font-bold tracking-widest">DOMINA EL ARTE DE LA COMUNICACIÓN ASERTIVA</p>
+        </div>
+        <div class="mission-grid">
+            <div v-for="m in missions" :key="m.id" 
+                 @click="startMission(m)"
+                 class="mission-card" :class="{ 'completed': completedMissions.has(m.id) }">
+                <div class="text-7xl mb-6">{{ m.icon }}</div>
+                <h2 class="text-2xl font-black uppercase mb-2">{{ m.title }}</h2>
+                <p class="text-sm text-slate-400">{{ m.desc }}</p>
+                <div v-if="completedMissions.has(m.id)" class="mt-4 text-blue-400 font-bold text-xs italic">✨ MISIÓN COMPLETADA</div>
+            </div>
+        </div>
+    </div>
+
+    <div v-else class="app-workspace animate__animated animate__zoomIn">
+        <div class="phone-container">
+            <div class="status-bar">
+                <span class="font-bold">{{ currentTime }}</span>
+                <div class="flex gap-1">📶 🔋</div>
+            </div>
+            <div class="bg-[#075e54] text-white p-3 flex items-center gap-3">
+                <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-xl">{{ activeMission.icon }}</div>
+                <div>
+                    <h3 class="font-bold text-sm">{{ activeMission.title }}</h3>
+                    <p class="text-[0.6rem] opacity-80">Dani, Mateo, Sara, Tú</p>
+                </div>
+            </div>
+
+            <div class="chat-area" id="chatWindow">
+                <div v-for="m in messages" :key="m.id" 
+                     class="message shadow-sm"
+                     :class="{'msg-user': m.author === 'me', 'msg-other': m.author !== 'me' && m.author !== 'system', 'msg-system': m.author === 'system'}">
+                    <p v-if="m.author !== 'me' && m.author !== 'system'" class="text-[0.6rem] font-bold text-green-700 mb-1 uppercase">{{ m.author }}</p>
+                    {{ m.text }}
+                </div>
+                <div v-if="isTyping" class="message msg-other italic text-[0.7rem] text-slate-500">
+                    {{ currentTyper }} está escribiendo...
+                </div>
+            </div>
+            
+            <div class="bg-white p-3 flex gap-2 border-t">
+                <div class="flex-grow bg-slate-100 rounded-full h-8 px-4 flex items-center text-slate-400 text-xs">Responder...</div>
+                <div class="w-8 h-8 bg-green-500 rounded-full"></div>
+            </div>
+        </div>
+
+        <aside class="sidebar-options">
+            <div>
+                <button @click="activeMission = null" class="text-blue-400 text-xs font-black uppercase mb-4 hover:underline">← Volver al menú</button>
+                <h2 class="text-3xl font-black italic">¿CÓMO VAS A <span class="text-blue-400">RESPONDER?</span></h2>
+                <p class="text-slate-400 text-sm mt-2">Analiza la situación y elige con sabiduría.</p>
+            </div>
+
+            <div v-if="showOptions" class="flex flex-col gap-4">
+                <button v-for="opt in currentOptions" 
+                        @click="selectOption(opt)"
+                        class="option-btn animate__animated animate__fadeInUp">
+                    {{ opt.text }}
+                </button>
+            </div>
+
+            <div v-else-if="gameEnded" class="text-center p-6 bg-white/10 rounded-2xl border-2 border-dashed border-white/20">
+                <p class="text-xl font-bold mb-6">{{ finalFeedback }}</p>
+                <button @click="activeMission = null" class="bg-blue-500 text-white font-black py-4 px-8 rounded-xl shadow-xl hover:scale-105 transition-all">
+                    FINALIZAR MISIÓN
+                </button>
+            </div>
+
+            <div v-else class="flex items-center gap-3 text-blue-400 animate-pulse">
+                <div class="w-3 h-3 bg-blue-400 rounded-full"></div>
+                <span class="font-bold uppercase text-[10px]">Analizando conversación...</span>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<script>
+const { createApp, ref, onMounted, nextTick } = Vue;
+
+createApp({
+    setup() {
+        const activeMission = ref(null);
+        const messages = ref([]);
+        const isTyping = ref(false);
+        const currentTyper = ref("");
+        const showOptions = ref(false);
+        const currentOptions = ref([]);
+        const gameEnded = ref(false);
+        const finalFeedback = ref("");
+        const currentTime = ref("");
+        const completedMissions = ref(new Set());
+
+        const missions = [
+            { 
+                id: 'gamer', title: 'Team Gamers', icon: '🎮', desc: 'Dani y Mateo pelean por un nivel perdido.',
+                tree: {
+                    start: {
+                        script: [
+                            { author: "Dani", text: "¡Mateo! ¿Por qué te saliste del nivel? ¡Perdimos todos los puntos! 😡" },
+                            { author: "Mateo", text: "¡Porque no me esperaron! Siempre van a lo suyo. ¡Me aburren!" },
+                            { author: "Sara", text: "Chicos, no peleen, es solo un juego..." },
+                            { author: "Dani", text: "¡No Sara! Mateo siempre hace lo mismo. ¡Es un egoísta!" }
+                        ],
+                        options: [
+                            { text: "Dani, entiendo que estés enojado por los puntos, pero Mateo se sintió solo. ¿Podemos hablarlo sin insultar?", nextStep: 'calm' },
+                            { text: "¡Es verdad! Mateo siempre arruina todo. Si no vas a jugar bien, ¡vete!", nextStep: 'fight' },
+                            { text: "Yo no digo nada, sigo jugando solo.", nextStep: 'ignore' }
+                        ]
+                    },
+                    calm: {
+                        script: [
+                            { author: "Mateo", text: "Bueno... es que sentí que no me hacían caso." },
+                            { author: "Dani", text: "No fue a propósito. Estábamos concentrados en el jefe final." }
+                        ],
+                        options: [
+                            { text: "Me parece genial. ¡Vamos juntos esta vez!", nextStep: 'end_win' },
+                            { text: "Pero que Mateo no se vuelva a salir, ¿eh?", nextStep: 'end_neutral' }
+                        ]
+                    },
+                    fight: {
+                        script: [
+                            { author: "Mateo", text: "¡Ah, sí?! Pues quédense con su juego tonto. ¡Me voy!" },
+                            { author: "system", text: "Mateo ha abandonado el grupo." }
+                        ],
+                        options: [
+                            { text: "Lo siento, me dejé llevar por el enojo. Voy a escribirle para pedir perdón.", nextStep: 'end_recovery' },
+                            { text: "¡Mejor así! No necesitamos a gente que se enoja por todo.", nextStep: 'end_lose' }
+                        ]
+                    },
+                    ignore: {
+                        script: [ { author: "Sara", text: "¿Nadie va a decir nada más? Qué silencio tan feo..." } ],
+                        options: [ { text: "Tienen razón, perdón. No quiero que el grupo se rompa.", nextStep: 'end_recovery' } ]
+                    }
+                }
+            },
+            {
+                id: 'school', title: 'Proyecto Ciencias', icon: '🔬', desc: 'Malentendido por un trabajo no entregado.',
+                tree: {
+                    start: {
+                        script: [
+                            { author: "Sara", text: "Ya envié el trabajo. No puse a Lucas porque no mandó su parte a tiempo." },
+                            { author: "Lucas", text: "¡Pero si yo hice los dibujos! No sabía dónde subirlos y nadie respondía." },
+                            { author: "Sara", text: "¡Tuviste una semana! Ahora ya es tarde." }
+                        ],
+                        options: [
+                            { text: "Sara, Lucas sí trabajó pero se confundió. ¿Podemos reenviarlo juntos ahora avisando a la profe?", nextStep: 'calm_school' },
+                            { text: "Lucas siempre es igual de despistado. Sara hizo bien.", nextStep: 'fight_school' },
+                            { text: "Bueno, al menos alguien lo envió. Yo me desentiendo.", nextStep: 'end_neutral' }
+                        ]
+                    },
+                    calm_school: {
+                        script: [ { author: "Sara", text: "Si lo enviamos ya mismo, quizás lo acepte... está bien, Lucas, mándalos ahora." } ],
+                        options: [ { text: "¡Genial! Así todos tenemos nota por nuestro esfuerzo.", nextStep: 'end_win' } ]
+                    },
+                    fight_school: {
+                        script: [ { author: "Lucas", text: "¡Qué injustos! No vuelvo a hacer equipo con ustedes." }, { author: "system", text: "Lucas está desconectado." } ],
+                        options: [ { text: "Ups, creo que nos pasamos. Voy a intentar hablar con él.", nextStep: 'end_recovery' }, { text: "Mejor, así no tenemos que cargar con nadie.", nextStep: 'end_lose' } ]
+                    }
+                }
+            },
+            {
+                id: 'party', title: 'Grupo Los Indestructibles', icon: '🤘​', desc: 'Un amigo se siente excluido de un plan.',
+                tree: {
+                    start: {
+                        script: [
+                            { author: "Dani", text: "¡Oigan! ¿Ya tienen listo su disfraz para el cumple de Ana mañana?" },
+                            { author: "Santi", text: "Ah... ¿había una fiesta? No sabía nada... 😔" },
+                            { author: "Dani", text: "¡Uy! Pensé que todos estaban en el grupo de la fiesta." }
+                        ],
+                        options: [
+                            { text: "Santi, seguro fue un error del grupo de invitaciones. ¡Ven con nosotros, Ana se alegrará!", nextStep: 'calm_party' },
+                            { text: "Pedro, no digas eso aquí, vas a hacer sentir mal a Santi.", nextStep: 'fight_party' },
+                            { text: "Yo ya tengo mi disfraz de robot listo.", nextStep: 'end_neutral' }
+                        ]
+                    },
+                    calm_party: {
+                        script: [ { author: "Santi", text: "¡Gracias! Pensé que no me querían ahí. Iré con ustedes." } ],
+                        options: [ { text: "¡Esa es la actitud! Nos vemos mañana.", nextStep: 'end_win' } ]
+                    },
+                    fight_party: {
+                        script: [ { author: "Dani", text: "¡Solo estaba preguntando! No seas amargado." }, { author: "Santi", text: "Mejor me desconecto..." } ],
+                        options: [ { text: "Perdón Dani, me preocupé por Santi. Santi, vuelve, queremos que vengas.", nextStep: 'end_recovery' }, { text: "Es que Dani no tiene tacto.", nextStep: 'end_lose' } ]
+                    }
+                }
+            }
+        ];
+
+        const updateTime = () => {
+            const now = new Date();
+            currentTime.value = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        };
+
+        const startMission = (mission) => {
+            activeMission.value = mission;
+            messages.value = [];
+            gameEnded.value = false;
+            runStep('start');
+        };
+
+        const runStep = async (stepKey) => {
+            showOptions.value = false;
+            if (stepKey.startsWith('end_')) {
+                handleEnd(stepKey);
+                return;
+            }
+
+            const step = activeMission.value.tree[stepKey];
+            for (let msg of step.script) {
+                isTyping.value = true;
+                currentTyper.value = msg.author;
+                await new Promise(r => setTimeout(r, 1500));
+                isTyping.value = false;
+                messages.value.push({ ...msg, id: Date.now() + Math.random() });
+                nextTick(() => {
+                    const el = document.getElementById('chatWindow');
+                    el.scrollTop = el.scrollHeight;
+                });
+                await new Promise(r => setTimeout(r, 500));
+            }
+            currentOptions.value = [...step.options].sort(() => Math.random() - 0.5);
+            showOptions.value = true;
+        };
+
+        const selectOption = (opt) => {
+            messages.value.push({ author: 'me', text: opt.text, id: Date.now() });
+            runStep(opt.nextStep);
+        };
+
+        const handleEnd = (type) => {
+            gameEnded.value = true;
+            const feedbacks = {
+                end_win: "¡Increíble! Lograste calmar los ánimos y fortalecer la amistad. 🏆",
+                end_neutral: "El grupo sigue unido, pero quedó tensión. ¡Casi perfecto! 👏",
+                end_recovery: "Reconocer un error es de valientes. Salvaste la situación. ✨",
+                end_lose: "El grupo se rompió. Tus palabras hirieron al equipo. 🛑"
+            };
+            finalFeedback.value = feedbacks[type];
+            if (type === 'end_win' || type === 'end_recovery') {
+                completedMissions.value.add(activeMission.value.id);
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            }
+        };
+
+        onMounted(() => {
+            updateTime();
+            setInterval(updateTime, 10000);
+        });
+
+        return { activeMission, missions, messages, isTyping, currentTyper, showOptions, currentOptions, gameEnded, finalFeedback, currentTime, completedMissions, startMission, selectOption };
+    }
+}).mount('#app');
+</script>
+</body>
+</html>

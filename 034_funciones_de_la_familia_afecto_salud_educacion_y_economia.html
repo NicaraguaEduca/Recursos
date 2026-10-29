@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Misión Familiar: Completa</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+
+        :root {
+            --primary: #2196F3;
+            --accent: #FF9800;
+            --ground-height: 15vh;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(to bottom, #81D4FA 0%, #B3E5FC 100%);
+            height: 100vh; width: 100vw;
+            overflow: hidden; user-select: none;
+        }
+
+        /* --- HUD --- */
+        #hud {
+            position: absolute; top: 0; left: 0; width: 100%;
+            padding: 10px 20px; box-sizing: border-box;
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 100; border-bottom: 4px solid #B0BEC5;
+        }
+        .hud-info { display: flex; align-items: center; gap: 10px; color: #455A64; font-weight: bold; font-size: 1.1rem; }
+        .bar-container {
+            width: 150px; height: 20px; background: #CFD8DC;
+            border-radius: 20px; overflow: hidden; border: 2px solid #90A4AE;
+        }
+        .bar-fill {
+            width: 0%; height: 100%; background: linear-gradient(90deg, #FF7043, #F44336);
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* --- MUNDO --- */
+        #world {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+        }
+
+        /* AMBIENTE */
+        .sun {
+            position: absolute; top: 80px; right: 40px; font-size: 5rem;
+            animation: spin 60s linear infinite; filter: drop-shadow(0 0 20px rgba(255,165,0,0.5));
+        }
+        .cloud {
+            position: absolute; color: rgba(255,255,255,0.9);
+            animation: moveCloud linear infinite;
+        }
+
+        /* SUELO */
+        .ground {
+            position: absolute; bottom: 0; left: 0;
+            width: 100%; height: var(--ground-height);
+            background: linear-gradient(to bottom, #7CB342 0%, #558B2F 100%);
+            border-top: 8px solid #33691E;
+            z-index: 10; pointer-events: auto;
+        }
+        
+        .tree {
+            position: absolute; bottom: calc(var(--ground-height) - 10px);
+            font-size: 8rem; z-index: 5;
+            filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.2));
+        }
+        .fence {
+            position: absolute; bottom: calc(var(--ground-height) - 5px);
+            font-size: 3rem; opacity: 0.9; z-index: 6;
+        }
+
+        /* --- CASA DETALLADA (ESTRUCTURA) --- */
+        .house-wrapper {
+            position: absolute;
+            bottom: calc(var(--ground-height) - 20px);
+            left: 50%; transform: translateX(-50%);
+            width: 95%; max-width: 550px; height: 500px;
+            z-index: 20;
+            display: flex; flex-direction: column;
+            pointer-events: auto;
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.4));
+        }
+
+        .roof {
+            width: 106%; margin-left: -3%; height: 90px;
+            background: linear-gradient(135deg, #B71C1C 25%, #C62828 25%, #C62828 50%, #B71C1C 50%, #B71C1C 75%, #C62828 75%, #C62828 100%);
+            background-size: 40px 40px;
+            clip-path: polygon(15% 0, 85% 0, 100% 100%, 0% 100%);
+            position: relative; z-index: 22;
+        }
+        .chimney {
+            position: absolute; top: -30px; right: 80px; width: 45px; height: 60px; 
+            background: #5D4037; border-top: 6px solid #3E2723; z-index: -1;
+        }
+        .smoke {
+            position: absolute; top: -40px; right: 5px; font-size: 2rem;
+            animation: smokeRise 3s infinite; opacity: 0.7;
+        }
+
+        .structure {
+            flex: 1; background: #FFF3E0;
+            border: 6px solid #4E342E; border-top: none;
+            display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+            box-shadow: inset 0 0 60px rgba(0,0,0,0.15);
+        }
+
+        .room {
+            position: relative; border: 3px solid #8D6E63;
+            overflow: hidden; cursor: pointer; transition: all 0.2s;
+        }
+        .room:active { transform: scale(0.98); }
+        .room:hover { background-color: rgba(0,0,0,0.05); }
+
+        /* MUEBLES CSS (EL DETALLE QUE QUERÍAS CONSERVAR) */
+        .room.bedroom { background: #F3E5F5; }
+        .furniture-bed {
+            position: absolute; bottom: 10px; left: 10px;
+            width: 90px; height: 50px; background: #AB47BC;
+            border: 3px solid #7B1FA2; border-radius: 10px 10px 0 0;
+        }
+        .furniture-bed::after { 
+            content:''; position: absolute; top: 5px; left: 5px;
+            width: 25px; height: 20px; background: white; border-radius: 4px;
+        }
+
+        .room.study { background: #E3F2FD; }
+        .furniture-desk {
+            position: absolute; bottom: 0; right: 15px;
+            width: 80px; height: 45px; background: #795548;
+            border-top: 4px solid #5D4037;
+        }
+
+        .room.living { background: #FFF9C4; }
+        .furniture-sofa {
+            position: absolute; bottom: 0; left: 15px;
+            width: 110px; height: 50px; background: #EF5350;
+            border-radius: 15px 15px 0 0; border: 2px solid #C62828;
+        }
+
+        .room.kitchen { background: #FFCCBC; }
+        .furniture-fridge {
+            position: absolute; bottom: 0; right: 10px;
+            width: 50px; height: 90px; background: #ECEFF1;
+            border: 2px solid #90A4AE; border-radius: 5px 5px 0 0;
+        }
+        .furniture-fridge::before {
+            content:''; position: absolute; top: 5px; left: 5px; right: 5px; height: 25px;
+            border: 1px solid #CFD8DC;
+        }
+        .furniture-table {
+            position: absolute; bottom: 0; left: 10px; width: 70px; height: 45px; background: #8D6E63;
+        }
+
+        /* PERSONAJES Y ALERTAS */
+        .character {
+            position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+            font-size: 3.5rem; z-index: 5; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+        }
+        .alert-bubble {
+            position: absolute; top: 15px; right: 15px;
+            width: 35px; height: 35px; background: #FF3D00; color: white;
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-weight: bold; font-size: 1.2rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3); border: 2px solid white;
+            animation: bounce 1.2s infinite; z-index: 10;
+        }
+        .success-check {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+            font-size: 5rem; color: #2E7D32; z-index: 20;
+            text-shadow: 0 0 15px white; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* --- NUEVO ESTILO DE MODAL (COLORIDO Y ANIMADO) --- */
+        .overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            display: none; justify-content: center; align-items: center;
+            z-index: 200; backdrop-filter: blur(4px);
+        }
+        
+        .card {
+            background: white; width: 90%; max-width: 420px;
+            border-radius: 25px; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+            animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            position: relative; overflow: hidden;
+            border: 4px solid white;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #42A5F5, #1976D2); /* Azul vibrante */
+            padding: 20px; text-align: center; color: white;
+            position: relative;
+        }
+        .card-header.orange { background: linear-gradient(135deg, #FFA726, #F57C00); }
+
+        .card-body { padding: 25px; }
+
+        .btn-3d {
+            width: 100%; padding: 15px; margin-bottom: 12px;
+            border: none; border-radius: 15px;
+            font-size: 1.1rem; font-family: inherit; font-weight: bold; color: #546E7A;
+            background: #F5F5F5;
+            box-shadow: 0 5px 0 #CFD8DC; /* Efecto 3D */
+            cursor: pointer; transition: 0.1s;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .btn-3d:active { transform: translateY(5px); box-shadow: none; }
+        
+        .btn-3d.correct { 
+            background: #C8E6C9; color: #2E7D32; box-shadow: 0 5px 0 #81C784; 
+        }
+        .btn-3d.wrong { 
+            background: #FFCDD2; color: #C62828; box-shadow: 0 5px 0 #E57373; animation: shake 0.4s;
+        }
+
+        .close-x {
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(255,255,255,0.2); width: 30px; height: 30px;
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            color: white; cursor: pointer; font-weight: bold;
+        }
+
+        .feedback-box {
+            background: #E1F5FE; border: 2px dashed #29B6F6;
+            color: #01579B; padding: 15px; border-radius: 12px;
+            margin-top: 15px; font-weight: 600; display: none;
+        }
+
+        .action-btn {
+            background: #FFCA28; color: #3E2723;
+            width: 100%; padding: 15px; border: none; border-radius: 15px;
+            font-size: 1.2rem; font-weight: bold; margin-top: 15px;
+            box-shadow: 0 5px 0 #FFA000; cursor: pointer;
+            display: none;
+        }
+        .action-btn:active { transform: translateY(5px); box-shadow: none; }
+
+        /* CONFETI */
+        .confetti { position: fixed; width: 12px; height: 12px; animation: fall 3s linear forwards; pointer-events: none; z-index: 500; }
+
+        /* ANIMACIONES */
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes moveCloud { 0% { left: -20%; } 100% { left: 120%; } }
+        @keyframes smokeRise { 0% { transform: translateY(0); opacity: 0.7; } 100% { transform: translateY(-20px); opacity: 0; } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 80% { transform: scale(1.05); } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        @keyframes fall { to { transform: translateY(100vh) rotate(720deg); } }
+
+    </style>
+</head>
+<body>
+
+    <div id="hud">
+        <div class="hud-info">
+            <span id="display-avatar" style="font-size: 1.8rem;">👤</span>
+            <span>Misión Hogar</span>
+        </div>
+        <div class="hud-info">
+            <div class="bar-container"><div class="bar-fill" id="happiness-bar"></div></div>
+            <span style="font-size: 1.5rem;">❤️</span>
+        </div>
+    </div>
+
+    <div id="world">
+        <div class="sun">☀️</div>
+        <div class="cloud" style="top: 50px; font-size: 4rem; animation-duration: 45s;">☁️</div>
+        <div class="cloud" style="top: 120px; animation-duration: 30s;">☁️</div>
+        
+        <div class="ground"></div>
+        <div class="tree" style="left: -20px;">🌳</div>
+        <div class="tree" style="right: -20px; transform: scaleX(-1);">🌳</div>
+        
+        <div class="fence" style="left: 100px;">🪵</div> 
+        <div class="fence" style="left: 80px;">🍄</div>
+        <div class="fence" style="right: 80px;">🪵</div>
+
+        <div class="house-wrapper">
+            <div class="chimney"><div class="smoke">☁️</div></div>
+            <div class="roof"></div>
+
+            <div class="structure">
+                <div class="room bedroom" onclick="openMission(0)">
+                    <div class="furniture-bed"></div>
+                    <div class="character">🤒</div>
+                    <div class="alert-bubble" id="alert-0">!</div>
+                    <div class="success-check" id="check-0">✅</div>
+                </div>
+
+                <div class="room study" onclick="openMission(1)">
+                    <div class="furniture-desk"></div>
+                    <div class="furniture-books" style="position: absolute; bottom: 45px; right: 20px; font-size: 1.5rem;">📚</div>
+                    <div class="character">👧</div>
+                    <div class="alert-bubble" id="alert-1">!</div>
+                    <div class="success-check" id="check-1">✅</div>
+                </div>
+
+                <div class="room living" onclick="openMission(2)">
+                    <div class="furniture-sofa"></div>
+                    <div class="furniture-lamp" style="position: absolute; bottom: 0; right: 10px; font-size: 3rem;">🛋️</div>
+                    <div class="character">👴</div>
+                    <div class="alert-bubble" id="alert-2">!</div>
+                    <div class="success-check" id="check-2">✅</div>
+                </div>
+
+                <div class="room kitchen" onclick="openMission(3)">
+                    <div class="furniture-fridge"></div>
+                    <div class="furniture-table"></div>
+                    <div class="character">👨‍🍳</div>
+                    <div class="alert-bubble" id="alert-3">!</div>
+                    <div class="success-check" id="check-3">✅</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="start-screen" style="display: flex;">
+        <div class="card" style="text-align: center;">
+            <div class="card-header orange">
+                <h1 style="margin:0; font-size:1.8rem;">¡Bienvenido a Casa!</h1>
+            </div>
+            <div class="card-body">
+                <p style="color:#666; font-size:1.1rem;">Hay mucho que hacer hoy. Elige tu personaje:</p>
+                <div style="margin: 20px; display:flex; justify-content:center; gap:20px;">
+                    <span style="font-size: 4rem; cursor:pointer; transition:transform 0.2s;" onclick="startGame('👦')" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">👦</span>
+                    <span style="font-size: 4rem; cursor:pointer; transition:transform 0.2s;" onclick="startGame('👧')" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">👧</span>
+                    <span style="font-size: 4rem; cursor:pointer; transition:transform 0.2s;" onclick="startGame('🤖')" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🤖</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="mission-overlay">
+        <div class="card">
+            <div class="card-header">
+                <div class="close-x" onclick="closeModal()">✕</div>
+                <div style="font-size: 3rem; margin-bottom: 5px;" id="m-icon">🧐</div>
+                <h2 id="m-title" style="margin: 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">Titulo</h2>
+            </div>
+            
+            <div class="card-body">
+                <p id="m-desc" style="color: #455A64; line-height: 1.5; font-size:1.1rem; margin-bottom:20px;">Descripción...</p>
+                
+                <div id="m-options-container">
+                    </div>
+
+                <div id="m-feedback" class="feedback-box"></div>
+                
+                <button class="action-btn" id="m-btn-next" onclick="completeMission()">¡Entendido!</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="end-screen">
+        <div class="card" style="text-align: center;">
+            <div class="card-header" style="background: linear-gradient(135deg, #66BB6A, #2E7D32);">
+                <h1 style="margin:0;">¡Familia Feliz!</h1>
+            </div>
+            <div class="card-body">
+                <div style="font-size: 6rem; margin:10px;">🏡❤️</div>
+                <p style="color:#555;">Has completado todas las funciones: Afecto, Salud, Educación y Economía.</p>
+                <button class="action-btn" onclick="location.reload()" style="display:block;">Jugar Otra Vez</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // DATOS EDUCATIVOS
+    const missions = [
+        {
+            icon: "🌡️",
+            title: "Cuidado en Salud",
+            desc: "Tu hermano tiene fiebre. Mamá le trae medicina y se queda cuidándolo. ¿Qué función cumple?",
+            correct: 1,
+            options: ["Función Política", "Función de Salud", "Función Recreativa"],
+            feedback: "¡Correcto! La familia cuida la salud física y emocional de todos."
+        },
+        {
+            icon: "📝",
+            title: "Apoyo Escolar",
+            desc: "La tarea es difícil. Papá se sienta a explicarte con paciencia. ¿Qué función es?",
+            correct: 0,
+            options: ["Función Educativa", "Función Económica", "Función Religiosa"],
+            feedback: "¡Muy bien! En casa aprendemos valores y conocimientos."
+        },
+        {
+            icon: "🫂",
+            title: "Un Abrazo",
+            desc: "El abuelo está triste. Todos vamos a la sala para abrazarlo y escucharlo. ¿Qué función es?",
+            correct: 1,
+            options: ["Función Reproductiva", "Función Afectiva", "Función Normativa"],
+            feedback: "¡Exacto! La Función Afectiva es dar amor y apoyo emocional."
+        },
+        {
+            icon: "🛒",
+            title: "Las Compras",
+            desc: "Los padres trabajan para comprar comida y llenar la nevera. ¿Qué función es?",
+            correct: 2,
+            options: ["Función Social", "Función Recreativa", "Función Económica"],
+            feedback: "¡Correcto! Generar recursos para vivir es la Función Económica."
+        }
+    ];
+
+    let currentAvatar = '';
+    let currentMissionIndex = -1;
+    let missionsCompleted = 0;
+
+    // SONIDOS
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const actx = new AudioContext();
+
+    function playSound(type) {
+        if(actx.state === 'suspended') actx.resume();
+        const osc = actx.createOscillator();
+        const gain = actx.createGain();
+        osc.connect(gain); gain.connect(actx.destination);
+        const now = actx.currentTime;
+
+        if (type === 'start') {
+            osc.frequency.setValueAtTime(400, now);
+            osc.frequency.linearRampToValueAtTime(800, now + 0.3);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.linearRampToValueAtTime(0, now + 0.3);
+            osc.start(now); osc.stop(now + 0.3);
+        } else if (type === 'correct') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(500, now);
+            osc.frequency.setValueAtTime(800, now + 0.1);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.linearRampToValueAtTime(0, now + 0.4);
+            osc.start(now); osc.stop(now + 0.4);
+        } else if (type === 'wrong') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(200, now);
+            osc.frequency.linearRampToValueAtTime(150, now + 0.2);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.linearRampToValueAtTime(0, now + 0.2);
+            osc.start(now); osc.stop(now + 0.2);
+        }
+    }
+
+    // LOGICA
+    function startGame(avatar) {
+        currentAvatar = avatar;
+        document.getElementById('display-avatar').innerText = avatar;
+        document.getElementById('start-screen').style.display = 'none';
+        playSound('start');
+    }
+
+    function openMission(index) {
+        if(document.getElementById(`check-${index}`).style.transform === 'translate(-50%, -50%) scale(1)') return;
+
+        currentMissionIndex = index;
+        const data = missions[index];
+        const modal = document.getElementById('mission-overlay');
+        
+        document.getElementById('m-title').innerText = data.title;
+        document.getElementById('m-desc').innerText = data.desc;
+        document.getElementById('m-icon').innerText = data.icon;
+        document.getElementById('m-feedback').style.display = 'none';
+        document.getElementById('m-btn-next').style.display = 'none';
+
+        const container = document.getElementById('m-options-container');
+        container.innerHTML = '';
+
+        data.options.forEach((opt, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-3d';
+            btn.innerHTML = `<span>🔹</span> ${opt}`;
+            btn.onclick = () => checkAnswer(btn, i === data.correct, data.feedback);
+            container.appendChild(btn);
+        });
+
+        modal.style.display = 'flex';
+    }
+
+    function checkAnswer(btn, isCorrect, feedbackText) {
+        const allBtns = document.querySelectorAll('.btn-3d');
+        allBtns.forEach(b => b.disabled = true);
+
+        if (isCorrect) {
+            btn.classList.add('correct');
+            btn.innerHTML = `<span>✅</span> ${btn.innerText.replace('🔹', '')}`;
+            document.getElementById('m-feedback').innerHTML = feedbackText;
+            document.getElementById('m-feedback').style.display = 'block';
+            document.getElementById('m-btn-next').style.display = 'block';
+            playSound('correct');
+            createConfetti();
+        } else {
+            btn.classList.add('wrong');
+            btn.innerHTML = `<span>❌</span> ${btn.innerText.replace('🔹', '')}`;
+            playSound('wrong');
+            setTimeout(() => {
+                allBtns.forEach(b => {
+                    b.disabled = false;
+                    b.classList.remove('wrong');
+                    b.innerHTML = b.innerHTML.replace('❌', '🔹');
+                });
+            }, 1000);
+        }
+    }
+
+    function completeMission() {
+        document.getElementById('mission-overlay').style.display = 'none';
+        
+        document.getElementById(`alert-${currentMissionIndex}`).style.display = 'none';
+        document.getElementById(`check-${currentMissionIndex}`).style.transform = 'translate(-50%, -50%) scale(1)';
+        document.querySelectorAll('.room')[currentMissionIndex].style.filter = "grayscale(0.3)";
+        
+        missionsCompleted++;
+        document.getElementById('happiness-bar').style.width = (missionsCompleted * 25) + '%';
+
+        if (missionsCompleted === 4) {
+            setTimeout(() => {
+                document.getElementById('end-screen').style.display = 'flex';
+                playSound('correct');
+            }, 1500);
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('mission-overlay').style.display = 'none';
+    }
+
+    function createConfetti() {
+        for(let i=0; i<30; i++) {
+            const el = document.createElement('div');
+            el.className = 'confetti';
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.backgroundColor = ['#FFD700', '#FF69B4', '#00E676'][Math.floor(Math.random()*3)];
+            el.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 3000);
+        }
+    }
+</script>
+</body>
+</html>

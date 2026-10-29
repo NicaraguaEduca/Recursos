@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trivia Arqueológica: Mesopotamia (Versión Extendida)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #1e1b4b; /* Azul noche profundo */
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(217, 119, 6, 0.15), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(251, 191, 36, 0.15), transparent 25%);
+            height: 100vh;
+            overflow-x: hidden;
+            color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .title-font { font-family: 'Cinzel', serif; }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(16px);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(251, 191, 36, 0.2);
+        }
+
+        .pedagogy-card { border-left: 12px solid #f59e0b; }
+
+        /* Botones de Opciones */
+        .option-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            background: rgba(251, 191, 36, 0.1);
+            border-color: rgba(251, 191, 36, 0.5);
+        }
+        .option-btn:active:not(:disabled) { transform: translateY(1px); }
+
+        /* Estados de Respuesta */
+        .option-correct {
+            background: rgba(34, 197, 94, 0.2) !important;
+            border-color: #22c55e !important;
+            color: #4ade80;
+            transform: scale(1.02);
+        }
+        .option-wrong {
+            background: rgba(239, 68, 68, 0.2) !important;
+            border-color: #ef4444 !important;
+            color: #f87171;
+        }
+
+        .shake-animation { animation: shake 0.4s both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body x-data="triviaApp()">
+
+    <main class="w-full max-w-4xl p-4 md:p-6 relative h-full flex flex-col justify-center mx-auto">
+        
+        <div x-show="estado === 'ficha'" class="glass-panel pedagogy-card p-8 md:p-12 mx-auto max-w-3xl" x-transition.opacity>
+            <div class="flex items-center gap-4 mb-8 border-b border-white/10 pb-6">
+                <span class="text-5xl drop-shadow-md">📜</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight title-font">Ficha del Recurso</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                <div class="bg-amber-900/30 p-5 rounded-2xl border border-amber-500/30">
+                    <span class="block text-sm font-bold text-amber-400 uppercase tracking-widest mb-2">Asignatura</span>
+                    <span class="text-xl font-bold text-white">Ciencias Sociales</span>
+                </div>
+                
+                <div class="bg-orange-900/30 p-5 rounded-2xl border border-orange-500/30">
+                    <span class="block text-sm font-bold text-orange-400 uppercase tracking-widest mb-2">Eje Temático</span>
+                    <span class="text-xl font-bold text-white">Primeras Civilizaciones</span>
+                </div>
+
+                <div class="bg-slate-800/50 p-5 rounded-2xl border border-slate-600 md:col-span-2 shadow-sm">
+                    <span class="block text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">Objetivo de Aprendizaje</span>
+                    <p class="text-lg font-medium text-slate-200 leading-relaxed">
+                        Comprender el <b>Método Histórico</b> analizando hallazgos arqueológicos de Mesopotamia. Deducir mediante preguntas de análisis el uso de objetos vinculados a la agricultura, comercio, religión, tecnología y leyes.
+                    </p>
+                </div>
+            </div>
+
+            <button @click="estado = 'instrucciones'" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-5 rounded-xl text-xl transition-all shadow-xl shadow-amber-900/50 hover:-translate-y-1 title-font tracking-wider uppercase">
+                Iniciar Decodificador →
+            </button>
+        </div>
+
+        <div x-show="estado === 'instrucciones'" class="glass-panel p-8 md:p-12 text-center max-w-2xl mx-auto border-t-4 border-t-amber-500" style="display: none;" x-transition.opacity>
+            <div class="text-7xl mb-6">🔍</div>
+            <h1 class="text-4xl font-extrabold text-white mb-4 title-font text-amber-400">El Cuestionario Histórico</h1>
+            <p class="text-lg text-slate-300 mb-8 font-medium">Como arqueólogo, has encontrado 7 fuentes materiales. Deberás leer la descripción del hallazgo y elegir la deducción correcta.</p>
+            
+            <div class="bg-slate-900/50 p-6 rounded-2xl mb-8 text-left border border-slate-700 shadow-inner">
+                <p class="font-bold text-amber-400 text-lg mb-4 border-b border-slate-700 pb-2">Reglas del Análisis:</p>
+                <ul class="space-y-4 text-slate-300 font-medium">
+                    <li>🔹 Lee con atención las notas de campo de cada descubrimiento.</li>
+                    <li>🔹 Selecciona la opción que mejor explique el uso del objeto en su contexto.</li>
+                    <li>🔹 Tras responder, el sistema revelará la explicación histórica completa.</li>
+                </ul>
+            </div>
+
+            <button @click="iniciarJuego()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-5 rounded-xl text-xl transition-all shadow-xl shadow-amber-900/50 hover:-translate-y-1 title-font uppercase tracking-wider">
+                Comenzar Evaluación
+            </button>
+        </div>
+
+        <div x-show="estado === 'jugando'" class="w-full h-full py-2 flex flex-col max-w-3xl mx-auto" style="display: none;" x-transition.opacity>
+            
+            <div class="flex justify-between items-center bg-slate-800 p-4 rounded-2xl border border-slate-600 mb-6 shrink-0">
+                <span class="font-bold text-amber-400">Hallazgo <span x-text="indiceActual + 1"></span> / <span x-text="preguntas.length"></span></span>
+                <span class="font-bold text-green-400">Aciertos: <span x-text="aciertos"></span></span>
+            </div>
+
+            <div class="flex-1 flex flex-col justify-center gap-6 min-h-0">
+                
+                <div class="glass-panel p-6 md:p-10 text-center relative">
+                    <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-amber-500 text-amber-950 font-black px-6 py-2 rounded-full uppercase tracking-widest text-sm shadow-lg w-max">
+                        Deducción Arqueológica
+                    </div>
+                    <div class="text-6xl mb-4 mt-2 drop-shadow-lg" x-text="preguntaActual?.emoji"></div>
+                    <h3 class="text-xl md:text-2xl font-medium text-white leading-relaxed" x-text="preguntaActual?.texto"></h3>
+                </div>
+
+                <div class="grid grid-cols-1 gap-3 shrink-0">
+                    <template x-for="(opcion, index) in preguntaActual?.opciones" :key="index">
+                        <button @click="responder(index)" 
+                                :disabled="respondido"
+                                class="option-btn text-left p-4 md:p-5 rounded-xl font-medium text-base md:text-lg text-slate-200 w-full flex items-center justify-between group"
+                                :class="{
+                                    'option-correct': respondido && opcion.esCorrecta,
+                                    'option-wrong': respondido && index === indiceSeleccionado && !opcion.esCorrecta,
+                                    'opacity-50': respondido && !opcion.esCorrecta && index !== indiceSeleccionado
+                                }">
+                            <span x-text="opcion.texto" class="pr-4"></span>
+                            
+                            <span x-show="respondido && opcion.esCorrecta" class="text-2xl shrink-0">✅</span>
+                            <span x-show="respondido && index === indiceSeleccionado && !opcion.esCorrecta" class="text-2xl shrink-0">❌</span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <div class="mt-6 shrink-0 h-40">
+                <div x-show="respondido" 
+                     x-transition:enter="transition ease-out duration-300 transform"
+                     x-transition:enter-start="opacity-0 translate-y-4"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     class="bg-slate-800 p-5 rounded-2xl border border-slate-600 flex flex-col justify-between h-full shadow-lg">
+                    
+                    <p class="text-slate-300 text-sm md:text-base font-medium overflow-y-auto hide-scroll mb-3 leading-relaxed" x-text="preguntaActual?.explicacion"></p>
+                    
+                    <button @click="siguientePregunta()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl uppercase tracking-widest text-sm transition-colors shadow-md">
+                        Siguiente Hallazgo ➔
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <div x-show="estado === 'fin'" class="glass-panel p-8 md:p-12 text-center max-w-2xl mx-auto border-t-8 border-t-amber-500" style="display: none;" x-transition.opacity.duration.800ms>
+            <div class="text-8xl mb-6">🏛️</div>
+            <h2 class="text-4xl md:text-5xl font-black text-white mb-2 title-font text-amber-400">Análisis Completado</h2>
+            <p class="text-xl text-slate-300 mb-8 font-medium">Has terminado de decodificar las fuentes primarias.</p>
+            
+            <div class="bg-slate-900/80 p-8 rounded-3xl mb-8 border border-slate-700">
+                <span class="block text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">Precisión Arqueológica</span>
+                <div class="text-6xl font-black" :class="aciertos === preguntas.length ? 'text-green-400' : 'text-amber-400'">
+                    <span x-text="aciertos"></span> / <span x-text="preguntas.length"></span>
+                </div>
+                <p class="mt-4 text-slate-300 font-medium" x-text="aciertos === preguntas.length ? '¡Felicidades! Tienes madera de gran historiador y analista.' : 'Buen intento. Recuerda que la historia se basa en observar bien los detalles.'"></p>
+            </div>
+
+            <button @click="reiniciar()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-5 rounded-xl text-xl transition-all shadow-xl shadow-amber-900/50 hover:-translate-y-1 title-font uppercase tracking-widest">
+                Volver a Jugar
+            </button>
+        </div>
+
+    </main>
+
+    <script>
+        function triviaApp() {
+            return {
+                estado: 'ficha', 
+                indiceActual: 0,
+                aciertos: 0,
+                respondido: false,
+                indiceSeleccionado: null,
+
+                // 7 Preguntas completas sobre Mesopotamia
+                preguntas: [
+                    {
+                        emoji: '🌾',
+                        texto: 'Encontramos una "Hoz de Arcilla Cocida" cerca de las orillas del río Éufrates. ¿A qué actividad principal de Mesopotamia pertenecía?',
+                        opciones: [
+                            { texto: 'A la guerra, como arma para atacar enemigos a corta distancia.', esCorrecta: false },
+                            { texto: 'A la agricultura, para cortar y cosechar los cereales rápidamente.', esCorrecta: true },
+                            { texto: 'Al comercio, era usada como moneda de cambio entre mercaderes.', esCorrecta: false }
+                        ],
+                        explicacion: '¡Correcto! Mesopotamia significa "tierra entre ríos". Las hoces de arcilla se usaban en la agricultura, la base de su supervivencia, para cortar los cereales como el trigo y la cebada.'
+                    },
+                    {
+                        emoji: '📜',
+                        texto: 'Descubrimos una "Tablilla de arcilla" con marcas en forma de cuña (escritura cuneiforme) que lista cantidades de ovejas y piezas de plata. ¿Qué nos indica esto?',
+                        opciones: [
+                            { texto: 'Que inventaron la escritura exclusivamente para la literatura y poesía.', esCorrecta: false },
+                            { texto: 'Que las ovejas eran consideradas dioses en su religión politeísta.', esCorrecta: false },
+                            { texto: 'Que la escritura nació por una necesidad práctica de llevar registros contables y comerciales.', esCorrecta: true }
+                        ],
+                        explicacion: 'El Método Histórico nos dice que la escritura no nació para contar cuentos, sino por una necesidad administrativa: registrar quién vendió qué y a cuánto.'
+                    },
+                    {
+                        emoji: '🏺',
+                        texto: 'Hallamos un "Sello Cilíndrico" de piedra tallada. Al hacerlo rodar sobre arcilla fresca, deja un dibujo único y repetitivo. ¿Para qué lo usaban?',
+                        opciones: [
+                            { texto: 'Para "firmar" contratos, sellar vasijas y proteger mercancías comerciales.', esCorrecta: true },
+                            { texto: 'Para marcar y pintar las armas y escudos de los soldados en la guerra.', esCorrecta: false },
+                            { texto: 'Como juguete o rodillo para aplanar la masa de pan en las cocinas.', esCorrecta: false }
+                        ],
+                        explicacion: 'Los sellos cilíndricos eran la "firma digital" de la época. Un mercader sellaba las tinajas de aceite o grano para asegurar que nadie las abriera durante el viaje.'
+                    },
+                    {
+                        emoji: '⚔️',
+                        texto: 'Desenterramos puntas de lanza de bronce y yelmos de cobre muy gruesos y pesados. ¿Qué deduce un arqueólogo de estos objetos metálicos?',
+                        opciones: [
+                            { texto: 'Que usaban estas herramientas tan pesadas para cultivar la tierra dura del desierto.', esCorrecta: false },
+                            { texto: 'Que existían constantes conflictos y guerras entre sus ciudades-estado por recursos.', esCorrecta: true },
+                            { texto: 'Que el cobre les sobraba tanto que lo usaban como adorno común en la cabeza.', esCorrecta: false }
+                        ],
+                        explicacion: 'La presencia de armas defensivas y ofensivas de metal especializado demuestra que las ciudades sumerias y asirias competían militarmente por el control de la tierra y el agua fértil.'
+                    },
+                    // NUEVAS PREGUNTAS
+                    {
+                        emoji: '🛕',
+                        texto: 'En el centro de las ruinas de la ciudad desenterramos una enorme estructura piramidal escalonada de ladrillos de adobe llamada "Zigurat". ¿Qué propósito principal tenía?',
+                        opciones: [
+                            { texto: 'Era un templo religioso para adorar a los dioses y su base servía como almacén.', esCorrecta: true },
+                            { texto: 'Era una fortaleza puramente militar construida para proteger a los reyes.', esCorrecta: false },
+                            { texto: 'Era un palacio de verano exclusivo para los comerciantes y nobles de la ciudad.', esCorrecta: false }
+                        ],
+                        explicacion: 'Los Zigurats eran los centros religiosos y económicos de la ciudad. Se creía que conectaban el cielo y la tierra, y los sacerdotes almacenaban allí los granos sagrados.'
+                    },
+                    {
+                        emoji: '🎡',
+                        texto: 'Encontramos restos de madera en forma de disco sólido unido a un eje rotatorio. Es una de las primeras versiones de "la rueda". ¿Cuál fue su primer gran uso?',
+                        opciones: [
+                            { texto: 'Se usaba como una moneda gigante de madera para comprar grandes terrenos.', esCorrecta: false },
+                            { texto: 'Fue inventada principalmente para construir molinos de viento en el desierto.', esCorrecta: false },
+                            { texto: 'Se usó primero como torno de alfarero para modelar vasijas de barro más rápido.', esCorrecta: true }
+                        ],
+                        explicacion: 'Antes de revolucionar el transporte en carros de guerra, la rueda fue inventada por los sumerios como torno de alfarero, facilitando la creación rápida de vasijas para almacenar comida.'
+                    },
+                    {
+                        emoji: '🗿',
+                        texto: 'Descubrimos una enorme estela de piedra negra (el Código de Hammurabi) tallada con leyes estrictas como "ojo por ojo". ¿Por qué fue tan importante este hallazgo?',
+                        opciones: [
+                            { texto: 'Porque demuestra que no tenían leyes reales y el rey hacía lo que quería.', esCorrecta: false },
+                            { texto: 'Porque es uno de los primeros conjuntos de leyes escritas y públicas para unificar la sociedad.', esCorrecta: true },
+                            { texto: 'Porque era un menú gigante con los precios del mercado central de Babilonia.', esCorrecta: false }
+                        ],
+                        explicacion: 'El Código de Hammurabi es fundamental porque pasó las leyes de la costumbre oral a un documento escrito que todos podían ver, estableciendo reglas claras para gobernar un imperio.'
+                    }
+                ],
+
+                get preguntaActual() {
+                    return this.preguntas[this.indiceActual] || null;
+                },
+
+                iniciarJuego() {
+                    this.indiceActual = 0;
+                    this.aciertos = 0;
+                    this.respondido = false;
+                    this.indiceSeleccionado = null;
+                    // Barajar preguntas
+                    this.preguntas.sort(() => Math.random() - 0.5);
+                    this.estado = 'jugando';
+                },
+
+                responder(index) {
+                    if (this.respondido) return;
+
+                    this.indiceSeleccionado = index;
+                    this.respondido = true;
+
+                    const esCorrecta = this.preguntaActual.opciones[index].esCorrecta;
+
+                    if (esCorrecta) {
+                        this.aciertos++;
+                        confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 }, colors: ['#22c55e', '#fbbf24'] });
+                    }
+                },
+
+                siguientePregunta() {
+                    if (this.indiceActual < this.preguntas.length - 1) {
+                        this.indiceActual++;
+                        this.respondido = false;
+                        this.indiceSeleccionado = null;
+                    } else {
+                        this.estado = 'fin';
+                        if (this.aciertos === this.preguntas.length) {
+                            setTimeout(() => {
+                                confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 } });
+                            }, 300);
+                        }
+                    }
+                },
+
+                reiniciar() {
+                    this.estado = 'instrucciones';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rutina de Mañana - Feedback Mejorado</title>
+    <style>
+        :root {
+            --wall-color: #e0f2f1;
+            --mirror-border: #4e342e;
+            --shelf-bg: #8d6e63;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
+            background-color: var(--wall-color);
+            background-image: radial-gradient(#b2dfdb 15%, transparent 16%), radial-gradient(#b2dfdb 15%, transparent 16%);
+            background-size: 50px 50px; background-position: 0 0, 25px 25px;
+            margin: 0; padding: 0; height: 100vh; overflow: hidden;
+            display: flex; justify-content: center; align-items: center; user-select: none;
+        }
+
+        /* --- PANTALLAS MODALES --- */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 300;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center;
+        }
+        .card {
+            background: white; padding: 40px; border-radius: 25px; width: 90%; max-width: 600px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 4px solid #fff;
+            animation: popUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .title { color: #00695c; font-size: 3rem; margin: 0 0 20px 0; font-weight: 800; }
+        .text { color: #455a64; font-size: 1.5rem; line-height: 1.5; margin-bottom: 30px; }
+        
+        .btn {
+            background: linear-gradient(135deg, #00b0ff, #0277bd); color: white; border: none;
+            padding: 15px 40px; font-size: 1.6rem; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 8px 15px rgba(2, 119, 189, 0.4); font-weight: bold;
+            transition: transform 0.1s;
+        }
+        .btn:active { transform: scale(0.95); }
+
+        /* --- PANEL DE INSTRUCCIONES --- */
+        .instruction-banner {
+            width: 85%; max-width: 750px;
+            background: #fffde7;
+            border: 4px solid #fbc02d;
+            border-radius: 50px;
+            padding: 15px 30px;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #ef6c00;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            z-index: 100;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: slideDown 0.5s ease-out;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .instruction-banner::before {
+            content: '💡'; position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
+        }
+
+        /* --- ESCENARIO --- */
+        .bathroom-scene {
+            position: relative; width: 100%; max-width: 900px; height: 95vh;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+        }
+
+        /* Espejo */
+        .mirror-frame {
+            position: relative; width: 480px; height: 500px;
+            background: var(--mirror-border); border-radius: 200px 200px 20px 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4); padding: 15px; margin-top: 5px;
+        }
+        .mirror-glass {
+            width: 100%; height: 100%; background: linear-gradient(160deg, #fff 0%, #e1f5fe 60%, #b3e5fc 100%);
+            border-radius: 190px 190px 10px 10px; position: relative; overflow: hidden;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.1);
+        }
+        /* Reflejo brillante */
+        .mirror-glass::after {
+            content: ''; position: absolute; top: -50%; left: -100%; width: 200%; height: 200%;
+            background: linear-gradient(45deg, transparent 45%, rgba(255,255,255,0.6) 50%, transparent 55%);
+            pointer-events: none;
+        }
+
+        /* --- AVATAR --- */
+        .avatar-container {
+            width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: flex-end;
+            margin-bottom: -10px;
+        }
+        .avatar-svg {
+            height: 380px; width: auto;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2));
+            transition: all 0.5s ease;
+        }
+
+        /* Control de Estados */
+        .layer-toggle { display: none; }
+        
+        .state-awake .eyes-open { display: block !important; }
+        .state-awake .eyes-closed { display: none !important; }
+        
+        .state-dirty .dirt-patches { display: block !important; opacity: 0.8; }
+        .state-clean .dirt-patches { display: none !important; }
+        
+        .state-dressed .outfit-uniform { display: block !important; }
+        .state-dressed .outfit-pajama { display: none !important; }
+        
+        .state-neat .hair-neat { display: block !important; }
+        .state-neat .hair-messy { display: none !important; }
+        
+        .state-happy .mouth-smile { display: block !important; }
+        .state-happy .mouth-neutral { display: none !important; }
+
+        /* --- CAPA DE ACCIÓN --- */
+        .action-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 50;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .active-tool-anim {
+            font-size: 5rem; position: absolute;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3));
+        }
+
+        /* Animaciones */
+        @keyframes brushTeeth {
+            0% { transform: translate(-20px, 80px) rotate(-10deg); }
+            50% { transform: translate(20px, 80px) rotate(10deg); }
+            100% { transform: translate(-20px, 80px) rotate(-10deg); }
+        }
+        @keyframes washFace {
+            0% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+            50% { transform: translate(0, 0) scale(1.3); opacity: 1; }
+            100% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+        }
+        @keyframes eatFood {
+            0% { transform: translate(0, 100px) rotate(0deg); }
+            50% { transform: translate(0, 70px) rotate(-20deg); }
+            100% { transform: translate(0, 100px) rotate(0deg); }
+        }
+        @keyframes dressUp {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        @keyframes reject {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* --- REPISA Y OBJETOS --- */
+        .shelf {
+            width: 750px; height: 120px;
+            background: linear-gradient(to bottom, #8d6e63, #5d4037);
+            margin-top: -30px; z-index: 10;
+            border-radius: 10px; border-bottom: 8px solid #3e2723;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            display: flex; justify-content: center; align-items: flex-end;
+            padding-bottom: 20px; gap: 15px; perspective: 500px;
+        }
+
+        .tool-item {
+            width: 90px; height: 90px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 15px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 3.5rem; cursor: grab;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s, background 0.2s;
+            user-select: none;
+        }
+        .tool-item:hover { transform: translateY(-10px) scale(1.1); background: white; z-index: 100; }
+        .tool-item:active { cursor: grabbing; transform: scale(0.95); }
+        .tool-item.used { opacity: 0; pointer-events: none; transition: opacity 0.5s; }
+
+        .confetti { position: fixed; width: 10px; height: 10px; z-index: 999; }
+        @keyframes fall { to { transform: translateY(100vh) rotate(720deg); } }
+        @keyframes popUp { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        /* ANIMACIÓN DE PARPADEO */
+        .avatar-svg .eyes-open {
+            transform-box: fill-box;
+            transform-origin: center 60%; 
+            animation: blinking-eyes 5s infinite ease-in-out;
+        }
+        @keyframes blinking-eyes {
+            0%, 96%, 100% { transform: scaleY(1); } 
+            98% { transform: scaleY(0.1); } 
+        }
+
+    </style>
+</head>
+<body>
+
+    <svg width="0" height="0" style="position: absolute;">
+        <defs>
+            <radialGradient id="skinGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" style="stop-color:#ffdfc4" />
+                <stop offset="100%" style="stop-color:#e6b8a2" />
+            </radialGradient>
+            <linearGradient id="hairGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#5d4037" />
+                <stop offset="100%" style="stop-color:#3e2723" />
+            </linearGradient>
+             <radialGradient id="eyeGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="60%" style="stop-color:#8d6e63" />
+                <stop offset="100%" style="stop-color:#3e2723" />
+            </radialGradient>
+        </defs>
+    </svg>
+
+    <div class="overlay" id="start-screen">
+        <div class="card">
+            <div style="font-size: 5rem;">😴🌅</div>
+            <h1 class="title">¡Hora de Levantarse!</h1>
+            <p class="text">
+                Ayuda a nuestro amigo a prepararse.<br>
+                Hay muchos objetos desordenados.<br>
+                <b>¡Encuentra solo los correctos en orden!</b>
+            </p>
+            <button class="btn" onclick="startGame()">Comenzar</button>
+        </div>
+    </div>
+
+    <div class="bathroom-scene">
+        
+        <div class="instruction-banner" id="instruction-display">
+            Cargando...
+        </div>
+
+        <div class="mirror-frame">
+            <div class="mirror-glass" id="droppable-area">
+                
+                <div class="action-overlay" id="action-layer"></div>
+
+                <div class="avatar-container">
+                    <svg class="avatar-svg state-dirty" viewBox="0 0 300 350" id="avatar">
+                        <g transform="translate(150, 280)">
+                            <rect x="-25" y="-60" width="50" height="60" fill="#e6b8a2" rx="10"/>
+                        </g>
+                        <g class="outfit-pajama layer-toggle" style="display:block">
+                            <path d="M70,260 Q150,230 230,260 L230,350 L70,350 Z" fill="#90caf9"/>
+                            <path d="M70,260 Q50,280 40,320 L70,330 Q80,290 90,270" fill="#90caf9"/> 
+                            <path d="M230,260 Q250,280 260,320 L230,330 Q220,290 210,270" fill="#90caf9"/> 
+                            <path d="M140,290 Q145,290 145,295 Q145,300 140,300 Q138,295 140,290" fill="white" opacity="0.6"/>
+                            <path d="M170,310 Q175,310 175,315 Q175,320 170,320 Q168,315 170,310" fill="white" opacity="0.6"/>
+                        </g>
+                        <g class="outfit-uniform layer-toggle">
+                            <path d="M70,260 Q150,230 230,260 L230,350 L70,350 Z" fill="white"/>
+                            <path d="M110,250 L150,280 L190,250 L150,230 Z" fill="#eee"/>
+                            <path d="M150,250 L135,260 L140,330 L150,340 L160,330 L165,260 Z" fill="#d32f2f"/>
+                             <path d="M150,250 L145,260 L155,260 Z" fill="#b71c1c"/> 
+                        </g>
+                        <g transform="translate(150, 160)">
+                            <path d="M-75,-40 C-75,50 -40,110 0,110 C40,110 75,50 75,-40 C75,-100 -75,-100 -75,-40" fill="url(#skinGrad)"/>
+                            <circle cx="-75" cy="0" r="15" fill="#e6b8a2"/>
+                            <circle cx="75" cy="0" r="15" fill="#e6b8a2"/>
+                        </g>
+                        <g transform="translate(150, 160)">
+                            <g class="eyes-closed layer-toggle" style="display:block">
+                                <path d="M-40,-10 Q-25,0 -10,-10" stroke="#5d4037" stroke-width="4" fill="none" stroke-linecap="round"/>
+                                <path d="M10,-10 Q25,0 40,-10" stroke="#5d4037" stroke-width="4" fill="none" stroke-linecap="round"/>
+                                <text x="50" y="-30" font-size="24" fill="#3e2723" font-weight="bold" font-family="Comic Sans MS">Zzz</text>
+                            </g>
+                            <g class="eyes-open layer-toggle">
+                                <g transform="translate(-30, -10)">
+                                    <ellipse cx="0" cy="0" rx="15" ry="18" fill="white"/>
+                                    <circle cx="0" cy="0" r="10" fill="url(#eyeGrad)"/>
+                                    <circle cx="0" cy="0" r="4" fill="black"/>
+                                    <circle cx="5" cy="-5" r="3" fill="white"/> 
+                                </g>
+                                <g transform="translate(30, -10)">
+                                    <ellipse cx="0" cy="0" rx="15" ry="18" fill="white"/>
+                                    <circle cx="0" cy="0" r="10" fill="url(#eyeGrad)"/>
+                                    <circle cx="0" cy="0" r="4" fill="black"/>
+                                    <circle cx="5" cy="-5" r="3" fill="white"/>
+                                </g>
+                                <path d="M-45,-35 Q-30,-45 -15,-35" stroke="#3e2723" stroke-width="3" fill="none" stroke-linecap="round"/>
+                                <path d="M15,-35 Q30,-45 45,-35" stroke="#3e2723" stroke-width="3" fill="none" stroke-linecap="round"/>
+                            </g>
+                            <path d="M-5,20 Q0,25 5,20" stroke="#d7ccc8" stroke-width="3" fill="none" stroke-linecap="round"/>
+                            <path d="M-15,50 Q0,55 15,50" stroke="#d84315" stroke-width="3" fill="none" stroke-linecap="round" class="mouth-neutral layer-toggle" style="display:block"/>
+                            <path d="M-20,45 Q0,70 20,45" fill="#d84315" class="mouth-smile layer-toggle"/>
+                            <path d="M-15,45 Q0,50 15,45" fill="white" class="mouth-smile layer-toggle"/> 
+
+                            <g class="dirt-patches layer-toggle">
+                                <path d="M-50,10 Q-40,30 -55,50" stroke="#795548" stroke-width="8" opacity="0.4" stroke-linecap="round"/>
+                                <circle cx="40" cy="40" r="10" fill="#795548" opacity="0.4"/>
+                                <path d="M20,80 Q40,90 30,70" stroke="#795548" stroke-width="5" opacity="0.4" stroke-linecap="round"/>
+                            </g>
+                        </g>
+                        <g transform="translate(150, 160)">
+                            <g class="hair-messy layer-toggle" style="display:block">
+                                <path d="M-80,-30 C-90,-80 -50,-120 0,-110 C50,-120 90,-80 80,-30 L80,-40 C80,-80 40,-100 -40,-90 Z" fill="url(#hairGrad)"/>
+                                <path d="M0,-110 L-10,-130 M10,-105 L20,-135" stroke="#3e2723" stroke-width="4" stroke-linecap="round"/> 
+                            </g>
+                            <g class="hair-neat layer-toggle">
+                                <path d="M-78,-30 C-80,-70 -40,-90 0,-90 C40,-90 80,-70 78,-30 C78,-50 40,-60 -40,-60 Z" fill="url(#hairGrad)"/>
+                                <path d="M-60,-40 Q-40,-70 20,-50" stroke="#5d4037" stroke-width="2" fill="none" opacity="0.5"/> 
+                            </g>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="shelf" id="shelf-area"></div>
+    </div>
+
+    <div class="overlay" id="end-screen" style="display: none;">
+        <div class="card">
+            <div style="font-size: 5rem;">✨🏫🎉</div>
+            <h1 class="title">¡Rutina Completa!</h1>
+            <p class="text">
+                Has quedado impecable.<br>
+                ¡Que tengas un gran día en la escuela!
+            </p>
+            <button class="btn" onclick="location.reload()">Jugar Otra Vez</button>
+        </div>
+    </div>
+
+<script>
+    // --- CONFIGURACIÓN DE JUEGO Y MENSAJES ---
+    let currentStep = 1;
+    
+    const steps = [
+        { 
+            id: 1, 
+            name: "cepillo", 
+            label: "1. Lávate los dientes", 
+            successMsg: "¡Perfecto! Dientes limpios y brillantes. 😁",
+            emoji: "🪥", 
+            anim: "brushTeeth" 
+        },
+        { 
+            id: 2, 
+            name: "jabon", 
+            label: "2. Lava tu rostro", 
+            successMsg: "¡Muy bien! Carita limpia y fresca. 🦷",
+            emoji: "🧼", 
+            anim: "washFace" 
+        },
+        { 
+            id: 3, 
+            name: "ropa", 
+            label: "3. Ponte el uniforme", 
+            successMsg: "¡Excelente! Listo para la escuela. 👔",
+            emoji: "👔", 
+            anim: "dressUp" 
+        },
+        { 
+            id: 4, 
+            name: "comida", 
+            label: "4. Desayuna", 
+            successMsg: "¡Buen trabajo! Barriguita llena. 🥐",
+            emoji: "🥐", 
+            anim: "eatFood" 
+        }
+    ];
+
+    const distractors = [
+        { id: 99, name: "juego", emoji: "🎮" },
+        { id: 98, name: "pelota", emoji: "⚽" },
+        { id: 97, name: "dulce", emoji: "🍭" },
+        { id: 96, name: "gorra", emoji: "🧢" }
+    ];
+
+    const shelf = document.getElementById('shelf-area');
+    const instructionBanner = document.getElementById('instruction-display');
+    const avatar = document.getElementById('avatar');
+    const actionLayer = document.getElementById('action-layer');
+
+    function startGame() {
+        document.getElementById('start-screen').style.display = 'none';
+        
+        setTimeout(() => {
+            document.querySelector('.eyes-closed').style.setProperty('display', 'none', 'important');
+            document.querySelector('.eyes-open').style.setProperty('display', 'block', 'important');
+            document.querySelector('.dirt-patches').style.setProperty('display', 'block', 'important');
+        }, 500);
+
+        generateShelf();
+        updateInstruction();
+    }
+
+    function generateShelf() {
+        let allItems = [...steps, ...distractors];
+        allItems.sort(() => Math.random() - 0.5);
+
+        shelf.innerHTML = '';
+        allItems.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'tool-item';
+            div.innerText = item.emoji;
+            div.id = `item-${item.id}`;
+            div.draggable = true;
+            div.onclick = () => handleAction(item, div);
+            div.ondragstart = (e) => { e.dataTransfer.setData('itemId', item.id); };
+            shelf.appendChild(div);
+        });
+    }
+
+    function updateInstruction() {
+        if (currentStep <= 4) {
+            // Estilo normal para instrucción
+            instructionBanner.innerText = steps[currentStep - 1].label;
+            instructionBanner.style.backgroundColor = "#fffde7"; // Amarillo
+            instructionBanner.style.borderColor = "#fbc02d";
+            instructionBanner.style.color = "#ef6c00";
+            
+            // Animación suave
+            instructionBanner.style.transform = "scale(1.05)";
+            setTimeout(() => instructionBanner.style.transform = "scale(1)", 200);
+        } else {
+            instructionBanner.innerText = "¡Listo!";
+            instructionBanner.style.backgroundColor = "#c8e6c9"; 
+            instructionBanner.style.borderColor = "#4caf50";
+            instructionBanner.style.color = "#1b5e20";
+        }
+    }
+
+    const dropArea = document.getElementById('droppable-area');
+    dropArea.ondragover = (e) => e.preventDefault();
+    dropArea.ondrop = (e) => {
+        e.preventDefault();
+        const id = parseInt(e.dataTransfer.getData('itemId'));
+        const item = [...steps, ...distractors].find(i => i.id === id);
+        const el = document.getElementById(`item-${id}`);
+        handleAction(item, el);
+    };
+
+    function handleAction(item, element) {
+        if (!item || element.classList.contains('used')) return;
+
+        if (item.id === currentStep) {
+            successAction(item, element);
+        } else {
+            failAction(element);
+        }
+    }
+
+    function successAction(item, element) {
+        element.classList.add('used');
+        
+        // 1. Mostrar Mensaje de Éxito inmediatamente
+        instructionBanner.innerText = item.successMsg;
+        instructionBanner.style.backgroundColor = "#c8e6c9"; // Verde claro
+        instructionBanner.style.borderColor = "#4caf50";
+        instructionBanner.style.color = "#1b5e20"; // Verde oscuro
+
+        // 2. Ejecutar animación del objeto
+        animateActionOnAvatar(item.emoji, item.anim);
+
+        // 3. Esperar un poco para actualizar el estado y pasar a la siguiente
+        setTimeout(() => {
+            applyAvatarState(currentStep);
+            currentStep++;
+            if (currentStep > 4) {
+                setTimeout(showWin, 1000);
+            } else {
+                updateInstruction(); // Vuelve a poner el cartel amarillo con el siguiente paso
+            }
+        }, 2500); // 2.5 segundos para leer el mensaje y ver la animación
+    }
+
+    function animateActionOnAvatar(emoji, animName) {
+        const actionEl = document.createElement('div');
+        actionEl.innerText = emoji;
+        actionEl.className = 'active-tool-anim';
+        actionEl.style.animation = `${animName} 1.5s ease-in-out`;
+        actionLayer.appendChild(actionEl);
+        setTimeout(() => actionEl.remove(), 1500);
+    }
+
+    function applyAvatarState(stepNum) {
+        if (stepNum === 2) { // Cara (Jabón)
+            document.querySelector('.dirt-patches').style.setProperty('display', 'none', 'important'); 
+            document.querySelector('.hair-messy').style.setProperty('display', 'none', 'important'); 
+            document.querySelector('.hair-neat').style.setProperty('display', 'block', 'important'); 
+        } else if (stepNum === 3) { // Ropa
+            document.querySelector('.outfit-pajama').style.setProperty('display', 'none', 'important');
+            document.querySelector('.outfit-uniform').style.setProperty('display', 'block', 'important');
+        } else if (stepNum === 4) { // Comida
+            document.querySelector('.mouth-neutral').style.setProperty('display', 'none', 'important');
+            document.querySelector('.mouth-smile').style.setProperty('display', 'block', 'important');
+        }
+    }
+
+    function failAction(element) {
+        element.style.animation = "reject 0.4s";
+        setTimeout(() => element.style.animation = "", 400);
+
+        const oldText = instructionBanner.innerText;
+        const oldColor = instructionBanner.style.color;
+        const oldBg = instructionBanner.style.backgroundColor;
+        const oldBorder = instructionBanner.style.borderColor;
+
+        instructionBanner.innerText = "¡Eso no toca ahora! 🚫";
+        instructionBanner.style.color = "#d32f2f";
+        instructionBanner.style.backgroundColor = "#ffcdd2";
+        instructionBanner.style.borderColor = "#b71c1c";
+        
+        setTimeout(() => {
+            instructionBanner.innerText = oldText;
+            instructionBanner.style.color = oldColor;
+            instructionBanner.style.backgroundColor = oldBg;
+            instructionBanner.style.borderColor = oldBorder;
+        }, 1200);
+    }
+
+    function showWin() {
+        const colors = ['#f44336', '#2196f3', '#ffeb3b', '#4caf50'];
+        for (let i = 0; i < 50; i++) {
+            const c = document.createElement('div');
+            c.className = 'confetti';
+            c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            c.style.left = Math.random() * 100 + 'vw';
+            c.style.animation = `fall ${Math.random() * 3 + 2}s linear forwards`;
+            document.body.appendChild(c);
+        }
+        document.getElementById('end-screen').style.display = 'flex';
+    }
+
+</script>
+</body>
+</html>

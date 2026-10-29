@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salto del Acento - Palabras Agudas</title>
+    
+    <!-- Fuentes Google: Outfit (Pesos 500 y 900) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS (CDN para asegurar archivo único) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuración de Tailwind y animaciones personalizadas -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        pastel: {
+                            pink: '#EF476F',
+                            yellow: '#FFD166',
+                            green: '#06D6A0',
+                            blue: '#118AB2',
+                            dark: '#073B4C',
+                            light: '#F8FAFC'
+                        }
+                    },
+                    boxShadow: {
+                        'mega': '0 35px 60px -15px rgba(0, 0, 0, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Animaciones Personalizadas */
+        .float-slow { animation: float 6s ease-in-out infinite; }
+        .float-fast { animation: float 4s ease-in-out infinite reverse; }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-30px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .pop-in { animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.5); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .shake-error { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
+        /* Utilidades tipográficas fluidas adaptadas a móviles */
+        .hero-title {
+            font-size: clamp(2.8rem, 10vw, 8rem);
+            line-height: 1;
+        }
+        .section-title {
+            font-size: clamp(2.2rem, 8vw, 6rem);
+            line-height: 1.1;
+        }
+        .hero-text {
+            font-size: clamp(1.2rem, 4vw, 2.5rem);
+            line-height: 1.3;
+        }
+
+        /* Ocultar scrollbar en el overlay del juego para limpieza visual */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Clases para destacar la sílaba tónica */
+        .tonica {
+            color: #EF476F; /* pastel-pink */
+            text-transform: uppercase;
+        }
+
+        /* Estilos para el camino de nenúfares */
+        .lily-pad {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+    </style>
+</head>
+<body class="bg-pastel-light text-pastel-dark antialiased overflow-x-hidden selection:bg-pastel-yellow selection:text-pastel-dark w-full max-w-[100vw]">
+
+    <!-- SECCIÓN 1: HERO (100vh) -->
+    <section class="relative w-full min-h-screen bg-pastel-blue flex flex-col items-center justify-center p-6 md:p-12 lg:p-24 overflow-hidden">
+        <!-- Elementos decorativos de fondo -->
+        <div class="absolute top-4 left-4 text-5xl md:top-10 md:left-10 md:text-8xl opacity-50 float-slow">☁️</div>
+        <div class="absolute bottom-10 right-10 text-6xl md:bottom-20 md:right-20 md:text-9xl opacity-80 float-fast">🐸</div>
+        <div class="absolute top-20 right-20 text-6xl opacity-30 float-slow">☁️</div>
+        
+        <div class="relative z-10 text-center w-full max-w-none flex flex-col items-center">
+            <span class="bg-white text-pastel-blue px-4 py-2 md:px-8 md:py-4 rounded-[2rem] text-sm md:text-2xl lg:text-4xl font-black tracking-widest uppercase mb-4 md:mb-8 shadow-mega transform rotate-2">
+                Ortografía - 5to Grado
+            </span>
+            <h1 class="font-black text-white hero-title mb-4 md:mb-8 drop-shadow-md px-2">
+                Salto del
+                <br>
+                <span class="text-pastel-yellow">Acento</span>
+            </h1>
+            <p class="font-medium text-white hero-text max-w-6xl px-4 drop-shadow">
+                Descubre las palabras que llevan toda su fuerza en el <strong>último</strong> salto.
+            </p>
+        </div>
+
+        <!-- Indicador de Scroll -->
+        <div class="absolute bottom-4 md:bottom-10 animate-bounce text-4xl md:text-6xl text-white">
+            👇
+        </div>
+    </section>
+
+    <!-- SECCIÓN 2: EXPLICACIÓN BÁSICA (100vh) -->
+    <section class="w-full min-h-screen bg-pastel-yellow text-pastel-dark flex flex-col items-center justify-center p-6 md:p-12 lg:p-24">
+        <h2 class="font-black section-title mb-8 md:mb-16 text-center text-pastel-dark drop-shadow-sm px-2">
+            ¿Qué son las palabras Agudas?
+        </h2>
+        
+        <div class="bg-white text-pastel-dark p-8 md:p-12 lg:p-20 rounded-[2rem] md:rounded-[4rem] shadow-mega transform transition duration-500 hover:scale-105 w-full max-w-6xl">
+            <div class="text-6xl md:text-8xl lg:text-[8rem] mb-4 md:mb-8 text-center float-slow">💥</div>
+            <p class="font-medium text-2xl md:text-4xl lg:text-5xl text-center leading-relaxed">
+                Son aquellas palabras donde la voz suena más fuerte en la <strong class="text-pastel-pink text-3xl md:text-5xl lg:text-6xl bg-pastel-pink/10 px-4 rounded-3xl">ÚLTIMA</strong> sílaba. ¡Como un gran salto al final!
+            </p>
+            
+            <div class="mt-12 flex flex-col md:flex-row justify-center gap-8 md:gap-16">
+                <div class="text-center">
+                    <span class="text-3xl md:text-5xl lg:text-7xl font-black">ca - ra - <span class="tonica">col</span> 🐌</span>
+                </div>
+                <div class="text-center hidden md:block text-5xl lg:text-7xl font-black opacity-30">|</div>
+                <div class="text-center">
+                    <span class="text-3xl md:text-5xl lg:text-7xl font-black">re - <span class="tonica">loj</span> ⌚</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN 3: REGLA DE LA TILDE (100vh) -->
+    <section class="w-full min-h-screen bg-pastel-pink text-white flex flex-col items-center justify-center p-6 md:p-12 lg:p-24">
+        <h2 class="font-black section-title mb-10 md:mb-20 text-center text-white drop-shadow-lg px-2">
+            ¿Cuándo llevan tilde (´)?
+        </h2>
+
+        <!-- Cuadrícula de tarjetas gigantes para las reglas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 w-full px-2 md:px-4 max-w-7xl">
+            
+            <!-- Regla SI -->
+            <div class="bg-white text-pastel-dark p-8 md:p-12 lg:p-16 rounded-[2rem] md:rounded-[4rem] shadow-mega transform transition duration-500 hover:-translate-y-4 flex flex-col items-center text-center">
+                <div class="text-5xl md:text-7xl lg:text-[8rem] font-black text-pastel-green mb-6">SÍ LLEVAN ✅</div>
+                <p class="font-medium text-xl md:text-3xl lg:text-4xl mb-8">
+                    Si terminan en <strong>N</strong>, <strong>S</strong> o <strong>Vocal</strong>.
+                </p>
+                <div class="flex flex-col gap-4 w-full bg-pastel-light p-6 rounded-[2rem]">
+                    <span class="font-black text-2xl md:text-4xl">can - <span class="text-pastel-green">ción</span></span>
+                    <span class="font-black text-2xl md:text-4xl">com - <span class="text-pastel-green">pás</span></span>
+                    <span class="font-black text-2xl md:text-4xl">be - <span class="text-pastel-green">bé</span></span>
+                </div>
+            </div>
+
+            <!-- Regla NO -->
+            <div class="bg-pastel-dark text-white p-8 md:p-12 lg:p-16 rounded-[2rem] md:rounded-[4rem] shadow-mega transform transition duration-500 hover:-translate-y-4 flex flex-col items-center text-center">
+                <div class="text-5xl md:text-7xl lg:text-[8rem] font-black text-pastel-pink mb-6">NO LLEVAN ❌</div>
+                <p class="font-medium text-xl md:text-3xl lg:text-4xl mb-8">
+                    Si terminan en <strong>cualquier otra</strong> consonante.
+                </p>
+                <div class="flex flex-col gap-4 w-full bg-white/10 p-6 rounded-[2rem]">
+                    <span class="font-black text-2xl md:text-4xl">pa - <span class="text-pastel-yellow">pel</span></span>
+                    <span class="font-black text-2xl md:text-4xl">a - mis - <span class="text-pastel-yellow">tad</span></span>
+                    <span class="font-black text-2xl md:text-4xl">co - <span class="text-pastel-yellow">lor</span></span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- SECCIÓN 4: CALL TO ACTION AL JUEGO (100vh) -->
+    <section class="w-full min-h-screen bg-pastel-green flex flex-col items-center justify-center p-6 md:p-12 lg:p-24 relative overflow-hidden">
+        <!-- Elementos flotantes -->
+        <div class="absolute top-10 left-4 md:top-20 md:left-20 text-6xl md:text-9xl float-fast opacity-80">☁️</div>
+        <div class="absolute bottom-10 right-4 md:bottom-20 md:right-20 text-6xl md:text-9xl float-slow opacity-80">☁️</div>
+
+        <div class="text-[6rem] md:text-[10rem] mb-4 animate-bounce drop-shadow-xl z-10">🐸</div>
+        <h2 class="font-black hero-title text-pastel-dark text-center mb-10 md:mb-16 drop-shadow-sm z-10 px-2">
+            ¡Ayuda a la ranita a cruzar!
+        </h2>
+        
+        <!-- Botón Gigante -->
+        <button onclick="startGame()" class="z-10 group relative bg-white text-pastel-green font-black text-2xl md:text-4xl lg:text-6xl px-8 py-6 md:px-16 md:py-12 rounded-[2rem] md:rounded-[4rem] shadow-mega transition-all duration-300 hover:scale-110 hover:-translate-y-2 md:hover:-translate-y-4 hover:shadow-[0_50px_70px_-15px_rgba(0,0,0,0.3)] max-w-[90vw]">
+            <span class="absolute inset-0 w-full h-full rounded-[2rem] md:rounded-[4rem] border-4 md:border-8 border-pastel-green opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"></span>
+            <span class="whitespace-nowrap">¡A Saltar! 🏃‍♂️</span>
+        </button>
+    </section>
+
+    <!-- OVERLAY DEL JUEGO INTERACTIVO (Pantalla Completa Oculta) -->
+    <div id="game-overlay" class="fixed inset-0 bg-pastel-blue z-50 hidden flex-col w-full h-full no-scrollbar overflow-y-auto">
+        
+        <!-- HEADER Y TRACK STICKY -->
+        <div class="sticky top-0 z-30 w-full bg-pastel-blue/95 backdrop-blur-md shadow-md flex flex-col items-center border-b border-white/20">
+            <!-- Header del Juego -->
+            <div class="w-full p-4 md:px-8 md:py-4 flex justify-between items-center">
+                <h2 class="text-white font-black text-xl md:text-3xl lg:text-5xl truncate pr-4">Salto del Acento</h2>
+                <button onclick="closeGame()" class="text-white text-xl md:text-3xl lg:text-5xl hover:text-pastel-pink transition-colors font-black bg-white/20 w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center shrink-0">X</button>
+            </div>
+
+            <!-- TRACK DE LA RANA (Progreso Visual Punto A al Punto B) STICKY -->
+            <div class="relative w-full max-w-5xl pb-4 pt-2 flex justify-between items-center px-6 md:px-12">
+                <!-- Línea de conexión de los nenúfares -->
+                <div class="absolute left-10 right-10 md:left-16 md:right-16 h-2 md:h-3 bg-white/30 top-[60%] -translate-y-1/2 z-0 rounded-full"></div>
+                
+                <!-- Puntos del track (7 pasos: Inicio + 6 aciertos) -->
+                <div class="z-10 flex flex-col items-center gap-1 relative">
+                    <span class="text-white font-bold text-[10px] md:text-sm absolute -top-5">A</span>
+                    <div id="pad-0" class="lily-pad text-3xl md:text-5xl drop-shadow-lg">🐸</div>
+                </div>
+                <div class="z-10 flex flex-col items-center gap-1"><div id="pad-1" class="lily-pad text-2xl md:text-4xl drop-shadow-md opacity-50">🍃</div></div>
+                <div class="z-10 flex flex-col items-center gap-1"><div id="pad-2" class="lily-pad text-2xl md:text-4xl drop-shadow-md opacity-50">🍃</div></div>
+                <div class="z-10 flex flex-col items-center gap-1"><div id="pad-3" class="lily-pad text-2xl md:text-4xl drop-shadow-md opacity-50">🍃</div></div>
+                <div class="z-10 flex flex-col items-center gap-1"><div id="pad-4" class="lily-pad text-2xl md:text-4xl drop-shadow-md opacity-50">🍃</div></div>
+                <div class="z-10 flex flex-col items-center gap-1"><div id="pad-5" class="lily-pad text-2xl md:text-4xl drop-shadow-md opacity-50">🍃</div></div>
+                <div class="z-10 flex flex-col items-center gap-1 relative">
+                    <span class="text-pastel-yellow font-bold text-[10px] md:text-sm absolute -top-5">Meta</span>
+                    <div id="pad-6" class="lily-pad text-3xl md:text-5xl drop-shadow-lg">🏁</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Área de Juego -->
+        <div class="flex-grow flex flex-col items-center justify-start p-4 md:p-8 lg:p-12 relative w-full pt-6 md:pt-8">
+            
+            <p class="text-white font-bold text-lg md:text-2xl lg:text-3xl mb-8 mt-2 text-center px-2 bg-pastel-dark/20 py-4 px-8 rounded-3xl backdrop-blur-sm max-w-5xl">
+                Lleva a la ranita desde el <strong class="text-pastel-yellow">Punto A</strong> hasta la <strong class="text-pastel-green">Meta</strong> haciendo clic SOLO en las nubes con palabras <strong class="text-pastel-yellow text-xl md:text-3xl">AGUDAS</strong>. <br>
+                <span class="text-pastel-blue font-black mt-2 block bg-pastel-yellow p-3 rounded-xl shadow-md">¡Ojo! Encontrarás palabras con acento escrito (tilde) y sin acento.</span>
+            </p>
+
+            <!-- Grid de Nubes -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8 w-full max-w-[1400px]" id="clouds-container">
+                <!-- Generado por JS -->
+            </div>
+
+        </div>
+
+        <!-- Pantalla de Victoria -->
+        <div id="victory-screen" class="fixed inset-0 bg-pastel-yellow z-50 hidden flex-col items-center justify-center p-6 overflow-hidden h-[100dvh] w-[100dvw] m-0">
+            <div class="text-[6rem] md:text-[8rem] animate-bounce mb-2 md:mb-6">🐸🏁</div>
+            <h2 class="font-black text-pastel-dark text-4xl md:text-6xl lg:text-7xl text-center mb-4">¡Llegaste a la Meta!</h2>
+            <p class="text-pastel-dark font-medium text-lg md:text-2xl lg:text-3xl text-center mb-8 px-2 max-w-4xl">Has encontrado todas las palabras agudas y la ranita cruzó con éxito.</p>
+            <button onclick="closeGame()" class="bg-white text-pastel-dark font-black text-lg md:text-2xl lg:text-3xl px-6 py-3 md:px-10 md:py-5 rounded-[2rem] shadow-xl hover:scale-110 transition-transform max-w-full">
+                Volver a la clase
+            </button>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT DEL JUEGO -->
+    <script>
+        // Datos del juego: 6 Agudas (algunas con tilde, otras sin), 6 No Agudas (Llanas/Esdrújulas)
+        const wordData = [
+            // Agudas (True)
+            { id: 1, word: "corazón", isAguda: true, reason: "¡Con tilde! Termina en N." },
+            { id: 2, word: "reloj", isAguda: true, reason: "¡Sin tilde! Termina en J." },
+            { id: 3, word: "sofá", isAguda: true, reason: "¡Con tilde! Termina en vocal." },
+            { id: 4, word: "pared", isAguda: true, reason: "¡Sin tilde! Termina en D." },
+            { id: 5, word: "compás", isAguda: true, reason: "¡Con tilde! Termina en S." },
+            { id: 6, word: "jugar", isAguda: true, reason: "¡Sin tilde! Termina en R." },
+            // No Agudas (False)
+            { id: 7, word: "árbol", isAguda: false, reason: "Es llana. Suena fuerte en la penúltima." },
+            { id: 8, word: "casa", isAguda: false, reason: "Es llana. Suena fuerte en la penúltima." },
+            { id: 9, word: "lápiz", isAguda: false, reason: "Es llana. Suena fuerte en la penúltima." },
+            { id: 10, word: "pájaro", isAguda: false, reason: "Es esdrújula. Suena fuerte en la antepenúltima." },
+            { id: 11, word: "perro", isAguda: false, reason: "Es llana. Suena fuerte en la penúltima." },
+            { id: 12, word: "césped", isAguda: false, reason: "Es llana. Suena fuerte en la penúltima." }
+        ];
+
+        let foundCount = 0;
+        const totalAgudas = 6;
+
+        // Elementos del DOM
+        const gameOverlay = document.getElementById('game-overlay');
+        const cloudsContainer = document.getElementById('clouds-container');
+        const victoryScreen = document.getElementById('victory-screen');
+
+        // Funciones de UI
+        function startGame() {
+            gameOverlay.classList.remove('hidden');
+            gameOverlay.classList.add('flex');
+            document.body.style.overflow = 'hidden'; 
+            initGame();
+        }
+
+        function closeGame() {
+            gameOverlay.classList.add('hidden');
+            gameOverlay.classList.remove('flex');
+            document.body.style.overflow = 'auto'; 
+            victoryScreen.classList.add('hidden');
+            victoryScreen.classList.remove('flex');
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initGame() {
+            cloudsContainer.innerHTML = '';
+            foundCount = 0;
+            updateFrogTrack();
+
+            // Mezclar palabras
+            let gameWords = shuffleArray([...wordData]);
+
+            // Renderizar Nubes
+            gameWords.forEach(item => {
+                const btn = document.createElement('button');
+                // Estilo base de nube
+                btn.className = 'relative w-full aspect-video bg-white text-pastel-dark font-black text-2xl md:text-3xl lg:text-5xl rounded-[3rem] shadow-lg transition-all duration-300 hover:scale-[1.05] border-8 border-transparent flex items-center justify-center float-slow break-words p-4';
+                
+                // Variar la animación flotante para que se vea orgánico
+                if(Math.random() > 0.5) btn.classList.replace('float-slow', 'float-fast');
+
+                btn.innerHTML = `<span class="z-10">${item.word}</span>`;
+                btn.onclick = () => handleCloudClick(btn, item);
+                cloudsContainer.appendChild(btn);
+            });
+        }
+
+        function updateFrogTrack() {
+            for(let i = 0; i <= 6; i++) {
+                const pad = document.getElementById(`pad-${i}`);
+                
+                // Reset de estilos básicos
+                pad.classList.remove('animate-bounce', 'text-4xl', 'md:text-6xl', 'text-3xl', 'md:text-5xl', 'opacity-50', 'opacity-100', 'text-5xl', 'md:text-7xl', 'text-2xl', 'md:text-4xl');
+                
+                if(i === foundCount) {
+                    // Posición actual de la rana
+                    pad.innerText = '🐸';
+                    pad.classList.add('animate-bounce', 'text-3xl', 'md:text-5xl', 'opacity-100', 'z-20');
+                } else if(i === 6 && foundCount < 6) {
+                    // Meta (cuando aún no se llega)
+                    pad.innerText = '🏁';
+                    pad.classList.add('text-3xl', 'md:text-5xl', 'opacity-100');
+                } else if (i < foundCount) {
+                    // Camino ya recorrido
+                    pad.innerText = '🟢';
+                    pad.classList.add('text-2xl', 'md:text-4xl', 'opacity-100');
+                } else {
+                    // Camino por recorrer
+                    pad.innerText = '🍃';
+                    pad.classList.add('text-2xl', 'md:text-4xl', 'opacity-50');
+                }
+            }
+        }
+
+        function handleCloudClick(btn, item) {
+            if (btn.classList.contains('solved') || btn.classList.contains('failed')) return;
+
+            if (item.isAguda) {
+                // ÉXITO
+                btn.classList.add('solved');
+                btn.classList.remove('bg-white', 'text-pastel-dark', 'hover:scale-[1.05]');
+                btn.classList.add('bg-pastel-green', 'text-white', 'scale-110', 'border-white', 'z-20');
+                
+                // Añadir estrellita de resuelto a la nube
+                const star = document.createElement('span');
+                star.innerText = '✨';
+                star.className = 'absolute -top-6 -right-2 text-4xl md:text-5xl pop-in drop-shadow-md';
+                btn.appendChild(star);
+
+                foundCount++;
+                updateFrogTrack();
+
+                if (foundCount === totalAgudas) {
+                    setTimeout(() => {
+                        victoryScreen.classList.remove('hidden');
+                        victoryScreen.classList.add('flex', 'pop-in');
+                    }, 800); // Tiempo reducido para una victoria más rápida
+                }
+
+            } else {
+                // ERROR
+                btn.classList.add('failed');
+                btn.classList.remove('bg-white');
+                btn.classList.add('bg-pastel-pink', 'text-white', 'shake-error');
+                
+                // Quitar estado de error después de un tiempo corto para que lo siga intentando
+                setTimeout(() => {
+                    btn.classList.remove('shake-error', 'bg-pastel-pink', 'text-white', 'failed');
+                    btn.classList.add('bg-white', 'text-pastel-dark');
+                }, 1000); // 1 segundo de cooldown
+            }
+        }
+    </script>
+</body>
+</html>
+```

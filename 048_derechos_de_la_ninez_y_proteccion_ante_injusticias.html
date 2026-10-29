@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Súper Guardianes de Derechos | ECO Unificado</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&family=Grandstander:wght@900&display=swap');
+        
+        :root {
+            --primary: #6366f1;
+            --success: #7ED957;
+            --danger: #FF5757;
+            --accent: #5CE1E6;
+            --dark: #1e293b;
+        }
+
+        body { 
+            font-family: 'Fredoka', sans-serif; 
+            background: #FFDE59; 
+            background-image: radial-gradient(#FFBD59 2px, transparent 2px);
+            background-size: 30px 30px;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .game-wrapper {
+            width: 95vw;
+            height: 90vh;
+            max-width: 1100px;
+            background: white;
+            border: 6px solid var(--dark);
+            border-radius: 3rem;
+            box-shadow: 12px 12px 0px var(--dark);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @media (min-width: 768px) {
+            .content-split { display: flex; flex-direction: row; height: 100%; }
+            .left-panel { width: 40%; border-right: 6px solid var(--dark); }
+            .right-panel { width: 60%; }
+        }
+        @media (max-width: 767px) {
+            .content-split { display: flex; flex-direction: column; height: 100%; overflow-y: auto; }
+            .left-panel { width: 100%; padding: 1rem; }
+            .right-panel { width: 100%; padding: 1rem; }
+            .game-wrapper { height: 95vh; border-radius: 2rem; }
+        }
+
+        .hero-font { font-family: 'Grandstander', cursive; }
+
+        .situation-card {
+            background: var(--danger);
+            color: white;
+            border: 4px solid var(--dark);
+            border-radius: 2rem;
+            box-shadow: 6px 6px 0px var(--dark);
+        }
+
+        .option-btn {
+            background: white;
+            border: 4px solid var(--dark);
+            border-radius: 1.5rem;
+            box-shadow: 0 6px 0 var(--dark);
+            transition: 0.1s ease;
+            text-align: left;
+        }
+
+        .option-btn:hover { background: var(--accent); }
+        .option-btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--dark); }
+
+        .progress-bar {
+            height: 14px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 10px;
+            border: 2px solid var(--dark);
+            overflow: hidden;
+        }
+
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="app" v-cloak>
+    <div class="game-wrapper shadow-2xl">
+        
+        <div v-if="gameState === 'start'" class="absolute inset-0 z-50 bg-white p-8 flex flex-col items-center justify-center text-center">
+            <div class="flex gap-2 mb-4">
+                <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Desarrollo Personal</span>
+                <span class="bg-pink-100 text-pink-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Primaria</span>
+            </div>
+            <h1 class="hero-font text-5xl md:text-7xl text-indigo-600 mb-4 uppercase">SÚPER GUARDIANES</h1>
+            <p class="text-slate-500 font-bold max-w-md mb-8 italic">Misión: Reconocer los derechos que nos protegen ante situaciones de injusticia.</p>
+            <button @click="startGame" class="bg-[#7ED957] hover:bg-[#6bc24a] text-dark font-black text-3xl px-12 py-6 rounded-3xl border-b-8 border-green-700 active:translate-y-2 active:border-b-0 transition-all">
+                ¡EMPEZAR MISIÓN!
+            </button>
+        </div>
+
+        <div v-if="gameState === 'playing'" class="content-split">
+            
+            <div class="left-panel bg-slate-50 flex flex-col justify-center p-6 md:p-10">
+                <div class="mb-4 text-center">
+                    <span class="bg-white border-2 border-dark px-4 py-1 rounded-full font-bold text-sm">RETO {{ currentLevel + 1 }} / 6</span>
+                </div>
+                
+                <div class="situation-card p-6 md:p-10 flex flex-col items-center">
+                    <div class="text-7xl md:text-8xl mb-4 animate__animated animate__bounceIn" :key="currentLevel">{{ levels[currentLevel].emoji }}</div>
+                    <p class="text-xl md:text-2xl font-black leading-tight text-center italic">"{{ levels[currentLevel].situation }}"</p>
+                </div>
+
+                <div class="mt-8">
+                    <div class="progress-bar">
+                        <div class="h-full bg-[#7ED957] transition-all duration-500" :style="{ width: ((currentLevel)/6)*100 + '%' }"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel p-6 md:p-10 flex flex-col justify-center">
+                <h2 class="hero-font text-3xl text-indigo-600 mb-6 uppercase tracking-tighter">¿Qué derecho protege?</h2>
+                <div class="grid grid-cols-1 gap-4">
+                    <button v-for="(opt, idx) in randomizedOptions" 
+                            :key="idx"
+                            @click="checkAnswer(opt)"
+                            class="option-btn p-4 md:p-6 flex items-center gap-4 group">
+                        <span class="bg-indigo-600 text-white w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-xl font-black shrink-0 border-2 border-dark">
+                            ?
+                        </span>
+                        <span class="text-lg md:text-xl font-bold text-slate-800 leading-tight">{{ opt.text }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="gameState === 'complete'" class="absolute inset-0 z-50 bg-[#5CE1E6] p-8 flex flex-col items-center justify-center text-center">
+            <div class="text-9xl mb-4">🏆</div>
+            <h1 class="hero-font text-6xl text-slate-900 mb-4 uppercase">¡LOGRADO!</h1>
+            <p class="text-2xl font-bold text-slate-800 mb-10 max-w-md">¡Has restaurado la justicia! Eres un guardián ejemplar de los derechos.</p>
+            <button @click="resetGame" class="bg-white text-indigo-600 font-black text-3xl px-12 py-6 rounded-3xl border-b-8 border-slate-200 active:translate-y-2 active:border-b-0">
+                🔄 REINTENTAR
+            </button>
+        </div>
+
+        <div v-if="showFeedback" class="fixed inset-0 z-[100] flex items-center justify-center bg-indigo-900/60 p-4 backdrop-blur-sm">
+            <div class="bg-white border-[6px] border-dark rounded-[3rem] p-8 md:p-12 max-w-lg w-full text-center shadow-[15px_15px_0px_#1e293b] animate__animated animate__bounceIn">
+                <div class="text-7xl mb-4">{{ feedbackData.success ? '✨' : '💡' }}</div>
+                <h3 class="text-3xl font-black mb-4 uppercase" :class="feedbackData.success ? 'text-green-500' : 'text-orange-500'">{{ feedbackData.title }}</h3>
+                <p class="text-slate-600 font-bold text-lg leading-tight mb-8">{{ feedbackData.message }}</p>
+                <button @click="handleNext" class="w-full py-5 bg-indigo-600 text-white font-black rounded-2xl text-xl uppercase shadow-lg border-b-4 border-indigo-900 active:translate-y-1 active:border-0">
+                    CONTINUAR
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+const { createApp, ref, computed, watch } = Vue;
+
+createApp({
+    setup() {
+        const gameState = ref('start');
+        const currentLevel = ref(0);
+        const showFeedback = ref(false);
+        const feedbackData = ref({});
+        const randomizedOptions = ref([]);
+
+        const levels = [
+            { situation: "¡A Lucía no la dejan entrar al equipo de fútbol por ser niña!", emoji: "⚽", options: [{ text: "Derecho a la Igualdad", correct: true }, { text: "Derecho a la Propiedad", correct: false }, { text: "Derecho al Nombre", correct: false }], explanation: "¡Muy bien! El género no define lo que puedes jugar." },
+            { situation: "Juan se siente enfermo, pero el hospital no quiere atenderlo.", emoji: "🏥", options: [{ text: "Derecho a la Salud", correct: true }, { text: "Derecho a la Libertad", correct: false }, { text: "Derecho a viajar", correct: false }], explanation: "¡Correcto! El acceso a la salud es un derecho de todos." },
+            { situation: "Obligan a un niño a trabajar en una fábrica en vez de ir a la escuela.", emoji: "🎒", options: [{ text: "Derecho a la Educación", correct: true }, { text: "Derecho al Secreto", correct: false }, { text: "Derecho a la Nacionalidad", correct: false }], explanation: "¡Exacto! Tu principal misión es aprender y jugar." },
+            { situation: "Un policía detiene a una persona sin decirle qué ley rompió.", emoji: "⚖️", options: [{ text: "Derecho a la Justicia", correct: true }, { text: "Derecho al Juego", correct: false }, { text: "Derecho al Vestido", correct: false }], explanation: "¡Bien! Nadie puede ser juzgado sin pruebas claras." },
+            { situation: "A una niña le prohíben dar su opinión sobre un problema en su barrio.", emoji: "🗣️", options: [{ text: "Libertad de Expresión", correct: true }, { text: "Derecho al Descanso", correct: false }, { text: "Derecho a una Casa", correct: false }], explanation: "¡Eso es! Tienes derecho a ser escuchada siempre." },
+            { situation: "No dejan entrar a una familia a un parque por su religión.", emoji: "🕍", options: [{ text: "Libertad de Culto e Igualdad", correct: true }, { text: "Derecho al Deporte", correct: false }, { text: "Derecho a la Tecnología", correct: false }], explanation: "¡Perfecto! Debemos respetar todas las creencias." }
+        ];
+
+        // Función para barajar
+        const shuffleOptions = () => {
+            const options = [...levels[currentLevel.value].options];
+            for (let i = options.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [options[i], options[j]] = [options[j], options[i]];
+            }
+            randomizedOptions.value = options;
+        };
+
+        const startGame = () => {
+            gameState.value = 'playing';
+            shuffleOptions();
+        };
+
+        const checkAnswer = (opt) => {
+            if (opt.correct) {
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+                feedbackData.value = { success: true, title: "¡LOGRADO!", message: levels[currentLevel.value].explanation };
+            } else {
+                feedbackData.value = { success: false, title: "¡INTENTA!", message: "Ese derecho no protege esta situación. ¡Mira bien el reto!" };
+            }
+            showFeedback.value = true;
+        };
+
+        const handleNext = () => {
+            showFeedback.value = false;
+            if (feedbackData.value.success) {
+                if (currentLevel.value < levels.length - 1) {
+                    currentLevel.value++;
+                    shuffleOptions();
+                } else {
+                    gameState.value = 'complete';
+                }
+            }
+        };
+
+        const resetGame = () => {
+            currentLevel.value = 0;
+            gameState.value = 'start';
+        };
+
+        return { gameState, currentLevel, levels, showFeedback, feedbackData, randomizedOptions, startGame, checkAnswer, handleNext, resetGame };
+    }
+}).mount('#app');
+</script>
+</body>
+</html>

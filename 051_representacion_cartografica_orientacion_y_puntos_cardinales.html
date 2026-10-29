@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Laboratorio Cartográfico PRO | Responsivo</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=Space+Grotesk:wght@500;700&display=swap');
+        
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: #f8fafc; color: #1e293b;
+            margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; 
+            height: 100dvh; overflow: hidden;
+        }
+
+        .title-font { font-family: 'Space Grotesk', sans-serif; }
+
+        /* CONTENEDOR PRINCIPAL */
+        .app-container {
+            width: 98vw; max-width: 1050px; height: 96dvh;
+            background: white; border-radius: 1.5rem;
+            box-shadow: 0 15px 40px -10px rgba(0,0,0,0.15);
+            display: flex; flex-direction: column; overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* NAVEGACIÓN SUPERIOR */
+        .top-nav { display: flex; background: #0f172a; padding: 0.4rem; gap: 0.4rem; flex-shrink: 0; z-index: 50; }
+        .nav-btn {
+            flex: 1; padding: 0.8rem 0.2rem; border-radius: 0.8rem;
+            color: #94a3b8; font-weight: bold; font-size: clamp(0.75rem, 2vw, 1rem); /* Escala de fuente */
+            text-align: center; cursor: pointer; transition: all 0.3s ease;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .nav-btn:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-btn.active { background: #3b82f6; color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
+
+        /* ÁREA DE CONTENIDO (Scroll interno dinámico) */
+        .content-area { 
+            flex-grow: 1; padding: 1.5rem 2rem; 
+            display: flex; flex-direction: column; 
+            overflow-y: auto; overflow-x: hidden; /* Clave para celulares */
+        }
+
+        .tab-content {
+            display: flex; flex-direction: column; 
+            justify-content: flex-start;
+            height: 100%; width: 100%; min-height: min-content;
+        }
+
+        /* BRÚJULA PRO */
+        .compass-circle {
+            width: 240px; height: 240px; border-radius: 50%;
+            border: 5px solid #cbd5e1; position: relative;
+            margin: 0.5rem auto; display: flex; align-items: center; justify-content: center;
+            background: #f8fafc; box-shadow: inset 0 0 20px rgba(0,0,0,0.05), 0 8px 20px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        .compass-bg { font-size: 10rem; position: absolute; opacity: 0.08; pointer-events: none; filter: grayscale(100%); }
+        .compass-point {
+            position: absolute; width: 55px; height: 55px;
+            background: white; border: 3px solid #94a3b8; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 1.2rem; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15); z-index: 10;
+        }
+        .compass-point:hover { transform: scale(1.1); border-color: #3b82f6; color: #3b82f6; }
+        .compass-point.active { background: #3b82f6; color: white; border-color: #1d4ed8; transform: scale(1.15); box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+        .pt-n { top: -25px; left: 50%; transform: translateX(-50%); } .pt-s { bottom: -25px; left: 50%; transform: translateX(-50%); }
+        .pt-e { right: -25px; top: 50%; transform: translateY(-50%); } .pt-o { left: -25px; top: 50%; transform: translateY(-50%); }
+
+        /* CAJA ANIMADA */
+        .scene-box {
+            position: relative; height: 120px; width: 100%; border-radius: 0.8rem; overflow: hidden;
+            border: 3px solid rgba(0,0,0,0.1); margin-bottom: 0.5rem; flex-shrink: 0;
+        }
+        .anim-sun-rise { animation: sunRise 3s ease-out forwards; } @keyframes sunRise { 0% { bottom: -40px; opacity: 0; transform: scale(0.6) translateX(-50%); } 100% { bottom: 20px; opacity: 1; transform: scale(1) translateX(-50%); filter: drop-shadow(0 0 15px #fbbf24); } }
+        .anim-sun-set { animation: sunSet 3s ease-in forwards; } @keyframes sunSet { 0% { bottom: 30px; opacity: 1; transform: scale(1) translateX(-50%); filter: drop-shadow(0 0 15px #fbbf24); } 100% { bottom: -20px; opacity: 0; transform: scale(0.6) translateX(-50%); } }
+        .anim-star { animation: starPulse 2s infinite alternate; } @keyframes starPulse { 0% { transform: scale(0.8) translateX(-50%); filter: drop-shadow(0 0 5px white); } 100% { transform: scale(1.2) translateX(-50%); filter: drop-shadow(0 0 15px white); } }
+        .anim-slide { animation: pgnSlide 4s ease-in-out infinite alternate; } @keyframes pgnSlide { 0% { left: 10%; transform: rotate(-10deg); } 100% { left: 80%; transform: rotate(10deg); } }
+
+        /* REGLA Y ESCALA */
+        .ruler-container {
+            width: 100%; max-width: 650px; margin: 0.5rem auto 1rem auto;
+            background: #fffbeb; border: 3px solid #f59e0b; border-radius: 1.2rem;
+            padding: 2.5rem 1.5rem 1.5rem 1.5rem; position: relative;
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.1); flex-shrink: 0;
+        }
+        .measure-track { position: relative; width: 100%; height: 5px; background: #cbd5e1; border-radius: 3px; margin-top: 1.5rem; }
+        .tick-mark { position: absolute; width: 3px; height: 14px; background: #94a3b8; top: -4px; transform: translateX(-50%); border-radius: 2px; }
+        .tick-label { position: absolute; top: 12px; transform: translateX(-50%); font-size: 0.8rem; font-weight: bold; color: #64748b; }
+        .map-icon { position: absolute; font-size: 3.5rem; bottom: 12px; transform: translateX(-50%); filter: drop-shadow(0 4px 4px rgba(0,0,0,0.2)); z-index: 10; }
+        .tree-icon { transition: left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+        input[type=range] { appearance: none; -webkit-appearance: none; width: 100%; background: transparent; position: absolute; top: -7px; left: 0; z-index: 20; margin: 0; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #3b82f6; cursor: pointer; border: 3px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.3); margin-top: -1px; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 5px; cursor: pointer; background: transparent; }
+
+        .math-box {
+            background: #0f172a; color: white; padding: 1rem 1.5rem; border-radius: 1.2rem;
+            font-family: 'Space Grotesk', monospace; text-align: center;
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.2); position: relative; overflow: hidden; max-width: 600px; margin: 0 auto; flex-shrink: 0;
+        }
+        .math-box::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #3b82f6, #10b981, #f59e0b); }
+
+        /* INTEGRACIÓN (MAPA Y PREGUNTA) */
+        .mini-map {
+            width: 100%; max-width: 400px; height: 260px; margin: 0 auto;
+            background: #e0f2fe; border: 4px solid #bae6fd; border-radius: 1.2rem;
+            position: relative; overflow: hidden;
+            background-image: linear-gradient(#bae6fd 2px, transparent 2px), linear-gradient(90deg, #bae6fd 2px, transparent 2px);
+            background-size: 50px 50px; flex-shrink: 0;
+        }
+
+        [v-cloak] { display: none; }
+
+        /* 📱 MEDIA QUERIES PARA CELULAres */
+        @media (max-width: 768px) {
+            .app-container { height: 100dvh; width: 100vw; border-radius: 0; border: none; }
+            .content-area { padding: 1rem; justify-content: flex-start; } /* Scroll habilitado natural */
+            
+            /* Ajustes Módulo 1 */
+            .compass-circle { width: 180px; height: 180px; margin: 1.5rem auto; border-width: 4px; }
+            .compass-bg { font-size: 7rem; }
+            .compass-point { width: 45px; height: 45px; font-size: 1rem; }
+            .pt-n { top: -20px; } .pt-s { bottom: -20px; } .pt-e { right: -20px; } .pt-o { left: -20px; }
+            .scene-box { height: 100px; }
+            
+            /* Ajustes Módulo 2 */
+            .ruler-container { padding: 2rem 1rem 1rem 1rem; margin-top: 1rem; }
+            .map-icon { font-size: 2.5rem; bottom: 8px; }
+            .tick-label { font-size: 0.7rem; }
+            
+            /* Ajustes Módulo 3 */
+            .mini-map { height: 180px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app" v-cloak class="w-full h-full flex justify-center items-center relative">
+    
+    <div v-if="showIntro" class="fixed inset-0 z-[100] bg-slate-900/90 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white text-slate-800 p-8 md:p-10 rounded-[2rem] max-w-2xl w-full text-center shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-4 border-slate-200 animate__animated animate__zoomIn">
+            <div class="text-7xl mb-4">🗺️</div>
+            <h1 class="title-font text-3xl md:text-5xl text-blue-600 mb-6 uppercase leading-tight">Laboratorio Cartográfico</h1>
+            
+            <div class="bg-blue-50 p-6 rounded-2xl border-2 border-blue-200 mb-8 text-left shadow-inner">
+                <h3 class="font-black text-blue-800 mb-2 uppercase text-sm tracking-widest flex items-center gap-2">
+                    <span>🎯</span> Objetivo del Recurso:
+                </h3>
+                <p class="text-slate-700 text-sm md:text-base mb-6 font-medium leading-relaxed">
+                    Comprender y aplicar de forma práctica las herramientas fundamentales de la representación cartográfica.
+                </p>
+                
+                <h3 class="font-black text-green-700 mb-2 uppercase text-sm tracking-widest flex items-center gap-2">
+                    <span>🏆</span> ¿Qué lograrás hoy?
+                </h3>
+                <ul class="text-slate-700 text-sm md:text-base font-medium list-disc pl-6 space-y-2">
+                    <li>Aprender a orientarte identificando los puntos cardinales en la <b>Rosa de los Vientos</b>.</li>
+                    <li>Entender cómo calcular distancias reales a través de la <b>Escala</b> de un mapa.</li>
+                    <li>Resolver un reto interactivo integrando ambos conocimientos como un verdadero cartógrafo.</li>
+                </ul>
+            </div>
+            
+            <button @click="showIntro = false" class="bg-blue-600 hover:bg-blue-500 text-white font-black text-xl px-12 py-4 rounded-2xl shadow-[0_6px_0_#1e3a8a] active:translate-y-2 active:shadow-none transition-all w-full md:w-auto uppercase tracking-wide">
+                ¡COMENZAR!
+            </button>
+        </div>
+    </div>
+    <div class="app-container">
+        
+        <div class="top-nav">
+            <button class="nav-btn" :class="{'active': activeTab === 'brujula'}" @click="activeTab = 'brujula'">1. La Brújula</button>
+            <button class="nav-btn" :class="{'active': activeTab === 'escala'}" @click="activeTab = 'escala'">2. La Escala</button>
+            <button class="nav-btn" :class="{'active': activeTab === 'practica'}" @click="activeTab = 'practica'">3. Práctica</button>
+        </div>
+
+        <div class="content-area">
+            
+            <div v-if="activeTab === 'brujula'" class="tab-content animate__animated animate__fadeIn">
+                <div class="text-center max-w-3xl mx-auto mb-2 md:mb-4 shrink-0">
+                    <h2 class="title-font text-2xl md:text-3xl text-slate-800 mb-2">La Rosa de los Vientos</h2>
+                    <p class="text-sm md:text-base text-slate-600">
+                        Para no perdernos en un mapa, usamos los <b>Puntos Cardinales</b>. Toca cada punto en la brújula para entender cómo nos orientan.
+                    </p>
+                </div>
+
+                <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-10 w-full mt-2">
+                    
+                    <div class="compass-circle">
+                        <div class="compass-bg">🧭</div>
+                        <div class="compass-point pt-n" :class="{'active': selectedDir === 'N'}" @click="selectDir('N')">N</div>
+                        <div class="compass-point pt-s" :class="{'active': selectedDir === 'S'}" @click="selectDir('S')">S</div>
+                        <div class="compass-point pt-e" :class="{'active': selectedDir === 'E'}" @click="selectDir('E')">E</div>
+                        <div class="compass-point pt-o" :class="{'active': selectedDir === 'O'}" @click="selectDir('O')">O</div>
+                    </div>
+
+                    <div class="bg-white p-4 md:p-5 rounded-2xl border-2 border-slate-100 w-full max-w-sm shadow-lg md:min-h-[250px] flex flex-col justify-between shrink-0">
+                        <div v-if="!selectedDir" class="text-slate-400 italic text-center h-full flex items-center justify-center text-base md:text-lg min-h-[150px]">
+                            👈 Selecciona una dirección.
+                        </div>
+                        
+                        <div v-else :key="selectedDir" class="animate__animated animate__fadeIn h-full flex flex-col">
+                            <div v-if="selectedDir === 'E'" class="scene-box bg-sky-200 border-sky-300">
+                                <div class="absolute bottom-0 w-full text-center text-4xl md:text-5xl z-10">⛰️⛰️⛰️</div>
+                                <div class="absolute left-[50%] text-4xl md:text-5xl anim-sun-rise">☀️</div>
+                            </div>
+                            <div v-if="selectedDir === 'O'" class="scene-box bg-orange-200 border-orange-300">
+                                <div class="absolute bottom-0 w-full text-center text-4xl md:text-5xl z-10">⛰️⛰️⛰️</div>
+                                <div class="absolute left-[50%] text-4xl md:text-5xl anim-sun-set">☀️</div>
+                            </div>
+                            <div v-if="selectedDir === 'N'" class="scene-box bg-slate-900 border-slate-700">
+                                <div class="absolute top-2 left-[50%] text-3xl md:text-4xl anim-star">⭐</div>
+                                <div class="absolute bottom-0 w-full text-center text-3xl md:text-4xl">🌲🌲🌲</div>
+                            </div>
+                            <div v-if="selectedDir === 'S'" class="scene-box bg-blue-100 border-blue-300">
+                                <div class="absolute bottom-1 text-3xl md:text-4xl anim-slide z-10">🐧</div>
+                                <div class="absolute bottom-0 w-full text-center text-4xl md:text-5xl opacity-80">🧊🧊🧊</div>
+                            </div>
+
+                            <div class="mt-2 flex-grow text-center md:text-left">
+                                <h3 class="text-xl md:text-2xl font-black text-blue-600 mb-1">{{ dirInfo[selectedDir].name }}</h3>
+                                <p class="text-slate-700 text-xs md:text-sm leading-snug font-medium">{{ dirInfo[selectedDir].desc }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div v-if="activeTab === 'escala'" class="tab-content animate__animated animate__fadeIn">
+                <div class="text-center max-w-3xl mx-auto mb-2 shrink-0">
+                    <h2 class="title-font text-2xl md:text-3xl text-slate-800 mb-2">El Poder de la Escala</h2>
+                    <p class="text-sm md:text-base text-slate-600 mb-2">
+                        Los mapas son dibujos pequeños de lugares gigantes. La <b>escala</b> es la regla matemática que nos dice cuánto se "encogió" la realidad para caber en el papel.
+                    </p>
+                    <div class="bg-yellow-100 text-yellow-800 px-3 py-1 md:px-4 md:py-1 rounded-full inline-block font-black text-xs md:text-sm border-2 border-yellow-300 shadow-sm mt-1">
+                        En este mapa: 1 cm en papel = 10 km reales
+                    </div>
+                </div>
+
+                <div class="ruler-container">
+                    <p class="text-center text-[10px] md:text-xs text-slate-500 mb-4 font-bold uppercase tracking-widest absolute top-2 md:top-3 left-1/2 transform -translate-x-1/2 w-full">
+                        Desliza la bola azul para medir
+                    </p>
+                    
+                    <div class="measure-track relative">
+                        <div v-for="n in 11" :key="n-1" class="tick-mark" :style="{ left: ((n-1) * 10) + '%' }">
+                            <span class="tick-label">{{ n-1 }}</span>
+                        </div>
+                        <div class="map-icon" style="left: 0%;">🏠</div>
+                        <div class="map-icon tree-icon" :style="{ left: (rulerValue * 10) + '%' }">🌲</div>
+                        <input type="range" min="0" max="10" step="1" v-model="rulerValue" class="slider">
+                    </div>
+                </div>
+
+                <div class="math-box w-full">
+                    <div class="text-slate-400 text-[10px] md:text-xs uppercase mb-2 tracking-widest">Calculadora de Distancia Real</div>
+                    <div class="flex items-center justify-center gap-2 md:gap-3 text-xl md:text-3xl bg-slate-800 p-2 md:p-3 rounded-xl border border-slate-700">
+                        <div class="flex flex-col"><span class="text-blue-400">{{ rulerValue }} cm</span><span class="text-[8px] md:text-[9px] text-slate-500 uppercase">En Mapa</span></div>
+                        <span class="text-slate-500 text-lg md:text-xl">x</span>
+                        <div class="flex flex-col"><span class="text-green-400">10 km</span><span class="text-[8px] md:text-[9px] text-slate-500 uppercase">Escala</span></div>
+                        <span class="text-slate-500 text-lg md:text-xl">=</span>
+                        <div class="flex flex-col"><span class="text-white font-black">{{ rulerValue * 10 }} KM</span><span class="text-[8px] md:text-[9px] text-yellow-400 uppercase">Reales</span></div>
+                    </div>
+                    <p class="text-slate-300 text-xs md:text-base mt-3 font-sans leading-tight">
+                        La distancia en la vida real es de <b class="text-white">{{ rulerValue * 10 }} kilómetros</b>.
+                    </p>
+                </div>
+            </div>
+
+            <div v-if="activeTab === 'practica'" class="tab-content animate__animated animate__fadeIn">
+                <div class="text-center max-w-2xl mx-auto mb-4 md:mb-6 shrink-0">
+                    <h2 class="title-font text-2xl md:text-3xl text-slate-800 mb-1 md:mb-2">Uniendo Conocimientos</h2>
+                    <p class="text-sm md:text-base text-slate-600">
+                        ¡Eres un cartógrafo! Responde la pregunta analizando el mapa inferior. Usa tu conocimiento de dirección y escala.
+                    </p>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4 md:gap-6 items-center justify-center max-w-4xl mx-auto w-full">
+                    
+                    <div class="mini-map shadow-lg w-full shrink-0">
+                        <div class="absolute top-2 left-2 md:top-3 md:left-3 bg-white/90 px-2 py-1 md:px-3 rounded-lg border-2 border-blue-200 text-[10px] md:text-xs font-black text-blue-800 shadow-sm z-10">
+                            ESCALA: 1 cuadro = 5 KM
+                        </div>
+                        <div class="absolute bottom-2 right-2 md:bottom-3 md:right-3 text-3xl md:text-4xl opacity-40 grayscale">🧭</div>
+                        <div class="absolute bottom-10 right-4 md:bottom-16 md:right-6 text-xs md:text-sm font-black text-slate-400">N ⬆</div>
+                        
+                        <div class="absolute text-3xl md:text-4xl transform -translate-x-1/2 -translate-y-1/2 drop-shadow-md z-10" style="left: 20%; top: 50%;">🏕️</div>
+                        <div class="absolute text-4xl md:text-5xl transform -translate-x-1/2 -translate-y-1/2 drop-shadow-md z-10" style="left: 60%; top: 50%;">🏔️</div>
+                        
+                        <svg class="absolute inset-0 w-full h-full pointer-events-none">
+                            <line x1="20%" y1="50%" x2="60%" y2="50%" stroke="#3b82f6" stroke-width="4" stroke-dasharray="8 8" />
+                        </svg>
+                        <div class="absolute text-blue-700 font-black bg-white/90 px-2 py-1 rounded-full border-2 border-blue-200 shadow-sm z-10 text-[10px] md:text-xs transform -translate-x-1/2 -translate-y-1/2" style="left: 40%; top: 40%;">
+                            4 CUADROS
+                        </div>
+                    </div>
+
+                    <div class="w-full max-w-sm bg-white p-4 md:p-5 rounded-2xl border-2 border-slate-200 shadow-xl relative z-20 shrink-0">
+                        <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full font-black tracking-widest text-[10px] md:text-xs shadow-md">
+                            MISIÓN FINAL
+                        </div>
+                        
+                        <p class="text-slate-700 text-sm md:text-base font-medium mb-3 mt-2 leading-snug">
+                            Para ir del <span class="font-bold text-green-700">Campamento (🏕️)</span> a la <span class="font-bold text-slate-500">Montaña (🏔️)</span>, ¿hacia dónde debes caminar y qué distancia real es?
+                        </p>
+                        
+                        <div class="space-y-2 md:space-y-3 relative z-30">
+                            <button @click="checkAnswer(false, 'A')" class="w-full text-left px-3 py-2 md:px-4 md:py-3 rounded-xl border-2 border-slate-100 hover:border-blue-500 hover:bg-blue-50 active:translate-y-1 transition-all font-bold text-slate-700 text-xs md:text-sm cursor-pointer block">
+                                A) Al Norte, 4 kilómetros.
+                            </button>
+                            <button @click="checkAnswer(true, 'B')" class="w-full text-left px-3 py-2 md:px-4 md:py-3 rounded-xl border-2 border-slate-100 hover:border-blue-500 hover:bg-blue-50 active:translate-y-1 transition-all font-bold text-slate-700 text-xs md:text-sm cursor-pointer block">
+                                B) Al Este, 20 kilómetros.
+                            </button>
+                            <button @click="checkAnswer(false, 'C')" class="w-full text-left px-3 py-2 md:px-4 md:py-3 rounded-xl border-2 border-slate-100 hover:border-blue-500 hover:bg-blue-50 active:translate-y-1 transition-all font-bold text-slate-700 text-xs md:text-sm cursor-pointer block">
+                                C) Al Oeste, 20 kilómetros.
+                            </button>
+                        </div>
+
+                        <div v-if="feedbackText" :key="feedbackText" class="mt-3 p-2 md:p-3 rounded-lg text-xs md:text-sm font-bold text-center animate__animated animate__headShake border" :class="feedbackClass">
+                            {{ feedbackText }}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+const { createApp, ref } = Vue;
+
+createApp({
+    setup() {
+        const showIntro = ref(true); // Controla la pantalla inicial
+        const activeTab = ref('brujula');
+        
+        // Brújula
+        const selectedDir = ref(null);
+        const dirInfo = {
+            'N': { name: 'NORTE', desc: 'Arriba en el mapa. La Estrella Polar siempre apunta al Norte en el hemisferio norte.' },
+            'S': { name: 'SUR', desc: 'Abajo en el mapa. Es la dirección opuesta al Norte, apuntando hacia el polo helado.' },
+            'E': { name: 'ESTE', desc: 'A la derecha en el mapa. Es la dirección por donde vemos salir el sol (Amanecer).' },
+            'O': { name: 'OESTE', desc: 'A la izquierda en el mapa. Es la dirección por donde vemos ocultarse el sol (Atardecer).' }
+        };
+        const selectDir = (dir) => { selectedDir.value = dir; };
+
+        // Escala
+        const rulerValue = ref(5);
+
+        // Práctica
+        const feedbackText = ref('');
+        const feedbackClass = ref('');
+
+        const checkAnswer = (isCorrect, option) => {
+            if (isCorrect) {
+                feedbackText.value = "¡Excelente! Montaña a la derecha (Este). Y 4 cuadros x 5km = 20 kilómetros.";
+                feedbackClass.value = "bg-green-50 text-green-700 border-green-400 shadow-inner";
+                try { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); } catch(e){}
+            } else {
+                if (option === 'A') feedbackText.value = "Recuerda: El Norte es arriba. Además, ¡olvidaste multiplicar por la escala (5km)!";
+                if (option === 'C') feedbackText.value = "Recuerda: El Oeste es a la izquierda. ¡La montaña está a la derecha (Este)!";
+                feedbackClass.value = "bg-orange-50 text-orange-700 border-orange-400 shadow-inner";
+            }
+        };
+
+        return { 
+            showIntro,
+            activeTab, selectedDir, dirInfo, selectDir, rulerValue, feedbackText, feedbackClass, checkAnswer 
+        };
+    }
+}).mount('#app');
+</script>
+</body>
+</html>

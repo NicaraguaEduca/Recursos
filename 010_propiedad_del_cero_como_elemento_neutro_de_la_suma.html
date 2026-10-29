@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>El Reto de Glotón</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&family=Titan+One&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #2c3e50, #4ca1af);
+            --monster-base: #FF7043;
+        }
+
+        body {
+            margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden;
+            font-family: 'Fredoka', sans-serif;
+            /* Fondo dinámico con lunares suaves */
+            background: radial-gradient(rgba(255,255,255,0.1) 15%, transparent 16%) 0 0 / 30px 30px, linear-gradient(135deg, #2c3e50, #4ca1af);
+            display: flex; flex-direction: column; align-items: center;
+            user-select: none; touch-action: none;
+        }
+
+        /* --- UI SUPERIOR --- */
+        #top-ui {
+            position: absolute; top: 20px; width: 90%; max-width: 600px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 50;
+        }
+        .level-badge {
+            background: rgba(0,0,0,0.4); color: white; padding: 10px 20px;
+            border-radius: 20px; font-weight: bold; font-size: 1.1rem;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        .weight-badge {
+            background: white; color: #333; padding: 10px 20px;
+            border-radius: 20px; font-weight: bold; font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); font-family: 'Titan One';
+        }
+
+        /* --- MONSTRUO --- */
+        #monster-container {
+            position: absolute; bottom: 140px; left: 50%; transform: translateX(-50%);
+            width: 260px; height: 280px; z-index: 10;
+        }
+
+        .monster-body {
+            width: 240px; height: 230px;
+            background: radial-gradient(circle at 30% 30%, #FFAB91, #FF7043, #D84315);
+            border-radius: 45% 45% 40% 40%;
+            position: relative; margin: 0 auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            display: flex; flex-direction: column; align-items: center;
+            transform-origin: center bottom;
+        }
+
+        .eyes-row { display: flex; gap: 15px; margin-top: 60px; z-index: 5; }
+        .eye {
+            width: 60px; height: 60px; background: white; border-radius: 50%;
+            position: relative; overflow: hidden; border: 4px solid #D84315;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+        }
+        .pupil {
+            width: 28px; height: 28px; background: #212121; border-radius: 50%;
+            position: absolute; top: 16px; left: 16px;
+        }
+        .pupil::after {
+            content: ''; position: absolute; top: 5px; left: 5px; width: 8px; height: 8px;
+            background: white; border-radius: 50%; opacity: 0.8;
+        }
+
+        /* Boca Limpia */
+        .mouth {
+            width: 90px; height: 25px; 
+            background: #3E2723;
+            border-radius: 20px; margin-top: 25px;
+            overflow: hidden; 
+            border: none; 
+            position: relative; transition: all 0.2s;
+            z-index: 4;
+            box-shadow: inset 0 5px 10px rgba(0,0,0,0.5);
+        }
+        .mouth.open { height: 70px; border-radius: 20px 20px 60px 60px; width: 100px; }
+        
+        .teeth {
+            position: absolute; top: 0; width: 100%; 
+            display: flex; justify-content: center; gap: 4px; z-index: 10; 
+        }
+        .tooth { width: 14px; height: 12px; background: white; border-radius: 0 0 5px 5px; }
+
+        .tongue {
+            position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
+            width: 50px; height: 35px; background: #E57373; 
+            border-radius: 20px 20px 0 0; z-index: 5; 
+            transition: bottom 0.2s;
+        }
+        .mouth.open .tongue { bottom: 0; }
+
+        /* Brazos */
+        .arm {
+            position: absolute; top: 120px; width: 70px; height: 25px;
+            background: radial-gradient(circle at 50% 30%, #FF7043, #D84315);
+            border-radius: 20px; z-index: 1;
+        }
+        .arm.left { left: -45px; transform: rotate(-20deg); transform-origin: right center; }
+        .arm.right { right: -45px; transform: rotate(20deg); transform-origin: left center; }
+
+        /* Burbuja de Diálogo */
+        .bubble {
+            position: absolute; top: -70px; right: -80px;
+            background: white; padding: 12px 18px; border-radius: 20px 20px 20px 0;
+            border: 3px solid #333; font-weight: bold; opacity: 0; transform: scale(0);
+            pointer-events: none; width: 100px; font-size: 1rem; text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 100; color: #333;
+        }
+        .bubble::after {
+            content: ''; position: absolute; bottom: -15px; left: -3px;
+            border-width: 15px 15px 0; border-style: solid; border-color: #333 transparent;
+            transform: rotate(30deg);
+        }
+
+        /* --- ESCENARIO --- */
+        #floor {
+            position: absolute; bottom: 0; width: 100%; height: 25%;
+            background: #34495e; border-top: 10px solid #2c3e50; z-index: 0;
+        }
+
+        /* --- ESTANTES DE COMIDA --- */
+        #food-shelf {
+            position: absolute; bottom: 30px; width: 100%; height: 110px;
+            display: flex; justify-content: center; gap: 40px; z-index: 100;
+        }
+        
+        .food-item {
+            width: 90px; height: 100px; cursor: grab;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+            transition: transform 0.2s; position: relative;
+        }
+        .food-item:active { cursor: grabbing; transform: scale(1.1); }
+        .food-visual { font-size: 4rem; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3)); }
+        
+        .food-label {
+            background: rgba(255,255,255,0.95); padding: 4px 10px; border-radius: 8px;
+            font-size: 0.9rem; font-weight: bold; margin-top: 5px; pointer-events: none;
+            border: 1px solid #333; text-align: center; width: 100px;
+            display: flex; justify-content: center; align-items: center;
+        }
+        
+        /* CAMBIO: TIPOGRAFÍA DE NÚMEROS MÁS LEGIBLE */
+        .food-value { 
+            color: #D84315; 
+            font-family: 'Fredoka', sans-serif; /* Cambio de fuente */
+            font-weight: 700; /* Negrita */
+            font-size: 1.1rem;
+            margin-left: 5px; 
+        }
+
+        /* Objetos Custom */
+        .custom-obj { width: 70px; height: 60px; position: relative; }
+        .box-empty {
+            width: 70px; height: 50px; background: #8D6E63;
+            border-radius: 0 0 5px 5px; border: 2px solid #5D4037;
+            position: relative; overflow: hidden;
+        }
+        .box-empty::after { 
+            content: ''; position: absolute; top: 0; left: 5px; width: 56px; height: 40px;
+            background: #3E2723; border-radius: 0 0 20px 20px;
+        }
+        .plate-empty {
+            width: 70px; height: 20px; background: #EEE;
+            border-radius: 50%; border: 2px solid #CCC; box-shadow: 0 5px 0 #DDD;
+            margin-bottom: 10px;
+        }
+
+        /* --- OVERLAYS --- */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 2000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            backdrop-filter: blur(5px); text-align: center; color: white;
+            display: none; 
+        }
+        .card {
+            background: white; color: #333; padding: 30px; border-radius: 30px;
+            width: 90%; max-width: 450px; border: 6px solid #FF7043;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .card h1 { font-family: 'Titan One'; color: #D84315; margin: 0 0 10px 0; font-size: 2rem; }
+        .card p { font-size: 1.2rem; margin-bottom: 20px; line-height: 1.5; }
+        
+        .card.success-card { border-color: #66BB6A; }
+        .card.success-card h1 { color: #2E7D32; }
+
+        .equation-display {
+            font-family: 'Titan One'; font-size: 2.2rem; color: #333;
+            background: #F5F5F5; padding: 15px; border-radius: 15px;
+            margin: 20px 0; display: block; border: 2px dashed #AAA;
+        }
+
+        .success-eq {
+            font-family: 'Titan One'; font-size: 2.5rem; color: #2E7D32;
+            display: block; margin-top: 15px; background: #E8F5E9;
+            padding: 10px; border-radius: 10px; border: 2px dashed #66BB6A;
+        }
+
+        .btn {
+            background: #66BB6A; color: white; font-family: 'Titan One'; font-size: 1.3rem;
+            padding: 12px 30px; border: none; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 6px 0 #2E7D32; transition: transform 0.1s;
+        }
+        .btn:active { transform: translateY(4px); box-shadow: 0 3px 0 #2E7D32; }
+        .btn-restart { background: #EF5350; box-shadow: 0 6px 0 #B71C1C; }
+
+    </style>
+</head>
+<body>
+
+    <div id="top-ui">
+        <div class="level-badge" id="level-indicator">Día 1 / 5</div>
+        <div class="weight-badge">Peso Ideal: <span id="ui-weight">3</span></div>
+    </div>
+
+    <div id="monster-container">
+        <div class="bubble" id="dialog">¡Ñam!</div>
+
+        <div class="arm left" id="arm-l"></div>
+        <div class="arm right" id="arm-r"></div>
+        
+        <div class="monster-body" id="body">
+            <div class="eyes-row">
+                <div class="eye"><div class="pupil"></div></div>
+                <div class="eye"><div class="pupil"></div></div>
+            </div>
+            
+            <div class="mouth" id="mouth">
+                <div class="teeth">
+                    <div class="tooth"></div><div class="tooth"></div><div class="tooth"></div>
+                </div>
+                <div class="tongue"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="floor"></div>
+    <div id="food-shelf"></div>
+
+    <div id="start-screen" class="overlay" style="display: flex;">
+        <div class="card">
+            <h1>El Reto de Glotón</h1>
+            <p>El peso ideal de Glotón es <b>3</b>.<br><br>
+            Tu misión: Dale cosas vacías (Ceros) para que <b>no engorde y no explote</b>.</p>
+            <button class="btn" onclick="startGame()">¡Aceptar Reto!</button>
+        </div>
+    </div>
+
+    <div id="success-screen" class="overlay">
+        <div class="card success-card">
+            <h1>¡Muy Bien!</h1>
+            <p id="success-msg" style="font-size: 1.3rem; margin-bottom: 0;">
+                </p>
+            <div id="final-eq-container"></div>
+            <br>
+            <button class="btn" onclick="nextLevelAction()">Siguiente Día</button>
+        </div>
+    </div>
+
+    <div id="fail-screen" class="overlay">
+        <div class="card" style="border-color: #C62828;">
+            <h1 style="color: #C62828;">¡BOOM! Explotó</h1>
+            <span class="equation-display" id="fail-eq">3 + 2 = 5</span>
+            <p>Le sumaste peso y Glotón no lo resistió.<br><b>3 + algo ≠ 3</b></p>
+            <button class="btn btn-restart" onclick="restartLevel()">Intentar Día <span id="fail-day-num">1</span></button>
+        </div>
+    </div>
+
+    <div id="final-win-screen" class="overlay">
+        <div class="card" style="border-color: #FFD700;">
+            <h1 style="color: #FBC02D;">¡LO LOGRASTE! 🏆</h1>
+            <p>Glotón sobrevivió los 5 días en su peso perfecto de 3.<br>¡Eres un experto en el número Cero!</p>
+            <button class="btn" onclick="resetGame()">Jugar Otra Vez</button>
+        </div>
+    </div>
+
+<script>
+    // Configuración Constante
+    let currentLevel = 1;
+    const maxLevels = 5;
+    const FIXED_WEIGHT = 3; 
+    let currentWeight = FIXED_WEIGHT;
+
+    const itemsDatabase = {
+        zeros: [
+            { name: "Aire", icon: "💨", type: "text", val: 0 },
+            { name: "Caja Vacía", html: `<div class="box-empty"></div>`, type: "html", val: 0 },
+            { name: "Plato Vacío", html: `<div class="plate-empty"></div>`, type: "html", val: 0 },
+            { name: "Nada", icon: "🚫", type: "text", val: 0 }
+        ],
+        nonZeros: [
+            { name: "Galleta", icon: "🍪", val: 1 },
+            { name: "Pastel", icon: "🍰", val: 5 },
+            { name: "Manzana", icon: "🍎", val: 2 },
+            { name: "Pizza", icon: "🍕", val: 8 },
+            { name: "Helado", icon: "🍦", val: 3 },
+            { name: "Hamburguesa", icon: "🍔", val: 6 }
+        ]
+    };
+
+    function startGame() {
+        document.getElementById('start-screen').style.display = 'none';
+        currentLevel = 1;
+        loadLevel();
+    }
+
+    function resetGame() {
+        document.getElementById('final-win-screen').style.display = 'none';
+        startGame();
+    }
+
+    function restartLevel() {
+        document.getElementById('fail-screen').style.display = 'none';
+        
+        // Reset visual del monstruo
+        gsap.set(".monster-body", { clearProps: "all" });
+        gsap.set("#arm-l", { clearProps: "all" });
+        gsap.set("#arm-r", { clearProps: "all" });
+        gsap.set(".eye", { clearProps: "all" });
+        
+        gsap.to(".monster-body", { 
+            background: "radial-gradient(circle at 30% 30%, #FFAB91, #FF7043, #D84315)", 
+            scale: 1, 
+            opacity: 1 
+        });
+
+        loadLevel();
+    }
+
+    function nextLevelAction() {
+        document.getElementById('success-screen').style.display = 'none';
+        currentLevel++;
+        if (currentLevel > maxLevels) {
+            document.getElementById('final-win-screen').style.display = 'flex';
+            confetti({ particleCount: 500, spread: 100 });
+        } else {
+            loadLevel();
+        }
+    }
+
+    function loadLevel() {
+        currentWeight = FIXED_WEIGHT;
+        
+        document.getElementById('level-indicator').innerText = `Día ${currentLevel} / ${maxLevels}`;
+        document.getElementById('fail-day-num').innerText = currentLevel;
+
+        const shelf = document.getElementById('food-shelf');
+        shelf.innerHTML = '';
+        
+        let levelItems = [];
+        const zeroItem = itemsDatabase.zeros[Math.floor(Math.random() * itemsDatabase.zeros.length)];
+        levelItems.push(zeroItem);
+
+        const shuffledNonZeros = itemsDatabase.nonZeros.sort(() => 0.5 - Math.random());
+        levelItems.push(shuffledNonZeros[0]);
+        levelItems.push(shuffledNonZeros[1]);
+
+        levelItems.sort(() => 0.5 - Math.random());
+
+        levelItems.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'food-item draggable';
+            div.setAttribute('data-val', item.val);
+            
+            let visualHTML = item.type === 'html' 
+                ? `<div class="custom-obj">${item.html}</div>` 
+                : `<div class="food-visual">${item.icon}</div>`;
+
+            const sign = item.val > 0 ? "+" : "+";
+            div.innerHTML = `${visualHTML}<div class="food-label">${item.name}<span class="food-value">${sign}${item.val}</span></div>`;
+            shelf.appendChild(div);
+        });
+
+        initDraggables();
+        gsap.from(".food-item", { y: 100, opacity: 0, stagger: 0.1, duration: 0.5, ease: "back.out" });
+    }
+
+    function initDraggables() {
+        Draggable.create(".draggable", {
+            type: "x,y", edgeResistance: 0.65, bounds: "body", inertia: true,
+            onPress: function() {
+                document.getElementById('mouth').classList.add('open');
+                gsap.to("#arm-l", { rotation: -60, duration: 0.2 });
+                gsap.to("#arm-r", { rotation: 60, duration: 0.2 });
+                gsap.to(this.target, { scale: 1.1, zIndex: 1000 });
+                talk("¿Ñam?");
+            },
+            onRelease: function() {
+                document.getElementById('mouth').classList.remove('open');
+                gsap.to("#arm-l", { rotation: -20, duration: 0.2 });
+                gsap.to("#arm-r", { rotation: 20, duration: 0.2 });
+                gsap.to(this.target, { scale: 1 });
+                checkFeed(this.target);
+            }
+        });
+    }
+
+    function checkFeed(element) {
+        const mouth = document.getElementById('body');
+        const mouthRect = mouth.getBoundingClientRect();
+        const foodRect = element.getBoundingClientRect();
+
+        if (foodRect.centerX > mouthRect.left && foodRect.centerX < mouthRect.right &&
+            foodRect.centerY > mouthRect.top && foodRect.centerY < mouthRect.bottom) {
+            eat(element);
+        } else {
+            gsap.to(element, { x: 0, y: 0, duration: 0.5, ease: "power2.out" });
+        }
+    }
+
+    function eat(element) {
+        const val = parseInt(element.getAttribute('data-val'));
+        
+        gsap.to(element, { 
+            scale: 0, opacity: 0, duration: 0.3, 
+            x: (document.getElementById('body').getBoundingClientRect().left - element.getBoundingClientRect().left) + 90,
+            y: -80
+        });
+
+        gsap.timeline()
+            .to("#body", { scaleX: 1.1, scaleY: 0.9, duration: 0.1, yoyo: true, repeat: 3 })
+            .to("#body", { scale: 1, duration: 0.2, onComplete: () => processResult(val) });
+    }
+
+    function processResult(val) {
+        if (val === 0) {
+            // --- CORRECTO (0) ---
+            confetti({ particleCount: 100, spread: 60, origin: { y: 0.6 } });
+            talk("¡Rico!");
+            gsap.to("#body", { y: -30, duration: 0.3, yoyo: true, repeat: 1 });
+
+            // Mensaje Pedagógico
+            document.getElementById('success-msg').innerHTML = `
+                Glotón pesa <b>${FIXED_WEIGHT}</b>.<br>
+                Le diste <b>0</b>.<br>
+                No suma nada.<br>
+                Se mantiene en su peso ideal.
+            `;
+            // ECUACIÓN FINAL VISUAL
+            document.getElementById('final-eq-container').innerHTML = `
+                <span class="success-eq">${FIXED_WEIGHT} + 0 = ${FIXED_WEIGHT}</span>
+            `;
+
+            setTimeout(() => {
+                document.getElementById('success-screen').style.display = 'flex';
+            }, 600);
+
+        } else {
+            // --- INCORRECTO: EXPLOSIÓN ---
+            currentWeight = FIXED_WEIGHT + val;
+            
+            talk("¡¡OH NO!!");
+            
+            // Secuencia de Explosión
+            const tl = gsap.timeline();
+            tl.to(".monster-body", { 
+                background: "radial-gradient(circle at 30% 30%, #FF5252, #D32F2F, #B71C1C)",
+                scale: 1.2, duration: 0.2
+            })
+            .to(".monster-body", {
+                x: "+=15", yoyo: true, repeat: 10, duration: 0.05 
+            })
+            .to(".monster-body", {
+                scale: 4, duration: 0.8, ease: "power1.in"
+            }, "-=0.5")
+            .to(".monster-body", { opacity: 0, duration: 0.1 })
+            .to("#arm-l", { opacity: 0, duration: 0.1 }, "<")
+            .to("#arm-r", { opacity: 0, duration: 0.1 }, "<")
+            .call(() => {
+                 confetti({ 
+                    particleCount: 200, spread: 360, startVelocity: 40, 
+                    colors: ['#D32F2F', '#FF5252', '#000000'] 
+                 });
+                 const bang = document.createElement('div');
+                 bang.innerText = "¡PUUUUM!";
+                 bang.style.position = "absolute"; bang.style.top = "40%"; bang.style.left="50%";
+                 bang.style.transform = "translate(-50%, -50%)";
+                 bang.style.fontSize = "5rem"; bang.style.fontFamily = "Titan One";
+                 bang.style.color = "#D32F2F"; bang.style.zIndex = "200";
+                 document.body.appendChild(bang);
+                 gsap.to(bang, { scale: 1.5, opacity: 0, duration: 1, onComplete:()=>bang.remove() });
+            });
+
+            setTimeout(() => {
+                document.getElementById('fail-eq').innerHTML = `${FIXED_WEIGHT} + ${val} = <span style="color:#C62828">${currentWeight}</span>`;
+                document.getElementById('fail-screen').style.display = 'flex';
+            }, 1500);
+        }
+    }
+
+    function talk(text) {
+        const bubble = document.getElementById('dialog');
+        bubble.innerText = text;
+        gsap.to(bubble, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out" });
+        setTimeout(() => gsap.to(bubble, { opacity: 0, scale: 0 }), 1500);
+    }
+
+    document.addEventListener('mousemove', (e) => {
+        const eyes = document.querySelectorAll('.eye');
+        eyes.forEach(eye => {
+            const rect = eye.getBoundingClientRect();
+            const pupil = eye.querySelector('.pupil');
+            const angle = Math.atan2(e.clientY - (rect.top + 30), e.clientX - (rect.left + 30));
+            const dist = Math.min(10, Math.hypot(e.clientX - (rect.left + 30), e.clientY - (rect.top + 30))/5);
+            gsap.to(pupil, { x: Math.cos(angle)*dist, y: Math.sin(angle)*dist, duration: 0.1 });
+        });
+    });
+    
+    if (!DOMRect.prototype.centerX) {
+        Object.defineProperty(DOMRect.prototype, 'centerX', { get: function() { return this.left + this.width / 2; } });
+        Object.defineProperty(DOMRect.prototype, 'centerY', { get: function() { return this.top + this.height / 2; } });
+    }
+</script>
+
+</body>
+</html>

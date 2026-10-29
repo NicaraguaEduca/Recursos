@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finales con Impacto | El Reportaje</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Bangers&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-green: #4ade80;
+            --neon-pink: #f472b6;
+            --neon-blue: #60a5fa;
+            --main-dark: #1e293b;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #f8fafc;
+            color: var(--main-dark);
+            font-size: 20px;
+            scroll-behavior: smooth;
+        }
+
+        .font-comic { font-family: 'Bangers', cursive; letter-spacing: 1px; }
+
+        .neo-card {
+            background: white;
+            border: 4px solid var(--main-dark);
+            box-shadow: 8px 8px 0px 0px var(--main-dark);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .neo-card:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: 12px 12px 0px 0px var(--main-dark);
+        }
+
+        .neo-card.selected {
+            background-color: var(--main-dark);
+            color: white;
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px 0px var(--main-dark);
+        }
+
+        .reaction-bubble {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .hidden-result {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease-out;
+        }
+
+        .show-result {
+            display: block !important;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .impact-bar {
+            height: 14px;
+            background: #e2e8f0;
+            border-radius: 999px;
+            overflow: hidden;
+            border: 2px solid var(--main-dark);
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 1s ease-in-out;
+        }
+
+        .slide-step {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        /* Estilos para el Mini-Juego */
+        .game-btn {
+            transition: all 0.2s;
+            border: 4px solid var(--main-dark);
+        }
+        .game-btn:active { transform: scale(0.9); }
+
+        .correct-anim { animation: success-pulse 0.5s ease; }
+        @keyframes success-pulse {
+            0% { background-color: #4ade80; }
+            100% { background-color: white; }
+        }
+
+        @media (max-width: 640px) {
+            .font-comic { font-size: 3.5rem !important; }
+            p { font-size: 1.2rem !important; }
+        }
+    </style>
+</head>
+<body class="bg-indigo-50">
+
+    <!-- LÁMINA 1: BIENVENIDA -->
+    <section class="slide-step bg-cyan-400">
+        <div class="bg-white border-4 border-slate-900 px-6 py-2 mb-8 -rotate-1 font-black uppercase text-xl">
+            ¡Llegamos al final!
+        </div>
+        <h1 class="text-7xl md:text-9xl font-comic text-white drop-shadow-[6px_6px_0px_#1e293b] text-center leading-none mb-8">
+            EL CIERRE DE<br><span class="text-yellow-300">IMPACTO</span>
+        </h1>
+        <div class="max-w-2xl bg-white border-4 border-slate-900 p-8 neo-card text-center">
+            <p class="text-2xl md:text-3xl font-bold text-slate-700 leading-tight">
+                Imagina que tu reportaje es un video de redes sociales. Si se corta de golpe, ¡nadie entiende nada! La conclusión es tu mensaje final.
+            </p>
+        </div>
+        <a href="#explicacion" class="mt-12 bg-slate-900 text-white px-10 py-6 rounded-full font-black uppercase text-xl hover:scale-110 active:scale-95 transition-all shadow-xl">
+            ¿Cómo se hace? ↓
+        </a>
+    </section>
+
+    <!-- LÁMINA 2: LAS 3 HUELLAS (EXPLICACIÓN PEDAGÓGICA) -->
+    <section id="explicacion" class="slide-step bg-white border-y-8 border-slate-900">
+        <div class="max-w-6xl w-full">
+            <h2 class="text-5xl md:text-6xl font-comic mb-12 text-center italic text-slate-900">LAS 3 HUELLAS DEL REPORTERO</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
+                <div class="p-8 border-4 border-slate-900 rounded-[2rem] bg-pink-100 neo-card cursor-default">
+                    <span class="text-6xl">❤️</span>
+                    <h3 class="font-black text-2xl mt-6 uppercase text-pink-600">En el Corazón</h3>
+                    <p class="text-slate-800 mt-4 text-xl font-medium">Haz que el lector recuerde algo importante de su vida o se emocione con tu historia.</p>
+                </div>
+                <div class="p-8 border-4 border-slate-900 rounded-[2rem] bg-blue-100 neo-card cursor-default">
+                    <span class="text-6xl">🤝</span>
+                    <h3 class="font-black text-2xl mt-6 uppercase text-blue-600">En las Manos</h3>
+                    <p class="text-slate-800 mt-4 text-xl font-medium">Dales una instrucción clara. ¡Diles qué pueden hacer hoy mismo para ayudar!</p>
+                </div>
+                <div class="p-8 border-4 border-slate-900 rounded-[2rem] bg-green-100 neo-card cursor-default">
+                    <span class="text-6xl">👀</span>
+                    <h3 class="font-black text-2xl mt-6 uppercase text-green-600">En la Mirada</h3>
+                    <p class="text-slate-800 mt-4 text-xl font-medium">Promételes que el futuro será mejor si todos trabajamos juntos en la solución.</p>
+                </div>
+            </div>
+
+            <div class="flex justify-center mt-16">
+                <a href="#minijuego" class="bg-purple-500 text-white border-4 border-slate-900 px-12 py-5 font-black uppercase text-2xl shadow-[6px_6px_0px_0px_#1e293b] hover:bg-purple-400 transition-all">
+                    ¡Entrenamiento Rápido! 🎮
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- LÁMINA NUEVA: MINI-JUEGO DE ENTRENAMIENTO -->
+    <section id="minijuego" class="slide-step bg-slate-900 text-white">
+        <div class="max-w-4xl w-full text-center">
+            <h2 class="text-4xl font-comic text-yellow-400 mb-4 italic">MINI-JUEGO: CLASIFICADOR DE HUELLAS</h2>
+            <p class="text-xl mb-10 text-slate-300">Lee la frase y toca el icono que representa su huella:</p>
+
+            <div id="game-box" class="bg-white text-slate-900 p-10 border-8 border-purple-500 rounded-[3rem] shadow-[0px_0px_30px_rgba(168,85,247,0.5)] mb-10">
+                <p id="game-phrase" class="text-2xl md:text-3xl font-black leading-tight italic">Cargando desafío...</p>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 md:gap-8 max-w-2xl mx-auto">
+                <button onclick="checkGame('corazon')" class="game-btn bg-pink-100 p-6 rounded-2xl">
+                    <span class="text-4xl block">❤️</span>
+                </button>
+                <button onclick="checkGame('manos')" class="game-btn bg-blue-100 p-6 rounded-2xl">
+                    <span class="text-4xl block">🤝</span>
+                </button>
+                <button onclick="checkGame('mirada')" class="game-btn bg-green-100 p-6 rounded-2xl">
+                    <span class="text-4xl block">👀</span>
+                </button>
+            </div>
+
+            <div id="game-feedback" class="mt-8 h-8 font-black uppercase tracking-widest text-yellow-400"></div>
+
+            <a id="btn-to-sim" href="#simulador" class="hidden mt-12 inline-block bg-white text-slate-900 border-4 border-slate-900 px-10 py-4 rounded-full font-black uppercase">
+                ¡Listo para el desafío final! ➔
+            </a>
+        </div>
+    </section>
+
+    <!-- LÁMINA 3: EL SIMULADOR DE CONSECUENCIAS -->
+    <section id="simulador" class="slide-step">
+        <div class="max-w-6xl w-full">
+            <h2 class="text-4xl md:text-5xl font-black text-center mb-12 uppercase italic">Toca un final y mira qué pasa:</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                <div onclick="selectOption('A')" id="card-A" class="neo-card p-8 flex flex-col justify-between">
+                    <div>
+                        <span class="text-5xl mb-4 block">🤔</span>
+                        <h4 class="font-black uppercase text-xl mb-4">Opción: Reflexión</h4>
+                        <p class="text-xl leading-relaxed">"El parque es nuestra historia. Cuidarlo es cuidar el corazón del barrio."</p>
+                    </div>
+                </div>
+
+                <div onclick="selectOption('B')" id="card-B" class="neo-card p-8 flex flex-col justify-between border-pink-500">
+                    <div>
+                        <span class="text-5xl mb-4 block">📢</span>
+                        <h4 class="font-black uppercase text-xl mb-4">Opción: Acción</h4>
+                        <p class="text-xl leading-relaxed">"¡Trae tus guantes! Nos vemos el sábado a las 9 AM para limpiar el parque."</p>
+                    </div>
+                </div>
+
+                <div onclick="selectOption('C')" id="card-C" class="neo-card p-8 flex flex-col justify-between border-cyan-500">
+                    <div>
+                        <span class="text-5xl mb-4 block">🌈</span>
+                        <h4 class="font-black uppercase text-xl mb-4">Opción: Esperanza</h4>
+                        <p class="text-xl leading-relaxed">"Aunque hoy luzca gris, pronto las risas volverán a escucharse aquí."</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESULTADO DINÁMICO -->
+            <div id="result-container" class="hidden-result">
+                <div class="bg-white border-8 border-slate-900 rounded-[3rem] p-10 shadow-[15px_15px_0px_0px_#1e293b] relative">
+                    <div class="flex flex-col md:flex-row items-center gap-8 mb-8">
+                        <div id="result-emoji" class="text-8xl reaction-bubble">💬</div>
+                        <div class="text-center md:text-left">
+                            <h4 id="result-title" class="text-3xl md:text-4xl font-black uppercase text-slate-900">Cargando...</h4>
+                            <p id="result-subtitle" class="text-slate-500 font-bold text-xl uppercase tracking-widest">Reacción Virtual</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 text-white p-8 rounded-[2rem] mb-8 relative">
+                        <div class="absolute -top-4 left-8 bg-yellow-400 text-slate-900 px-4 py-1 font-black text-sm uppercase rounded">Comentario del Lector</div>
+                        <p id="result-comment" class="italic text-2xl font-medium leading-relaxed">...</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                        <div>
+                            <div class="flex justify-between text-sm font-black uppercase mb-2">
+                                <span>Impacto Emocional</span> <span id="stat-1-val">0%</span>
+                            </div>
+                            <div class="impact-bar"><div id="bar-1" class="progress-fill bg-green-400"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm font-black uppercase mb-2">
+                                <span>Ganas de participar</span> <span id="stat-2-val">0%</span>
+                            </div>
+                            <div class="impact-bar"><div id="bar-2" class="progress-fill bg-pink-500"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-10 pt-8 border-t-4 border-slate-100">
+                         <h5 class="font-black text-slate-400 uppercase text-sm mb-2">Consejo del Editor:</h5>
+                         <p id="result-analysis" class="text-xl text-slate-700 font-bold">...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-20 text-center text-slate-400 font-black uppercase tracking-widest text-sm">
+        Escuela de Reporteros • 6to Grado
+    </footer>
+
+    <script>
+        // Lógica del Mini-Juego
+        const gameItems = [
+            { text: "“¡Recojan sus palas! La limpieza empieza mañana a las 8 AM.”", correct: "manos" },
+            { text: "“Imaginen a sus abuelos sentados en ese banco, bajo el mismo sol.”", correct: "corazon" },
+            { text: "“Pronto los juegos brillarán y el parque será un paraíso de nuevo.”", correct: "mirada" },
+            { text: "“Nuestras manos unidas pueden reconstruir cualquier pared rota.”", correct: "manos" },
+            { text: "“El olor del pasto recién cortado nos recuerda nuestra infancia.”", correct: "corazon" }
+        ];
+
+        let currentGameIdx = 0;
+        let score = 0;
+
+        function updateGame() {
+            if (currentGameIdx < gameItems.length) {
+                document.getElementById('game-phrase').innerText = gameItems[currentGameIdx].text;
+            } else {
+                document.getElementById('game-box').innerHTML = `<h3 class="text-3xl font-black">¡ENTRENAMIENTO COMPLETADO!</h3><p class="mt-4">Ahora conoces las huellas. Vamos al periódico.</p>`;
+                document.getElementById('btn-to-sim').classList.remove('hidden');
+                document.getElementById('game-feedback').innerText = "⭐⭐⭐";
+            }
+        }
+
+        function checkGame(choice) {
+            if (currentGameIdx >= gameItems.length) return;
+
+            const feedbackEl = document.getElementById('game-feedback');
+            const boxEl = document.getElementById('game-box');
+
+            if (choice === gameItems[currentGameIdx].correct) {
+                feedbackEl.innerText = "¡CORRECTO! ✨";
+                feedbackEl.classList.add('text-green-400');
+                boxEl.classList.add('correct-anim');
+                score++;
+                setTimeout(() => {
+                    boxEl.classList.remove('correct-anim');
+                    currentGameIdx++;
+                    updateGame();
+                    feedbackEl.innerText = "";
+                }, 800);
+            } else {
+                feedbackEl.innerText = "¡INTÉNTALO OTRA VEZ! ❌";
+                feedbackEl.classList.add('text-red-400');
+                setTimeout(() => {
+                    feedbackEl.innerText = "";
+                }, 800);
+            }
+        }
+
+        updateGame();
+
+        // Lógica del Simulador
+        const results = {
+            'A': {
+                title: "Huella en el Corazón",
+                emoji: "🥺",
+                comment: "“No lo había pensado así... mis hijos también jugaron ahí de pequeños. Tienes razón, hay que valorarlo.”",
+                analysis: "¡Excelente! Lograste que el lector se sienta parte del problema tocando sus recuerdos personales.",
+                stats: [98, 30]
+            },
+            'B': {
+                title: "Huella en las Manos",
+                emoji: "🔥",
+                comment: "“¡Cuenten conmigo! Llevaré bolsas y avisaré a mis amigos por WhatsApp. ¡A trabajar por el barrio!”",
+                analysis: "¡Poderoso! Al dar una hora y una tarea clara, conviertes a tu lector en un voluntario activo.",
+                stats: [60, 100]
+            },
+            'C': {
+                title: "Huella en la Mirada",
+                emoji: "✨",
+                comment: "“Qué alegría leer esto. Entre tantas quejas, me dio mucha esperanza saber que el parque va a mejorar.”",
+                analysis: "¡Muy bien! Este final deja al lector con un sentimiento positivo y ganas de ver el cambio pronto.",
+                stats: [85, 65]
+            }
+        };
+
+        function selectOption(key) {
+            document.querySelectorAll('.neo-card').forEach(c => c.classList.remove('selected'));
+            document.getElementById('card-' + key).classList.add('selected');
+
+            const container = document.getElementById('result-container');
+            container.classList.add('show-result');
+
+            const data = results[key];
+            document.getElementById('result-title').innerText = data.title;
+            document.getElementById('result-emoji').innerText = data.emoji;
+            document.getElementById('result-comment').innerText = data.comment;
+            document.getElementById('result-analysis').innerText = data.analysis;
+
+            setTimeout(() => {
+                document.getElementById('bar-1').style.width = data.stats[0] + '%';
+                document.getElementById('bar-2').style.width = data.stats[1] + '%';
+                document.getElementById('stat-1-val').innerText = data.stats[0] + '%';
+                document.getElementById('stat-2-val').innerText = data.stats[1] + '%';
+            }, 50);
+
+            container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    </script>
+</body>
+</html>

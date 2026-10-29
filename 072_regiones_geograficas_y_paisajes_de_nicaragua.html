@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Expedición Nicaragua - Presentación Interactiva</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        
+        :root {
+            --primary: #2980B9; /* Azul Institucional */
+            --secondary: #3498DB;
+            --accent: #F1C40F;
+            --background: #F4F7F9;
+            --text: #2C3E50;
+            --success: #27AE60;
+            --sociales: #E67E22;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        .contenedor-principal {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            height: 90vh;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border: 4px solid white;
+        }
+
+        /* --- CABECERA --- */
+        .header {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 2px solid #F0F0F0;
+            flex-shrink: 0;
+        }
+
+        .badge {
+            background: var(--sociales);
+            color: white;
+            font-size: 0.7rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+
+        h1 { margin: 5px 0; font-size: 1.4rem; color: var(--primary); }
+
+        /* --- BARRA DE PROGRESO --- */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: #EEE;
+            position: relative;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--secondary);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* --- SLIDES (DIAPOSITIVAS) --- */
+        .slides-viewport {
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 25px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .slide.active { display: flex; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- CONTENIDO DE SLIDE --- */
+        .icon-box {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            background: #EBF5FB;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .objetivo-caja {
+            background: #FFF9E6;
+            border: 2px dashed var(--accent);
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 1rem;
+            color: #7D6608;
+            line-height: 1.4;
+        }
+
+        .slide-title {
+            font-weight: bold;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .slide-desc {
+            font-size: 1rem;
+            line-height: 1.5;
+            text-align: center;
+            color: #5D6D7E;
+            margin-bottom: 20px;
+        }
+
+        .interaccion-caja {
+            background: #F4F7F9;
+            padding: 15px;
+            border-radius: 15px;
+            width: 100%;
+            border: 2px solid #D6DBDF;
+        }
+
+        /* --- BOTONES --- */
+        .footer {
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .btn {
+            font-family: inherit;
+            font-weight: bold;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+            text-transform: uppercase;
+            width: 100%;
+            max-width: 250px;
+        }
+
+        .btn-next {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 5px 0 var(--secondary);
+        }
+        .btn-next:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--secondary); }
+        .btn-next:disabled { background: #BDC3C7; box-shadow: 0 5px 0 #95A5A6; cursor: not-allowed; }
+
+        .btn-retry {
+            background: var(--success);
+            color: white;
+            box-shadow: 0 5px 0 #1E8449;
+            display: none;
+        }
+
+        /* --- MINI INTERACCIONES --- */
+        .btn-check {
+            background: white;
+            border: 2px solid var(--secondary);
+            padding: 10px;
+            border-radius: 10px;
+            margin: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+        .btn-check.selected {
+            background: var(--secondary);
+            color: white;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="contenedor-principal">
+        <div class="header">
+            <div class="badge">Ciencias Sociales</div>
+            <h1 id="main-title">Expedición Geográfica</h1>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <div class="slides-viewport">
+            
+            <!-- Slide 0: Bienvenida -->
+            <div class="slide active" id="slide-0">
+                <div class="icon-box">🧭</div>
+                <div class="slide-title">¡Hola, Explorador!</div>
+                <div class="objetivo-caja">
+                    <strong>🎯 Objetivo:</strong><br>
+                    Aprenderemos sobre las maravillas naturales de Nicaragua a través de este viaje guiado por sus regiones.
+                </div>
+            </div>
+
+            <!-- Slide 1: El Pacífico -->
+            <div class="slide" id="slide-1">
+                <div class="icon-box">🌋</div>
+                <div class="slide-title">Región del Pacífico</div>
+                <p class="slide-desc">Es una zona llena de volcanes. ¿Sabías que a Nicaragua se le llama "La Tierra de Lagos y Volcanes"?</p>
+                <div class="interaccion-caja">
+                    <p style="font-size: 0.8rem; margin: 0 0 10px 0;">Toca el volcán más famoso de León:</p>
+                    <button class="btn-check" onclick="checkTask(1, this)">🌋 Volcán Momotombo</button>
+                    <button class="btn-check" onclick="checkTask(1, this)">⛰️ Cerro Negro</button>
+                </div>
+            </div>
+
+            <!-- Slide 2: Los Grandes Lagos -->
+            <div class="slide" id="slide-2">
+                <div class="icon-box">💧</div>
+                <div class="slide-title">Nuestros Grandes Lagos</div>
+                <p class="slide-desc">Tenemos el Lago Cocibolca, ¡tan grande que parece un mar y tiene tiburones!</p>
+                <div class="interaccion-caja">
+                    <p style="font-size: 0.8rem; margin: 0 0 10px 0;">¿Cómo se le llama también al Lago Cocibolca?</p>
+                    <button class="btn-check" onclick="checkTask(2, this)">El Gran Lago de Nicaragua</button>
+                </div>
+            </div>
+
+            <!-- Slide 3: El Norte y Centro -->
+            <div class="slide" id="slide-3">
+                <div class="icon-box">☕</div>
+                <div class="slide-title">Montañas y Café</div>
+                <p class="slide-desc">En el centro y norte el clima es fresco. Aquí crecen los mejores pinos y el café más rico.</p>
+                <div class="interaccion-caja">
+                    <p style="font-size: 0.8rem; margin: 0 0 10px 0;">Toca el departamento del norte:</p>
+                    <button class="btn-check" onclick="checkTask(3, this)">🌲 Jinotega</button>
+                    <button class="btn-check" onclick="checkTask(3, this)">🌴 Rivas</button>
+                </div>
+            </div>
+
+            <!-- Slide 4: El Caribe -->
+            <div class="slide" id="slide-4">
+                <div class="icon-box">🛶</div>
+                <div class="slide-title">Ríos y Selvas</div>
+                <p class="slide-desc">En el Caribe llueve mucho y hay selvas gigantes como Bosawás, el pulmón de nuestra región.</p>
+                <div class="interaccion-caja">
+                    <p style="font-size: 0.8rem; margin: 0 0 10px 0;">¿Cuál es el río más largo?</p>
+                    <button class="btn-check" onclick="checkTask(4, this)">🌊 Río Coco (Wangki)</button>
+                </div>
+            </div>
+
+            <!-- Slide 5: Final -->
+            <div class="slide" id="slide-5">
+                <div class="icon-box">🏆</div>
+                <div class="slide-title">¡Misión Cumplida!</div>
+                <p class="slide-desc">Ahora eres un experto en la geografía de nuestra hermosa Nicaragua. ¡Sigue explorando!</p>
+            </div>
+
+        </div>
+
+        <div class="footer">
+            <button class="btn btn-next" id="btn-next" onclick="nextSlide()">Empezar Viaje ➡️</button>
+            <button class="btn btn-retry" id="btn-retry" onclick="resetApp()">🔄 Volver a Viajar</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const totalSlides = 6;
+        let tasksCompleted = { 1:false, 2:false, 3:false, 4:false };
+
+        function updateUI() {
+            // Mostrar/Ocultar Slides
+            document.querySelectorAll('.slide').forEach((s, i) => {
+                s.classList.toggle('active', i === currentSlide);
+            });
+
+            // Barra de progreso
+            const progress = (currentSlide / (totalSlides - 1)) * 100;
+            document.getElementById('progress-bar').style.width = progress + '%';
+
+            // Botón Siguiente
+            const btnNext = document.getElementById('btn-next');
+            const btnRetry = document.getElementById('btn-retry');
+
+            if (currentSlide === 0) {
+                btnNext.textContent = "Empezar Viaje ➡️";
+                btnNext.disabled = false;
+            } else if (currentSlide === totalSlides - 1) {
+                btnNext.style.display = "none";
+                btnRetry.style.display = "block";
+                celebrar();
+            } else {
+                btnNext.textContent = "Siguiente Estación ➡️";
+                // Bloquear si la tarea del slide no está hecha
+                btnNext.disabled = !tasksCompleted[currentSlide];
+            }
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateUI();
+            }
+        }
+
+        function checkTask(slideId, element) {
+            // Marcar como completado
+            tasksCompleted[slideId] = true;
+            
+            // Visual
+            const siblings = element.parentElement.querySelectorAll('.btn-check');
+            siblings.forEach(s => s.classList.remove('selected'));
+            element.classList.add('selected');
+
+            // Habilitar botón siguiente
+            document.getElementById('btn-next').disabled = false;
+        }
+
+        function resetApp() {
+            currentSlide = 0;
+            tasksCompleted = { 1:false, 2:false, 3:false, 4:false };
+            document.querySelectorAll('.btn-check').forEach(b => b.classList.remove('selected'));
+            document.getElementById('btn-next').style.display = "block";
+            document.getElementById('btn-retry').style.display = "none";
+            updateUI();
+        }
+
+        function celebrar() {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#2980B9', '#F1C40F', '#27AE60']
+            });
+        }
+
+        // Inicializar
+        updateUI();
+    </script>
+</body>
+</html>

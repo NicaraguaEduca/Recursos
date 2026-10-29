@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECO | Misión Bienestar</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
+        
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: #0f172a;
+            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+            touch-action: none; /* Previene scroll en móviles durante drag */
+        }
+
+        .drop-zone {
+            transition: all 0.3s ease;
+            border: 3px dashed rgba(59, 130, 246, 0.3);
+        }
+
+        .drop-zone.active {
+            transform: scale(1.02);
+            background: rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6;
+        }
+
+        .habit-card {
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s;
+            user-select: none;
+            touch-action: none;
+        }
+
+        .habit-card:active { cursor: grabbing; }
+
+        .energy-bar {
+            height: 12px;
+            background: #1e293b;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Estilo responsivo */
+        @media (max-width: 768px) {
+            .game-container { flex-direction: column; }
+            .items-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+<div id="app" v-cloak class="max-w-6xl mx-auto">
+    
+    <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <div class="text-center md:text-left">
+            <h1 class="text-4xl font-900 italic uppercase tracking-tighter">Misión <span class="text-blue-500">Bienestar</span></h1>
+            <p class="text-slate-400 font-bold text-sm">CLASIFICA TUS HÁBITOS ANTES QUE SE AGOTE EL TIEMPO</p>
+        </div>
+        
+        <div class="bg-white/5 backdrop-blur-md px-8 py-4 rounded-3xl border border-white/10 text-center min-w-[150px]">
+            <p class="text-[10px] font-black uppercase text-blue-400">Tiempo Restante</p>
+            <span class="text-3xl font-black italic" :class="{'text-red-500 animate-pulse': timeLeft < 10}">
+                {{ timeLeft }}s
+            </span>
+        </div>
+    </header>
+
+    <div v-if="!gameStarted && !gameEnded" class="text-center py-20 animate__animated animate__fadeIn">
+        <div class="text-8xl mb-6">🍎</div>
+        <h2 class="text-3xl font-black mb-8 uppercase">¿Listo para cargar tu energía?</h2>
+        <button @click="startGame" class="bg-blue-600 hover:bg-blue-500 text-white font-black py-4 px-12 rounded-2xl text-xl transition-all hover:scale-110 shadow-2xl shadow-blue-500/20">
+            ¡COMENZAR MISIÓN!
+        </button>
+    </div>
+
+    <div v-if="gameStarted && !gameEnded" class="game-container flex flex-col lg:flex-row gap-8 animate__animated animate__zoomIn">
+        
+        <div class="lg:w-1/2 flex flex-col gap-6">
+            <div id="healthy-zone" 
+                 class="drop-zone p-6 rounded-[2.5rem] bg-green-500/5 border-2 border-green-500/20"
+                 @dragover.prevent @drop="onDrop($event, 'healthy')">
+                <div class="flex items-center gap-4 mb-4">
+                    <span class="text-3xl">🔋</span>
+                    <h3 class="text-xl font-black uppercase text-green-400">Hábitos Saludables</h3>
+                </div>
+                <div class="min-h-[120px] flex flex-wrap gap-3">
+                    <div v-for="item in healthyItems" :key="item.id" class="bg-green-500/20 px-4 py-2 rounded-xl text-sm font-bold border border-green-500/30">
+                        {{ item.name }}
+                    </div>
+                </div>
+            </div>
+
+            <div id="unhealthy-zone" 
+                 class="drop-zone p-6 rounded-[2.5rem] bg-red-500/5 border-2 border-red-500/20"
+                 @dragover.prevent @drop="onDrop($event, 'unhealthy')">
+                <div class="flex items-center gap-4 mb-4">
+                    <span class="text-3xl">🪫</span>
+                    <h3 class="text-xl font-black uppercase text-red-400">Hábitos Dañinos</h3>
+                </div>
+                <div class="min-h-[120px] flex flex-wrap gap-3">
+                    <div v-for="item in unhealthyItems" :key="item.id" class="bg-red-500/20 px-4 py-2 rounded-xl text-sm font-bold border border-red-500/30">
+                        {{ item.name }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:w-1/2">
+            <div class="bg-white/5 backdrop-blur-lg p-8 rounded-[3rem] border border-white/10 h-full">
+                <h3 class="text-center font-black uppercase text-xs tracking-widest text-slate-400 mb-6">Arrastra los elementos a su categoría</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 items-grid">
+                    <div v-for="item in availableItems" 
+                         :key="item.id"
+                         class="habit-card bg-white p-4 rounded-2xl shadow-xl text-center group"
+                         draggable="true"
+                         @dragstart="onDragStart($event, item)">
+                        <div class="text-4xl mb-2 group-hover:scale-110 transition-transform">{{ item.emoji }}</div>
+                        <p class="text-slate-900 font-bold text-xs leading-tight">{{ item.name }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div v-if="gameEnded" class="max-w-md mx-auto text-center animate__animated animate__bounceIn">
+        <div class="bg-white/10 p-10 rounded-[3rem] border border-white/20">
+            <div class="text-7xl mb-6">{{ finalScore > 70 ? '🌟' : '🍎' }}</div>
+            <h2 class="text-3xl font-black mb-2 uppercase">Misión Finalizada</h2>
+            <p class="text-slate-400 font-bold mb-6 italic">{{ resultMessage }}</p>
+            
+            <div class="mb-8">
+                <p class="text-xs font-black uppercase mb-2">Puntaje de Bienestar</p>
+                <div class="energy-bar">
+                    <div class="h-full bg-blue-500 transition-all duration-1000" :style="{ width: finalScore + '%' }"></div>
+                </div>
+                <span class="text-2xl font-black text-blue-400">{{ Math.round(finalScore) }}%</span>
+            </div>
+
+            <button @click="resetGame" class="w-full bg-white text-slate-900 font-black py-4 rounded-2xl hover:bg-blue-500 hover:text-white transition-all">
+                REINTENTAR
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const { createApp, ref, computed, onMounted } = Vue;
+
+createApp({
+    setup() {
+        const gameStarted = ref(false);
+        const gameEnded = ref(false);
+        const timeLeft = ref(30);
+        const timerInterval = ref(null);
+        
+        const allHabits = [
+            { id: 1, name: 'Beber Agua', emoji: '💧', type: 'healthy' },
+            { id: 2, name: 'Comer Frutas', emoji: '🍎', type: 'healthy' },
+            { id: 3, name: 'Dormir 8h', emoji: '😴', type: 'healthy' },
+            { id: 4, name: 'Hacer Deporte', emoji: '🏃', type: 'healthy' },
+            { id: 5, name: 'Lavarse Dientes', emoji: '🪥', type: 'healthy' },
+            { id: 6, name: 'Leer un Libro', emoji: '📖', type: 'healthy' },
+            { id: 7, name: 'Exceso Dulces', emoji: '🍭', type: 'unhealthy' },
+            { id: 8, name: 'Mucho Celular', emoji: '📱', type: 'unhealthy' },
+            { id: 9, name: 'Dormir tarde', emoji: '🌙', type: 'unhealthy' },
+            { id: 10, name: 'Gritar a otros', emoji: '😫', type: 'unhealthy' },
+            { id: 11, name: 'Comida Chatarra', emoji: '🍔', type: 'unhealthy' },
+            { id: 12, name: 'Sedentarismo', emoji: '📺', type: 'unhealthy' }
+        ];
+
+        const availableItems = ref([]);
+        const healthyItems = ref([]);
+        const unhealthyItems = ref([]);
+        const draggedItem = ref(null);
+
+        const finalScore = computed(() => {
+            const total = allHabits.length;
+            const correct = healthyItems.value.filter(i => i.type === 'healthy').length + 
+                           unhealthyItems.value.filter(i => i.type === 'unhealthy').length;
+            return (correct / total) * 100;
+        });
+
+        const resultMessage = computed(() => {
+            if (finalScore.value === 100) return "¡Eres un maestro del autocuidado! Energía al máximo.";
+            if (finalScore.value > 70) return "¡Muy bien! Tienes hábitos muy sólidos.";
+            return "¡Podemos mejorar! Tu cuerpo necesita mejores decisiones.";
+        });
+
+        const startGame = () => {
+            gameStarted.value = true;
+            availableItems.value = [...allHabits].sort(() => Math.random() - 0.5);
+            startTimer();
+        };
+
+        const startTimer = () => {
+            timerInterval.value = setInterval(() => {
+                if (timeLeft.value > 0) {
+                    timeLeft.value--;
+                } else {
+                    endGame();
+                }
+            }, 1000);
+        };
+
+        const onDragStart = (e, item) => {
+            draggedItem.value = item;
+            e.dataTransfer.effectAllowed = "move";
+        };
+
+        const onDrop = (e, zoneType) => {
+            if (!draggedItem.value) return;
+
+            // Eliminar de disponibles
+            availableItems.value = availableItems.value.filter(i => i.id !== draggedItem.value.id);
+
+            // Agregar a la zona correspondiente
+            if (zoneType === 'healthy') {
+                healthyItems.value.push(draggedItem.value);
+            } else {
+                unhealthyItems.value.push(draggedItem.value);
+            }
+
+            // Feedback visual si es correcto
+            if (draggedItem.value.type === zoneType) {
+                // Podríamos agregar un efecto aquí
+            }
+
+            draggedItem.value = null;
+
+            if (availableItems.value.length === 0) {
+                endGame();
+            }
+        };
+
+        const endGame = () => {
+            clearInterval(timerInterval.value);
+            gameEnded.value = true;
+            if (finalScore.value > 80) {
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        };
+
+        const resetGame = () => {
+            gameStarted.value = false;
+            gameEnded.value = false;
+            timeLeft.value = 30;
+            healthyItems.value = [];
+            unhealthyItems.value = [];
+        };
+
+        return {
+            gameStarted, gameEnded, timeLeft, availableItems, healthyItems, unhealthyItems,
+            startGame, onDragStart, onDrop, resetGame, finalScore, resultMessage
+        };
+    }
+}).mount('#app');
+</script>
+</body>
+</html>

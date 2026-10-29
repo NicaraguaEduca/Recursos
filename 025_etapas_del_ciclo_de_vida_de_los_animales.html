@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Estación de Biología: Ciclos de Vida</title>
+    
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,700,1,0" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+
+        :root {
+            /* Variables de color dinámicas */
+            --bg-color: #FFF8E1;
+            --primary: #FF9800;
+            --primary-dark: #F57C00;
+            --accent: #FFB74D;
+            --text-color: #5D4037;
+        }
+
+        body {
+            margin: 0; padding: 0; height: 100vh;
+            font-family: 'Fredoka', sans-serif;
+            background: var(--bg-color);
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; user-select: none;
+            transition: background 1s ease;
+        }
+
+        #app-container {
+            width: 95%; max-width: 500px; height: 95vh; max-height: 900px;
+            background: #fff; border-radius: 35px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            display: flex; flex-direction: column;
+            overflow: hidden; border: 8px solid #fff; position: relative;
+        }
+
+        /* --- PANTALLAS SUPERPUESTAS --- */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 200; transition: opacity 0.5s, visibility 0.5s;
+            text-align: center; padding: 30px; box-sizing: border-box;
+        }
+        .hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+        .overlay h1 { font-size: 2.5rem; color: var(--primary); margin: 10px 0; }
+        .overlay p { font-size: 1.2rem; color: #666; line-height: 1.6; max-width: 350px; }
+        
+        .btn-start {
+            background: var(--primary); color: white; border: none; padding: 15px 40px;
+            font-size: 1.4rem; border-radius: 50px; cursor: pointer; font-weight: bold;
+            box-shadow: 0 6px 0 var(--primary-dark); margin-top: 30px;
+            display: flex; align-items: center; gap: 10px; transition: transform 0.1s;
+        }
+        .btn-start:active { transform: translateY(4px); box-shadow: none; }
+
+        /* --- ENCABEZADO --- */
+        header { padding: 15px; text-align: center; z-index: 10; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        h2 { margin: 0; color: var(--primary-dark); font-size: 1.8rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .subtitle { margin: 5px 0 0 0; color: #90A4AE; font-size: 0.95rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* --- ÁREA DE JUEGO --- */
+        #game-area {
+            flex: 1; position: relative;
+            display: flex; flex-direction: column; /* Cambiado a columna para meter el feedback */
+            justify-content: center; align-items: center;
+            background: radial-gradient(circle, #ffffff 0%, rgba(255,255,255,0) 80%);
+            overflow: hidden;
+        }
+
+        /* --- CAJA DE EXPLICACIÓN (FEEDBACK) --- */
+        #info-bubble {
+            background: white; border: 2px solid var(--accent);
+            padding: 10px 20px; border-radius: 20px;
+            color: var(--text-color); text-align: center;
+            max-width: 80%; margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            min-height: 50px; display: flex; align-items: center; justify-content: center;
+            opacity: 0; transform: translateY(20px); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        #info-bubble.visible { opacity: 1; transform: translateY(0); }
+        #info-text { font-size: 1rem; font-weight: 600; }
+
+        /* --- LA RUEDA --- */
+        #cycle-wheel {
+            position: relative; width: 260px; height: 260px;
+            border-radius: 50%;
+            border: 6px dashed var(--accent);
+            transition: transform 1s, border-color 0.5s;
+            margin-bottom: 20px;
+        }
+
+        .arrow { position: absolute; font-size: 2rem; color: var(--accent); opacity: 0.6; font-weight: bold; }
+        .a1 { top: 12%; right: 18%; transform: rotate(45deg); }
+        .a2 { bottom: 12%; right: 18%; transform: rotate(135deg); }
+        .a3 { bottom: 12%; left: 18%; transform: rotate(225deg); }
+        .a4 { top: 12%; left: 18%; transform: rotate(315deg); }
+
+        /* Zonas de Caída (Slots) */
+        .drop-zone {
+            position: absolute; width: 80px; height: 80px;
+            background: rgba(255,255,255,0.95);
+            border: 3px dashed var(--primary); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.5rem; color: var(--accent); font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s; z-index: 10;
+        }
+        .drop-zone.hovered { transform: scale(1.15); background: #FFF3E0; border-color: var(--primary-dark); }
+        .drop-zone.filled { border-style: solid; background: #fff; border-color: #4CAF50; color: transparent; }
+
+        /* Posiciones */
+        #slot-1 { top: -40px; left: 50%; transform: translateX(-50%); } 
+        #slot-2 { top: 50%; right: -40px; transform: translateY(-50%); } 
+        #slot-3 { bottom: -40px; left: 50%; transform: translateX(-50%); } 
+        #slot-4 { top: 50%; left: -40px; transform: translateY(-50%); } 
+
+        /* Etiquetas */
+        .label {
+            position: absolute; 
+            font-size: 0.8rem; font-weight: 700; color: var(--text-color);
+            background: rgba(255,255,255,0.8); padding: 3px 8px; border-radius: 8px; 
+            pointer-events: none; text-align: center; width: 70px; z-index: 5;
+        }
+        #lbl-1 { top: 50px; left: 50%; transform: translateX(-50%); }
+        #lbl-2 { top: 50%; right: 30px; transform: translateY(-50%); }
+        #lbl-3 { bottom: 50px; left: 50%; transform: translateX(-50%); }
+        #lbl-4 { top: 50%; left: 30px; transform: translateY(-50%); }
+
+        /* Centro */
+        #center-hub {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 70px; height: 70px; background: var(--primary); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            color: white; font-size: 2.5rem;
+            box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.6);
+            z-index: 1; transition: background 0.5s;
+        }
+
+        /* --- BANDEJA --- */
+        #tray {
+            height: 120px; background: #FAFAFA;
+            border-top: 4px solid #EEE;
+            display: flex; justify-content: space-evenly; align-items: center;
+            padding: 10px; z-index: 20;
+        }
+
+        /* --- FICHAS --- */
+        .token {
+            width: 70px; height: 70px; cursor: grab; touch-action: none;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.2));
+            transition: transform 0.1s; position: relative; z-index: 100;
+        }
+        .token:active { cursor: grabbing; transform: scale(1.1); z-index: 1000; }
+        .dragging { position: fixed !important; pointer-events: none; z-index: 9999; width: 85px; height: 85px; }
+        
+        .placed {
+            position: absolute !important; top: 50% !important; left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            width: 65px !important; height: 65px !important;
+            pointer-events: none;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { 0% { transform: translate(-50%, -50%) scale(0); } 100% { transform: translate(-50%, -50%) scale(1); } }
+
+        .svg-icon { width: 100%; height: 100%; }
+
+        /* Animación Final */
+        .spinning { animation: spinWheel 6s linear infinite; }
+        .spinning .drop-zone { animation: counterSpin 6s linear infinite; }
+        @keyframes spinWheel { 100% { transform: rotate(360deg); } }
+        @keyframes counterSpin { 100% { transform: rotate(-360deg); } }
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+<div id="app-container">
+
+    <div id="intro-screen" class="overlay">
+        <div style="font-size: 5rem; margin-bottom: 20px; animation: bounce 2s infinite;">🌍</div>
+        <h1>El Ciclo de la Vida</h1>
+        <p>Todos los animales cambian mientras crecen. Tu misión es ordenar las etapas correctamente para que la vida continúe.</p>
+        <button class="btn-start" onclick="startGame()">
+            <span class="material-symbols-rounded">play_arrow</span> Comenzar Misión
+        </button>
+    </div>
+
+    <header>
+        <h2 id="level-title">...</h2>
+        <p class="subtitle">Arrastra las imágenes al lugar correcto</p>
+    </header>
+
+    <div id="game-area">
+        <div id="cycle-wheel">
+            <div class="arrow a1">➜</div>
+            <div class="arrow a2">➜</div>
+            <div class="arrow a3">➜</div>
+            <div class="arrow a4">➜</div>
+
+            <div class="label" id="lbl-1">1. Inicio</div>
+            <div class="label" id="lbl-2">2. Crecimiento</div>
+            <div class="label" id="lbl-3">3. Adulto</div>
+            <div class="label" id="lbl-4">4. Reinicio</div>
+
+            <div class="drop-zone" id="slot-1" data-target="1">1</div>
+            <div class="drop-zone" id="slot-2" data-target="2">2</div>
+            <div class="drop-zone" id="slot-3" data-target="3">3</div>
+            <div class="drop-zone" id="slot-4" data-target="4">4</div>
+
+            <div id="center-hub">
+                <span class="material-symbols-rounded">wb_sunny</span>
+            </div>
+        </div>
+
+        <div id="info-bubble">
+            <span id="info-text">¡Encuentra la primera etapa!</span>
+        </div>
+    </div>
+
+    <div id="tray"></div>
+
+    <div id="win-screen" class="overlay hidden">
+        <div style="font-size: 6rem; margin-bottom: 20px;" id="win-icon">🎉</div>
+        <h1 id="win-title">¡Excelente!</h1>
+        <p id="win-msg">Has completado el ciclo de vida.</p>
+        <button class="btn-start" id="next-level-btn" onclick="nextLevel()">
+            Siguiente Nivel <span class="material-symbols-rounded">arrow_forward</span>
+        </button>
+    </div>
+
+</div>
+
+<script>
+    /* --- CONFIGURACIÓN DE LOS NIVELES --- */
+    const levels = [
+        {
+            id: 'gallina',
+            title: "La Gallina",
+            icon: "egg",
+            colors: { bg: "#FFF8E1", primary: "#FF9800", dark: "#F57C00", accent: "#FFB74D", text: "#5D4037" },
+            labels: ["1. Huevo", "2. Pollito", "3. Gallina", "4. Nido"],
+            // Hechos curiosos para explicar al colocar cada pieza
+            facts: {
+                1: "¡Correcto! Todo empieza con un huevo protegido por su cáscara. 🥚",
+                2: "¡Muy bien! El pollito rompe el cascarón y sale al mundo. 🐣",
+                3: "¡Exacto! El pollito crece y se convierte en una gallina adulta. 🐔",
+                4: "¡Eso es! La gallina pone huevos en el nido y el ciclo empieza otra vez. 🪺"
+            },
+            tokens: [
+                { id: 't_huevo', stage: 1, svg: `<svg class="svg-icon" viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="30" ry="40" fill="#FFF9C4" stroke="#FBC02D" stroke-width="3"/><ellipse cx="40" cy="35" rx="8" ry="15" fill="#FFF" opacity="0.5"/></svg>` },
+                { id: 't_pollito', stage: 2, svg: `<svg class="svg-icon" viewBox="0 0 100 100"><circle cx="50" cy="60" r="25" fill="#FFEB3B" stroke="#FBC02D" stroke-width="3"/><circle cx="50" cy="35" r="18" fill="#FFEB3B" stroke="#FBC02D" stroke-width="3"/><path d="M65 35 L75 38 L65 41 Z" fill="#FF9800"/><circle cx="58" cy="32" r="2.5" fill="#333"/><path d="M40 85 L45 75 M60 85 L55 75" stroke="#E65100" stroke-width="3"/></svg>` },
+                { id: 't_gallina', stage: 3, svg: `<svg class="svg-icon" viewBox="0 0 100 100"><circle cx="50" cy="55" r="35" fill="#FFF" stroke="#E65100" stroke-width="3"/><path d="M40 25 Q50 5 60 25 Q70 5 80 25" fill="#D32F2F"/><path d="M80 50 L95 55 L80 60 Z" fill="#FFC107" stroke="#FFA000" stroke-width="2"/><circle cx="70" cy="45" r="3" fill="#333"/><path d="M25 55 Q45 80 65 55" fill="none" stroke="#E65100" stroke-width="3"/></svg>` },
+                { id: 't_nido', stage: 4, svg: `<svg class="svg-icon" viewBox="0 0 100 100"><path d="M15 65 Q50 105 85 65" fill="#795548" stroke="#3E2723" stroke-width="4"/><path d="M20 65 L80 65" stroke="#3E2723" stroke-width="2"/><ellipse cx="40" cy="60" rx="10" ry="12" fill="#FFF" stroke="#FBC02D" stroke-width="2"/><ellipse cx="60" cy="60" rx="10" ry="12" fill="#FFF" stroke="#FBC02D" stroke-width="2"/></svg>` }
+            ]
+        },
+        {
+            id: 'mariposa',
+            title: "La Mariposa",
+            icon: "pest_control", // Icono genérico de insecto
+            colors: { bg: "#F1F8E9", primary: "#8BC34A", dark: "#558B2F", accent: "#AED581", text: "#33691E" },
+            labels: ["1. Huevos", "2. Oruga", "3. Crisálida", "4. Mariposa"],
+            facts: {
+                1: "¡Sí! La mariposa pone huevitos diminutos en las hojas. 🍃",
+                2: "¡Genial! Del huevo sale una oruga (larva) que come muchas hojas. 🐛",
+                3: "¡Correcto! La oruga se encierra en una crisálida para transformarse. 💤",
+                4: "¡Magia! Sale una hermosa mariposa lista para volar. 🦋"
+            },
+            tokens: [
+                { id: 't_huevos', stage: 1, svg: `<svg class="svg-icon" viewBox="0 0 100 100"><path d="M10 50 Q50 90 90 50 Q50 10 10 50 Z" fill="#66BB6A" stroke="#388E3C" stroke-width="2"/><circle cx="40" cy="50" r="5" fill="#FFF"/><circle cx="50" cy="45" r="5" fill="#FFF"/><circle cx="50" cy="55" r="5" fill="#FFF"/></svg>` },
+                { id: 't_oruga', stage: 2, svg: `<svg class="svg-icon" viewBox="0 0 100 100"><circle cx="20" cy="60" r="10" fill="#AED581" stroke="#689F38" stroke-width="2"/><circle cx="35" cy="55" r="10" fill="#AED581" stroke="#689F38" stroke-width="2"/><circle cx="50" cy="60" r="10" fill="#AED581" stroke="#689F38" stroke-width="2"/><circle cx="65" cy="55" r="10" fill="#AED581" stroke="#689F38" stroke-width="2"/><circle cx="80" cy="50" r="12" fill="#DCEDC8" stroke="#689F38" stroke-width="2"/><circle cx="85" cy="45" r="2" fill="black"/></svg>` },
+                { id: 't_capullo', stage: 3, svg: `<svg class="svg-icon" viewBox="0 0 100 100"><path d="M50 10 L50 25" stroke="#5D4037" stroke-width="4"/><path d="M35 25 Q10 55 50 90 Q90 55 65 25 Z" fill="#DCE775" stroke="#AFB42B" stroke-width="2"/><path d="M35 40 Q50 50 65 40" fill="none" stroke="#AFB42B" stroke-width="2"/></svg>` },
+                { id: 't_mari', stage: 4, svg: `<svg class="svg-icon" viewBox="0 0 100 100"><path d="M50 30 Q50 80 50 80" stroke="#333" stroke-width="4"/><path d="M50 40 Q10 10 10 50 Q30 70 50 50" fill="#E91E63" stroke="#880E4F" stroke-width="2"/><path d="M50 40 Q90 10 90 50 Q70 70 50 50" fill="#E91E63" stroke="#880E4F" stroke-width="2"/><circle cx="30" cy="40" r="4" fill="#FFF" opacity="0.6"/><circle cx="70" cy="40" r="4" fill="#FFF" opacity="0.6"/></svg>` }
+            ]
+        }
+    ];
+
+    /* --- VARIABLES GLOBALES --- */
+    let currentLevel = 0;
+    let placedTokens = 0;
+    
+    // Referencias DOM
+    const wheel = document.getElementById('cycle-wheel');
+    const tray = document.getElementById('tray');
+    const introScreen = document.getElementById('intro-screen');
+    const winScreen = document.getElementById('win-screen');
+    const infoBubble = document.getElementById('info-bubble');
+    const infoText = document.getElementById('info-text');
+
+    /* --- INICIO Y CARGA --- */
+    function startGame() {
+        introScreen.classList.add('hidden');
+        loadLevel(0);
+    }
+
+    function loadLevel(index) {
+        currentLevel = index;
+        const data = levels[index];
+        placedTokens = 0;
+
+        // 1. Aplicar Colores CSS
+        document.documentElement.style.setProperty('--bg-color', data.colors.bg);
+        document.documentElement.style.setProperty('--primary', data.colors.primary);
+        document.documentElement.style.setProperty('--primary-dark', data.colors.dark);
+        document.documentElement.style.setProperty('--accent', data.colors.accent);
+        document.documentElement.style.setProperty('--text-color', data.colors.text);
+
+        // 2. UI Texto
+        document.getElementById('level-title').innerHTML = `<span class="material-symbols-rounded">${data.icon}</span> ${data.title}`;
+        infoBubble.classList.remove('visible'); // Ocultar explicación anterior
+        
+        // 3. Configurar Rueda
+        wheel.classList.remove('spinning'); // Detener giro
+        for(let i=0; i<4; i++) {
+            // Etiquetas
+            document.getElementById(`lbl-${i+1}`).innerText = data.labels[i];
+            // Slots
+            const slot = document.getElementById(`slot-${i+1}`);
+            slot.innerText = i+1;
+            slot.classList.remove('filled');
+            slot.innerHTML = i+1; // Limpiar contenido previo
+        }
+        
+        // Limpiar piezas anteriores colocadas en la rueda (si hay bug visual)
+        document.querySelectorAll('.token.placed').forEach(el => el.remove());
+
+        // 4. Llenar Bandeja (Barajar piezas)
+        tray.innerHTML = '';
+        const shuffled = [...data.tokens].sort(() => Math.random() - 0.5);
+        
+        shuffled.forEach(tk => {
+            const div = document.createElement('div');
+            div.className = 'token';
+            div.dataset.stage = tk.stage;
+            div.innerHTML = tk.svg;
+            // Evento
+            div.addEventListener('pointerdown', startDrag);
+            tray.appendChild(div);
+        });
+    }
+
+    /* --- DRAG & DROP LOGIC --- */
+    let activeToken = null;
+    let initialParent = null;
+    let offsetX = 0, offsetY = 0;
+
+    function startDrag(e) {
+        e.preventDefault();
+        activeToken = e.currentTarget;
+        initialParent = activeToken.parentElement;
+
+        const rect = activeToken.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+
+        activeToken.style.width = rect.width + 'px';
+        activeToken.style.height = rect.height + 'px';
+        activeToken.classList.add('dragging');
+        updatePos(e.clientX, e.clientY);
+
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+    }
+
+    function onMove(e) {
+        if(!activeToken) return;
+        e.preventDefault();
+        updatePos(e.clientX, e.clientY);
+        checkHover(e.clientX, e.clientY);
+    }
+
+    function updatePos(x, y) {
+        activeToken.style.left = (x - offsetX) + 'px';
+        activeToken.style.top = (y - offsetY) + 'px';
+    }
+
+    function checkHover(x, y) {
+        activeToken.style.display = 'none';
+        let elem = document.elementFromPoint(x, y);
+        activeToken.style.display = 'block';
+        if(!elem) return;
+        
+        let slot = elem.closest('.drop-zone');
+        document.querySelectorAll('.drop-zone').forEach(s => s.classList.remove('hovered'));
+        
+        if(slot && !slot.classList.contains('filled')) {
+            if(slot.dataset.target === activeToken.dataset.stage) {
+                slot.classList.add('hovered');
+            }
+        }
+    }
+
+    function onUp(e) {
+        if(!activeToken) return;
+        
+        activeToken.style.display = 'none';
+        let elem = document.elementFromPoint(e.clientX, e.clientY);
+        activeToken.style.display = 'block';
+        let slot = elem ? elem.closest('.drop-zone') : null;
+
+        if(slot && !slot.classList.contains('filled') && slot.dataset.target === activeToken.dataset.stage) {
+            placeToken(activeToken, slot);
+        } else {
+            returnToken(activeToken);
+        }
+
+        document.removeEventListener('pointermove', onMove);
+        document.removeEventListener('pointerup', onUp);
+        document.querySelectorAll('.drop-zone').forEach(s => s.classList.remove('hovered'));
+        activeToken = null;
+    }
+
+    function placeToken(token, slot) {
+        token.classList.remove('dragging');
+        slot.appendChild(token);
+        token.classList.add('placed');
+        token.style.left = ''; token.style.top = ''; token.style.width = ''; token.style.height = '';
+        
+        slot.classList.add('filled');
+        
+        // MOSTRAR EXPLICACIÓN (TU SOLICITUD)
+        const stageNum = parseInt(token.dataset.stage);
+        const fact = levels[currentLevel].facts[stageNum];
+        showFeedback(fact);
+
+        placedTokens++;
+        if(placedTokens === 4) {
+            setTimeout(winGame, 1000);
+        }
+    }
+
+    function returnToken(token) {
+        token.classList.remove('dragging');
+        token.style.position = 'relative';
+        token.style.left = ''; token.style.top = '';
+        token.style.width = '70px'; token.style.height = '70px';
+        initialParent.appendChild(token);
+    }
+
+    /* --- FEEDBACK VISUAL --- */
+    function showFeedback(text) {
+        infoText.innerText = text;
+        infoBubble.classList.add('visible');
+        
+        // Efecto visual: parpadeo suave
+        infoBubble.style.transform = "scale(1.05)";
+        setTimeout(() => infoBubble.style.transform = "scale(1) translateY(0)", 200);
+    }
+
+    /* --- VICTORIA Y CONFETI --- */
+    function winGame() {
+        wheel.classList.add('spinning');
+        
+        // Confeti Realista con Librería
+        var duration = 3000;
+        var end = Date.now() + duration;
+
+        (function frame() {
+            confetti({
+                particleCount: 5,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: [levels[currentLevel].colors.primary, '#FFEB3B', '#FFFFFF']
+            });
+            confetti({
+                particleCount: 5,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 },
+                colors: [levels[currentLevel].colors.primary, '#FFEB3B', '#FFFFFF']
+            });
+
+            if (Date.now() < end) {
+                requestAnimationFrame(frame);
+            }
+        }());
+
+        setTimeout(() => {
+            showWinModal();
+        }, 3500);
+    }
+
+    function showWinModal() {
+        winScreen.classList.remove('hidden');
+        
+        const title = document.getElementById('win-title');
+        const msg = document.getElementById('win-msg');
+        const btn = document.getElementById('next-level-btn');
+        const icon = document.getElementById('win-icon');
+
+        if(currentLevel < levels.length - 1) {
+            // Pasó nivel 1
+            title.innerText = "¡Ciclo Completado!";
+            icon.innerText = "🎉";
+            msg.innerText = "Has aprendido cómo crece la gallina. ¿Listo para el siguiente animal?";
+            btn.innerHTML = 'Siguiente Animal <span class="material-symbols-rounded">arrow_forward</span>';
+            btn.onclick = nextLevel;
+        } else {
+            // Juego Terminado
+            title.innerText = "¡Maestro de la Vida!";
+            icon.innerText = "👑";
+            msg.innerText = "¡Has completado todos los ciclos de vida!";
+            btn.innerHTML = '<span class="material-symbols-rounded">replay</span> Jugar de Nuevo';
+            btn.onclick = () => location.reload();
+        }
+    }
+
+    function nextLevel() {
+        winScreen.classList.add('hidden');
+        loadLevel(currentLevel + 1);
+    }
+
+    // Animación CSS para el emoji de intro
+    const style = document.createElement('style');
+    style.innerHTML = `@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }`;
+    document.head.appendChild(style);
+
+</script>
+</body>
+</html>

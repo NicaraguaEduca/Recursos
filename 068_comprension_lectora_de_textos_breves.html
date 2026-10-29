@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aventura de Comprensión - Trivia</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary: #8E44AD;
+            --secondary: #9B59B6;
+            --accent: #F1C40F;
+            --background: #F4F6F6;
+            --text: #2C3E50;
+            --success: #2ECC71;
+            --error: #E74C3C;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            text-align: center;
+            padding: 15px;
+            margin: 0;
+            user-select: none; 
+            -webkit-user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* Estilo general para las tarjetas (Pantalla de inicio y Área de juego) */
+        .tarjeta {
+            background: white;
+            width: 100%;
+            max-width: 600px;
+            padding: 30px 20px;
+            border-radius: 20px;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            border-top: 8px solid var(--primary);
+        }
+
+        h1 { margin: 0 0 15px 0; color: var(--primary); font-size: clamp(1.8rem, 5vw, 2.5rem); }
+        
+        /* --- PANTALLA DE INICIO --- */
+        #pantalla-inicio .icono-grande {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+        #pantalla-inicio .objetivo-caja {
+            background-color: #FDF2E9;
+            border: 2px dashed #E67E22;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            font-size: clamp(1.1rem, 4vw, 1.3rem);
+            line-height: 1.5;
+            color: #D35400;
+        }
+
+        .btn-accion {
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #27AE60;
+            font-family: 'Comic Sans MS', sans-serif;
+            font-weight: bold;
+            transition: all 0.2s;
+            width: 100%;
+            max-width: 300px;
+        }
+        .btn-accion:active { transform: translateY(6px); box-shadow: 0 0 0 #27AE60; }
+
+        /* --- ÁREA DE JUEGO --- */
+        #area-juego { display: none; } /* Oculto al inicio */
+        
+        .instrucciones { font-size: clamp(1rem, 3vw, 1.2rem); color: #555; margin: 0 0 15px 0; font-weight: bold; }
+        
+        .texto-lectura {
+            font-size: clamp(1.1rem, 4vw, 1.4rem);
+            line-height: 1.5;
+            background-color: #FEF9E7;
+            padding: 15px;
+            border-left: 5px solid var(--accent);
+            border-radius: 10px;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .pregunta {
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .opciones-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn-opcion {
+            background-color: white;
+            border: 3px solid var(--secondary);
+            color: var(--text);
+            padding: 15px;
+            font-size: clamp(1.1rem, 4vw, 1.3rem);
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: 'Comic Sans MS', sans-serif;
+            font-weight: bold;
+            transition: all 0.2s;
+            box-shadow: 0 5px 0 var(--secondary);
+        }
+
+        .btn-opcion:active {
+            transform: translateY(5px);
+            box-shadow: 0 0 0 var(--secondary);
+        }
+
+        .btn-opcion.correcta {
+            background-color: #D5F5E3;
+            border-color: var(--success);
+            box-shadow: 0 5px 0 var(--success);
+            color: #1E8449;
+        }
+
+        .btn-opcion.incorrecta {
+            background-color: #FADBD8;
+            border-color: var(--error);
+            box-shadow: 0 5px 0 var(--error);
+            color: #943126;
+        }
+
+        #mensaje {
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            font-weight: bold;
+            margin-top: 20px;
+            min-height: 30px;
+        }
+
+        #btn-siguiente { display: none; margin-top: 20px; }
+
+    </style>
+</head>
+<body>
+
+    <div id="pantalla-inicio" class="tarjeta">
+        <div class="icono-grande">🕵️‍♂️</div>
+        <h1>Aventura de Comprensión</h1>
+        
+        <div class="objetivo-caja">
+            <strong>🎯 Objetivo:</strong><br>
+            Leer pequeños textos con mucha atención, encontrar las pistas ocultas y elegir la respuesta correcta. ¡Entrena tu mente como un verdadero detective de la lectura!
+        </div>
+
+        <button class="btn-accion" onclick="iniciarJuego()">¡Empezar a Jugar! 🚀</button>
+    </div>
+
+    <div id="area-juego" class="tarjeta">
+        <p class="instrucciones" id="indicador-nivel">Reto 1</p>
+        
+        <div class="texto-lectura" id="texto-lectura">
+            </div>
+        
+        <div class="pregunta" id="pregunta">
+            </div>
+
+        <div class="opciones-container" id="opciones">
+            </div>
+
+        <div id="mensaje"></div>
+        <button id="btn-siguiente" class="btn-accion" onclick="siguientePregunta()">Siguiente Reto ➡️</button>
+    </div>
+
+    <script>
+        const aventuras = [
+            {
+                texto: "Muy temprano, la abuela puso la paila al fuego. Mezcló el arroz sobrante de ayer con los frijoles fritos, agregando un chorrito de aceite y cebolla picada. El aroma despertó a toda la casa.",
+                pregunta: "¿Qué está preparando la abuela?",
+                opciones: ["Sopa de res", "Gallo pinto", "Nacatamales"],
+                respuestaCorrecta: 1 
+            },
+            {
+                texto: "Un ave de plumaje turquesa brillante y pecho verde se posó en la rama del árbol de madroño. Lo más curioso era su cola, que terminaba en dos plumas largas con forma de raqueta.",
+                pregunta: "¿De qué animal habla el texto?",
+                opciones: ["Un guardabarranco", "Un chocoyo", "Una paloma"],
+                respuestaCorrecta: 0
+            },
+            {
+                texto: "El agua brillaba bajo el sol ardiente de la mañana. A lo lejos, se podía ver la silueta perfecta del volcán Momotombo levantándose imponente en el horizonte.",
+                pregunta: "¿Dónde se encuentra la persona que narra esto?",
+                opciones: ["En el bosque", "A orillas del lago Xolotlán", "En un desierto"],
+                respuestaCorrecta: 1
+            }
+        ];
+
+        let nivelActual = 0;
+        let bloqueado = false;
+
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const areaJuego = document.getElementById('area-juego');
+        const elTexto = document.getElementById('texto-lectura');
+        const elPregunta = document.getElementById('pregunta');
+        const contenedorOpciones = document.getElementById('opciones');
+        const elMensaje = document.getElementById('mensaje');
+        const btnSiguiente = document.getElementById('btn-siguiente');
+        const indicadorNivel = document.getElementById('indicador-nivel');
+
+        // Función para ocultar inicio y mostrar juego
+        function iniciarJuego() {
+            pantallaInicio.style.display = 'none';
+            areaJuego.style.display = 'block';
+            cargarAventura();
+        }
+
+        function cargarAventura() {
+            bloqueado = false;
+            elMensaje.textContent = "";
+            btnSiguiente.style.display = "none";
+            indicadorNivel.textContent = `Reto ${nivelActual + 1} de ${aventuras.length} 🕵️‍♀️`;
+
+            const datosNivel = aventuras[nivelActual];
+            elTexto.textContent = datosNivel.texto;
+            elPregunta.textContent = datosNivel.pregunta;
+            
+            contenedorOpciones.innerHTML = '';
+
+            datosNivel.opciones.forEach((opcion, index) => {
+                const btn = document.createElement('button');
+                btn.classList.add('btn-opcion');
+                btn.textContent = opcion;
+                btn.onclick = () => verificarRespuesta(index, btn);
+                contenedorOpciones.appendChild(btn);
+            });
+        }
+
+        function verificarRespuesta(indiceSeleccionado, botonElemento) {
+            if (bloqueado) return;
+            bloqueado = true;
+
+            const datosNivel = aventuras[nivelActual];
+
+            if (indiceSeleccionado === datosNivel.respuestaCorrecta) {
+                botonElemento.classList.add('correcta');
+                elMensaje.style.color = "var(--success)";
+                elMensaje.textContent = "¡Excelente deducción! 🌟";
+                
+                if (nivelActual < aventuras.length - 1) {
+                    btnSiguiente.style.display = "block";
+                } else {
+                    elMensaje.textContent = "¡Felicidades! Completaste la aventura. 🎉";
+                    celebrar();
+                }
+            } else {
+                botonElemento.classList.add('incorrecta');
+                elMensaje.style.color = "var(--error)";
+                elMensaje.textContent = "Casi... ¡Vuelve a intentarlo! 🤔";
+                
+                setTimeout(() => {
+                    botonElemento.classList.remove('incorrecta');
+                    elMensaje.textContent = "";
+                    bloqueado = false;
+                }, 1500);
+            }
+        }
+
+        function siguientePregunta() {
+            nivelActual++;
+            cargarAventura();
+        }
+
+        function celebrar() {
+            var duration = 3 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+            function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+            var interval = setInterval(function() {
+              var timeLeft = animationEnd - Date.now();
+              if (timeLeft <= 0) { return clearInterval(interval); }
+              var particleCount = 50 * (timeLeft / duration);
+              confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+              confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+            }, 250);
+        }
+    </script>
+</body>
+</html>

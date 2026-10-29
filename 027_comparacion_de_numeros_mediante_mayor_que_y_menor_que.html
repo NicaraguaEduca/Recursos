@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Desafío del Cocodrilo</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&display=swap" />
+    <style>
+        :root {
+            --primary: #2E7D32;
+            --accent: #FFC107;
+            --bg-overlay: rgba(255, 255, 255, 0.98);
+        }
+
+        body {
+            margin: 0; padding: 0; height: 100vh;
+            font-family: 'Fredoka', sans-serif;
+            /* IMAGEN DE FONDO DE PANTANO */
+            background: url('https://previews.123rf.com/images/hillway/hillway2405/hillway240500032/229117968-swamp-in-the-forest-landscape-with-marsh-water-lilies-trees-trunks-and-bog-grass-vector-cartoon.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; user-select: none;
+        }
+
+        #game-layout {
+            width: 95%; max-width: 900px; height: 95vh; max-height: 850px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 8px solid var(--primary);
+            display: flex; flex-direction: column;
+            position: relative; overflow: hidden;
+        }
+
+        /* --- PANTALLAS (INTRO, ERROR, FINAL) --- */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-overlay); z-index: 100;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; padding: 20px; box-sizing: border-box;
+            transition: opacity 0.3s;
+            overflow-y: auto; /* Permite scroll si la pantalla es muy pequeña verticalmente */
+        }
+        .hidden { opacity: 0; pointer-events: none; }
+
+        .tutorial-container {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 30px;
+            margin: 15px 0;
+            background: #F1F8E9; padding: 20px; border-radius: 20px;
+            border: 2px dashed #AED581;
+        }
+
+        .reading-hint {
+            font-size: 1rem; color: #1B5E20; background: #DCEDC8; 
+            padding: 5px 15px; border-radius: 10px; margin-bottom: 10px;
+            font-weight: bold; display: inline-block;
+        }
+
+        .tut-box {
+            display: flex; flex-direction: column; align-items: center;
+            background: white; padding: 15px; border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 220px;
+        }
+
+        .tut-numbers {
+            font-size: 1.5rem; font-weight: bold; color: #555;
+            display: flex; justify-content: space-between; width: 100%; margin-bottom: 5px;
+        }
+        .big-num { color: #D32F2F; transform: scale(1.1); } 
+
+        .tut-visual {
+            position: relative; width: 120px; height: 100px;
+            display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
+        }
+        
+        .tut-croc { width: 100%; height: auto; z-index: 1; transition: transform 0.3s; }
+        .tut-symbol { font-size: 3.5rem; color: var(--primary); font-weight: bold; z-index: 2; margin-bottom: -15px; text-shadow: 2px 2px 0 white; }
+        .tut-text { margin-top: 5px; font-size: 0.9rem; color: #37474F; line-height: 1.3; }
+
+        .btn-action {
+            background: var(--primary); color: white; border: none; padding: 12px 40px;
+            font-size: 1.4rem; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 6px 0 #1B5E20; margin-top: 20px; font-weight: bold;
+            transition: transform 0.1s;
+        }
+        .btn-action:active { transform: translateY(4px); box-shadow: none; }
+        .btn-retry { background: #FF9800; box-shadow: 0 6px 0 #E65100; }
+
+        /* --- JUEGO --- */
+        #header-container {
+            background: var(--primary); color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 10;
+        }
+
+        #mission-bar {
+            padding: 15px; text-align: center;
+            border-bottom: 3px solid #1B5E20;
+        }
+        #mission-target { 
+            font-size: 2rem; font-weight: bold; 
+            display: flex; align-items: center; justify-content: center; gap: 15px;
+        }
+        .symbol-badge { background: rgba(255,255,255,0.2); padding: 2px 15px; border-radius: 10px; font-family: monospace; }
+
+        #game-instructions {
+            background: #1B5E20;
+            padding: 10px 20px;
+            text-align: center; color: #E8F5E9;
+            font-size: 1rem;
+            border-bottom: 5px solid #0d3311;
+        }
+        .instr-main { font-weight: bold; margin: 0 0 5px 0; }
+        .instr-sub { font-size: 0.9rem; opacity: 0.9; margin: 0; display: flex; align-items: center; justify-content: center; gap: 5px; }
+
+        #arena {
+            flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            gap: 15px; padding: 10px;
+            /* Textura sutil sobre el fondo blanco del contenedor */
+            background-image: radial-gradient(#81C784 10%, transparent 10%);
+            background-size: 30px 30px;
+        }
+
+        .option-card {
+            width: 100%; max-width: 600px; height: 110px;
+            background: white; border-radius: 20px;
+            border: 4px solid #AED581;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 30px; box-sizing: border-box;
+            cursor: pointer; position: relative;
+            box-shadow: 0 8px 0 #9CCC65;
+            transition: transform 0.1s;
+        }
+        .option-card:active { transform: translateY(4px); box-shadow: 0 4px 0 #9CCC65; }
+        
+        .num { font-size: 2.5rem; color: #37474F; font-weight: bold; width: 110px; text-align: center; }
+        
+        .card-center { 
+            width: 90px; height: 90px; flex-shrink: 0;
+            display: flex; justify-content: center; align-items: center;
+            background: #F1F8E9; border-radius: 50%;
+            border: 3px solid #AED581;
+            position: relative; overflow: hidden;
+        }
+        .question-mark { font-size: 2.5rem; color: #BDBDBD; font-weight: bold; }
+
+        .trans-container { width: 100%; height: 100%; position: relative; display: flex; justify-content: center; align-items: center; }
+        .croc-img { width: 90%; height: auto; position: absolute; transition: opacity 0.8s ease-in-out; z-index: 2; transform-origin: center center; }
+        .face-left { transform: scaleX(1); } .face-right { transform: scaleX(-1); } 
+        .math-symbol { font-size: 4rem; color: #2E7D32; font-weight: bold; position: absolute; opacity: 0; transition: opacity 0.8s ease-in-out; z-index: 1; }
+        .show-symbol .croc-img { opacity: 0; } .show-symbol .math-symbol { opacity: 1; }
+
+        .correct-card { border-color: #2E7D32; background: #E8F5E9; box-shadow: 0 8px 0 #1B5E20; pointer-events: none; }
+        .wrong-card { border-color: #D32F2F; background: #FFEBEE; box-shadow: 0 8px 0 #B71C1C; animation: shake 0.4s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+
+        .score-display { position: absolute; bottom: 15px; right: 20px; font-size: 1.1rem; color: var(--primary); background: rgba(255,255,255,0.9); padding: 5px 15px; border-radius: 15px; font-weight: bold; z-index: 20; }
+        #round-counter { margin-right: 10px; opacity: 0.8; }
+
+        .end-croc { width: 150px; margin: 20px 0; }
+        .bouncy-croc { animation: bouncy 1.5s infinite ease-in-out; }
+        @keyframes bouncy { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1) translateY(-10px); } }
+        .final-score-txt { font-size: 2.5rem; color: var(--primary); font-weight: bold; margin: 10px 0; }
+
+        /* =========================================
+           RESPONSIVE DESIGN (CELULAR)
+           ========================================= */
+        @media (max-width: 600px) {
+            #game-layout {
+                width: 100%; height: 100%; border-width: 0; border-radius: 0;
+            }
+            
+            /* Ajuste de Títulos e Instrucciones */
+            h1 { font-size: 1.5rem !important; }
+            #mission-bar { padding: 10px; }
+            #mission-target { font-size: 1.5rem; }
+            #game-instructions { font-size: 0.8rem; padding: 5px 10px; }
+            
+            /* Ajuste de Tutorial */
+            .tutorial-container { gap: 15px; padding: 10px; }
+            .tut-box { width: 140px; padding: 10px; }
+            .tut-visual { width: 80px; height: 70px; }
+            .tut-symbol { font-size: 2.5rem; margin-bottom: -10px; }
+            .tut-numbers { font-size: 1rem; }
+            .tut-text { font-size: 0.75rem; }
+
+            /* Ajuste de Tarjetas de Juego (Hacerlas más compactas) */
+            .option-card {
+                height: 80px; /* Más bajitas */
+                padding: 0 10px;
+                max-width: 95%; /* Que no toquen los bordes */
+            }
+            .num { font-size: 1.8rem; width: 70px; } /* Números más pequeños */
+            
+            .card-center {
+                width: 60px; height: 60px; /* Círculo central más pequeño */
+            }
+            .question-mark { font-size: 1.8rem; }
+            .math-symbol { font-size: 2.5rem; } /* Símbolo dentro del círculo ajustado */
+            
+            /* Ajuste de botones */
+            .btn-action { font-size: 1.1rem; padding: 10px 30px; }
+            
+            .score-display { bottom: 10px; right: 10px; font-size: 0.9rem; }
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="game-layout">
+
+    <div id="intro-screen" class="overlay">
+        <h1 style="color: var(--primary); margin: 10px 0;">Aprende con el Cocodrilo</h1>
+        <div class="reading-hint">Leemos de izquierda a derecha ➡</div>
+        <div class="tutorial-container">
+            <div class="tut-box">
+                <div class="tut-visual">
+                    <span class="tut-symbol">&gt;</span>
+                    <img src="" class="tut-croc face-left dynamic-img">
+                </div>
+                <div class="tut-numbers"><span class="big-num">500</span> <span>100</span></div>
+                <div class="tut-text">El primero es <strong>MAYOR</strong>,<br>el coco se lo come.</div>
+            </div>
+            <div class="tut-box">
+                <div class="tut-visual">
+                    <span class="tut-symbol">&lt;</span>
+                    <img src="" class="tut-croc face-right dynamic-img">
+                </div>
+                <div class="tut-numbers"><span>50</span> <span class="big-num">200</span></div>
+                <div class="tut-text">El primero es <strong>MENOR</strong>,<br>el coco le da la espalda.</div>
+            </div>
+        </div>
+        <button class="btn-action" onclick="startGame()">¡A jugar!</button>
+    </div>
+
+    <div id="error-screen" class="overlay hidden">
+        <div style="font-size: 3rem; margin-top:10px;">🤔</div>
+        <h2 style="color: #D32F2F; margin: 10px 0;">¡Ups! Inténtalo de nuevo</h2>
+        <div class="tutorial-container" style="padding: 10px; border-color: #FFCDD2; background: #FFEBEE;">
+            <div class="tut-box">
+                <div class="reading-hint" style="font-size: 0.7rem;">Leemos de izquierda a derecha ➡</div>
+                <div class="tut-visual">
+                    <span class="tut-symbol" id="error-symbol">&gt;</span>
+                    <img src="" class="tut-croc dynamic-img" id="error-croc">
+                </div>
+                <div class="tut-text" style="font-weight: bold; margin-bottom: 5px;">
+                    El cocodrilo SIEMPRE quiere comerse al número más grande.
+                </div>
+                <div class="tut-numbers" style="margin-top: 5px; justify-content: center; gap: 20px;">
+                    <span id="error-num1">900</span> <span id="error-num2">10</span>
+                </div>
+            </div>
+        </div>
+        <button class="btn-action btn-retry" onclick="closeError()">Volver a intentar</button>
+    </div>
+
+    <div id="end-screen" class="overlay hidden">
+        <h1 style="color: var(--primary); font-size: 2.5rem; margin-bottom: 10px;">¡Felicidades!</h1>
+        <p style="font-size: 1.2rem; color: #555;">Has completado todas las misiones.</p>
+        
+        <img src="" class="dynamic-img end-croc bouncy-croc">
+        
+        <div>Tu puntuación final es:</div>
+        <div class="final-score-txt"><span id="final-score-num">0</span> / 9</div>
+        
+        <button class="btn-action" onclick="location.reload()">Jugar otra vez</button>
+    </div>
+
+
+    <div id="header-container">
+        <div id="mission-bar">
+            <div style="font-size: 1rem; opacity: 0.8;">MISIÓN: ENCUENTRA</div>
+            <div id="mission-target">Cargando...</div>
+        </div>
+        <div id="game-instructions">
+            <p class="instr-main">Ayuda a Coco a comer los números más grandes.</p>
+            <p class="instr-sub">💡 Recuerda, guíate de izquierda a derecha.</p>
+        </div>
+    </div>
+
+    <div id="arena">
+        <div class="option-card" onclick="checkCard(0)">
+            <span class="num" id="n0-a">0</span>
+            <div class="card-center" id="center-0"><span class="question-mark">?</span></div>
+            <span class="num" id="n0-b">0</span>
+        </div>
+        <div class="option-card" onclick="checkCard(1)">
+            <span class="num" id="n1-a">0</span>
+            <div class="card-center" id="center-1"><span class="question-mark">?</span></div>
+            <span class="num" id="n1-b">0</span>
+        </div>
+        <div class="option-card" onclick="checkCard(2)">
+            <span class="num" id="n2-a">0</span>
+            <div class="card-center" id="center-2"><span class="question-mark">?</span></div>
+            <span class="num" id="n2-b">0</span>
+        </div>
+    </div>
+
+    <div class="score-display">
+        <span id="round-counter">Ronda: 1/9</span> Puntos: <span id="score">0</span>
+    </div>
+
+</div>
+
+<script>
+    /* --- CONFIGURACIÓN --- */
+    const CROC_IMAGE_SRC = "https://i.ibb.co/Zzb5Qj5N/Gemini-Generated-Image-mjuno4mjuno4mjun-Photoroom.png"; 
+    document.querySelectorAll('.dynamic-img').forEach(img => img.src = CROC_IMAGE_SRC);
+
+    /* --- ESTADO DEL JUEGO --- */
+    let score = 0;
+    let currentRound = 0;
+    const MAX_ROUNDS = 9; 
+    let targetMission = ''; 
+    let canInteract = true;
+
+    function startGame() {
+        document.getElementById('intro-screen').classList.add('hidden');
+        nextRound();
+    }
+
+    function closeError() {
+        document.getElementById('error-screen').classList.add('hidden');
+        canInteract = true; 
+        document.querySelectorAll('.option-card').forEach((card, idx) => {
+             if(card.classList.contains('wrong-card')) {
+                 card.classList.remove('wrong-card');
+                 document.getElementById(`center-${idx}`).innerHTML = '<span class="question-mark">?</span>';
+             }
+        });
+    }
+
+    function showEndScreen() {
+        document.getElementById('final-score-num').innerText = score;
+        document.getElementById('end-screen').classList.remove('hidden');
+        fireConfetti(); 
+    }
+
+    function nextRound() {
+        if (currentRound >= MAX_ROUNDS) {
+            showEndScreen();
+            return;
+        }
+
+        currentRound++;
+        document.getElementById('round-counter').innerText = `Ronda: ${currentRound}/${MAX_ROUNDS}`;
+        canInteract = true;
+        
+        for(let i=0; i<3; i++) {
+            const card = document.querySelectorAll('.option-card')[i];
+            card.classList.remove('correct-card', 'wrong-card');
+            document.getElementById(`center-${i}`).innerHTML = '<span class="question-mark">?</span>';
+        }
+
+        const missions = ['>', '<', '='];
+        targetMission = missions[Math.floor(Math.random() * missions.length)];
+        
+        const labelMap = { '>': 'MAYOR QUE', '<': 'MENOR QUE', '=': 'IGUAL QUE' };
+        document.getElementById('mission-target').innerHTML = 
+            `${labelMap[targetMission]} <span class="symbol-badge">${targetMission}</span>`;
+
+        const correctIdx = Math.floor(Math.random() * 3);
+        for(let i=0; i<3; i++) {
+            let valA, valB;
+            if (i === correctIdx) {
+                ({a: valA, b: valB} = generateNumbersFor(targetMission));
+            } else {
+                let wrongType = missions[Math.floor(Math.random() * missions.length)];
+                while(wrongType === targetMission) wrongType = missions[Math.floor(Math.random() * missions.length)];
+                ({a: valA, b: valB} = generateNumbersFor(wrongType));
+            }
+            document.getElementById(`n${i}-a`).innerText = valA;
+            document.getElementById(`n${i}-b`).innerText = valB;
+        }
+    }
+
+    function generateNumbersFor(type) {
+        let a = Math.floor(Math.random() * 899) + 100;
+        let b = Math.floor(Math.random() * 899) + 100;
+        if (type === '=') { b = a; } 
+        else if (type === '>') { if (a <= b) a = b + Math.floor(Math.random() * 50) + 1; } 
+        else if (type === '<') { if (a >= b) b = a + Math.floor(Math.random() * 50) + 1; }
+        return {a, b};
+    }
+
+    function checkCard(index) {
+        if (!canInteract) return;
+
+        const card = document.querySelectorAll('.option-card')[index];
+        const centerDiv = document.getElementById(`center-${index}`);
+        
+        const valA = parseInt(document.getElementById(`n${index}-a`).innerText);
+        const valB = parseInt(document.getElementById(`n${index}-b`).innerText);
+
+        let actualSymbol = '=';
+        if (valA > valB) actualSymbol = '>';
+        if (valA < valB) actualSymbol = '<';
+
+        let rotateClass = ''; 
+        if (actualSymbol === '>') rotateClass = 'face-left'; 
+        if (actualSymbol === '<') rotateClass = 'face-right'; 
+        
+        let contentHTML = '';
+        if (actualSymbol === '=') {
+            contentHTML = `<div class="math-symbol" style="opacity:1">=</div>`;
+        } else {
+            contentHTML = `
+            <div class="trans-container" id="trans-${index}">
+                <img src="${CROC_IMAGE_SRC}" class="croc-img ${rotateClass}">
+                <div class="math-symbol">${actualSymbol}</div>
+            </div>`;
+        }
+        
+        centerDiv.innerHTML = contentHTML;
+
+        if (actualSymbol === targetMission) {
+            canInteract = false;
+            card.classList.add('correct-card');
+            score++;
+            document.getElementById('score').innerText = score;
+            fireConfetti(); 
+            
+            if (actualSymbol !== '=') {
+                setTimeout(() => {
+                    const container = document.getElementById(`trans-${index}`);
+                    if(container) container.classList.add('show-symbol');
+                }, 1500);
+            }
+            let waitTime = (currentRound === MAX_ROUNDS) ? 4500 : 3500;
+            setTimeout(nextRound, waitTime);
+
+        } else {
+            card.classList.add('wrong-card');
+            canInteract = false; 
+            
+            const errorSymbol = document.getElementById('error-symbol');
+            const errorCroc = document.getElementById('error-croc');
+            const errorNum1 = document.getElementById('error-num1');
+            const errorNum2 = document.getElementById('error-num2');
+
+            if (targetMission === '<') {
+                errorSymbol.innerText = '<';
+                errorCroc.classList.remove('face-left'); errorCroc.classList.add('face-right');
+                errorNum1.innerText = '10'; errorNum1.classList.remove('big-num'); 
+                errorNum2.innerText = '900'; errorNum2.classList.add('big-num'); 
+            } else {
+                errorSymbol.innerText = '>';
+                errorCroc.classList.remove('face-right'); errorCroc.classList.add('face-left');
+                errorNum1.innerText = '900'; errorNum1.classList.add('big-num');
+                errorNum2.innerText = '10'; errorNum2.classList.remove('big-num');
+            }
+
+            setTimeout(() => {
+                 document.getElementById('error-screen').classList.remove('hidden');
+            }, 800);
+        }
+    }
+
+    function fireConfetti() {
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#2E7D32', '#AED581', '#FFC107']
+        });
+    }
+</script>
+
+</body>
+</html>

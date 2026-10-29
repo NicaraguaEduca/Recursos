@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Filtro de Noticias - Hecho vs Opinión</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary: #1A252C; /* Azul noche muy oscuro / Periodismo */
+            --secondary: #2C3E50;
+            --accent: #F39C12;  /* Amarillo alerta */
+            --rojo-alerta: #E74C3C;
+            --background: #EAECEE;
+            --text: #2C3E50;
+            --success: #27AE60;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background);
+            background-image: repeating-linear-gradient(45deg, #e0e0e0 25%, transparent 25%, transparent 75%, #e0e0e0 75%, #e0e0e0), repeating-linear-gradient(45deg, #e0e0e0 25%, var(--background) 25%, var(--background) 75%, #e0e0e0 75%, #e0e0e0);
+            background-position: 0 0, 10px 10px;
+            background-size: 20px 20px; /* Textura sutil de papel */
+            color: var(--text);
+            text-align: center;
+            padding: 15px;
+            margin: 0;
+            user-select: none; 
+            -webkit-user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .tarjeta {
+            background: #FFFFFF;
+            width: 100%;
+            max-width: 650px;
+            padding: 30px 20px;
+            border-radius: 12px; 
+            box-shadow: 0 15px 25px rgba(0,0,0,0.15);
+            box-sizing: border-box;
+            border-top: 10px solid var(--primary);
+            position: relative;
+        }
+
+        h1 { margin: 0 0 15px 0; color: var(--primary); font-size: clamp(1.8rem, 5vw, 2.8rem); font-family: 'Georgia', serif; letter-spacing: -1px;}
+        
+        /* --- PANTALLA DE INICIO --- */
+        #pantalla-inicio .icono-grande { font-size: 4.5rem; margin-bottom: 10px; text-shadow: 2px 2px 0px #D5DBDB; }
+        
+        .objetivo-caja {
+            background-color: #FEF9E7;
+            border: 2px solid #F1C40F;
+            border-left: 8px solid #F1C40F;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-size: clamp(1.1rem, 4vw, 1.3rem);
+            line-height: 1.5;
+            color: #935116;
+            text-align: left;
+        }
+
+        .btn-accion {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: clamp(1.2rem, 4vw, 1.4rem);
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 var(--secondary);
+            font-weight: bold;
+            transition: all 0.2s;
+            width: 100%;
+            max-width: 350px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-accion:active { transform: translateY(6px); box-shadow: 0 0 0 var(--secondary); }
+
+        /* --- ÁREA DE JUEGO --- */
+        #area-juego { display: none; }
+        
+        /* Barra de Progreso */
+        .progreso-contenedor {
+            width: 100%;
+            background-color: #EDBB99;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            height: 12px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .progreso-barra {
+            height: 100%;
+            background-color: var(--rojo-alerta);
+            width: 0%;
+            transition: width 0.4s ease-out;
+        }
+
+        .instrucciones { font-size: clamp(1rem, 3vw, 1.2rem); color: #7F8C8D; margin: 0 0 15px 0; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;}
+        
+        .caja-noticia {
+            position: relative;
+            background-color: #F8F9F9;
+            padding: 30px 20px 20px 20px;
+            border: 2px solid #BDC3C7;
+            border-radius: 5px;
+            margin-bottom: 25px;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.05);
+        }
+
+        .etiqueta-urgente {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            background-color: var(--rojo-alerta);
+            color: white;
+            padding: 5px 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 3px;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .texto-lectura {
+            font-size: clamp(1.3rem, 4vw, 1.7rem);
+            line-height: 1.5;
+            text-align: left;
+            font-family: 'Georgia', serif;
+            font-style: italic;
+            color: #17202A;
+        }
+
+        .pregunta {
+            font-size: clamp(1.2rem, 4vw, 1.4rem);
+            font-weight: bold;
+            color: var(--secondary);
+            margin-bottom: 20px;
+        }
+
+        .opciones-container {
+            display: flex;
+            flex-direction: row; 
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn-opcion {
+            background-color: white;
+            border: 3px solid var(--secondary);
+            color: var(--text);
+            padding: 15px 10px;
+            font-size: clamp(1.1rem, 4vw, 1.4rem);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            box-shadow: 0 6px 0 var(--secondary);
+            flex: 1;
+        }
+
+        .btn-opcion:active { transform: translateY(6px); box-shadow: 0 0 0 var(--secondary); }
+
+        .btn-opcion.correcta { background-color: #D5F5E3; border-color: var(--success); box-shadow: 0 6px 0 var(--success); color: #1E8449; }
+        .btn-opcion.incorrecta { background-color: #FADBD8; border-color: var(--rojo-alerta); box-shadow: 0 6px 0 var(--rojo-alerta); color: #943126; }
+
+        #mensaje { font-size: clamp(1.2rem, 4vw, 1.5rem); font-weight: bold; margin-top: 25px; min-height: 35px; }
+
+        #btn-siguiente { display: none; margin-top: 15px; background-color: var(--success); box-shadow: 0 6px 0 #1E8449;}
+        #btn-siguiente:active { box-shadow: 0 0 0 #1E8449; }
+
+        #btn-reiniciar { display: none; margin-top: 15px; background-color: var(--accent); box-shadow: 0 6px 0 #B9770E; color: #17202A;}
+        #btn-reiniciar:active { box-shadow: 0 0 0 #B9770E; }
+
+    </style>
+</head>
+<body>
+
+    <div id="pantalla-inicio" class="tarjeta">
+        <div class="icono-grande">📰</div>
+        <h1>Filtro de Noticias</h1>
+        
+        <div class="objetivo-caja">
+            <strong>🎯 Objetivo Periodístico:</strong><br><br>
+            Aprende a diferenciar entre un <strong>Hecho</strong> (algo real que se puede comprobar con pruebas) y una <strong>Opinión</strong> (lo que alguien siente o piensa de forma personal). ¡Demuestra que no te dejas engañar!
+        </div>
+
+        <button class="btn-accion" onclick="iniciarJuego()">¡Analizar Noticias! 🔎</button>
+    </div>
+
+    <div id="area-juego" class="tarjeta">
+        
+        <div class="progreso-contenedor">
+            <div class="progreso-barra" id="barra-progreso"></div>
+        </div>
+
+        <p class="instrucciones" id="indicador-nivel">Titular 1</p>
+        
+        <div class="caja-noticia">
+            <div class="etiqueta-urgente">Última Hora</div>
+            <div class="texto-lectura" id="texto-lectura">
+                </div>
+        </div>
+        
+        <div class="pregunta" id="pregunta">
+            ¿Esta afirmación es un HECHO comprobable o una OPINIÓN personal?
+        </div>
+
+        <div class="opciones-container" id="opciones">
+            </div>
+
+        <div id="mensaje"></div>
+        <button id="btn-siguiente" class="btn-accion" onclick="siguientePregunta()">Siguiente Titular ➡️</button>
+        
+        <button id="btn-reiniciar" class="btn-accion" onclick="reiniciarJuego()">🔄 Volver a jugar</button>
+    </div>
+
+    <script>
+        // --- AHORA SON 5 SITUACIONES ---
+        const noticias = [
+            {
+                texto: "La ciudad de Granada es la más bonita y aburrida de toda Centroamérica.",
+                opciones: ["Es un Hecho", "Es una Opinión"],
+                respuestaCorrecta: 1 
+            },
+            {
+                texto: "El poeta Rubén Darío nació en el año 1867 en la ciudad de Metapa.",
+                opciones: ["Es un Hecho", "Es una Opinión"],
+                respuestaCorrecta: 0
+            },
+            {
+                texto: "El clima en la ciudad de Managua alcanzó los 35 grados centígrados ayer por la tarde.",
+                opciones: ["Es un Hecho", "Es una Opinión"],
+                respuestaCorrecta: 0
+            },
+            {
+                texto: "El quesillo servido con mucha cebolla es la comida más deliciosa del mundo entero.",
+                opciones: ["Es un Hecho", "Es una Opinión"],
+                respuestaCorrecta: 1
+            },
+            {
+                texto: "El Lago Cocibolca es el lago de agua dulce más grande de la república de Nicaragua.",
+                opciones: ["Es un Hecho", "Es una Opinión"],
+                respuestaCorrecta: 0
+            }
+        ];
+
+        let nivelActual = 0;
+        let bloqueado = false;
+
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const areaJuego = document.getElementById('area-juego');
+        const elTexto = document.getElementById('texto-lectura');
+        const contenedorOpciones = document.getElementById('opciones');
+        const elMensaje = document.getElementById('mensaje');
+        const btnSiguiente = document.getElementById('btn-siguiente');
+        const btnReiniciar = document.getElementById('btn-reiniciar');
+        const indicadorNivel = document.getElementById('indicador-nivel');
+        const barraProgreso = document.getElementById('barra-progreso');
+
+        function iniciarJuego() {
+            pantallaInicio.style.display = 'none';
+            areaJuego.style.display = 'block';
+            cargarNoticia();
+        }
+
+        function cargarNoticia() {
+            bloqueado = false;
+            elMensaje.textContent = "";
+            btnSiguiente.style.display = "none";
+            btnReiniciar.style.display = "none";
+            
+            indicadorNivel.textContent = `Titular ${nivelActual + 1} de ${noticias.length}`;
+            
+            // Actualizar barra de progreso
+            const porcentaje = (nivelActual / noticias.length) * 100;
+            barraProgreso.style.width = porcentaje + '%';
+
+            const datosNivel = noticias[nivelActual];
+            elTexto.textContent = `"${datosNivel.texto}"`;
+            
+            contenedorOpciones.innerHTML = '';
+
+            datosNivel.opciones.forEach((opcion, index) => {
+                const btn = document.createElement('button');
+                btn.classList.add('btn-opcion');
+                btn.textContent = opcion;
+                btn.onclick = () => verificarRespuesta(index, btn);
+                contenedorOpciones.appendChild(btn);
+            });
+        }
+
+        function verificarRespuesta(indiceSeleccionado, botonElemento) {
+            if (bloqueado) return;
+            bloqueado = true;
+
+            const datosNivel = noticias[nivelActual];
+
+            if (indiceSeleccionado === datosNivel.respuestaCorrecta) {
+                botonElemento.classList.add('correcta');
+                elMensaje.style.color = "var(--success)";
+                elMensaje.textContent = "¡Exacto! Tienes buen ojo periodístico. 🕵️‍♂️";
+                
+                if (nivelActual < noticias.length - 1) {
+                    btnSiguiente.style.display = "block";
+                } else {
+                    // Terminó el juego
+                    barraProgreso.style.width = '100%';
+                    elMensaje.textContent = "¡Felicidades! Eres un experto detectando noticias. 🎉";
+                    btnReiniciar.style.display = "block"; // Mostrar botón de reinicio
+                    celebrar();
+                }
+            } else {
+                botonElemento.classList.add('incorrecta');
+                elMensaje.style.color = "var(--rojo-alerta)";
+                elMensaje.textContent = "Piénsalo bien... Si se puede comprobar, es un hecho. 🤔";
+                
+                setTimeout(() => {
+                    botonElemento.classList.remove('incorrecta');
+                    elMensaje.textContent = "";
+                    bloqueado = false;
+                }, 2000);
+            }
+        }
+
+        function siguientePregunta() {
+            nivelActual++;
+            cargarNoticia();
+        }
+
+        // Nueva función para reiniciar el juego
+        function reiniciarJuego() {
+            nivelActual = 0;
+            cargarNoticia();
+        }
+
+        function celebrar() {
+            var duration = 3 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+            function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+            var interval = setInterval(function() {
+              var timeLeft = animationEnd - Date.now();
+              if (timeLeft <= 0) { return clearInterval(interval); }
+              var particleCount = 50 * (timeLeft / duration);
+              confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+              confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+            }, 250);
+        }
+    </script>
+</body>
+</html>

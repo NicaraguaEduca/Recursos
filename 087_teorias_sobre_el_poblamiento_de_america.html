@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Debate de Teorías - Origen del Hombre en América</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        
+        :root {
+            --primary: #795548; /* Café Arqueológico */
+            --secondary: #4E342E;
+            --accent: #FFD54F; /* Dorado de tesoro */
+            --background: #D7CCC8;
+            --paper: #FFF9E1; /* Color pergamino */
+            --text: #3E2723;
+            --success: #43A047;
+            --error: #E53935;
+            --subject-color: #D84315; /* Sociales Intenso */
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Verdana', sans-serif;
+            background-color: var(--background);
+            /* Patrón de fondo tipo textura antigua */
+            background-image: 
+                radial-gradient(var(--primary) 0.5px, transparent 0.5px),
+                linear-gradient(rgba(121, 85, 72, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px, 100% 2px;
+            color: var(--text);
+            text-align: center;
+            padding: 10px;
+            margin: 0;
+            overflow: hidden;
+            touch-action: none; 
+            user-select: none; 
+            -webkit-user-select: none;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .tarjeta {
+            background: var(--paper);
+            width: 100%;
+            max-width: 850px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 
+                0 10px 30px rgba(0,0,0,0.2),
+                inset 0 0 50px rgba(121, 85, 72, 0.1);
+            box-sizing: border-box;
+            border: 3px solid var(--secondary);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            max-height: 98vh;
+        }
+
+        /* Efecto de esquinas de mapa antiguo */
+        .tarjeta::before, .tarjeta::after {
+            content: "•";
+            position: absolute;
+            font-size: 2rem;
+            color: var(--secondary);
+        }
+        .tarjeta::before { top: 5px; left: 10px; }
+        .tarjeta::after { bottom: 5px; right: 10px; }
+
+        .badge-asignatura {
+            background-color: var(--subject-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+        }
+
+        h1 { 
+            margin: 0 0 8px 0; 
+            color: var(--secondary); 
+            font-size: clamp(1.4rem, 4.5vw, 2rem); 
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- PANTALLA DE INICIO --- */
+        #pantalla-inicio .icono-grande { 
+            font-size: 4.5rem; 
+            margin-bottom: 10px;
+            filter: drop-shadow(0 4px 5px rgba(0,0,0,0.2));
+        }
+        
+        .objetivo-caja {
+            background-color: rgba(121, 85, 72, 0.08);
+            border: 2px dashed var(--primary);
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: clamp(1rem, 3.5vw, 1.2rem);
+            line-height: 1.5;
+            color: var(--secondary);
+            text-align: left;
+        }
+
+        .btn-accion {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 16px 35px;
+            font-size: clamp(1.1rem, 4vw, 1.4rem);
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #2D1B18;
+            font-weight: bold;
+            transition: all 0.2s;
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto;
+            text-transform: uppercase;
+            display: block;
+        }
+        .btn-accion:active { transform: translateY(6px); box-shadow: 0 0 0 #2D1B18; }
+
+        /* --- ÁREA DE JUEGO --- */
+        #area-juego { display: none; }
+        
+        .instrucciones { 
+            font-size: 0.85rem; 
+            color: var(--primary); 
+            font-weight: bold; 
+            margin-bottom: 12px; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .panel-interactivo {
+            display: flex;
+            flex-direction: row;
+            gap: 15px;
+            flex-grow: 1;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .columna {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+
+        /* Estilo de Fichas como piedras talladas */
+        .paso-ficha {
+            background-color: #EEE;
+            border: 2px solid #BBB;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: grab;
+            font-size: clamp(0.75rem, 2.5vw, 0.95rem);
+            font-weight: bold;
+            box-shadow: 4px 4px 0 #AAA;
+            touch-action: none;
+            position: relative;
+            line-height: 1.3;
+            min-height: 65px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #333;
+        }
+        .paso-ficha:active { cursor: grabbing; }
+
+        /* Estilo de zonas como espacios en un mapa */
+        .zona-drop {
+            background-color: rgba(0,0,0,0.03);
+            border: 2px dashed #8D6E63;
+            border-radius: 10px;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 10px;
+            position: relative;
+            transition: background-color 0.3s;
+        }
+
+        .teoria-titulo {
+            background: var(--primary);
+            color: white;
+            width: 100%;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .zona-drop.correct { 
+            background-color: rgba(67, 160, 71, 0.1); 
+            border: 2px solid var(--success); 
+            border-style: solid; 
+        }
+        .zona-drop.correct .paso-ficha { 
+            box-shadow: none; 
+            border: 1px solid transparent; 
+            padding: 4px; 
+            background: transparent; 
+            cursor: default; 
+            min-height: auto;
+            margin-bottom: 2px;
+        }
+
+        #mensaje { font-size: 1.2rem; font-weight: bold; margin-top: 15px; min-height: 30px; color: var(--success); }
+
+        .ficha-fantasma {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.95;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            transform: scale(1.08);
+            background: white;
+            border: 3px solid var(--primary);
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--secondary);
+        }
+
+        #btn-reiniciar { 
+            display: none; 
+            margin-top: 15px; 
+            background-color: var(--success); 
+            box-shadow: 0 6px 0 #2E7D32;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- PANTALLA DE INICIO -->
+    <div id="pantalla-inicio" class="tarjeta">
+        <div class="badge-asignatura">Asignatura: Ciencias Sociales</div>
+        <div class="icono-grande">📜</div>
+        <h1>Debate de Teorías</h1>
+        
+        <div class="objetivo-caja">
+            <strong>🎯 Misión Arqueológica:</strong><br><br>
+            ¿Cómo llegaron los primeros humanos a nuestro continente? Existen tres grandes teorías. Tu misión es analizar las <strong>evidencias</strong> y arrastrarlas hacia la teoría correcta. ¡Completa el mapa de la historia!
+        </div>
+
+        <button class="btn-accion" onclick="iniciarJuego()">¡Iniciar Investigación! 🔎</button>
+    </div>
+
+    <!-- ÁREA DE JUEGO -->
+    <div id="area-juego" class="tarjeta">
+        <div class="badge-asignatura">Poblamiento de América</div>
+        <h1>Evidencias e Hipótesis</h1>
+        <p class="instrucciones">Arrastra las piezas de la derecha a las teorías de la izquierda</p>
+        
+        <div class="panel-interactivo">
+            <!-- Zonas de Destino -->
+            <div class="columna" id="contenedor-zonas">
+                <div class="zona-drop" data-accept="asiatica">
+                    <div class="teoria-titulo">🌏 Teoría Asiática</div>
+                </div>
+                <div class="zona-drop" data-accept="oceanica">
+                    <div class="teoria-titulo">🛶 Teoría Oceánica</div>
+                </div>
+                <div class="zona-drop" data-accept="australiana">
+                    <div class="teoria-titulo">❄️ Teoría Australiana</div>
+                </div>
+            </div>
+
+            <!-- Fichas para Arrastrar -->
+            <div class="columna" id="contenedor-fichas">
+                <!-- Generado por JS -->
+            </div>
+        </div>
+
+        <div id="mensaje"></div>
+        <button id="btn-reiniciar" class="btn-accion" onclick="reiniciarJuego()">🔄 Nueva Investigación</button>
+    </div>
+
+    <script>
+        // Evidencias con datos pedagógicos claros
+        const evidencias = [
+            { id: "asiatica", texto: "Cruzaron el Puente de Beringia desde Asia. ❄️" },
+            { id: "asiatica", texto: "Rasgos físicos parecidos (ojos y cabello). 👤" },
+            { id: "oceanica", texto: "Llegaron en balsas desde la Polinesia. 🛶" },
+            { id: "oceanica", texto: "Palabras comunes en lenguas nativas. 🗣️" },
+            { id: "australiana", texto: "Siguieron la ruta por la Antártida. 🧊" },
+            { id: "australiana", texto: "Uso del bumerán y chozas circulares. 🛖" }
+        ];
+
+        let aciertos = 0;
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const areaJuego = document.getElementById('area-juego');
+        const contenedorFichas = document.getElementById('contenedor-fichas');
+        const zonas = document.querySelectorAll('.zona-drop');
+        const mensaje = document.getElementById('mensaje');
+        const btnReiniciar = document.getElementById('btn-reiniciar');
+
+        function iniciarJuego() {
+            pantallaInicio.style.display = 'none';
+            areaJuego.style.display = 'flex';
+            cargarEvidencias();
+        }
+
+        function cargarEvidencias() {
+            aciertos = 0;
+            mensaje.textContent = "";
+            btnReiniciar.style.display = "none";
+            
+            zonas.forEach(z => {
+                z.classList.remove('correct');
+                const titulo = z.querySelector('.teoria-titulo');
+                z.innerHTML = '';
+                z.appendChild(titulo);
+                z.style.backgroundColor = '';
+            });
+
+            // Aleatorizar piezas
+            let mezcla = [...evidencias].sort(() => Math.random() - 0.5);
+
+            contenedorFichas.innerHTML = '';
+            mezcla.forEach(ev => {
+                const div = document.createElement('div');
+                div.classList.add('paso-ficha');
+                div.setAttribute('data-id', ev.id);
+                div.textContent = ev.texto;
+                div.addEventListener('pointerdown', iniciarArrastre);
+                contenedorFichas.appendChild(div);
+            });
+        }
+
+        let elementoArrastrado = null;
+        let fantasma = null;
+
+        function iniciarArrastre(e) {
+            if (e.target.parentElement.classList.contains('correct')) return;
+            
+            e.preventDefault();
+            elementoArrastrado = e.target;
+            
+            fantasma = elementoArrastrado.cloneNode(true);
+            fantasma.classList.add('ficha-fantasma');
+            fantasma.style.width = elementoArrastrado.offsetWidth + 'px';
+            document.body.appendChild(fantasma);
+            
+            elementoArrastrado.style.opacity = '0.3';
+            moverFantasma(e.clientX, e.clientY);
+
+            document.addEventListener('pointermove', duranteArrastre);
+            document.addEventListener('pointerup', soltarArrastre);
+        }
+
+        function duranteArrastre(e) { moverFantasma(e.clientX, e.clientY); }
+        
+        function moverFantasma(x, y) {
+            fantasma.style.left = (x - fantasma.offsetWidth / 2) + 'px';
+            fantasma.style.top = (y - fantasma.offsetHeight / 2) + 'px';
+        }
+
+        function soltarArrastre(e) {
+            document.removeEventListener('pointermove', duranteArrastre);
+            document.removeEventListener('pointerup', soltarArrastre);
+            
+            const debajo = document.elementFromPoint(e.clientX, e.clientY);
+            const zona = debajo ? debajo.closest('.zona-drop') : null;
+            
+            fantasma.remove();
+            elementoArrastrado.style.opacity = '1';
+
+            if (zona && !zona.classList.contains('correct')) {
+                // Validación de teoría correcta
+                if (elementoArrastrado.getAttribute('data-id') === zona.getAttribute('data-accept')) {
+                    zona.appendChild(elementoArrastrado);
+                    aciertos++;
+                    
+                    if (aciertos === evidencias.length) {
+                        zonas.forEach(z => z.classList.add('correct'));
+                        mensaje.textContent = "¡Misión Arqueológica Lograda! 🦴🌟";
+                        btnReiniciar.style.display = "block";
+                        celebrar();
+                    }
+                } else {
+                    // Feedback visual de error sutil
+                    const originalColor = zona.style.backgroundColor;
+                    zona.style.backgroundColor = 'rgba(229, 57, 53, 0.2)';
+                    setTimeout(() => zona.style.backgroundColor = originalColor, 500);
+                }
+            }
+        }
+
+        function reiniciarJuego() { cargarEvidencias(); }
+        
+        function celebrar() {
+            confetti({ 
+                particleCount: 150, 
+                spread: 70, 
+                origin: { y: 0.6 }, 
+                colors: ['#795548', '#FFD54F', '#43A047'] 
+            });
+        }
+    </script>
+</body>
+</html>

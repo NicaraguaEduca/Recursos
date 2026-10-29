@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorio Mágico: Edición Final</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #263238;
+            color: white;
+            min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+            overflow-x: hidden;
+            padding-bottom: 80px;
+        }
+
+        /* --- PANTALLA DE BIENVENIDA (NUEVO) --- */
+        #welcome-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(33, 33, 33, 0.98);
+            z-index: 99999; /* Por encima de todo */
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; padding: 20px;
+            transition: opacity 0.5s ease-out;
+            backdrop-filter: blur(10px);
+        }
+        
+        .welcome-card {
+            background: white; color: #333;
+            padding: 30px; border-radius: 25px;
+            max-width: 500px; width: 100%;
+            box-shadow: 0 0 50px rgba(0, 230, 118, 0.3);
+            border: 4px solid #00E676;
+        }
+
+        .step-icon { font-size: 2.5rem; margin-bottom: 10px; color: #00E676; }
+        .start-btn {
+            background: #FFD600; color: #333; font-size: 1.5rem;
+            font-weight: bold; padding: 15px 40px; border-radius: 50px;
+            border: none; cursor: pointer; margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(255, 214, 0, 0.4);
+            animation: pulse 2s infinite; transition: transform 0.2s;
+        }
+        .start-btn:hover { transform: scale(1.05); background: #FFEA00; }
+
+        /* --- CORRECCIÓN Z-INDEX ALERTAS --- */
+        .swal2-container { z-index: 99999 !important; }
+
+        /* --- BOTÓN ÁLBUM FLOTANTE --- */
+        .album-btn {
+            position: fixed; top: 20px; right: 20px;
+            background: #FFD600; color: #333;
+            width: 60px; height: 60px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.5rem; box-shadow: 0 4px 15px rgba(255, 214, 0, 0.4);
+            cursor: pointer; z-index: 1000; border: 3px solid white;
+            transition: transform 0.2s;
+        }
+        .album-btn:hover { transform: scale(1.1) rotate(-10deg); }
+        .album-counter {
+            position: absolute; top: -5px; right: -5px;
+            background: #D50000; color: white;
+            font-size: 0.8rem; width: 25px; height: 25px;
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-weight: bold; border: 2px solid white;
+        }
+
+        /* --- NAVEGACIÓN --- */
+        .nav-pills {
+            background: rgba(255,255,255,0.1); padding: 5px; border-radius: 50px;
+            margin-top: 20px; display: inline-flex;
+        }
+        .nav-pills .nav-link { color: #ccc; border-radius: 40px; padding: 10px 25px; }
+        .nav-pills .nav-link.active {
+            background-color: #00E676; color: #003300; font-weight: bold;
+            box-shadow: 0 0 15px rgba(0, 230, 118, 0.4);
+        }
+
+        /* --- MATRAZ --- */
+        .beaker-container { position: relative; width: 180px; height: 220px; margin: 30px auto; }
+        .beaker {
+            width: 100%; height: 100%;
+            border: 8px solid rgba(255,255,255,0.3); border-top: none;
+            border-radius: 0 0 60px 60px;
+            background: rgba(255,255,255,0.05);
+            position: relative; overflow: hidden;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+        }
+        .liquid {
+            position: absolute; bottom: 0; left: 0;
+            width: 100%; height: 10%; background-color: #ECEFF1;
+            transition: height 0.8s cubic-bezier(0.4, 0.0, 0.2, 1), background-color 1.5s ease;
+        }
+        .liquid::before {
+            content: ''; position: absolute; top: -10px; left: 0; width: 100%; height: 20px;
+            background-color: inherit; border-radius: 50%; opacity: 0.5; filter: brightness(1.2);
+        }
+        /* Burbujas */
+        .bubble {
+            position: absolute; bottom: -20px; background: rgba(255,255,255,0.4);
+            border-radius: 50%; animation: rise 3s infinite ease-in;
+        }
+        @keyframes rise {
+            0% { bottom: -20px; transform: scale(0.5); opacity: 0;}
+            50% { opacity: 1; }
+            100% { bottom: 120%; transform: scale(1.5); opacity: 0; }
+        }
+
+        /* --- BOTONES DE COLORES --- */
+        .ingredients-dock { display: flex; gap: 25px; justify-content: center; margin-bottom: 20px; }
+        .potion-btn {
+            width: 80px; height: 80px; border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.8); cursor: pointer;
+            transition: transform 0.1s; position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }
+        .potion-btn:active { transform: scale(0.9); }
+        .btn-red { background: radial-gradient(circle at 30% 30%, #FF8A80, #D50000); }
+        .btn-blue { background: radial-gradient(circle at 30% 30%, #82B1FF, #2962FF); }
+        .btn-yellow { background: radial-gradient(circle at 30% 30%, #FFFF8D, #FFD600); }
+
+        /* --- PANELES --- */
+        .mission-box {
+            background: rgba(255,255,255,0.1); padding: 15px 30px; border-radius: 20px;
+            text-align: center; border: 1px solid rgba(255,255,255,0.2); animation: fadeInDown 0.5s;
+        }
+        .btn-reset {
+            background: transparent; border: 2px solid #78909C; color: #78909C;
+            padding: 8px 20px; border-radius: 30px; cursor: pointer; transition: all 0.3s;
+            margin-top: 10px; font-weight: bold;
+        }
+        .btn-reset:hover { border-color: white; color: white; background: rgba(255,255,255,0.1); }
+
+        /* --- MODAL ÁLBUM --- */
+        .album-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); 
+            z-index: 2000;
+            display: none; justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .album-content {
+            background: white; width: 90%; max-width: 500px;
+            border-radius: 20px; padding: 20px; max-height: 80vh; overflow-y: auto;
+            color: #333; position: relative; border: 5px solid #FFD600;
+        }
+        .close-album { position: absolute; top: 10px; right: 15px; font-size: 1.5rem; cursor: pointer; color: #aaa; }
+        
+        .album-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; }
+        .sticker-slot {
+            aspect-ratio: 1; background: #eee; border-radius: 10px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border: 2px dashed #ccc; opacity: 0.6; transition: all 0.3s;
+        }
+        .sticker-slot.unlocked {
+            opacity: 1; border: 2px solid gold; background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); animation: bounceIn 0.8s; cursor: pointer;
+        }
+        .sticker-slot.unlocked:hover { transform: scale(1.05); border-color: #FF6D00; }
+        .sticker-color { width: 40px; height: 40px; border-radius: 50%; margin-bottom: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); background: #ccc; }
+        .sticker-name { font-size: 0.7rem; font-weight: bold; text-align: center; }
+
+    </style>
+</head>
+<body>
+
+    <div id="welcome-screen">
+        <div class="welcome-card animate__animated animate__zoomIn">
+            <h1 style="color:#212121; font-weight:800;">🧪 Laboratorio Mágico</h1>
+            <p class="lead text-muted">Conviértete en un experto del color</p>
+            <hr>
+            
+            <div class="row mt-4">
+                <div class="col-4">
+                    <div class="step-icon animate__animated animate__headShake animate__infinite">🎨</div>
+                    <p class="small fw-bold">Elige Gotas</p>
+                </div>
+                <div class="col-4">
+                    <div class="step-icon animate__animated animate__tada animate__infinite">⚗️</div>
+                    <p class="small fw-bold">Mezcla</p>
+                </div>
+                <div class="col-4">
+                    <div class="step-icon animate__animated animate__pulse animate__infinite">📒</div>
+                    <p class="small fw-bold">Colecciona</p>
+                </div>
+            </div>
+
+            <p class="mt-3 text-secondary" style="font-size: 0.95rem;">
+                Tu misión es descubrir nuevos colores mezclando los primarios. 
+                <br><strong>¡Encuentra los 7 colores raros para llenar tu álbum!</strong>
+            </p>
+
+            <button class="start-btn" onclick="startGame()">¡A JUGAR! ▶</button>
+        </div>
+    </div>
+
+    <div class="album-btn" onclick="openAlbum()">
+        <i class="fas fa-book-open"></i>
+        <div class="album-counter" id="album-count">0</div>
+    </div>
+
+    <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" id="pills-game-tab" data-bs-toggle="pill" data-bs-target="#pills-game" type="button" onclick="resetAll()">
+                🏆 Misiones
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="pills-explore-tab" data-bs-toggle="pill" data-bs-target="#pills-explore" type="button" onclick="resetAll()">
+                🧪 Exploración
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content w-100 d-flex flex-column align-items-center" id="pills-tabContent">
+        <div class="tab-pane fade show active" id="pills-game">
+            <div class="mission-box">
+                <h3 class="m-0" style="color:#FFD600">Nivel <span id="lvl-num">1</span></h3>
+                <p class="m-0 fs-5 mt-2">Crea: <strong id="target-name">VERDE</strong> <span id="target-swatch" class="d-inline-block rounded-circle border border-white" style="width:25px;height:25px;vertical-align:middle;"></span></p>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="pills-explore">
+            <div class="mission-box" style="border-color: #00E676;">
+                <h4 class="m-0" style="color:#00E676">Modo Libre</h4>
+                <p class="m-0 mt-2 text-white-50 small">Mezcla <strong>3 gotas</strong> para llenar tu álbum.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="beaker-container">
+        <div class="beaker">
+            <div class="liquid" id="main-liquid"></div>
+            <div class="bubble" style="left:30%; animation-duration:2s;"></div>
+            <div class="bubble" style="left:60%; width:10px; height:10px;"></div>
+            <div class="bubble" style="left:45%; animation-duration:4s;"></div>
+        </div>
+    </div>
+
+    <div class="ingredients-dock animate__animated animate__fadeInUp">
+        <div class="potion-btn btn-red" onclick="addDrop('red')"></div>
+        <div class="potion-btn btn-yellow" onclick="addDrop('yellow')"></div>
+        <div class="potion-btn btn-blue" onclick="addDrop('blue')"></div>
+    </div>
+
+    <div class="text-center">
+        <p id="mix-status" style="height: 20px; color: #90A4AE; font-weight: bold;">El matraz está vacío</p>
+        <button class="btn-reset" onclick="resetAll()">⚠️ Vaciar</button>
+    </div>
+
+    <div class="album-overlay" id="album-modal">
+        <div class="album-content animate__animated animate__zoomIn">
+            <div class="close-album" onclick="closeAlbum()">✕</div>
+            <h2 class="text-center fw-bold" style="color:#333">📒 Mi Colección</h2>
+            <p class="text-center text-muted">Haz clic en los colores descubiertos para ver qué objeto son.</p>
+            <div class="album-grid" id="album-grid">
+                </div>
+        </div>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // --- 0. INICIO DEL JUEGO (NUEVO) ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function startGame() {
+        // Ocultar pantalla de bienvenida
+        const welcome = document.getElementById('welcome-screen');
+        welcome.style.opacity = '0';
+        setTimeout(() => { welcome.style.display = 'none'; }, 500);
+
+        // Activar motor de audio (requiere interacción usuario)
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+        
+        // Sonido de inicio
+        playTone(600, 'sine', 0.1);
+        playTone(800, 'sine', 0.2, 0.1);
+    }
+
+    // --- 1. MOTOR DE AUDIO ---
+    function playTone(freq, type, duration, delay = 0) {
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + delay);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + delay + duration);
+        osc.stop(audioCtx.currentTime + delay + duration);
+    }
+
+    const SFX = {
+        click: () => playTone(600, 'sine', 0.1),
+        bubble: () => {
+            playTone(400, 'sine', 0.1, 0);
+            playTone(500, 'sine', 0.1, 0.1);
+            playTone(300, 'sine', 0.1, 0.2);
+        },
+        win: () => {
+            playTone(523.25, 'triangle', 0.5, 0); 
+            playTone(659.25, 'triangle', 0.5, 0.2);
+            playTone(783.99, 'triangle', 0.8, 0.4);
+        },
+        discovery: () => {
+            playTone(880, 'sine', 0.1, 0);
+            playTone(987, 'sine', 0.1, 0.1);
+            playTone(1046, 'sine', 0.1, 0.2);
+            playTone(1318, 'sine', 0.6, 0.3);
+        },
+        fail: () => playTone(200, 'sawtooth', 0.4)
+    };
+
+    // --- 2. DATOS DE COLORES ---
+    const colors = {
+        'red': { hex: '#D50000', name: 'Rojo' },
+        'yellow': { hex: '#FFD600', name: 'Amarillo' },
+        'blue': { hex: '#2962FF', name: 'Azul' },
+        // Secundarios
+        'orange': { hex: '#FF6D00', name: 'Naranja', obj: '🍊 Naranja' },
+        'green': { hex: '#00C853', name: 'Verde', obj: '🥬 Lechuga' },
+        'purple': { hex: '#AA00FF', name: 'Morado', obj: '🍇 Uva' },
+        // Terciarios
+        'red-orange': { hex: '#FF3D00', name: 'Bermellón', obj: '🌋 Lava', id: 't1' },
+        'yellow-orange': { hex: '#FFAB00', name: 'Ámbar', obj: '🍯 Miel', id: 't2' },
+        'yellow-green': { hex: '#AEEA00', name: 'Lima', obj: '🎾 Tenis', id: 't3' },
+        'blue-green': { hex: '#00BFA5', name: 'Turquesa', obj: '🌊 Mar', id: 't4' },
+        'blue-purple': { hex: '#6200EA', name: 'Añil', obj: '🌌 Noche', id: 't5' },
+        'red-purple': { hex: '#C51162', name: 'Magenta', obj: '🌺 Flor', id: 't6' },
+        'brown': { hex: '#5D4037', name: 'Café', obj: '🍫 Chocolate', id: 't7' }
+    };
+
+    const collectibles = ['red-orange', 'yellow-orange', 'yellow-green', 'blue-green', 'blue-purple', 'red-purple', 'brown'];
+    let unlocked = new Set(); 
+
+    const levels = [
+        { target: 'green', recipe: ['blue', 'yellow'] },
+        { target: 'orange', recipe: ['red', 'yellow'] },
+        { target: 'purple', recipe: ['red', 'blue'] }
+    ];
+
+    let currentLvlIdx = 0;
+    let currentMix = [];
+    let isProcessing = false;
+
+    // --- 3. FUNCIONES DEL JUEGO ---
+    function getMode() { return document.querySelector('#pills-game-tab').classList.contains('active') ? 'game' : 'explore'; }
+
+    function resetAll() {
+        currentMix = [];
+        updateBeakerUI(true);
+        isProcessing = false;
+        if (getMode() === 'game') loadLevelUI();
+        else document.getElementById('mix-status').innerText = "Combina 3 gotas y busca en tu álbum";
+    }
+
+    function loadLevelUI() {
+        const lvl = levels[currentLvlIdx];
+        document.getElementById('lvl-num').innerText = currentLvlIdx + 1;
+        document.getElementById('target-name').innerText = colors[lvl.target].name.toUpperCase();
+        document.getElementById('target-name').style.color = colors[lvl.target].hex;
+        document.getElementById('target-swatch').style.backgroundColor = colors[lvl.target].hex;
+        document.getElementById('mix-status').innerText = "¡A mezclar!";
+    }
+
+    function addDrop(color) {
+        if (isProcessing) return;
+        SFX.click();
+        const mode = getMode();
+        const maxDrops = mode === 'game' ? 2 : 3;
+        if (currentMix.length >= maxDrops) return;
+
+        currentMix.push(color);
+        updateBeakerUI();
+
+        if (currentMix.length === maxDrops) {
+            isProcessing = true;
+            document.getElementById('mix-status').innerText = "Mezclando... ⏳";
+            SFX.bubble(); 
+            setTimeout(() => {
+                if (mode === 'game') checkWin();
+                else processDiscovery();
+                isProcessing = false;
+            }, 1500);
+        }
+    }
+
+    function updateBeakerUI(reset = false) {
+        const liquid = document.getElementById('main-liquid');
+        if (reset) { liquid.style.height = "10%"; liquid.style.backgroundColor = "#ECEFF1"; return; }
+        const result = calculateColor(currentMix);
+        const mode = getMode();
+        let height = "10%";
+        if (currentMix.length === 1) height = "40%";
+        if (currentMix.length === 2) height = mode === 'game' ? "85%" : "65%";
+        if (currentMix.length === 3) height = "90%";
+        liquid.style.height = height; liquid.style.backgroundColor = result.hex;
+    }
+
+    function calculateColor(mix) {
+        if (mix.length === 0) return { hex: '#ECEFF1' };
+        if (mix.length === 1) return colors[mix[0]];
+        const counts = { red: 0, blue: 0, yellow: 0 };
+        mix.forEach(c => counts[c]++);
+
+        if (mix.length === 2) {
+            if (counts.red && counts.yellow) return colors['orange'];
+            if (counts.blue && counts.yellow) return colors['green'];
+            if (counts.red && counts.blue) return colors['purple'];
+            return colors[mix[0]];
+        }
+        if (mix.length === 3) {
+            if (counts.red === 2 && counts.yellow === 1) return colors['red-orange'];
+            if (counts.yellow === 2 && counts.red === 1) return colors['yellow-orange'];
+            if (counts.yellow === 2 && counts.blue === 1) return colors['yellow-green'];
+            if (counts.blue === 2 && counts.yellow === 1) return colors['blue-green'];
+            if (counts.blue === 2 && counts.red === 1) return colors['blue-purple'];
+            if (counts.red === 2 && counts.blue === 1) return colors['red-purple'];
+            if (counts.red && counts.blue && counts.yellow) return colors['brown'];
+            // Fallbacks
+            if (counts.red === 3) return colors['red'];
+            if (counts.blue === 3) return colors['blue'];
+            if (counts.yellow === 3) return colors['yellow'];
+            if (counts.red && counts.yellow) return colors['orange'];
+            if (counts.blue && counts.yellow) return colors['green'];
+            if (counts.red && counts.blue) return colors['purple'];
+        }
+        return { hex: '#5D4037', name: 'Desconocido' };
+    }
+
+    // --- 4. RESULTADOS ---
+    function checkWin() {
+        const result = calculateColor(currentMix);
+        const targetKey = levels[currentLvlIdx].target;
+        let isSuccess = false;
+        const counts = { red: 0, blue: 0, yellow: 0 };
+        currentMix.forEach(c => counts[c]++);
+        
+        if (targetKey === 'orange' && counts.red && counts.yellow) isSuccess = true;
+        if (targetKey === 'green' && counts.blue && counts.yellow) isSuccess = true;
+        if (targetKey === 'purple' && counts.red && counts.blue) isSuccess = true;
+
+        if (isSuccess) {
+            SFX.win();
+            confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+            Swal.fire({
+                title: '¡EXCELENTE!',
+                html: `Creaste <b style="color:${result.hex}">${result.name}</b><br>Como: ${result.obj}`,
+                icon: 'success',
+                confirmButtonText: 'Siguiente',
+            }).then(() => {
+                currentLvlIdx++;
+                if (currentLvlIdx >= levels.length) {
+                    Swal.fire("¡CURSO COMPLETADO!", "Ahora ve al modo exploración.", "success").then(()=> {currentLvlIdx=0; loadLevelUI();});
+                } else { resetAll(); }
+            });
+        } else {
+            SFX.fail();
+            Swal.fire({ icon: 'error', title: 'Casi...', text: 'Esa no es la mezcla correcta.' }).then(resetAll);
+        }
+    }
+
+    function processDiscovery() {
+        const result = calculateColor(currentMix);
+        const key = Object.keys(colors).find(k => colors[k].name === result.name);
+        
+        if (collectibles.includes(key)) {
+            if (!unlocked.has(key)) {
+                unlocked.add(key);
+                SFX.discovery(); 
+                renderAlbum(); 
+                updateAlbumCounter();
+                
+                Swal.fire({
+                    title: '¡NUEVO HALLAZGO!',
+                    html: `
+                        <div style="font-size:3rem; animation: bounce 1s infinite">✨</div>
+                        <h3 style="color:${result.hex}">${result.name}</h3>
+                        <p>¡Se agregó a tu álbum!</p>
+                        <p>Se parece a: <strong>${result.obj}</strong></p>
+                    `,
+                    confirmButtonText: '¡Genial!',
+                    backdrop: `rgba(255,214,0,0.3)`
+                }).then(resetAll);
+            } else {
+                SFX.win();
+                Swal.fire({
+                    title: 'Ya lo tienes',
+                    html: `Es <b style="color:${result.hex}">${result.name}</b>. ¡Busca otros!`,
+                    icon: 'info'
+                }).then(resetAll);
+            }
+        } else {
+            SFX.click();
+            Swal.fire({ text: `Esto es solo ${result.name}. ¡Intenta mezclar 3 diferentes!`, icon: 'question' }).then(resetAll);
+        }
+    }
+
+    // --- 5. DETALLE STICKER ---
+    function showStickerDetail(key) {
+        const item = colors[key];
+        SFX.click();
+        const emoji = item.obj.split(' ')[0];
+        const text = item.obj.substring(item.obj.indexOf(' ') + 1);
+
+        Swal.fire({
+            title: item.name,
+            html: `
+                <div style="width:100px; height:100px; background:${item.hex}; border-radius:50%; margin:10px auto; border:5px solid #eee; box-shadow:0 5px 15px rgba(0,0,0,0.2)"></div>
+                <h4 class="mt-3 text-muted">Se parece a:</h4>
+                <div style="font-size: 4rem; margin: 10px 0; animation: rubberBand 1s;">${emoji}</div>
+                <h3 style="color:#333; font-weight:bold;">${text}</h3>
+            `,
+            confirmButtonColor: item.hex,
+            confirmButtonText: '¡Entendido!',
+            backdrop: `rgba(0,0,0,0.5)`
+        });
+    }
+
+    // --- LÓGICA DEL ÁLBUM ---
+    function openAlbum() { document.getElementById('album-modal').style.display = 'flex'; }
+    function closeAlbum() { document.getElementById('album-modal').style.display = 'none'; }
+    function updateAlbumCounter() { document.getElementById('album-count').innerText = unlocked.size; }
+
+    function renderAlbum() {
+        const grid = document.getElementById('album-grid');
+        grid.innerHTML = '';
+        collectibles.forEach(key => {
+            const item = colors[key];
+            const isUnlocked = unlocked.has(key);
+            const div = document.createElement('div');
+            div.className = `sticker-slot ${isUnlocked ? 'unlocked' : ''}`;
+            if (isUnlocked) {
+                div.onclick = () => showStickerDetail(key);
+                div.innerHTML = `
+                    <div class="sticker-color" style="background:${item.hex}"></div>
+                    <div class="sticker-name">${item.name}</div>
+                `;
+            } else {
+                div.innerHTML = `
+                    <div style="font-size:1.5rem; color:#ccc;">?</div>
+                    <div class="sticker-name" style="color:#aaa">???</div>
+                `;
+            }
+            grid.appendChild(div);
+        });
+    }
+
+    // INICIALIZACIÓN
+    renderAlbum();
+    loadLevelUI();
+
+</script>
+</body>
+</html>

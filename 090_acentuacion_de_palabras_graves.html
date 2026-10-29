@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equilibrio de Sílabas - Palabras Graves</title>
+    
+    <!-- Fuentes Google: Outfit (Pesos 500 y 900) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuración de Tailwind y animaciones -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        pastel: {
+                            purple: '#BDB2FF',
+                            orange: '#FFD6A5',
+                            mint: '#9BF6FF',
+                            coral: '#FFADAD',
+                            indigo: '#A0C4FF',
+                            dark: '#2B2D42',
+                            light: '#F8F9FA'
+                        }
+                    },
+                    boxShadow: {
+                        'mega': '0 35px 60px -15px rgba(0, 0, 0, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Animaciones Personalizadas */
+        .float-slow { animation: float 6s ease-in-out infinite; }
+        .float-fast { animation: float 4s ease-in-out infinite reverse; }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .pop-in { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.5); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .shake-error { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
+        .balance-success { animation: balance 1s ease-in-out forwards; }
+
+        @keyframes balance {
+            0% { transform: rotate(-5deg); }
+            30% { transform: rotate(5deg); }
+            60% { transform: rotate(-2deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        /* Tipografías fluidas */
+        .hero-title {
+            font-size: clamp(2.8rem, 10vw, 8rem);
+            line-height: 1;
+        }
+        .section-title {
+            font-size: clamp(2.2rem, 8vw, 6rem);
+            line-height: 1.1;
+        }
+        .hero-text {
+            font-size: clamp(1.2rem, 4vw, 2.5rem);
+            line-height: 1.3;
+        }
+
+        /* Limpieza visual */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .tonica {
+            color: #BDB2FF; /* pastel-purple */
+            text-transform: uppercase;
+        }
+
+        /* Track de progreso sticky */
+        .progress-scale {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-pastel-light text-pastel-dark antialiased overflow-x-hidden selection:bg-pastel-orange selection:text-pastel-dark w-full max-w-[100vw]">
+
+    <!-- SECCIÓN 1: HERO (100vh) -->
+    <section class="relative w-full min-h-screen bg-pastel-purple flex flex-col items-center justify-center p-6 md:p-12 lg:p-24 overflow-hidden">
+        <!-- Decorativos -->
+        <div class="absolute top-10 left-10 text-6xl md:text-8xl opacity-50 float-slow">⚖️</div>
+        <div class="absolute bottom-20 right-10 text-6xl md:text-9xl opacity-80 float-fast">🏋️‍♂️</div>
+        <div class="absolute top-32 right-20 text-6xl opacity-40 float-slow">📦</div>
+        
+        <div class="relative z-10 text-center w-full max-w-none flex flex-col items-center">
+            <span class="bg-white text-pastel-purple px-4 py-2 md:px-8 md:py-4 rounded-[2rem] text-sm md:text-2xl lg:text-4xl font-black tracking-widest uppercase mb-4 md:mb-8 shadow-mega transform -rotate-2">
+                Ortografía - 5to Grado
+            </span>
+            <h1 class="font-black text-pastel-dark hero-title mb-4 md:mb-8 drop-shadow-md px-2">
+                Equilibrio de
+                <br>
+                <span class="text-white drop-shadow-lg">Sílabas</span>
+            </h1>
+            <p class="font-medium text-pastel-dark hero-text max-w-6xl px-4">
+                Domina las palabras donde el mayor peso cae exactamente en la <strong>penúltima</strong> sílaba.
+            </p>
+        </div>
+
+        <div class="absolute bottom-4 md:bottom-10 animate-bounce text-4xl md:text-6xl text-pastel-dark">
+            👇
+        </div>
+    </section>
+
+    <!-- SECCIÓN 2: EXPLICACIÓN (100vh) -->
+    <section class="w-full min-h-screen bg-pastel-orange text-pastel-dark flex flex-col items-center justify-center p-6 md:p-12 lg:p-24">
+        <h2 class="font-black section-title mb-8 md:mb-16 text-center text-pastel-dark px-2">
+            ¿Qué son las palabras Graves?
+        </h2>
+        
+        <div class="bg-white text-pastel-dark p-8 md:p-12 lg:p-20 rounded-[2rem] md:rounded-[4rem] shadow-mega transform transition duration-500 hover:scale-105 w-full max-w-6xl">
+            <div class="text-6xl md:text-8xl lg:text-[8rem] mb-4 md:mb-8 text-center float-slow">⚖️</div>
+            <p class="font-medium text-2xl md:text-4xl lg:text-5xl text-center leading-relaxed">
+                Son aquellas donde la voz suena más fuerte en la <strong class="text-pastel-purple text-3xl md:text-5xl lg:text-6xl bg-pastel-purple/10 px-4 rounded-3xl">PENÚLTIMA</strong> sílaba. ¡Justo antes de la última!
+            </p>
+            
+            <div class="mt-12 flex flex-col md:flex-row justify-center items-center gap-8 md:gap-16">
+                <div class="flex gap-2 md:gap-4 items-end">
+                    <div class="text-3xl md:text-5xl lg:text-7xl font-black text-gray-400">za -</div>
+                    <!-- Sílaba Penúltima Destacada -->
+                    <div class="text-4xl md:text-6xl lg:text-8xl font-black tonica bg-pastel-light px-6 py-4 rounded-[2rem] shadow-lg transform -translate-y-4">PA</div>
+                    <div class="text-3xl md:text-5xl lg:text-7xl font-black text-gray-400">- to</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN 3: REGLA DE LA TILDE (100vh) -->
+    <section class="w-full min-h-screen bg-pastel-mint text-pastel-dark flex flex-col items-center justify-center p-6 md:p-12 lg:p-24">
+        <h2 class="font-black section-title mb-10 md:mb-20 text-center text-pastel-dark px-2">
+            ¿Cuándo llevan tilde (´)?
+        </h2>
+        <p class="font-medium text-xl md:text-3xl lg:text-4xl mb-8 text-center bg-white px-8 py-4 rounded-[2rem] shadow-md transform rotate-1 max-w-4xl">
+            ¡Es exactamente lo <strong>contrario</strong> a las Agudas!
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 w-full px-2 md:px-4 max-w-7xl">
+            <!-- Regla SI -->
+            <div class="bg-white text-pastel-dark p-8 md:p-12 lg:p-16 rounded-[2rem] md:rounded-[4rem] shadow-mega transform transition duration-500 hover:-translate-y-4 flex flex-col items-center text-center">
+                <div class="text-5xl md:text-7xl lg:text-[8rem] font-black text-pastel-purple mb-6">SÍ LLEVAN ✅</div>
+                <p class="font-medium text-xl md:text-3xl lg:text-4xl mb-8">
+                    Si terminan en <strong>consonante</strong> que <br> NO sea N ni S.
+                </p>
+                <div class="flex flex-col gap-4 w-full bg-pastel-light p-6 rounded-[2rem]">
+                    <span class="font-black text-2xl md:text-4xl"><span class="text-pastel-purple">ár</span> - bol</span>
+                    <span class="font-black text-2xl md:text-4xl"><span class="text-pastel-purple">lá</span> - piz</span>
+                    <span class="font-black text-2xl md:text-4xl"><span class="text-pastel-purple">cés</span> - ped</span>
+                </div>
+            </div>
+
+            <!-- Regla NO -->
+            <div class="bg-pastel-dark text-white p-8 md:p-12 lg:p-16 rounded-[2rem] md:rounded-[4rem] shadow-mega transform transition duration-500 hover:-translate-y-4 flex flex-col items-center text-center">
+                <div class="text-5xl md:text-7xl lg:text-[8rem] font-black text-pastel-coral mb-6">NO LLEVAN ❌</div>
+                <p class="font-medium text-xl md:text-3xl lg:text-4xl mb-8">
+                    Si terminan en <strong>N</strong>, <strong>S</strong> o <strong>Vocal</strong>.
+                </p>
+                <div class="flex flex-col gap-4 w-full bg-white/10 p-6 rounded-[2rem]">
+                    <span class="font-black text-2xl md:text-4xl"><span class="text-pastel-orange">ca</span> - sa</span>
+                    <span class="font-black text-2xl md:text-4xl"><span class="text-pastel-orange">mar</span> - tes</span>
+                    <span class="font-black text-2xl md:text-4xl"><span class="text-pastel-orange">jo</span> - ven</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN 4: CALL TO ACTION AL JUEGO (100vh) -->
+    <section class="w-full min-h-screen bg-pastel-indigo flex flex-col items-center justify-center p-6 md:p-12 lg:p-24 relative overflow-hidden">
+        <div class="absolute top-10 left-4 md:top-20 md:left-20 text-6xl md:text-9xl float-fast opacity-80">⚖️</div>
+        <div class="absolute bottom-10 right-4 md:bottom-20 md:right-20 text-6xl md:text-9xl float-slow opacity-80">⚖️</div>
+
+        <div class="text-[6rem] md:text-[10rem] mb-4 animate-bounce drop-shadow-xl z-10">🏋️‍♂️</div>
+        <h2 class="font-black hero-title text-white text-center mb-10 md:mb-16 drop-shadow-sm z-10 px-2">
+            ¡A Equilibrar!
+        </h2>
+        
+        <button onclick="startGame()" class="z-10 group relative bg-pastel-yellow text-pastel-dark font-black text-2xl md:text-4xl lg:text-6xl px-8 py-6 md:px-16 md:py-12 rounded-[2rem] md:rounded-[4rem] shadow-mega transition-all duration-300 hover:scale-110 hover:-translate-y-2 md:hover:-translate-y-4 hover:shadow-[0_50px_70px_-15px_rgba(0,0,0,0.3)] max-w-[90vw]">
+            <span class="absolute inset-0 w-full h-full rounded-[2rem] md:rounded-[4rem] border-4 md:border-8 border-white opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"></span>
+            <span class="whitespace-nowrap">Iniciar Reto ⚖️</span>
+        </button>
+    </section>
+
+    <!-- OVERLAY DEL JUEGO INTERACTIVO (Pantalla Completa Fija) -->
+    <div id="game-overlay" class="fixed inset-0 bg-pastel-dark z-50 hidden flex-col w-full h-full no-scrollbar overflow-y-auto">
+        
+        <!-- HEADER Y TRACK STICKY -->
+        <div class="sticky top-0 z-30 w-full bg-pastel-dark/95 backdrop-blur-md shadow-md flex flex-col items-center border-b border-white/10">
+            <!-- Header -->
+            <div class="w-full p-4 md:px-8 md:py-4 flex justify-between items-center">
+                <h2 class="text-white font-black text-xl md:text-3xl lg:text-5xl truncate pr-4">Equilibrio de Sílabas</h2>
+                <button onclick="closeGame()" class="text-white text-xl md:text-3xl lg:text-5xl hover:text-pastel-coral transition-colors font-black bg-white/10 w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center shrink-0">X</button>
+            </div>
+
+            <!-- TRACK DE LA BALANZA (Progreso 6 palabras) STICKY -->
+            <div class="relative w-full max-w-4xl pb-4 pt-2 flex justify-between items-center px-4 md:px-12">
+                <div class="absolute left-8 right-8 md:left-16 md:right-16 h-1 bg-white/20 top-1/2 -translate-y-1/2 z-0 rounded-full"></div>
+                <div id="prog-0" class="progress-scale z-10 text-3xl md:text-5xl opacity-30 grayscale">⚖️</div>
+                <div id="prog-1" class="progress-scale z-10 text-3xl md:text-5xl opacity-30 grayscale">⚖️</div>
+                <div id="prog-2" class="progress-scale z-10 text-3xl md:text-5xl opacity-30 grayscale">⚖️</div>
+                <div id="prog-3" class="progress-scale z-10 text-3xl md:text-5xl opacity-30 grayscale">⚖️</div>
+                <div id="prog-4" class="progress-scale z-10 text-3xl md:text-5xl opacity-30 grayscale">⚖️</div>
+                <div id="prog-5" class="progress-scale z-10 text-3xl md:text-5xl opacity-30 grayscale">⚖️</div>
+            </div>
+        </div>
+
+        <!-- Área de Juego (Palabra a Palabra) -->
+        <div class="flex-grow flex flex-col items-center justify-center p-4 md:p-8 relative w-full mt-4 md:mt-0">
+            
+            <p class="text-white font-bold text-lg md:text-2xl lg:text-3xl mb-8 text-center px-2 max-w-4xl">
+                Selecciona la sílaba con <strong class="text-pastel-purple text-xl md:text-4xl">LA MAYOR FUERZA DE VOZ</strong> para equilibrar la palabra. <br>
+                <span class="text-pastel-blue font-black mt-3 inline-block bg-pastel-yellow p-3 rounded-xl shadow-md">¡Ojo! Encontrarás palabras con acento escrito (tilde) y sin acento.</span>
+            </p>
+
+            <!-- Contenedor del nivel actual -->
+            <div id="word-stage" class="flex flex-col items-center w-full max-w-5xl transition-opacity duration-300">
+                <!-- Visual de la Balanza principal -->
+                <div id="main-scale" class="text-[5rem] md:text-[8rem] lg:text-[10rem] mb-8 transition-transform duration-300">⚖️</div>
+                
+                <!-- Contenedor dinámico de sílabas (Botones) -->
+                <div id="syllables-container" class="flex flex-wrap justify-center gap-4 md:gap-6 w-full px-4">
+                    <!-- Los botones de sílabas se inyectan aquí -->
+                </div>
+                
+                <!-- Feedback visual in-place -->
+                <div id="inline-feedback" class="h-16 mt-8 flex items-center justify-center text-2xl md:text-4xl font-black transition-opacity duration-300 opacity-0">
+                    <!-- Mensaje dinámico -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Pantalla de Victoria (Fixed & Fullscreen, sin scroll) -->
+        <div id="victory-screen" class="fixed inset-0 bg-pastel-purple z-50 hidden flex-col items-center justify-center p-6 overflow-hidden h-[100dvh] w-[100dvw] m-0">
+            <div class="text-[6rem] md:text-[10rem] animate-bounce mb-2 md:mb-6">⚖️✅</div>
+            <h2 class="font-black text-pastel-dark text-4xl md:text-6xl lg:text-7xl text-center mb-4">¡Equilibrio Perfecto!</h2>
+            <p class="text-pastel-dark font-medium text-lg md:text-2xl lg:text-3xl text-center mb-8 px-2 max-w-4xl">Has dominado la acentuación de las palabras graves.</p>
+            <button onclick="closeGame()" class="bg-white text-pastel-purple font-black text-lg md:text-2xl lg:text-3xl px-8 py-4 md:px-12 md:py-6 rounded-[2rem] shadow-xl hover:scale-110 transition-transform max-w-full">
+                Volver a la clase
+            </button>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT DEL JUEGO -->
+    <script>
+        // Data del juego: Palabras divididas en sílabas y el índice correcto (penúltima)
+        // Índices basados en array base 0.
+        const gameWords = [
+            { word: "árbol", syllables: ["ár", "bol"], correctIdx: 0 },
+            { word: "zapato", syllables: ["za", "pa", "to"], correctIdx: 1 },
+            { word: "césped", syllables: ["cés", "ped"], correctIdx: 0 },
+            { word: "mochila", syllables: ["mo", "chi", "la"], correctIdx: 1 },
+            { word: "lápiz", syllables: ["lá", "piz"], correctIdx: 0 },
+            { word: "pelota", syllables: ["pe", "lo", "ta"], correctIdx: 1 }
+        ];
+
+        let currentWordIndex = 0;
+        let isAnimating = false; // Bloquea clics múltiples rápidos
+
+        // Elementos DOM
+        const gameOverlay = document.getElementById('game-overlay');
+        const victoryScreen = document.getElementById('victory-screen');
+        const syllablesContainer = document.getElementById('syllables-container');
+        const mainScale = document.getElementById('main-scale');
+        const inlineFeedback = document.getElementById('inline-feedback');
+        const wordStage = document.getElementById('word-stage');
+
+        function startGame() {
+            gameOverlay.classList.remove('hidden');
+            gameOverlay.classList.add('flex');
+            document.body.style.overflow = 'hidden'; 
+            currentWordIndex = 0;
+            resetProgressTrack();
+            loadWord();
+        }
+
+        function closeGame() {
+            gameOverlay.classList.add('hidden');
+            gameOverlay.classList.remove('flex');
+            document.body.style.overflow = 'auto'; 
+            victoryScreen.classList.add('hidden');
+            victoryScreen.classList.remove('flex');
+        }
+
+        function resetProgressTrack() {
+            for(let i=0; i<6; i++){
+                const prog = document.getElementById(`prog-${i}`);
+                prog.className = "progress-scale z-10 text-3xl md:text-5xl opacity-30 grayscale";
+                prog.innerText = "⚖️";
+            }
+        }
+
+        function updateProgressTrack() {
+            // Actualiza visualmente el progreso actual
+            for(let i=0; i<currentWordIndex; i++){
+                const prog = document.getElementById(`prog-${i}`);
+                prog.classList.remove('opacity-30', 'grayscale');
+                prog.classList.add('opacity-100', 'drop-shadow-lg', 'scale-110');
+                prog.innerText = "✅";
+            }
+        }
+
+        function loadWord() {
+            if (currentWordIndex >= gameWords.length) {
+                showVictory();
+                return;
+            }
+
+            isAnimating = false;
+            const currentData = gameWords[currentWordIndex];
+            
+            // Fade In stage
+            wordStage.classList.remove('opacity-0');
+            mainScale.className = "text-[5rem] md:text-[8rem] lg:text-[10rem] mb-8 transition-transform duration-300"; // reset animation
+            inlineFeedback.classList.remove('opacity-100');
+            inlineFeedback.classList.add('opacity-0');
+            inlineFeedback.innerHTML = "";
+
+            syllablesContainer.innerHTML = '';
+
+            // Generar botones de sílabas
+            currentData.syllables.forEach((syl, index) => {
+                const btn = document.createElement('button');
+                // Estilo "caja pesada"
+                btn.className = 'bg-white text-pastel-dark font-black text-4xl md:text-6xl lg:text-7xl px-8 py-6 md:px-12 md:py-8 rounded-[2rem] shadow-[0_15px_0_0_rgba(200,200,200,1)] hover:translate-y-2 hover:shadow-[0_5px_0_0_rgba(200,200,200,1)] active:translate-y-4 active:shadow-none transition-all duration-150';
+                btn.innerText = syl;
+                btn.onclick = () => handleSyllableClick(index, currentData.correctIdx, btn);
+                syllablesContainer.appendChild(btn);
+            });
+        }
+
+        function handleSyllableClick(selectedIndex, correctIndex, btnElement) {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            const isCorrect = selectedIndex === correctIndex;
+
+            if (isCorrect) {
+                // ACIERTO
+                btnElement.classList.remove('bg-white', 'text-pastel-dark');
+                btnElement.classList.add('bg-pastel-green', 'text-white', 'scale-110');
+                btnElement.style.boxShadow = "0 15px 0 0 rgba(4, 170, 109, 1)";
+                
+                mainScale.classList.add('balance-success');
+                
+                inlineFeedback.innerHTML = "<span class='text-pastel-green'>¡Excelente equilibrio! ⚖️✅</span>";
+                inlineFeedback.classList.remove('opacity-0');
+                inlineFeedback.classList.add('opacity-100');
+
+                currentWordIndex++;
+                updateProgressTrack();
+
+                // Cargar siguiente palabra después del feedback
+                setTimeout(() => {
+                    wordStage.classList.add('opacity-0'); // Fade out
+                    setTimeout(loadWord, 300); // Wait for fade out, then load next
+                }, 1500);
+
+            } else {
+                // ERROR
+                btnElement.classList.remove('bg-white');
+                btnElement.classList.add('bg-pastel-coral', 'text-white', 'shake-error');
+                btnElement.style.boxShadow = "0 15px 0 0 #d97777";
+                
+                mainScale.classList.add('shake-error', 'opacity-50');
+                mainScale.innerText = "💥"; // Balanza rota visualmente
+
+                inlineFeedback.innerHTML = "<span class='text-pastel-coral'>¡Desequilibrio! Recuerda, es la PENÚLTIMA. 💥</span>";
+                inlineFeedback.classList.remove('opacity-0');
+                inlineFeedback.classList.add('opacity-100');
+
+                // Restaurar estado después de un breve tiempo para volver a intentar
+                setTimeout(() => {
+                    btnElement.classList.remove('bg-pastel-coral', 'text-white', 'shake-error');
+                    btnElement.classList.add('bg-white');
+                    btnElement.style.boxShadow = "0 15px 0 0 rgba(200,200,200,1)";
+                    
+                    mainScale.classList.remove('shake-error', 'opacity-50');
+                    mainScale.innerText = "⚖️";
+                    
+                    inlineFeedback.classList.remove('opacity-100');
+                    inlineFeedback.classList.add('opacity-0');
+                    isAnimating = false;
+                }, 1200);
+            }
+        }
+
+        function showVictory() {
+            setTimeout(() => {
+                victoryScreen.classList.remove('hidden');
+                victoryScreen.classList.add('flex', 'pop-in');
+            }, 300);
+        }
+    </script>
+</body>
+</html>
+```

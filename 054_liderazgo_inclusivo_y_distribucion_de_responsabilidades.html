@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Líderes App</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+        
+        :root {
+            --primary: #6366f1;
+            --bg-app: #f8fafc;
+        }
+
+        body { 
+            font-family: 'Fredoka', sans-serif; 
+            background: var(--bg-app);
+            margin: 0;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Contenedor tipo App de celular */
+        .app-container {
+            width: 100vw;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+
+        /* Barra de navegación superior fija */
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: white;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        /* Tarjetas de misiones verticales */
+        .mission-card {
+            border: 3px solid #f1f5f9;
+            border-radius: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .mission-card.active {
+            border-color: var(--primary);
+            background: #eef2ff;
+            transform: scale(0.98);
+        }
+
+        /* Drawer inferior para seleccionar talentos */
+        .talent-drawer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top-left-radius: 2rem;
+            border-top-right-radius: 2rem;
+            box-shadow: 0 -10px 25px rgba(0,0,0,0.1);
+            z-index: 100;
+            padding: 1.5rem;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .talent-drawer.open {
+            transform: translateY(0);
+        }
+
+        /* Botón de acción principal */
+        .btn-main {
+            background: #22c55e;
+            box-shadow: 0 4px 0 #16a34a;
+            transition: all 0.1s;
+        }
+
+        .btn-main:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #16a34a;
+        }
+
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="app" v-cloak>
+
+    <div v-if="gameState === 'intro'" class="h-screen w-full flex flex-col items-center justify-center p-8 text-center bg-indigo-600 text-white">
+        <div class="text-7xl mb-6 animate__animated animate__bounceIn">🚀</div>
+        <h1 class="text-4xl font-bold mb-4">Misión Líderes</h1>
+        <p class="text-lg opacity-90 mb-10">Crea un equipo que rompa barreras y transforme la escuela.</p>
+        <button @click="gameState = 'playing'" class="w-full bg-yellow-400 text-indigo-900 font-bold py-5 rounded-2xl text-xl shadow-xl">
+            ¡EMPEZAR!
+        </button>
+    </div>
+
+    <div v-if="gameState === 'playing'" class="app-container">
+        
+        <div class="app-header p-4 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-slate-800">Misión: <span class="text-indigo-600">Talento</span></h2>
+            <div class="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-full text-sm font-bold">
+                {{ misionesAsignadas }}/4
+            </div>
+        </div>
+
+        <div class="p-4 space-y-4 pb-32">
+            <p class="text-sm font-bold text-slate-400 uppercase">Toca una misión para asignar un líder:</p>
+            
+            <div v-for="(mision, key) in misiones" 
+                 :key="key"
+                 @click="abrirSelector(key)"
+                 class="mission-card p-5 flex items-center gap-4"
+                 :class="{'active': keyMisionActiva === key}">
+                
+                <div class="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center text-3xl shadow-inner">
+                    {{ mision.lider ? mision.lider.emoji : mision.icono }}
+                </div>
+                
+                <div class="flex-grow">
+                    <h4 class="font-bold text-slate-800">{{ mision.titulo }}</h4>
+                    <p v-if="!mision.lider" class="text-xs text-slate-400 italic">"{{ mision.murmullo }}"</p>
+                    <p v-else class="text-indigo-600 font-bold text-sm">{{ mision.lider.nombre }}</p>
+                </div>
+
+                <div v-if="mision.lider" @click.stop="removerLider(key)" class="text-red-400 p-2">
+                    ✕
+                </div>
+            </div>
+
+            <div v-if="equipoCompleto" class="fixed bottom-6 left-6 right-6 z-40">
+                <button @click="finalizar" class="btn-main w-full py-5 rounded-2xl text-white font-bold text-xl uppercase tracking-widest animate__animated animate__pulse animate__infinite">
+                    🚀 ¡LANZAR EQUIPO!
+                </button>
+            </div>
+        </div>
+
+        <div class="talent-drawer" :class="{'open': keyMisionActiva}">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-slate-800">Selecciona un Líder</h3>
+                <button @click="keyMisionActiva = null" class="text-slate-400 font-bold">Cerrar</button>
+            </div>
+            
+            <div class="grid grid-cols-1 gap-3 max-h-[60vh] overflow-y-auto pb-4">
+                <div v-for="t in talentosDisponibles" 
+                     :key="t.id"
+                     @click="asignarLider(t)"
+                     class="bg-slate-50 p-4 rounded-xl flex items-center gap-4 active:bg-indigo-50">
+                    <span class="text-3xl">{{ t.emoji }}</span>
+                    <div>
+                        <p class="font-bold text-slate-800 leading-none">{{ t.nombre }}</p>
+                        <p class="text-[11px] text-indigo-500 font-bold uppercase mt-1">{{ t.don }}</p>
+                        <p class="text-[10px] text-slate-400 italic mt-1 leading-tight">"{{ t.sueno }}"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="keyMisionActiva" @click="keyMisionActiva = null" class="fixed inset-0 bg-black/20 z-[90]"></div>
+    </div>
+
+    <div v-if="gameState === 'success'" class="fixed inset-0 bg-indigo-900 z-[200] p-6 flex items-center justify-center text-center text-white">
+        <div class="animate__animated animate__zoomIn">
+            <div class="text-8xl mb-4">🏆</div>
+            <h2 class="text-4xl font-bold mb-4">¡Equipo de Élite!</h2>
+            <p class="text-lg opacity-80 mb-8">Has demostrado que el liderazgo depende de los sueños, no del género.</p>
+            <button @click="reset" class="w-full bg-white text-indigo-900 font-bold py-4 rounded-2xl text-xl">
+                VOLVER A JUGAR
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const { createApp, ref, computed } = Vue;
+
+createApp({
+    setup() {
+        const gameState = ref('intro');
+        const keyMisionActiva = ref(null);
+
+        const talentos = ref([
+            { id: 1, nombre: "Lucía", emoji: "👩‍🚀", don: "Genio Espacial", sueno: "Diseñar naves para limpiar el cielo.", genero: "f" },
+            { id: 2, nombre: "Matias", emoji: "👨‍🎨", don: "Artista Visual", sueno: "Llenar los muros de mensajes de paz.", genero: "m" },
+            { id: 3, nombre: "Isabella", emoji: "👩‍🔧", don: "Maestra de Obras", sueno: "Construir refugios para animales.", genero: "f" },
+            { id: 4, nombre: "Daniela", emoji: "👩‍💻", don: "Hada del Código", sueno: "Programar robots que planten árboles.", genero: "f" },
+            { id: 5, nombre: "Samuel", emoji: "👨‍🌾", don: "Eco-Guardián", sueno: "Crear un huerto solar gigante.", genero: "m" },
+            { id: 6, nombre: "Valentina", emoji: "👩‍💼", don: "Gran Oradora", sueno: "Que las niñas sean escuchadas siempre.", genero: "f" }
+        ]);
+
+        const misiones = ref({
+            tech: { titulo: "Ingeniería", icono: "⚙️", murmullo: "¿Una niña arreglando motores?", lider: null },
+            digital: { titulo: "Programación", icono: "💻", murmullo: "Dicen que el código es para niños.", lider: null },
+            dir: { titulo: "Presidencia", icono: "📣", murmullo: "Buscamos una voz que mande.", lider: null },
+            const: { titulo: "Construcción", icono: "🏗️", murmullo: "Es un trabajo muy pesado.", lider: null }
+        });
+
+        const talentosDisponibles = computed(() => {
+            const idsAsignados = Object.values(misiones.value).filter(m => m.lider).map(m => m.lider.id);
+            return talentos.value.filter(t => !idsAsignados.includes(t.id));
+        });
+
+        const misionesAsignadas = computed(() => Object.values(misiones.value).filter(m => m.lider).length);
+        const equipoCompleto = computed(() => misionesAsignadas.value === 4);
+
+        const abrirSelector = (key) => {
+            if (!misiones.value[key].lider) {
+                keyMisionActiva.value = key;
+            }
+        };
+
+        const asignarLider = (talento) => {
+            misiones.value[keyMisionActiva.value].lider = talento;
+            keyMisionActiva.value = null;
+        };
+
+        const removerLider = (key) => {
+            misiones.value[key].lider = null;
+        };
+
+        const finalizar = () => {
+            confetti({ particleCount: 150, spread: 60, origin: { y: 0.8 } });
+            gameState.value = 'success';
+        };
+
+        const reset = () => {
+            Object.keys(misiones.value).forEach(k => misiones.value[k].lider = null);
+            gameState.value = 'intro';
+        };
+
+        return { 
+            gameState, keyMisionActiva, misiones, talentosDisponibles, 
+            misionesAsignadas, equipoCompleto, abrirSelector, asignarLider, removerLider, finalizar, reset 
+        };
+    }
+}).mount('#app');
+</script>
+
+</body>
+</html>

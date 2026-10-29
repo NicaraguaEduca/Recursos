@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Centro de Reciclaje - Descomposición</title>
+    
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&family=Share+Tech+Mono&display=swap" />
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --u-color: #29B6F6;
+            --d-color: #EF5350;
+            --c-color: #66BB6A;
+            --dark-metal: #37474F;
+            --rust: #D84315;
+            --glass: rgba(255, 255, 255, 0.15);
+            --gold: #FFC107;
+        }
+
+        body {
+            margin: 0; padding: 0; height: 100vh; width: 100vw;
+            font-family: 'Fredoka', sans-serif;
+            background: url('https://img.freepik.com/free-vector/recycling-plant-interior-conveyor-belt_107791-14389.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; user-select: none;
+        }
+
+        .backdrop {
+            position: absolute; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); z-index: 0;
+        }
+
+        /* --- EFECTO AMBIENTAL (VAPOR DE FÁBRICA) --- */
+        .fog-container {
+            position: absolute; width: 100%; height: 100%; overflow: hidden; z-index: 1; pointer-events: none;
+        }
+        .fog-particle {
+            position: absolute; background: rgba(255,255,255,0.05);
+            border-radius: 50%; filter: blur(10px);
+            animation: floatUp 15s infinite linear;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(110vh) scale(1); opacity: 0; }
+            20% { opacity: 0.5; }
+            80% { opacity: 0.2; }
+            100% { transform: translateY(-10vh) scale(2); opacity: 0; }
+        }
+
+        /* --- PANTALLA DE INICIO --- */
+        #intro-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(33, 33, 33, 0.98); z-index: 300;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: white; padding: 20px; box-sizing: border-box;
+        }
+        
+        .intro-card {
+            background: #263238; border: 4px solid #FF7043;
+            padding: 30px; border-radius: 20px; max-width: 600px; width: 100%;
+            max-height: 90vh; overflow-y: auto; overflow-x: hidden;
+            box-shadow: 0 20px 50px black; text-align: left;
+            padding-bottom: 40px;
+        }
+
+        .intro-title { 
+            font-size: 2.2rem; color: #FF7043; margin-bottom: 15px; 
+            font-family: 'Share Tech Mono', monospace; text-align: center;
+            border-bottom: 2px solid #546E7A; padding-bottom: 10px;
+        }
+        .intro-story {
+            background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px;
+            margin-bottom: 20px; font-size: 1.1rem; line-height: 1.4; color: #B0BEC5;
+            border-left: 4px solid #FF7043;
+        }
+        .instruct-row {
+            display: flex; align-items: center; gap: 15px; margin-bottom: 12px;
+            font-size: 1rem; color: #ECEFF1;
+        }
+        
+        .start-btn {
+            background: #FF7043; color: white; border: none;
+            padding: 15px 40px; font-size: 1.5rem; font-weight: bold;
+            border-radius: 50px; cursor: pointer; box-shadow: 0 6px 0 #BF360C;
+            transition: transform 0.2s; margin-top: 20px; width: 100%;
+        }
+        .hover-scale { transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .hover-scale:hover { transform: scale(1.05); filter: brightness(1.1); }
+
+        /* --- LAYOUT DE JUEGO --- */
+        .game-area {
+            position: relative; width: 95%; max-width: 900px; height: 95vh;
+            display: flex; justify-content: center; align-items: center; z-index: 10;
+        }
+
+        #machine-layout {
+            width: 100%; height: 100%; max-height: 800px;
+            background: #37474F;
+            border: 8px solid #607D8B; border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 0 50px rgba(0,0,0,0.5);
+            display: grid; grid-template-rows: auto 1fr auto; 
+            overflow: hidden; position: relative; z-index: 10;
+        }
+
+        /* HEADER */
+        #status-panel {
+            background: #212121; padding: 10px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 5px solid #FF7043; height: 100px; box-sizing: border-box;
+            position: relative;
+        }
+
+        /* LUCES LED DECORATIVAS */
+        .led-container { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; }
+        .led { width: 8px; height: 8px; border-radius: 50%; background: #444; box-shadow: 0 0 2px #000; }
+        .led.active { background: #00E676; box-shadow: 0 0 8px #00E676; }
+        .led.busy { background: #FF1744; box-shadow: 0 0 8px #FF1744; }
+
+        .level-badge {
+            background: #455A64; color: #FFF; padding: 5px 10px; border-radius: 4px;
+            font-size: 0.9rem; font-family: 'Share Tech Mono', monospace; margin-bottom: 5px;
+        }
+        .equation-display {
+            font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: #FFF;
+            opacity: 0.8; margin-top: 5px;
+        }
+        .equation-highlight { color: #00E676; font-weight: bold; }
+        
+        /* --- ANIMACIÓN PULSO AMARILLO (SOLICITADO) --- */
+        .scrap-box {
+            background: #546E7A; padding: 10px 20px; border-radius: 10px; 
+            border: 3px solid #78909C;
+            text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.5); position: relative;
+            animation: electricPulse 3s infinite ease-in-out;
+        }
+        @keyframes electricPulse {
+            0% { border-color: #78909C; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+            50% { border-color: var(--gold); box-shadow: 0 10px 30px rgba(255, 193, 7, 0.3), inset 0 0 10px rgba(255,193,7,0.1); }
+            100% { border-color: #78909C; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        }
+
+        .scrap-title { font-size: 0.8rem; color: #CFD8DC; margin-bottom: 5px; text-transform: uppercase; }
+        .digital-screen {
+            font-family: 'Share Tech Mono', monospace;
+            background: #000; color: #FF7043; padding: 5px 15px; border-radius: 5px;
+            border: 2px solid #555; box-shadow: 0 0 10px rgba(255, 112, 67, 0.2);
+            font-size: 2.5rem; letter-spacing: 2px;
+        }
+
+        /* WORKSPACE */
+        #workspace {
+            width: 100%; display: flex; flex-direction: column;
+            padding: 10px; box-sizing: border-box;
+            background: repeating-linear-gradient(45deg, #263238, #263238 20px, #37474F 20px, #37474F 40px);
+            position: relative;
+        }
+
+        #source-zone {
+            display: flex; justify-content: center; padding: 20px; z-index: 20;
+            height: 50px;
+        }
+
+        /* TUBOS */
+        #silo-container {
+            flex: 1; display: flex; justify-content: space-around; align-items: flex-end;
+            margin-top: 10px; padding-bottom: 20px;
+        }
+        
+        .column-group { display: flex; flex-direction: column; align-items: center; width: 30%; height: 100%; position: relative; }
+        .silo-label {
+            color: white; font-weight: bold; margin-bottom: 10px;
+            background: rgba(0,0,0,0.7); padding: 5px 15px; border-radius: 20px;
+            text-shadow: 0 2px 4px black; font-size: 1rem;
+            border-bottom: 4px solid transparent; flex-shrink: 0;
+        }
+        .lbl-c { border-color: var(--c-color); } .lbl-d { border-color: var(--d-color); } .lbl-u { border-color: var(--u-color); }
+        
+        .glass-tube {
+            width: 100%; height: 220px;
+            background: var(--glass);
+            border: 3px solid rgba(255,255,255,0.2); border-radius: 0 0 10px 10px; border-top: none;
+            display: flex; flex-direction: column-reverse; align-items: center; padding-bottom: 10px; overflow: visible;
+            position: relative; margin-top: 20px;
+        }
+        /* --- EFECTO REFLEJO EN TUBOS (ESCÁNER) --- */
+        .glass-tube::after {
+            content: ''; position: absolute; top:0; left:0; width:100%; height:100%;
+            background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.15) 45%, transparent 60%);
+            background-size: 200% 100%;
+            animation: glassScan 4s infinite linear;
+            pointer-events: none; border-radius: 0 0 10px 10px;
+        }
+        @keyframes glassScan {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .funnel {
+            width: 120%; height: 30px; background: #546E7A; 
+            border-radius: 5px 5px 50% 50%; margin-bottom: -5px; z-index: 5;
+            border: 2px solid #78909C; box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+            position: absolute; top: -25px;
+        }
+
+        /* BLOQUES */
+        .block { margin: 2px; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); flex-shrink: 0; border: 1px solid rgba(255,255,255,0.4); z-index: 15;}
+        .b-unit { width: 40px; height: 35px; background: var(--u-color); border-radius: 4px; }
+        .b-ten { width: 60px; height: 35px; background: var(--d-color); border-radius: 4px; background-image: linear-gradient(90deg, transparent 50%, rgba(0,0,0,0.1) 50%); background-size: 10px 100%; }
+        .b-hund { width: 80%; height: 35px; background: var(--c-color); border-radius: 4px; background-image: linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px); background-size: 10px 10px; }
+
+        /* CONTROLES */
+        #control-deck {
+            background: #212121; padding: 15px; display: flex; justify-content: space-around;
+            border-top: 5px solid #607D8B; box-shadow: 0 -10px 20px rgba(0,0,0,0.5);
+            height: 140px; box-sizing: border-box; z-index: 20; position: relative;
+        }
+        
+        .extract-btn {
+            width: 80px; height: 75px; border-radius: 15px; border: none;
+            color: white; font-size: 1.3rem; font-weight: bold; cursor: pointer;
+            box-shadow: 0 8px 0 rgba(0,0,0,0.4); border-bottom: 4px solid rgba(0,0,0,0.2);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        .extract-btn span { font-size: 0.9rem; opacity: 0.8; font-weight: normal; }
+        .extract-btn:active { transform: translateY(6px) !important; box-shadow: 0 2px 0 rgba(0,0,0,0.4); }
+        .btn-u { background: var(--u-color); box-shadow: 0 6px 0 #0288D1; }
+        .btn-d { background: var(--d-color); box-shadow: 0 6px 0 #C62828; }
+        .btn-c { background: var(--c-color); box-shadow: 0 6px 0 #2E7D32; }
+
+        /* BOTÓN DE DESHACER (AMARILLO) */
+        .undo-btn {
+            width: 50px; height: 30px; border-radius: 0 0 10px 10px; border: none;
+            background: #FFC107; color: #263238; font-weight: 800; cursor: pointer; margin-top: 2px;
+            border-top: 2px solid #FFE082; box-shadow: 0 4px 0 rgba(0,0,0,0.8);
+            transition: background 0.2s;
+        }
+        .undo-btn:hover { background: #FFD54F; }
+        .undo-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.8); }
+
+        .alarm-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: #FF7043; opacity: 0; pointer-events: none; z-index: 90; }
+
+        /* BOTÓN FLOTANTE "RECICLAR" */
+        #recycle-action-btn {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+            width: 180px; height: 180px; border-radius: 50%;
+            background: #00E676; border: 8px solid #FFF;
+            box-shadow: 0 0 50px rgba(0, 230, 118, 0.6), 0 10px 0 #00C853;
+            color: #1B5E20; font-weight: bold; font-size: 1.8rem;
+            cursor: pointer; z-index: 100;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            animation: pulseBtn 1.5s infinite;
+        }
+        @keyframes pulseBtn { 0%{box-shadow: 0 0 0 0 rgba(0,230,118,0.7);} 70%{box-shadow: 0 0 0 20px rgba(0,230,118,0);} 100%{box-shadow: 0 0 0 0 rgba(0,230,118,0);} }
+
+        /* PANTALLAS FINALES */
+        .overlay-screen {
+            position:fixed; top:0; left:0; width:100%; height:100%; 
+            background:rgba(0,0,0,0.95); z-index:200; 
+            display:none; justify-content:center; align-items:center; 
+            flex-direction:column; color:white; text-align:center;
+            padding: 20px; box-sizing: border-box;
+        }
+
+        #win-big-number {
+            font-size: 4rem; color: #FF7043; font-family: 'Share Tech Mono', monospace;
+            margin-bottom: 10px; text-shadow: 0 0 20px rgba(255,112,67,0.5);
+        }
+        
+        #breakdown-display {
+            background: #37474F; border: 2px dashed #90A4AE; border-radius: 15px;
+            padding: 20px; margin: 10px 0; width: 100%; max-width: 800px;
+            display: flex; flex-direction: row; 
+            justify-content: space-around; align-items: flex-start;
+            flex-wrap: wrap; gap: 10px; position: relative;
+        }
+
+        .recycled-stamp-corner {
+            position: absolute; bottom: 10px; right: 10px;
+            border: 4px solid #00E676; color: #00E676; padding: 5px 15px;
+            font-weight: bold; font-size: 1.2rem; transform: rotate(-10deg);
+            border-radius: 10px; text-transform: uppercase; font-family: 'Share Tech Mono', monospace;
+            background: rgba(0, 230, 118, 0.1); opacity: 0.8;
+        }
+
+        .breakdown-col {
+            display: flex; flex-direction: column; align-items: center;
+            background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px;
+            min-width: 120px; flex: 1;
+        }
+
+        .breakdown-label {
+            font-size: 1rem; font-weight: bold; margin-bottom: 10px;
+            font-family: 'Share Tech Mono', monospace; text-transform: uppercase;
+        }
+        .blocks-visual { 
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; 
+            max-width: 150px;
+        }
+        
+        .mini-block {
+            width: 30px; height: 30px; display: flex; justify-content: center; align-items: center;
+            font-size: 0.9rem; font-weight: bold; color: rgba(0,0,0,0.7);
+            border-radius: 4px; border: 1px solid rgba(255,255,255,0.4);
+        }
+
+        .star-container { display: flex; gap: 10px; margin-bottom: 20px; }
+        .star { font-size: 4rem; color: #444; transition: color 0.3s; }
+        .star.active { color: #FFC107; text-shadow: 0 0 20px #FFC107; animation: popIn 0.5s forwards; }
+        @keyframes popIn { 0%{transform: scale(0);} 100%{transform: scale(1);} }
+
+        @media (max-width: 600px) {
+            .extract-btn { width: 60px; height: 60px; font-size: 1.1rem; }
+            .digital-screen { font-size: 2rem; }
+            #status-panel { height: 120px; flex-direction: column; align-items: center; gap: 10px; }
+            .equation-display { font-size: 1rem; }
+            .glass-tube { height: 150px; }
+            #breakdown-display { flex-direction: column; align-items: center; }
+            .breakdown-col { width: 90%; flex-direction: row; justify-content: space-between; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="backdrop"></div>
+
+<div class="fog-container" id="fog-layer">
+    </div>
+
+<div id="intro-screen">
+    <div class="intro-card">
+        <div class="intro-title">CENTRO DE RECICLAJE</div>
+        <div class="intro-story">
+            <strong>¡Misión de Desmantelamiento! ♻️</strong><br>
+            Tenemos contenedores llenos. Tu trabajo es <strong>SEPARAR</strong> las Centenas, Decenas y Unidades en sus tubos correspondientes hasta que la caja quede en <strong>0</strong>.
+            <br><br>
+            <em>¡Ojo! Solo puedes poner un máximo de 9 bloques por tipo. Si te equivocas, usa el botón amarillo.</em>
+        </div>
+        <div class="instruct-row"><div class="mini-btn hover-scale" style="background:var(--c-color); width:40px; height:40px; display:flex; justify-content:center; align-items:center; border-radius:50%; font-weight:bold;">-100</div> Extrae Centenas</div>
+        <div class="instruct-row"><div class="mini-btn hover-scale" style="background:var(--d-color); width:40px; height:40px; display:flex; justify-content:center; align-items:center; border-radius:50%; font-weight:bold;">-10</div> Extrae Decenas</div>
+        <div class="instruct-row"><div class="mini-btn hover-scale" style="background:var(--u-color); width:40px; height:40px; display:flex; justify-content:center; align-items:center; border-radius:50%; font-weight:bold;">-1</div> Extrae Unidades</div>
+        <div class="instruct-row"><div class="mini-btn" style="background:#FFC107; color:black; width:40px; height:25px; display:flex; justify-content:center; align-items:center; border-radius:5px; font-weight:bold;">▼</div> Corregir / Devolver</div>
+        <button class="start-btn hover-scale" onclick="startGame()">¡A RECICLAR!</button>
+    </div>
+</div>
+
+<div class="game-area">
+    <div id="machine-layout">
+        
+        <div id="status-panel">
+            <div class="led-container">
+                <div class="led" id="led-1"></div>
+                <div class="led" id="led-2"></div>
+                <div class="led" id="led-3"></div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; align-items:flex-start">
+                <div class="level-badge" id="level-indicator">LOTE 1/6</div>
+                <div class="scrap-box">
+                    <div class="scrap-title">PENDIENTE</div>
+                    <div class="digital-screen" id="main-display">000</div>
+                </div>
+            </div>
+            
+            <div style="display:flex; flex-direction:column; align-items:flex-end; text-align:right;">
+                <div class="scrap-title">DESCOMPOSICIÓN</div>
+                <div class="equation-display" id="equation-txt">Esperando datos...</div>
+            </div>
+        </div>
+
+        <div id="workspace">
+            <div id="source-zone">
+                <div id="spawn-point" style="width:10px; height:10px; background:transparent;"></div>
+            </div>
+
+            <button id="recycle-action-btn" onclick="finishLevel()">
+                <div style="font-size:3rem">♻️</div>
+                RECICLAR
+            </button>
+
+            <div id="silo-container">
+                <div class="column-group">
+                    <div class="funnel" style="background:var(--c-color);"></div>
+                    <div class="glass-tube" id="tube-c"></div>
+                    <div class="silo-label lbl-c">CENTENAS</div>
+                </div>
+                <div class="column-group">
+                    <div class="funnel" style="background:var(--d-color);"></div>
+                    <div class="glass-tube" id="tube-d"></div>
+                    <div class="silo-label lbl-d">DECENAS</div>
+                </div>
+                <div class="column-group">
+                    <div class="funnel" style="background:var(--u-color);"></div>
+                    <div class="glass-tube" id="tube-u"></div>
+                    <div class="silo-label lbl-u">UNIDADES</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="alarm-overlay" id="alarm"></div>
+
+        <div id="control-deck">
+            <div style="display:flex; flex-direction:column; align-items:center">
+                <button class="undo-btn" onclick="undo('c')">▼</button>
+                <button class="extract-btn btn-c hover-scale" onclick="extract('c')">-100 <span>Centena</span></button>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center">
+                <button class="undo-btn" onclick="undo('d')">▼</button>
+                <button class="extract-btn btn-d hover-scale" onclick="extract('d')">-10 <span>Decena</span></button>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center">
+                <button class="undo-btn" onclick="undo('u')">▼</button>
+                <button class="extract-btn btn-u hover-scale" onclick="extract('u')">-1 <span>Unidad</span></button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="win-screen" class="overlay-screen">
+    <div style="font-size:1.2rem; color:#CFD8DC; margin-bottom:5px;">El número</div>
+    <div id="win-big-number">000</div>
+    <div style="font-size:1.2rem; color:#CFD8DC; margin-bottom:10px;">se descompone en:</div>
+    
+    <div id="breakdown-display">
+        <div class="recycled-stamp-corner">♻️ RECICLADO</div>
+    </div>
+
+    <button class="start-btn hover-scale" style="width:220px; margin-top:20px;" onclick="nextLevel()">Siguiente Lote ➡</button>
+</div>
+
+<div id="grand-finale" class="overlay-screen">
+    <div class="star-container">
+        <div class="star">★</div><div class="star">★</div><div class="star">★</div><div class="star">★</div><div class="star">★</div>
+    </div>
+    <h1 style="color:#FFC107; font-size:3.5rem; margin:0; text-shadow:0 0 20px rgba(255,193,7,0.5);">¡EXPERTO EN RECICLAJE!</h1>
+    <p style="font-size:1.5rem; color:#CFD8DC; margin-top:10px;">Has limpiado toda la planta correctamente.</p>
+    <button class="start-btn hover-scale" style="width:200px; background:#00E676;" onclick="location.reload()">Reiniciar ↺</button>
+</div>
+
+<script>
+    let currentNumber = 0;
+    let initialNumber = 0;
+    let extracted = { c: 0, d: 0, u: 0 };
+    let currentLevel = 1;
+    const maxLevels = 6;
+    let isProcessing = false;
+
+    const numToWord = ['Cero', 'Una', 'Dos', 'Tres', 'Cuatro', 'Cinco', 'Seis', 'Siete', 'Ocho', 'Nueve'];
+
+    // --- INICIALIZACIÓN EFECTOS VISUALES ---
+    window.onload = function() {
+        createFog();
+        animateLEDs();
+    };
+
+    function createFog() {
+        const container = document.getElementById('fog-layer');
+        for(let i=0; i<15; i++) {
+            const p = document.createElement('div');
+            p.className = 'fog-particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.width = (Math.random() * 50 + 20) + 'px';
+            p.style.height = p.style.width;
+            p.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            p.style.animationDelay = (Math.random() * 5) + 's';
+            container.appendChild(p);
+        }
+    }
+
+    function animateLEDs() {
+        setInterval(() => {
+            const leds = document.querySelectorAll('.led');
+            leds.forEach(led => {
+                if(Math.random() > 0.7) {
+                    led.classList.toggle('active');
+                } else if (Math.random() > 0.9) {
+                    led.classList.toggle('busy');
+                } else {
+                    led.className = 'led';
+                }
+            });
+        }, 500);
+    }
+
+    function startGame() {
+        gsap.to('#intro-screen', { opacity: 0, duration: 0.5, onComplete: () => {
+            document.getElementById('intro-screen').style.display = 'none';
+        }});
+        currentLevel = 1;
+        initLevel();
+    }
+
+    function initLevel() {
+        document.getElementById('level-indicator').innerText = `LOTE ${currentLevel}/${maxLevels}`;
+        
+        initialNumber = Math.floor(Math.random() * 800) + 125; 
+        currentNumber = initialNumber;
+        extracted = { c: 0, d: 0, u: 0 };
+        
+        updateDisplay();
+        
+        // Reset Visual
+        document.getElementById('tube-c').innerHTML = '';
+        document.getElementById('tube-d').innerHTML = '';
+        document.getElementById('tube-u').innerHTML = '';
+        gsap.set("#recycle-action-btn", { scale: 0, display: 'none' });
+        
+        document.getElementById('win-screen').style.display = 'none';
+        isProcessing = false;
+    }
+
+    function extract(type) {
+        if(isProcessing) return;
+
+        // --- VALIDACIÓN DE LÍMITE PEDAGÓGICO (MÁX 9) ---
+        if (extracted[type] >= 9) {
+            const btnClass = `.btn-${type}`;
+            gsap.from(btnClass, { x: 5, duration: 0.1, repeat: 3, yoyo: true });
+            return;
+        }
+
+        let value = 0;
+        if(type === 'c') value = 100;
+        if(type === 'd') value = 10;
+        if(type === 'u') value = 1;
+
+        if (currentNumber < value) {
+            triggerShake();
+            return;
+        }
+
+        currentNumber -= value;
+        extracted[type]++;
+        
+        spawnFlyingBlock(type);
+        updateDisplay();
+
+        if (currentNumber === 0) {
+            isProcessing = true; 
+            showRecycleButton();
+        }
+    }
+
+    // --- FUNCIÓN DE DESHACER (UNDO) ---
+    function undo(type) {
+        if(isProcessing) return; 
+
+        if (extracted[type] <= 0) return;
+
+        let value = 0;
+        if(type === 'c') value = 100;
+        if(type === 'd') value = 10;
+        if(type === 'u') value = 1;
+
+        currentNumber += value;
+        extracted[type]--;
+
+        const tube = document.getElementById(`tube-${type}`);
+        const lastBlock = tube.lastElementChild;
+        
+        if (lastBlock) {
+            gsap.to(lastBlock, {
+                y: -200, opacity: 0, duration: 0.3,
+                onComplete: () => lastBlock.remove()
+            });
+        }
+        
+        updateDisplay();
+    }
+
+    function showRecycleButton() {
+        const btn = document.getElementById('recycle-action-btn');
+        btn.style.display = 'flex';
+        gsap.to(btn, { scale: 1, duration: 0.5, ease: "back.out(1.7)" });
+        fireConfetti(0.2); 
+    }
+
+    function finishLevel() {
+        gsap.to("#recycle-action-btn", { scale: 0, duration: 0.3, onComplete: () => {
+            if(currentLevel >= maxLevels) {
+                showGrandFinale();
+            } else {
+                generateBreakdown(); 
+                fireConfetti(0.6);
+                document.getElementById('win-screen').style.display = 'flex';
+            }
+        }});
+    }
+
+    function spawnFlyingBlock(type) {
+        const spawnPoint = document.getElementById('spawn-point').getBoundingClientRect();
+        const targetTube = document.getElementById(`tube-${type}`).getBoundingClientRect();
+        
+        const block = document.createElement('div');
+        block.style.position = 'fixed';
+        block.style.zIndex = 100;
+        
+        if(type === 'u') { block.className = 'block b-unit'; }
+        if(type === 'd') { block.className = 'block b-ten'; }
+        if(type === 'c') { 
+            block.className = 'block b-hund'; 
+            block.style.width = '80px'; 
+        }
+
+        document.body.appendChild(block);
+
+        gsap.set(block, { left: spawnPoint.left, top: spawnPoint.top });
+
+        const destX = targetTube.left + (targetTube.width / 2) - (type==='c'?40: type==='d'?30:20);
+        const destY = targetTube.top + 20; 
+
+        gsap.to(block, {
+            x: destX - spawnPoint.left,
+            y: destY - spawnPoint.top,
+            rotation: 180, 
+            duration: 0.8,
+            ease: "power2.out",
+            onComplete: () => {
+                block.remove(); 
+                addToTube(type);
+            }
+        });
+    }
+
+    function addToTube(type) {
+        const tube = document.getElementById(`tube-${type}`);
+        const block = document.createElement('div');
+        if(type === 'u') block.className = 'block b-unit';
+        if(type === 'd') block.className = 'block b-ten';
+        if(type === 'c') block.className = 'block b-hund';
+        tube.appendChild(block);
+        
+        gsap.from(block, { y: -20, duration: 0.3, ease: "bounce.out" });
+    }
+
+    function updateDisplay() {
+        const disp = document.getElementById('main-display');
+        disp.innerText = currentNumber;
+        
+        if(currentNumber === 0) disp.style.color = "#00E676";
+        else disp.style.color = "#FF7043";
+
+        let parts = [];
+        if (extracted.c > 0) parts.push(`<span class="equation-highlight">${extracted.c * 100}</span>`);
+        if (extracted.d > 0) parts.push(`<span class="equation-highlight">${extracted.d * 10}</span>`);
+        if (extracted.u > 0) parts.push(`<span class="equation-highlight">${extracted.u}</span>`);
+        
+        let equationHTML = `${initialNumber} = `;
+        if (parts.length === 0) equationHTML += "...";
+        else equationHTML += parts.join(" + ");
+        
+        if (currentNumber > 0) equationHTML += ` + (restan ${currentNumber})`;
+        
+        document.getElementById('equation-txt').innerHTML = equationHTML;
+    }
+
+    function triggerShake() {
+        const alarm = document.getElementById('alarm');
+        gsap.to(alarm, { opacity: 0.5, duration: 0.1, yoyo: true, repeat: 3 });
+        gsap.from("#machine-layout", { x: 10, duration: 0.1, repeat: 5, yoyo: true });
+    }
+
+    function generateBreakdown() {
+        const container = document.getElementById('breakdown-display');
+        const stamp = container.querySelector('.recycled-stamp-corner');
+        container.innerHTML = ''; 
+        if(stamp) container.appendChild(stamp);
+        else container.innerHTML = '<div class="recycled-stamp-corner">♻️ RECICLADO</div>';
+
+        document.getElementById('win-big-number').innerText = initialNumber;
+
+        const types = [
+            { id: 'c', label: 'Centenas', color: 'var(--c-color)', count: extracted.c },
+            { id: 'd', label: 'Decenas', color: 'var(--d-color)', count: extracted.d },
+            { id: 'u', label: 'Unidades', color: 'var(--u-color)', count: extracted.u }
+        ];
+
+        types.forEach(type => {
+            if (type.count > 0) {
+                const col = document.createElement('div');
+                col.className = 'breakdown-col';
+
+                const label = document.createElement('div');
+                label.className = 'breakdown-label';
+                
+                let labelText = type.label; 
+                if(type.count === 1) labelText = labelText.slice(0, -1); 
+
+                label.innerHTML = `<span style="color:${type.color}">${numToWord[type.count]}</span> ${labelText}`;
+                
+                const visual = document.createElement('div');
+                visual.className = 'blocks-visual';
+
+                for(let i=1; i<=type.count; i++) {
+                    const mini = document.createElement('div');
+                    mini.className = 'mini-block';
+                    mini.style.background = type.color;
+                    mini.innerText = (type.id === 'c') ? 100 : (type.id === 'd') ? 10 : 1;
+                    visual.appendChild(mini);
+                }
+
+                col.appendChild(label);
+                col.appendChild(visual);
+                container.appendChild(col);
+            }
+        });
+    }
+
+    function nextLevel() {
+        if(currentLevel < maxLevels) {
+            currentLevel++;
+            initLevel();
+        }
+    }
+
+    function showGrandFinale() {
+        document.getElementById('grand-finale').style.display = 'flex';
+        const stars = document.querySelectorAll('.star');
+        stars.forEach((star, i) => {
+            setTimeout(() => star.classList.add('active'), i * 300);
+        });
+        fireConfetti(0.6);
+    }
+
+    function fireConfetti(yPos) {
+        confetti({ particleCount: 200, spread: 100, origin: { y: yPos || 0.6 } });
+    }
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aventura en el Bosque: 3 Niveles</title>
+    <style>
+        body {
+            /* Fondo de bosque */
+            background: url('https://png.pngtree.com/background/20230403/original/pngtree-cartoon-illustration-of-flowers-and-trees-picture-image_2270201.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; margin: 0;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        h1 {
+            color: #fff; margin: 0 0 10px 0; font-size: 1.8rem;
+            text-shadow: 3px 3px 0 #2c5e2e; text-align: center;
+        }
+        
+        #level-indicator {
+            background: rgba(255, 255, 255, 0.9);
+            color: #d35400; padding: 5px 20px; border-radius: 20px;
+            font-weight: bold; font-size: 1.2rem; margin-bottom: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3); border: 2px solid #e67e22;
+        }
+
+        /* CONTENEDOR PRINCIPAL */
+        .notebook-paper {
+            background-color: #ffffff;
+            width: 95%; max-width: 800px; height: 300px;
+            border-radius: 15px; position: relative; overflow: hidden;
+            border: 3px solid #555;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            /* Renglones */
+            background-image:
+                linear-gradient(transparent 50%, #ffcccc 50%, #ffcccc 51%, transparent 51%),
+                linear-gradient(to bottom, #e6f2ff 1px, transparent 1px);
+            background-size: 100% 100%, 100% 75px;
+            background-position: 0 0, 0 37px;
+        }
+
+        svg { width: 100%; height: 100%; cursor: crosshair; touch-action: none; }
+
+        /* ESTILOS DE TRAZO */
+        .track { fill: none; stroke: #eee; stroke-width: 40; stroke-linecap: round; stroke-linejoin: round; }
+        .guide { fill: none; stroke: #666; stroke-width: 4; stroke-dasharray: 10, 10; stroke-linecap: round; stroke-linejoin: round; }
+        .ink { 
+            fill: none; stroke: #76c700; stroke-width: 14; 
+            stroke-linecap: round; stroke-linejoin: round;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+        }
+
+        /* ELEMENTOS DEL JUEGO */
+        .dot { r: 18; fill: #2ecc71; stroke: white; stroke-width: 3; animation: pulse 1.5s infinite; }
+        .dot-end { r: 18; fill: #e74c3c; opacity: 0.7; }
+        
+        #worm-character { pointer-events: none; transition: transform 0.05s linear; display: none; }
+        
+        /* OVERLAY DE MENSAJES */
+        #message-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 10; text-align: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        #message-overlay.visible { opacity: 1; pointer-events: all; }
+        #message-overlay h2 { color: #27ae60; font-size: 2.5rem; margin: 0; }
+        #message-overlay p { color: #555; font-size: 1.5rem; margin: 10px 0; }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .shake { animation: shake 0.4s; border-color: #e74c3c; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+
+    </style>
+</head>
+<body>
+
+    <h1>🐛 Aventura en el Bosque</h1>
+    <div id="level-indicator">Nivel 1: Bucles Suaves</div>
+
+    <div class="notebook-paper" id="paper">
+        <div id="message-overlay">
+            <h2 id="msg-title">¡Muy Bien!</h2>
+            <p id="msg-subtitle">Vamos al siguiente trazo...</p>
+        </div>
+
+        <svg viewBox="0 0 800 300" preserveAspectRatio="xMidYMid meet">
+            <defs>
+                <path id="level1" d="M 50 200 c 40 -150, 90 -150, 120 0 c 40 -150, 90 -150, 120 0 c 40 -150, 90 -150, 120 0 c 40 -150, 90 -150, 120 0 c 40 -150, 90 -150, 120 0" />
+                
+                <path id="level2" d="M 60 150 
+                    a 35 35 0 1 1 70 0 a 35 35 0 1 1 70 0 
+                    a 35 35 0 1 1 70 0 a 35 35 0 1 1 70 0 
+                    a 35 35 0 1 1 70 0 a 35 35 0 1 1 70 0
+                    a 35 35 0 1 1 70 0 a 35 35 0 1 1 70 0" />
+
+                <path id="level3" d="M 50 150 L 100 50 L 150 200 L 200 50 L 250 200 L 300 50 L 350 200 L 400 50 L 450 200 L 500 50 L 550 200 L 600 50 L 650 200 L 700 50 L 750 150" />
+            </defs>
+
+            <path id="game-track" class="track" d="" />
+            <path id="game-guide" class="guide" d="" />
+            <path id="game-ink" class="ink" d="" />
+
+            <circle id="start-dot" cx="0" cy="0" class="dot" />
+            <circle id="end-dot" cx="0" cy="0" class="dot-end" />
+
+            <g id="worm-character">
+                <circle cx="0" cy="0" r="16" fill="#8Gd500" stroke="#4a8500" stroke-width="2" />
+                <circle cx="-14" cy="2" r="12" fill="#8Gd500" opacity="0.9"/>
+                <circle cx="-24" cy="4" r="10" fill="#8Gd500" opacity="0.8"/>
+                <ellipse cx="6" cy="-5" rx="4" ry="5" fill="white"/> <circle cx="7" cy="-5" r="2" fill="black"/>
+                <ellipse cx="6" cy="5" rx="4" ry="5" fill="white"/> <circle cx="7" cy="5" r="2" fill="black"/>
+                <path d="M 10 2 Q 14 0, 10 -2" stroke="#4a8500" stroke-width="2" fill="none" />
+            </g>
+        </svg>
+    </div>
+
+<script>
+    // --- CONFIGURACIÓN DE NIVELES ---
+    const levels = [
+        { id: 'level1', name: 'Nivel 1: El Vuelo del Gusanito', tolerance: 55 },
+        { id: 'level2', name: 'Nivel 2: Círculos Mágicos', tolerance: 50 },
+        { id: 'level3', name: 'Nivel 3: Montañas Rusas (¡Difícil!)', tolerance: 45 } // Menos tolerancia en picos
+    ];
+    let currentLevelIdx = 0;
+
+    // --- REFERENCIAS ---
+    const paper = document.getElementById('paper');
+    const svg = paper.querySelector('svg');
+    const trackPath = document.getElementById('game-track');
+    const guidePath = document.getElementById('game-guide');
+    const inkPath = document.getElementById('game-ink');
+    const startDot = document.getElementById('start-dot');
+    const endDot = document.getElementById('end-dot');
+    const worm = document.getElementById('worm-character');
+    const indicator = document.getElementById('level-indicator');
+    const overlay = document.getElementById('message-overlay');
+    
+    // Variables de estado
+    let pathLen = 0;
+    let points = [];
+    let isDragging = false;
+    let progress = 0;
+    let precision = 4; // Precisión de colisión
+
+    // --- MOTOR DEL JUEGO ---
+
+    function loadLevel(index) {
+        // 1. Configurar datos del nivel
+        const levelData = levels[index];
+        indicator.textContent = levelData.name;
+        
+        // 2. Obtener la forma (path) desde <defs>
+        const shapeDefinition = document.getElementById(levelData.id).getAttribute('d');
+        
+        // 3. Aplicar forma a todas las capas
+        trackPath.setAttribute('d', shapeDefinition);
+        guidePath.setAttribute('d', shapeDefinition);
+        inkPath.setAttribute('d', shapeDefinition);
+
+        // 4. Calcular geometría
+        pathLen = trackPath.getTotalLength();
+        inkPath.style.strokeDasharray = pathLen;
+        inkPath.style.strokeDashoffset = pathLen;
+        inkPath.style.stroke = "#76c700"; // Reset color
+
+        // 5. Mapear puntos para colisiones (Crucial para rendimiento)
+        points = [];
+        for (let i = 0; i < pathLen; i += precision) {
+            const pt = trackPath.getPointAtLength(i);
+            points.push({ x: pt.x, y: pt.y, len: i });
+        }
+
+        // 6. Colocar puntos de inicio y fin
+        const pStart = trackPath.getPointAtLength(0);
+        const pEnd = trackPath.getPointAtLength(pathLen);
+        
+        startDot.setAttribute('cx', pStart.x); startDot.setAttribute('cy', pStart.y);
+        endDot.setAttribute('cx', pEnd.x); endDot.setAttribute('cy', pEnd.y);
+
+        // 7. Resetear gusanito
+        progress = 0;
+        isDragging = false;
+        worm.style.display = "block";
+        updateWormPosition(0);
+        
+        // Ocultar overlay
+        overlay.classList.remove('visible');
+    }
+
+    function updateWormPosition(len) {
+        const pt = trackPath.getPointAtLength(len);
+        // Mirar un poco adelante para rotar
+        const lookAhead = Math.min(len + 15, pathLen);
+        const ptNext = trackPath.getPointAtLength(lookAhead);
+        const angle = Math.atan2(ptNext.y - pt.y, ptNext.x - pt.x) * 180 / Math.PI;
+        
+        worm.setAttribute('transform', `translate(${pt.x}, ${pt.y}) rotate(${angle})`);
+    }
+
+    // --- INPUT HANDLERS ---
+    
+    function getMousePos(evt) {
+        const CTM = svg.getScreenCTM();
+        let clientX, clientY;
+        if (evt.touches) { clientX = evt.touches[0].clientX; clientY = evt.touches[0].clientY; } 
+        else { clientX = evt.clientX; clientY = evt.clientY; }
+        return { x: (clientX - CTM.e) / CTM.a, y: (clientY - CTM.f) / CTM.d };
+    }
+
+    function start(e) {
+        e.preventDefault();
+        const pos = getMousePos(e);
+        const startPt = points[0];
+        const dist = Math.hypot(pos.x - startPt.x, pos.y - startPt.y);
+
+        if (dist < 60) {
+            isDragging = true;
+            progress = 0;
+            inkPath.style.transition = 'none';
+            paper.classList.remove('shake');
+        }
+    }
+
+    function move(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+        const pos = getMousePos(e);
+        const currentTolerance = levels[currentLevelIdx].tolerance;
+
+        // Buscar punto más cercano en el trazo (optimizado)
+        let bestDist = 9999;
+        let bestLen = -1;
+        // Solo buscar en los siguientes 80px de trazo para evitar saltos
+        let idxStart = Math.floor(progress / precision);
+        let idxEnd = Math.min(points.length, idxStart + 40);
+
+        for (let i = idxStart; i < idxEnd; i++) {
+            const pt = points[i];
+            const d = Math.hypot(pos.x - pt.x, pos.y - pt.y);
+            if (d < bestDist) { bestDist = d; bestLen = pt.len; }
+        }
+
+        // 1. ¿Me salí?
+        if (bestDist > currentTolerance) {
+            fail();
+            return;
+        }
+
+        // 2. ¿Avancé?
+        if (bestLen > progress) {
+            progress = bestLen;
+            inkPath.style.strokeDashoffset = pathLen - progress;
+            updateWormPosition(progress);
+        }
+
+        // 3. ¿Llegué?
+        if (progress > pathLen - 20) {
+            win();
+        }
+    }
+
+    function end() {
+        if (!isDragging) return;
+        if (progress < pathLen - 20) fail();
+        isDragging = false;
+    }
+
+    function fail() {
+        isDragging = false;
+        paper.classList.add('shake');
+        inkPath.style.transition = 'stroke-dashoffset 0.5s ease';
+        inkPath.style.strokeDashoffset = pathLen;
+        setTimeout(() => updateWormPosition(0), 500);
+    }
+
+    function win() {
+        isDragging = false;
+        inkPath.style.stroke = "#FFD700"; // Dorado
+        confettiEffect();
+
+        // Lógica de Niveles
+        setTimeout(() => {
+            if (currentLevelIdx < levels.length - 1) {
+                // Siguiente Nivel
+                showOverlay("¡Excelente!", "Vamos al siguiente desafío...");
+                setTimeout(() => {
+                    currentLevelIdx++;
+                    loadLevel(currentLevelIdx);
+                }, 2000);
+            } else {
+                // Juego Terminado
+                showOverlay("¡FELICIDADES!", "¡Has completado todo el bosque!");
+                // Opción: reiniciar después de un rato
+                setTimeout(() => {
+                    currentLevelIdx = 0;
+                    loadLevel(0);
+                }, 4000);
+            }
+        }, 500);
+    }
+
+    function showOverlay(title, subtitle) {
+        document.getElementById('msg-title').innerText = title;
+        document.getElementById('msg-subtitle').innerText = subtitle;
+        overlay.classList.add('visible');
+    }
+
+    // Efecto simple de confeti (visual)
+    function confettiEffect() {
+        const colors = ['#f00', '#0f0', '#00f', '#ff0', '#0ff'];
+        for(let i=0; i<30; i++) {
+            const conf = document.createElement('div');
+            conf.style.position = 'fixed';
+            conf.style.left = (50 + Math.random()*20) + '%';
+            conf.style.top = '50%';
+            conf.style.width = '10px'; conf.style.height = '10px';
+            conf.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
+            conf.style.transition = 'all 1s ease-out';
+            document.body.appendChild(conf);
+            setTimeout(() => {
+                conf.style.transform = `translate(${Math.random()*200 - 100}px, ${Math.random()*200 - 100}px) scale(0)`;
+                conf.style.opacity = 0;
+            }, 50);
+            setTimeout(() => conf.remove(), 1000);
+        }
+    }
+
+    // Event Listeners
+    paper.addEventListener('mousedown', start);
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', end);
+    paper.addEventListener('touchstart', start, {passive: false});
+    window.addEventListener('touchmove', move, {passive: false});
+    window.addEventListener('touchend', end);
+
+    // INICIAR EL JUEGO
+    loadLevel(0);
+
+</script>
+</body>
+</html>

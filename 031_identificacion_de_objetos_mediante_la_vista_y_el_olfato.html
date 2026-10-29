@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>El Misterio de la Caja (Final Ajustado)</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&family=Titan+One&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #1A237E, #311B92);
+            --wood-base: #5D4037;
+            --wood-light: #8D6E63;
+            --wood-dark: #3E2723;
+            --gold: #FFC107;
+            --gold-dark: #FF6F00;
+            
+            --cube-size: 140px; 
+            --cube-half: 70px;
+        }
+
+        body {
+            margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden;
+            font-family: 'Fredoka', sans-serif;
+            background: radial-gradient(rgba(255,255,255,0.05) 15%, transparent 16%) 0 0 / 30px 30px, var(--bg-gradient);
+            display: flex; flex-direction: column; 
+            user-select: none; touch-action: none;
+        }
+
+        /* --- TEXTOS --- */
+        #header {
+            position: absolute; top: 0; width: 100%;
+            padding-top: 40px; 
+            text-align: center; z-index: 10; pointer-events: none;
+        }
+        h1 {
+            font-family: 'Titan One'; margin: 0; font-size: 2.5rem; letter-spacing: 1px;
+            color: var(--gold);
+            text-shadow: 3px 3px 0 var(--gold-dark), 0 5px 15px rgba(0,0,0,0.5);
+            text-transform: uppercase;
+        }
+        p { font-size: 1.1rem; margin-top: 5px; color: #B39DDB; font-weight: bold; }
+
+        /* --- ESCENARIO 3D --- */
+        #stage {
+            width: 100%; height: 100%;
+            display: flex; justify-content: center;
+            align-items: flex-end; 
+            padding-bottom: 220px; /* Ajuste para dar espacio a los controles subidos */
+            perspective: 1000px;
+            position: relative;
+            z-index: 20;
+        }
+
+        .cube-wrapper {
+            width: var(--cube-size); height: var(--cube-size);
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(-20deg) rotateY(25deg);
+            transition: transform 0.5s ease-out;
+            animation: floatBox 4s ease-in-out infinite;
+            cursor: pointer;
+        }
+
+        .floor-shadow {
+            position: absolute; width: 160px; height: 160px; top: 50%; left: 50%;
+            margin-left: -80px; margin-top: -80px;
+            background: radial-gradient(rgba(0,0,0,0.7), transparent 70%);
+            transform: rotateX(90deg) translateZ(-90px);
+            animation: shadowScale 4s ease-in-out infinite;
+            filter: blur(8px);
+        }
+
+        /* CARAS DE LA CAJA */
+        .face {
+            position: absolute; width: var(--cube-size); height: var(--cube-size);
+            background: repeating-linear-gradient(90deg, var(--wood-base), var(--wood-base) 8px, var(--wood-light) 8px, var(--wood-light) 16px);
+            border: 3px solid var(--wood-dark);
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.6);
+        }
+        .face::after {
+            content: ''; position: absolute; top: 6px; left: 6px; right: 6px; bottom: 6px;
+            border: 2px dashed rgba(93, 64, 55, 0.7);
+        }
+
+        .corner {
+            position: absolute; width: 24px; height: 24px;
+            background: linear-gradient(135deg, #FFECB3, var(--gold), var(--gold-dark));
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            z-index: 2;
+        }
+        .c-tl { top: -3px; left: -3px; border-radius: 3px 0 10px 0; }
+        .c-tr { top: -3px; right: -3px; border-radius: 0 3px 0 10px; }
+        .c-bl { bottom: -3px; left: -3px; border-radius: 0 10px 0 3px; }
+        .c-br { bottom: -3px; right: -3px; border-radius: 10px 0 3px 0; }
+
+        .front  { transform: translateZ(var(--cube-half)); }
+        .back   { transform: rotateY(180deg) translateZ(var(--cube-half)); }
+        .right  { transform: rotateY(90deg) translateZ(var(--cube-half)); filter: brightness(0.85); }
+        .left   { transform: rotateY(-90deg) translateZ(var(--cube-half)); filter: brightness(0.85); }
+        .bottom { transform: rotateX(-90deg) translateZ(var(--cube-half)); background: var(--wood-dark); }
+        
+        .lid-group {
+            position: absolute; width: var(--cube-size); height: 20px; top: 0; left: 0;
+            transform-style: preserve-3d; transform-origin: top; 
+            transform: translateZ(calc(var(--cube-half) * -1)) rotateX(90deg);
+        }
+
+        .lid-top {
+            position: absolute; width: var(--cube-size); height: var(--cube-size);
+            background: repeating-linear-gradient(0deg, var(--wood-base), var(--wood-base) 8px, var(--wood-light) 8px, var(--wood-light) 16px);
+            border: 3px solid var(--wood-dark);
+            transform: translateZ(10px);
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .q-mark {
+            font-family: 'Titan One'; font-size: 5rem; color: var(--gold);
+            text-shadow: 2px 2px 0 var(--gold-dark), 0 5px 10px rgba(0,0,0,0.4);
+            transform: translateZ(1px);
+        }
+        .q-mark.top-q { font-size: 4rem; transform: rotateX(0deg) translateZ(1px); }
+
+        #hidden-item {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) translateZ(0); 
+            font-size: 7rem; opacity: 0; pointer-events: none;
+            filter: drop-shadow(0 15px 20px rgba(0,0,0,0.4));
+        }
+
+        /* --- INTERFAZ INFERIOR --- */
+        #controls-container {
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            height: 180px; 
+            display: flex; justify-content: center; align-items: center;
+            z-index: 100;
+        }
+
+        #controls-wrapper {
+            position: relative; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: flex-end;
+            padding-bottom: 0;
+        }
+
+        /* PANEL DE SENTIDOS (Subido 70px) */
+        #controls-panel {
+            background: rgba(255,255,255,0.15); backdrop-filter: blur(12px);
+            padding: 10px 25px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.3);
+            display: flex; gap: 25px;
+            position: absolute; 
+            bottom: 70px; /* SUBIDO */
+            transform: scale(0.8); opacity: 0; visibility: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            pointer-events: auto;
+        }
+
+        .sense-btn {
+            width: 80px; height: 80px;
+            background: linear-gradient(to bottom, #FFF, #ECEFF1);
+            border-radius: 50%; border: none; cursor: pointer;
+            box-shadow: 0 5px 0 #B0BEC5, 0 10px 15px rgba(0,0,0,0.2);
+            transition: transform 0.1s, background 0.2s;
+            display: flex; justify-content: center; align-items: center;
+            position: relative; z-index: 101;
+        }
+        .sense-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #B0BEC5; }
+        .sense-btn:hover { background: #FFF9C4; }
+        
+        .sense-icon { font-size: 2.5rem; pointer-events: none; }
+        .sense-label {
+            position: absolute; bottom: -25px; width: 100%; text-align: center;
+            color: var(--gold); font-weight: bold; font-size: 0.9rem; 
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8); pointer-events: none;
+        }
+
+        /* BOTÓN INVESTIGAR (Subido 70px) */
+        #investigate-btn {
+            position: absolute; 
+            bottom: 70px; /* SUBIDO PARA NO QUEDAR AL BORDE */
+            background: linear-gradient(to bottom, var(--gold), var(--gold-dark));
+            color: #3E2723; font-family: 'Titan One'; font-size: 1.5rem;
+            padding: 15px 50px; border-radius: 50px; border: 3px solid #FFF;
+            box-shadow: 0 6px 0 #E65100, 0 10px 25px rgba(0,0,0,0.4);
+            cursor: pointer; z-index: 102; text-transform: uppercase; letter-spacing: 1.5px;
+            animation: pulseBtn 1.5s ease-in-out infinite;
+            pointer-events: auto;
+        }
+        #investigate-btn:active { 
+            animation: none; transform: translateY(4px) scale(1); 
+            box-shadow: 0 3px 0 #E65100;
+        }
+
+        /* --- FEEDBACK (GLOBO DE TEXTO) A LA DERECHA --- */
+        #feedback {
+            position: absolute; 
+            top: 45%; /* Altura media */
+            right: 20px; /* Pegado a la DERECHA */
+            left: auto; /* Anulamos el left anterior */
+            transform-origin: right center; /* Crece desde la derecha */
+            transform: scale(0);
+            
+            background: white; padding: 15px 20px; border-radius: 20px 20px 0 20px; /* Forma de burbuja */
+            font-weight: bold; color: #3E2723; font-size: 1.1rem;
+            opacity: 0; z-index: 200;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            border: 3px solid var(--gold);
+            
+            max-width: 160px; /* Limitar ancho para que no tape el centro */
+            text-align: right; /* Texto alineado a la derecha */
+            pointer-events: none;
+        }
+
+        .particle { position: absolute; pointer-events: none; z-index: 50; }
+
+        @keyframes floatBox {
+            0%, 100% { transform: rotateX(-20deg) rotateY(25deg) translateY(0); }
+            50% { transform: rotateX(-20deg) rotateY(25deg) translateY(-15px); }
+        }
+        @keyframes shadowScale {
+            0%, 100% { transform: rotateX(90deg) translateZ(-90px) scale(1); opacity: 0.7; }
+            50% { transform: rotateX(90deg) translateZ(-90px) scale(0.8); opacity: 0.4; }
+        }
+        @keyframes pulseBtn {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); box-shadow: 0 10px 0 #E65100, 0 15px 30px rgba(0,0,0,0.5); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="header">
+        <h1>El Misterio de la Caja</h1>
+        <p>¿Vista u Olfato? Descubre qué hay dentro</p>
+    </div>
+
+    <div id="feedback">...</div>
+
+    <div id="stage">
+        <div class="cube-wrapper" id="cube">
+            <div id="hidden-item">🍕</div>
+
+            <div class="face front">
+                <div class="corner c-tl"></div><div class="corner c-tr"></div>
+                <div class="corner c-bl"></div><div class="corner c-br"></div>
+                <div class="q-mark">?</div>
+            </div>
+            <div class="face back"></div>
+            <div class="face right"><div class="corner c-bl"></div><div class="corner c-br"></div></div>
+            <div class="face left"><div class="corner c-bl"></div><div class="corner c-br"></div></div>
+            <div class="face bottom"></div>
+
+            <div class="lid-group" id="lid-group">
+                <div class="lid-top">
+                    <div class="corner c-tl"></div><div class="corner c-tr"></div>
+                    <div class="corner c-bl"></div><div class="corner c-br"></div>
+                    <div class="q-mark top-q">?</div>
+                </div>
+            </div>
+
+            <div class="floor-shadow"></div>
+        </div>
+    </div>
+
+    <div id="controls-container">
+        <div id="controls-wrapper">
+            <button id="investigate-btn" onclick="startInvestigation()">🔍 INVESTIGAR</button>
+            
+            <div id="controls-panel">
+                <button class="sense-btn" onclick="checkAnswer('sight')">
+                    <span class="sense-icon">👁️</span>
+                    <div class="sense-label">Vista</div>
+                </button>
+                <button class="sense-btn" onclick="checkAnswer('smell')">
+                    <span class="sense-icon">👃</span>
+                    <div class="sense-label">Olfato</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const items = [
+        { name: "Pizza", icon: "🍕", type: "smell", color: "#FF9800", hint: "¡Mmm! Huele a queso derretido..." },
+        { name: "Calcetín", icon: "🧦", type: "smell", color: "#7CB342", hint: "¡Puaj! Huele a pies sucios..." },
+        { name: "Linterna", icon: "🔦", type: "sight", color: "#FFF176", hint: "¡Mira! Sale una luz intensa." },
+        { name: "Perfume", icon: "🌹", type: "smell", color: "#F06292", hint: "¡Qué aroma tan dulce y floral!" },
+        { name: "Arcoíris", icon: "🌈", type: "sight", color: "#4FC3F7", hint: "¡Veo muchos colores brillantes!" },
+        { name: "Palomitas", icon: "🍿", type: "smell", color: "#FFD54F", hint: "Huele como cuando vas al cine..." },
+        { name: "Diamante", icon: "💎", type: "sight", color: "#E0F7FA", hint: "¡Algo brilla y destella!" },
+        // --- NUEVOS ITEMS AGREGADOS ---
+        { name: "Chocolate", icon: "🍫", type: "smell", color: "#795548", hint: "Huele dulce y a cacao delicioso..." },
+        { name: "Sol", icon: "☀️", type: "sight", color: "#FFEB3B", hint: "¡Ay! ¡Es demasiado brillante para mirar!" },
+        { name: "Zorrillo", icon: "🦨", type: "smell", color: "#424242", hint: "¡Guácala! Un olor muy fuerte y apestoso..." },
+        { name: "Espejo", icon: "🪞", type: "sight", color: "#B0BEC5", hint: "Veo mi propio reflejo ahí dentro." },
+        { name: "Limón", icon: "🍋", type: "smell", color: "#C6FF00", hint: "Un aroma cítrico, ácido y fresco." },
+        { name: "Semáforo", icon: "🚦", type: "sight", color: "#F44336", hint: "Veo luces rojas, amarillas y verdes." }
+    ];
+
+    let currentItem = null;
+    let isPlaying = false;
+
+    gsap.set("#lid-group", { rotateX: 0 });
+    gsap.set("#controls-panel", { autoAlpha: 0, scale: 0.8 });
+
+    function startInvestigation() {
+        if(isPlaying) return;
+        isPlaying = true;
+
+        currentItem = items[Math.floor(Math.random() * items.length)];
+        const itemEl = document.getElementById('hidden-item');
+        itemEl.innerText = currentItem.icon;
+        
+        gsap.set(itemEl, { y: 0, scale: 0.5, opacity: 0 });
+
+        gsap.to("#investigate-btn", { scale: 0, opacity:0, duration: 0.3, ease: "back.in", pointerEvents: "none" });
+        gsap.to("#controls-panel", { autoAlpha: 1, scale: 1, duration: 0.5, delay: 0.3, ease: "back.out" });
+        showFeedback("");
+
+        setTimeout(playClue, 600);
+    }
+
+    function playClue() {
+        gsap.to("#lid-group", { rotateX: 0, duration: 0.2 });
+
+        if (currentItem.type === "smell") {
+            gsap.to(".cube-wrapper", { 
+                x: 6, rotateZ: 3, duration: 0.08, yoyo: true, repeat: 11, ease: "rough"
+            });
+            spawnParticles("smell", currentItem.color);
+            showFeedback(currentItem.hint);
+        } else {
+            gsap.to("#lid-group", { rotateX: -35, duration: 0.7, yoyo: true, repeat: 1, ease: "power2.inOut" });
+            spawnParticles("sight", currentItem.color);
+            showFeedback(currentItem.hint);
+        }
+    }
+
+    function checkAnswer(sense) {
+        if(!isPlaying) return;
+
+        if (sense === currentItem.type) {
+            successSequence();
+        } else {
+            gsap.to("#controls-panel", { x: 20, duration: 0.08, yoyo: true, repeat: 5 });
+            showFeedback("Hmm... no parece ser eso. Intenta con el otro.");
+        }
+    }
+
+    function successSequence() {
+        showFeedback(`¡Sí! Es ${currentItem.name}`);
+        confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: [currentItem.color, "#FFD700", "#FFF"] });
+
+        gsap.to("#lid-group", { rotateX: -150, duration: 1, ease: "back.out(1.5)" });
+
+        /* OBJETO SALIENDO HACIA EL CENTRO-ARRIBA */
+        gsap.to("#hidden-item", { 
+            y: -250, 
+            scale: 1.5, 
+            opacity: 1, 
+            duration: 1, 
+            ease: "elastic.out(1, 0.5)",
+            delay: 0.2
+        });
+
+        setTimeout(resetGame, 4000);
+    }
+
+    function resetGame() {
+        gsap.to("#lid-group", { rotateX: 0, duration: 0.7, ease: "power3.inOut" });
+        gsap.to("#hidden-item", { y: 0, scale: 0, opacity: 0, duration: 0.3 });
+        
+        gsap.to("#controls-panel", { autoAlpha: 0, scale: 0.8, duration: 0.4 });
+        gsap.to("#investigate-btn", { 
+            scale: 1, opacity: 1, duration: 0.5, delay: 0.5, 
+            ease: "elastic.out(1, 0.6)", pointerEvents: "auto" 
+        });
+        showFeedback("");
+        
+        isPlaying = false;
+    }
+
+    function showFeedback(text) {
+        const fb = document.getElementById('feedback');
+        if(!text) {
+            gsap.to(fb, { scale: 0, opacity: 0, duration: 0.3 });
+        } else {
+            fb.innerText = text;
+            // Quitamos el centrado forzado para que respete la posición derecha
+            gsap.to(fb, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out" }); 
+        }
+    }
+
+    function spawnParticles(type, color) {
+        const stage = document.getElementById('stage');
+        for(let i=0; i<12; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = "50%"; p.style.top = "50%";
+            
+            if(type === 'smell') {
+                p.style.width = (15 + Math.random()*10) + "px"; 
+                p.style.height = p.style.width;
+                p.style.border = `3px solid ${color}`;
+                p.style.borderRadius = "50%";
+                stage.appendChild(p);
+                gsap.fromTo(p, 
+                    { scale: 0, opacity: 0.8 },
+                    {
+                        y: -150 - Math.random()*100, x: (Math.random()*100)-50,
+                        scale: 2, opacity: 0, duration: 1.8+Math.random(),
+                        ease: "power1.out", onComplete: ()=>p.remove()
+                    });
+            } else {
+                p.style.width = (3 + Math.random()*3) + "px"; 
+                p.style.height = (40 + Math.random()*40) + "px";
+                p.style.background = color;
+                p.style.borderRadius = "4px";
+                stage.appendChild(p);
+                const angle = (Math.random()*360);
+                const dist = 140 + Math.random()*40;
+                gsap.to(p, {
+                    rotation: angle + 720,
+                    x: Math.cos(angle*(Math.PI/180))*dist,
+                    y: Math.sin(angle*(Math.PI/180))*dist,
+                    scale: 0, opacity: 0, duration: 1.2,
+                    ease: "expo.out", onComplete: ()=>p.remove()
+                });
+            }
+        }
+    }
+
+    document.addEventListener('mousemove', (e) => {
+        const x = (window.innerWidth/2 - e.clientX) / 80;
+        const y = (window.innerHeight/2 - e.clientY) / 80;
+        gsap.to(".cube-wrapper", { rotationY: 25 + x, rotationX: -20 + y, duration: 1 });
+    });
+
+</script>
+
+</body>
+</html>

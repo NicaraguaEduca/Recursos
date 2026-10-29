@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ciclo de Vida: Voces Mejoradas</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,700,1,0" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #2E7D32;
+            --accent: #FFC107;
+            --soil-dark: #5D4037;
+            --soil-light: #8D6E63;
+            --sky-top: #4FC3F7;
+            --sky-bottom: #B3E5FC;
+        }
+
+        body {
+            margin: 0; padding: 0; height: 100vh;
+            font-family: 'Fredoka', sans-serif;
+            background: #E0F7FA;
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; user-select: none;
+        }
+
+        #app-container {
+            width: 95%; max-width: 420px; height: 92vh; max-height: 850px;
+            background: #fff;
+            border-radius: 35px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            border: 6px solid #fff;
+            position: relative;
+        }
+
+        /* --- CONTROLES DE AUDIO SUPERIORES --- */
+        .top-controls {
+            position: absolute; top: 15px; right: 15px;
+            display: flex; gap: 10px; z-index: 100;
+            align-items: center;
+        }
+
+        #sound-toggle {
+            width: 45px; height: 45px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            color: #546E7A;
+            transition: transform 0.2s;
+        }
+        #sound-toggle:active { transform: scale(0.9); }
+        #sound-toggle.muted { color: #B0BEC5; }
+
+        /* Selector de voz discreto */
+        #voice-select {
+            padding: 5px 10px;
+            border-radius: 15px;
+            border: 1px solid #ddd;
+            background: rgba(255,255,255,0.9);
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.8rem;
+            color: #546E7A;
+            max-width: 150px;
+            outline: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        /* --- ESCENARIO --- */
+        #stage {
+            flex: 1.6;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(to bottom, var(--sky-top), var(--sky-bottom));
+        }
+
+        .sun-glow {
+            position: absolute; top: -80px; right: -80px; width: 200px; height: 200px;
+            background: radial-gradient(circle, #FFF9C4, rgba(255,255,255,0) 70%);
+            opacity: 0.8; animation: pulseGlow 5s infinite alternate;
+        }
+        .cloud-deco {
+            position: absolute; font-size: 3rem; color: rgba(255,255,255,0.8);
+            animation: floatCloud 40s linear infinite; top: 20px;
+        }
+        .cloud-deco:nth-child(2) { top: 60px; left: -50px; animation-duration: 55s; font-size: 2.5rem; }
+
+        /* --- SUELO --- */
+        .soil-section {
+            position: absolute; bottom: 0; width: 100%; height: 110px;
+            background: 
+                radial-gradient(circle at 20% 80%, var(--soil-dark) 2px, transparent 2px),
+                radial-gradient(circle at 80% 60%, var(--soil-dark) 3px, transparent 3px),
+                linear-gradient(to bottom, #795548 0%, var(--soil-light) 10%, var(--soil-dark) 100%);
+            border-top: 6px solid #43A047;
+            border-radius: 20px 20px 0 0; z-index: 10;
+            box-shadow: inset 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        /* --- PARTES DE LA PLANTA --- */
+        .plant-part-container {
+            position: absolute; left: 50%; width: 200px; height: 400px;
+            bottom: 100px; pointer-events: none; transform: translateX(-50%);
+        }
+        
+        .plant-part {
+            position: absolute; left: 50%; transform: translateX(-50%);
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.2));
+        }
+
+        /* 1. SEMILLA */
+        #part-semilla {
+            bottom: -30px; width: 20px; height: 25px; z-index: 12;
+            background: #3E2723; border-radius: 50% 50% 40% 40%;
+            transform: translateX(-50%) scale(0);
+        }
+        #part-semilla::after {
+            content: ''; position: absolute; top: 5px; right: 5px;
+            width: 6px; height: 6px; background: rgba(255,255,255,0.2); border-radius: 50%;
+        }
+
+        /* 2. RAÍZ */
+        #part-raiz {
+            bottom: -90px; width: 140px; height: 100px; z-index: 11;
+            background: radial-gradient(ellipse at top, var(--soil-light), transparent), conic-gradient(from 180deg at 50% 10%, var(--soil-dark) 0deg, transparent 30deg, transparent 330deg, var(--soil-dark) 360deg);
+            mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 140 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M70 0 C70 0 60 30 40 50 C20 70 30 90 10 100 M70 0 C70 0 80 30 100 50 C120 70 110 90 130 100 M70 0 C70 0 70 60 70 95' stroke='black' stroke-width='12' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 140 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M70 0 C70 0 60 30 40 50 C20 70 30 90 10 100 M70 0 C70 0 80 30 100 50 C120 70 110 90 130 100 M70 0 C70 0 70 60 70 95' stroke='black' stroke-width='12' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            transform-origin: top center;
+            transform: translateX(-50%) translateY(-30px) scale(0.8);
+        }
+
+        /* 3. TALLO */
+        #part-tallo {
+            bottom: 10px; width: 20px; height: 140px; z-index: 5;
+            background: linear-gradient(to right, var(--primary-dark), var(--primary), var(--primary-dark));
+            border-radius: 10px;
+            transform-origin: bottom center;
+            transform: translateX(-50%) scaleY(0);
+        }
+
+        /* 4. HOJAS */
+        #part-hojas { bottom: 60px; width: 180px; height: 80px; z-index: 6; transform: translateX(-50%) scale(0); transform-origin: center bottom; }
+        .leaf {
+            position: absolute; width: 80px; height: 40px; background: var(--primary);
+            border-radius: 5px 40px;
+            box-shadow: inset 0 5px 10px rgba(255,255,255,0.3), inset 0 -5px 10px rgba(0,0,0,0.2);
+            background-image: linear-gradient(to right, transparent 48%, var(--primary-dark) 48%, var(--primary-dark) 52%, transparent 52%);
+        }
+        .leaf.left { left: 0; transform: rotate(-20deg); }
+        .leaf.right { right: 0; transform: rotate(20deg) scaleX(-1); }
+
+        /* 5. FLOR */
+        #part-flor { bottom: 140px; width: 100px; height: 100px; z-index: 7; transform: translateX(-50%) scale(0) rotate(-180deg); transform-origin: center; }
+        .petal {
+            position: absolute; width: 40px; height: 40px; top: 30px; left: 30px;
+            background: radial-gradient(circle at 30% 30%, #FFFDE7, #FDD835);
+            border-radius: 50% 50% 5px 50%;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+        }
+        .center {
+            position: absolute; width: 30px; height: 30px; top: 35px; left: 35px;
+            background: radial-gradient(circle at 30% 30%, #FFEB3B, #FBC02D);
+            border-radius: 50%; z-index: 2; border: 2px solid #F57F17;
+        }
+
+        /* ESTADOS DE ANIMACIÓN */
+        .show-seed { opacity: 1 !important; transform: translateX(-50%) scale(1) !important; animation: dropSeed 0.5s ease-out; }
+        @keyframes dropSeed { from { transform: translateX(-50%) translateY(-200px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+        .show-root { opacity: 1 !important; transform: translateX(-50%) translateY(0) scale(1) !important; }
+        .show-stem { opacity: 1 !important; transform: translateX(-50%) scaleY(1) !important; }
+        .show-leaves { opacity: 1 !important; transform: translateX(-50%) scale(1) !important; animation: gentleSway 3s infinite ease-in-out alternate 1s; }
+        .show-flower { opacity: 1 !important; transform: translateX(-50%) scale(1) rotate(0deg) !important; animation: gentleSway 4s infinite ease-in-out alternate-reverse 1s; }
+
+        /* EFECTOS */
+        #growth-light {
+            position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%);
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(255,255,200,0.4) 0%, transparent 70%);
+            opacity: 0; transition: opacity 1s; pointer-events: none; z-index: 1;
+        }
+        .particle-burst { position: absolute; left: 50%; bottom: 100px; width: 0; height: 0; z-index: 20; }
+        .particle { position: absolute; width: 10px; height: 10px; border-radius: 50%; opacity: 0; }
+        .burst-active .particle { animation: burstOut 1s ease-out forwards; }
+
+        /* --- PANEL CONTROL --- */
+        #controls {
+            flex: 1; background: #fff; padding: 30px;
+            display: flex; flex-direction: column; justify-content: space-between;
+            z-index: 30; border-radius: 35px 35px 0 0;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.05);
+        }
+        #progress-bar { height: 12px; background: #F1F8E9; border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+        #progress-fill { height: 100%; width: 5%; background: linear-gradient(to right, var(--primary), var(--accent)); border-radius: 10px; transition: width 0.5s; }
+
+        #text-box { text-align: center; transition: opacity 0.3s; }
+        h2 { color: var(--primary-dark); margin: 0 0 10px 0; font-size: 2rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .title-icon { font-size: 2.5rem; color: var(--accent); }
+        p { color: #546E7A; font-size: 1.2rem; line-height: 1.6; margin: 0; font-weight: 600; }
+        .highlight { color: var(--primary); font-weight: 700; background: #E8F5E9; padding: 0 4px; border-radius: 4px; }
+
+        #main-btn {
+            width: 100%; padding: 20px; font-size: 1.4rem; border: none; border-radius: 20px;
+            background: linear-gradient(to bottom, var(--primary), var(--primary-dark));
+            color: white; font-weight: 700; cursor: pointer;
+            box-shadow: 0 8px 0 #1B5E20; transition: all 0.1s; margin-top: 10px;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        #main-btn:active { transform: translateY(6px); box-shadow: 0 2px 0 #1B5E20; }
+        #main-btn.reset { background: linear-gradient(to bottom, #FF7043, #D84315); box-shadow: 0 8px 0 #BF360C; }
+        #main-btn.reset:active { box-shadow: 0 2px 0 #BF360C; }
+
+        @keyframes floatCloud { from { transform: translateX(-100%); } to { transform: translateX(500%); } }
+        @keyframes pulseGlow { from { opacity: 0.6; transform: scale(1); } to { opacity: 1; transform: scale(1.2); } }
+        @keyframes gentleSway { from { transform: translateX(-50%) rotate(-2deg); } to { transform: translateX(-50%) rotate(2deg); } }
+        @keyframes burstOut { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
+
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        
+        <div class="top-controls">
+            <select id="voice-select" onchange="changeVoice()">
+                <option value="">Cargando voces...</option>
+            </select>
+            <div id="sound-toggle" onclick="toggleSound()">
+                <span class="material-symbols-rounded" id="sound-icon">volume_up</span>
+            </div>
+        </div>
+
+        <div id="stage">
+            <div class="sun-glow"></div>
+            <div class="cloud-deco material-symbols-rounded">cloud</div>
+            <div class="cloud-deco material-symbols-rounded">cloud</div>
+            <div id="growth-light"></div>
+
+            <div class="plant-part-container">
+                <div id="part-flor" class="plant-part">
+                    <div class="petal" style="transform: rotate(0deg) translate(0, -35px);"></div>
+                    <div class="petal" style="transform: rotate(45deg) translate(0, -35px);"></div>
+                    <div class="petal" style="transform: rotate(90deg) translate(0, -35px);"></div>
+                    <div class="petal" style="transform: rotate(135deg) translate(0, -35px);"></div>
+                    <div class="petal" style="transform: rotate(180deg) translate(0, -35px);"></div>
+                    <div class="petal" style="transform: rotate(225deg) translate(0, -35px);"></div>
+                    <div class="petal" style="transform: rotate(270deg) translate(0, -35px);"></div>
+                    <div class="petal" style="transform: rotate(315deg) translate(0, -35px);"></div>
+                    <div class="center"></div>
+                </div>
+
+                <div id="part-hojas" class="plant-part">
+                    <div class="leaf left"></div>
+                    <div class="leaf right"></div>
+                </div>
+
+                <div id="part-tallo" class="plant-part"></div>
+                
+                <div class="particle-burst" id="burst"></div>
+            </div>
+
+            <div class="soil-section">
+                <div id="part-semilla" class="plant-part"></div>
+                <div id="part-raiz" class="plant-part"></div>
+            </div>
+        </div>
+
+        <div id="controls">
+            <div>
+                <div id="progress-bar"><div id="progress-fill"></div></div>
+                <div id="text-box">
+                    <h2 id="title-txt">
+                        <span class="material-symbols-rounded title-icon">landscape</span>
+                        El Suelo Fértil
+                    </h2>
+                    <p id="desc-txt">Aquí es donde todo comienza. El suelo tiene agua y comida para que nuestra planta nazca. ¿Empezamos?</p>
+                </div>
+            </div>
+            <button id="main-btn" onclick="nextStep()">
+                <span class="material-symbols-rounded">spa</span>
+                Plantar Semilla
+            </button>
+        </div>
+    </div>
+
+<script>
+    /* --- CONFIGURACIÓN DE AUDIO MEJORADA --- */
+    let isMuted = false;
+    const synth = window.speechSynthesis;
+    let voices = [];
+    let selectedVoice = null;
+
+    const voiceSelect = document.getElementById('voice-select');
+
+    function populateVoiceList() {
+        voices = synth.getVoices().sort(function (a, b) {
+            const aname = a.name.toUpperCase();
+            const bname = b.name.toUpperCase();
+            if (aname < bname) return -1;
+            else if (aname == bname) return 0;
+            else return +1;
+        });
+
+        voiceSelect.innerHTML = '';
+        
+        // Filtrar voces en español solamente
+        const spanishVoices = voices.filter(v => v.lang.includes('es') || v.lang.includes('ES'));
+
+        // Estrategia de Selección Automática:
+        // 1. Buscar voces "Google" (suelen ser muy buenas online)
+        // 2. Buscar voces "Natural" o "Premium"
+        // 3. Primer español disponible
+        let bestVoice = spanishVoices.find(v => v.name.includes('Google') && v.lang.includes('es'));
+        if(!bestVoice) bestVoice = spanishVoices.find(v => v.name.includes('Natural') || v.name.includes('Premium'));
+        if(!bestVoice) bestVoice = spanishVoices[0];
+
+        // Llenar el Dropdown
+        spanishVoices.forEach((voice) => {
+            const option = document.createElement('option');
+            option.textContent = `${voice.name} (${voice.lang})`;
+            option.setAttribute('data-lang', voice.lang);
+            option.setAttribute('data-name', voice.name);
+            voiceSelect.appendChild(option);
+            
+            // Si coincide con la mejor voz detectada, marcarla
+            if(voice === bestVoice) {
+                option.selected = true;
+                selectedVoice = voice;
+            }
+        });
+
+        if(spanishVoices.length === 0) {
+            const option = document.createElement('option');
+            option.textContent = "Voz estándar";
+            voiceSelect.appendChild(option);
+        }
+    }
+
+    populateVoiceList();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = populateVoiceList;
+    }
+
+    function changeVoice() {
+        const selectedOption = voiceSelect.selectedOptions[0].getAttribute('data-name');
+        selectedVoice = voices.find(v => v.name === selectedOption);
+        // Prueba de voz al cambiar
+        if(!isMuted) speakText("Probando esta voz para la planta.");
+    }
+
+    function toggleSound() {
+        isMuted = !isMuted;
+        const icon = document.getElementById('sound-icon');
+        const btn = document.getElementById('sound-toggle');
+        
+        if(isMuted) {
+            synth.cancel();
+            icon.innerText = "volume_off";
+            btn.classList.add('muted');
+        } else {
+            icon.innerText = "volume_up";
+            btn.classList.remove('muted');
+            speakText(steps[currentIndex].text);
+        }
+    }
+
+    function stripHtml(html) {
+        let tmp = document.createElement("DIV");
+        tmp.innerHTML = html;
+        return tmp.textContent || tmp.innerText || "";
+    }
+
+    function speakText(text) {
+        if(isMuted) return;
+        synth.cancel();
+
+        const cleanText = stripHtml(text);
+        const utterThis = new SpeechSynthesisUtterance(cleanText);
+        
+        if (selectedVoice) {
+            utterThis.voice = selectedVoice;
+        }
+
+        utterThis.rate = 1; 
+        utterThis.pitch = 1; 
+        
+        synth.speak(utterThis);
+    }
+
+
+    /* --- LÓGICA DEL JUEGO --- */
+    const steps = [
+        {
+            id: 'start',
+            title: "El Suelo Fértil", icon: "landscape",
+            text: "Aquí es donde todo comienza. El suelo tiene agua y comida para que nuestra planta nazca. ¿Empezamos?",
+            partId: null,
+            btnText: "Plantar Semilla", btnIcon: "spa"
+        },
+        {
+            id: 'semilla',
+            title: "La Semilla", icon: "grain",
+            text: "¡Bien! Hemos plantado una pequeña semilla. Ahora necesita un poco de agua para despertar.",
+            partId: 'part-semilla', className: 'show-seed',
+            btnText: "Echar Agua", btnIcon: "water_drop"
+        },
+        {
+            id: 'raiz',
+            title: "La Raíz", icon: "network_node",
+            text: "¡Funciona! La raíz sale de la semilla y crece hacia abajo. Bebe el agua como un popote.",
+            partId: 'part-raiz', className: 'show-root',
+            btnText: "Crecer Tallo", btnIcon: "arrow_upward"
+        },
+        {
+            id: 'tallo',
+            title: "El Tallo", icon: "straighten",
+            text: "El tallo sube buscando el sol. Es la columna que sostiene a la planta derechita.",
+            partId: 'part-tallo', className: 'show-stem',
+            btnText: "Sacar Hojas", btnIcon: "eco"
+        },
+        {
+            id: 'hojas',
+            title: "Las Hojas", icon: "wb_sunny",
+            text: "Las hojas atrapan la luz del sol para preparar la comida de la planta. ¡Son como cocinas solares!",
+            partId: 'part-hojas', className: 'show-leaves',
+            btnText: "¡Florecer!", btnIcon: "local_florist"
+        },
+        {
+            id: 'flor',
+            title: "La Flor", icon: "celebration",
+            text: "¡Qué maravilla! La flor ha nacido. De ella saldrán los frutos y nuevas semillas para reiniciar el ciclo.",
+            partId: 'part-flor', className: 'show-flower',
+            btnText: "Volver a Jugar", btnIcon: "replay"
+        }
+    ];
+
+    let currentIndex = 0;
+    const titleTxt = document.getElementById('title-txt');
+    const descTxt = document.getElementById('desc-txt');
+    const mainBtn = document.getElementById('main-btn');
+    const progressFill = document.getElementById('progress-fill');
+    const textBox = document.getElementById('text-box');
+    const growthLight = document.getElementById('growth-light');
+    const burstContainer = document.getElementById('burst');
+
+    function createParticles() {
+        const colors = ['#FFC107', '#4CAF50', '#8BC34A', '#FFFFFF'];
+        for(let i=0; i<20; i++) {
+            let p = document.createElement('div');
+            p.className = 'particle';
+            p.style.background = colors[Math.floor(Math.random()*colors.length)];
+            let tx = (Math.random() - 0.5) * 200 + 'px';
+            let ty = (Math.random() * -150) - 50 + 'px';
+            p.style.setProperty('--tx', tx);
+            p.style.setProperty('--ty', ty);
+            burstContainer.appendChild(p);
+        }
+    }
+    createParticles();
+
+    function triggerBurst() {
+        burstContainer.classList.remove('burst-active');
+        void burstContainer.offsetWidth; 
+        burstContainer.classList.add('burst-active');
+    }
+
+    function nextStep() {
+        currentIndex++;
+        if (currentIndex >= steps.length) {
+            resetGame();
+            return;
+        }
+
+        const step = steps[currentIndex];
+
+        textBox.style.opacity = 0;
+        mainBtn.style.transform = "scale(0.95)";
+
+        setTimeout(() => {
+            titleTxt.innerHTML = `<span class="material-symbols-rounded title-icon">${step.icon}</span> ${step.title}`;
+            descTxt.innerHTML = step.text;
+            mainBtn.innerHTML = `<span class="material-symbols-rounded">${step.btnIcon}</span> ${step.btnText}`;
+            mainBtn.style.transform = "scale(1)";
+            
+            if(currentIndex === steps.length - 1) mainBtn.classList.add('reset');
+            
+            progressFill.style.width = `${((currentIndex) / (steps.length - 1)) * 100}%`;
+            textBox.style.opacity = 1;
+
+            if (step.partId) {
+                const part = document.getElementById(step.partId);
+                part.classList.add(step.className);
+                growthLight.style.opacity = currentIndex * 0.2;
+                triggerBurst();
+            }
+            
+            speakText(step.text);
+
+        }, 300);
+    }
+
+    function resetGame() {
+        currentIndex = 0;
+        const step0 = steps[0];
+        
+        titleTxt.innerHTML = `<span class="material-symbols-rounded title-icon">${step0.icon}</span> ${step0.title}`;
+        descTxt.innerHTML = step0.text;
+        mainBtn.innerHTML = `<span class="material-symbols-rounded">${step0.btnIcon}</span> ${step0.btnText}`;
+        mainBtn.classList.remove('reset');
+        progressFill.style.width = '5%';
+        growthLight.style.opacity = 0;
+
+        document.querySelectorAll('.plant-part').forEach(el => {
+            el.className = 'plant-part'; 
+        });
+
+        speakText(step0.text);
+    }
+</script>
+</body>
+</html>

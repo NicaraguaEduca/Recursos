@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comunidad de Líderes 2.0</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
+        
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: #7dd3fc; 
+            background: linear-gradient(180deg, #7dd3fc 0%, #bae6fd 100%);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* --- AMBIENTE --- */
+        .cloud {
+            position: fixed;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.6;
+            z-index: -1;
+            animation: drift linear infinite;
+        }
+        @keyframes drift {
+            from { transform: translateX(-20vw); }
+            to { transform: translateX(120vw); }
+        }
+
+        /* --- CONTENEDOR --- */
+        .main-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 3.5rem;
+            border: 8px solid white;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.1);
+            width: 95%;
+            max-width: 1300px;
+            padding: 2rem;
+            position: relative;
+        }
+
+        /* --- MAPA RECOLORIZADO (VERDE GRAMA) --- */
+        .map-canvas {
+            background: #4ade80; /* Verde grama encendido */
+            background-image: radial-gradient(#22c55e 1px, transparent 1px);
+            background-size: 20px 20px;
+            border-radius: 2.5rem;
+            border: 6px solid #22c55e;
+            height: 580px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 80px rgba(0,0,0,0.1);
+        }
+
+        /* --- VEHÍCULOS CON ROTACIÓN CORREGIDA --- */
+        .vehicle {
+            position: absolute;
+            font-size: 2.3rem;
+            z-index: 15;
+            pointer-events: none;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.2));
+        }
+
+        .bus-path { animation: driveBus 20s linear infinite; }
+        
+        /* Rotación de -90 grados para que el policía vea hacia la carretera */
+        .car-path { 
+            animation: driveCar 12s linear infinite; 
+            transform: rotate(-90deg); 
+        }
+
+        @keyframes driveBus {
+            0% { left: -10%; top: 48%; transform: scaleX(1); }
+            45% { left: 110%; top: 48%; transform: scaleX(1); }
+            50% { left: 110%; top: 48%; transform: scaleX(-1); }
+            95% { left: -10%; top: 48%; transform: scaleX(-1); }
+            100% { left: -10%; top: 48%; transform: scaleX(1); }
+        }
+
+        @keyframes driveCar {
+            0% { top: -15%; left: 47%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 115%; left: 47%; opacity: 0; }
+        }
+
+        /* --- NATURALEZA --- */
+        .tree {
+            position: absolute;
+            font-size: 2.5rem;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.15));
+            animation: sway 3s ease-in-out infinite alternate;
+            transform-origin: bottom;
+            z-index: 5;
+        }
+        @keyframes sway {
+            from { transform: rotate(-2deg); }
+            to { transform: rotate(2deg); }
+        }
+
+        /* --- MECÁNICA Y ETIQUETAS CORREGIDAS --- */
+        .drop-zone {
+            position: relative; /* Cambiado de absolute para flujo natural */
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px dashed rgba(59, 130, 246, 0.4);
+            background: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            transition: all 0.3s;
+            margin-bottom: 8px; /* Espacio para la etiqueta */
+        }
+        
+        .drop-zone.active {
+            background: rgba(59, 130, 246, 0.3);
+            border-color: #3b82f6;
+            transform: scale(1.1);
+        }
+
+        .leader-card {
+            cursor: grab;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        .leader-card:hover { transform: translateY(-5px); border-color: #60a5fa; }
+        .leader-card:active { cursor: grabbing; }
+
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body>
+
+    
+
+<div class="cloud w-32 h-10" style="top: 8%; animation-duration: 35s;"></div>
+<div class="cloud w-48 h-14" style="top: 20%; animation-duration: 50s; animation-delay: -5s;"></div>
+
+<div id="app" v-cloak class="main-card animate__animated animate__fadeIn">
+    
+    <header class="flex justify-between items-end mb-6">
+        <div>
+            <h1 class="text-4xl font-900 italic uppercase text-blue-600 leading-none">Mi Comunidad <span class="text-green-600">Líder</span></h1>
+            <p class="text-slate-400 font-bold uppercase text-[10px] tracking-widest mt-1">¡Ubica a las heroínas en su puesto de honor!</p>
+        </div>
+        <div class="bg-blue-600 text-white px-6 py-2 rounded-2xl font-black text-sm uppercase italic shadow-lg shadow-blue-200">
+            Logros: {{ placedIds.length }} / {{ leaders.length }}
+        </div>
+    </header>
+
+    <div class="flex flex-col lg:flex-row gap-6">
+        
+        <div class="lg:w-1/4 bg-slate-50 p-6 rounded-[2.5rem] border-2 border-slate-100 overflow-y-auto shadow-inner" style="max-height: 580px;">
+            <h3 class="font-900 text-slate-400 uppercase text-[10px] mb-4 tracking-widest text-center">Personajes</h3>
+            <div class="space-y-4">
+                <div v-for="l in availableLeaders" 
+                     :key="l.id"
+                     class="leader-card bg-white p-4 rounded-3xl shadow-sm flex flex-col items-center text-center border-b-4 border-slate-200"
+                     draggable="true"
+                     @dragstart="onDragStart($event, l)">
+                    <span class="text-5xl mb-2">{{ l.emoji }}</span>
+                    <span class="font-black text-[11px] uppercase text-slate-700">{{ l.name }}</span>
+                    <span class="text-[9px] font-bold text-blue-500 uppercase">{{ l.role }}</span>
+                </div>
+            </div>
+            <div v-if="availableLeaders.length === 0" class="text-center p-10 opacity-40 animate__animated animate__pulse animate__infinite">
+                <p class="font-black text-xs uppercase">✨ ¡Excelente trabajo! ✨</p>
+            </div>
+        </div>
+
+        <div class="lg:w-3/4 map-canvas">
+            
+            <svg viewBox="0 0 800 580" class="absolute inset-0 w-full h-full opacity-40 pointer-events-none">
+                <rect x="0" y="260" width="800" height="70" fill="#475569"/> <rect x="365" y="0" width="70" height="580" fill="#475569"/>  
+                <line x1="0" y1="295" x2="800" y2="295" stroke="#fbbf24" stroke-width="3" stroke-dasharray="15"/> <line x1="400" y1="0" x2="400" y2="580" stroke="#fbbf24" stroke-width="3" stroke-dasharray="15"/>
+            </svg>
+
+            <div class="vehicle bus-path">🚌</div>
+            <div class="vehicle car-path">🚓</div>
+
+            <div v-for="t in trees" class="tree" :style="{ top: t.y+'%', left: t.x+'%' }">{{ t.e }}</div>
+            <div class="absolute text-xl opacity-60" style="top: 15%; left: 40%;">🌸</div>
+            <div class="absolute text-xl opacity-60" style="top: 75%; left: 22%;">🌻</div>
+            <div class="absolute text-xl opacity-60" style="top: 65%; left: 75%;">🌷</div>
+
+            <div v-for="node in mapNodes" 
+                 :key="node.id"
+                 class="absolute flex flex-col items-center justify-center w-40 h-40"
+                 :style="{ top: node.y + '%', left: node.x + '%', transform: 'translate(-50%, -50%)' }">
+                
+                <div class="text-7xl mb-2 filter drop-shadow-xl animate__animated animate__pulse animate__infinite animate__slower">
+                    {{ node.icon }}
+                </div>
+                
+                <div class="drop-zone"
+                     @dragover.prevent
+                     @drop="onDrop($event, node)">
+                    <span v-if="node.occupied" class="text-5xl animate__animated animate__bounceIn">
+                        {{ node.occupiedEmoji }}
+                    </span>
+                    <span v-else class="text-blue-500 font-black text-[9px] animate-pulse">UBICAR</span>
+                </div>
+
+                <div class="bg-white/90 px-3 py-1 rounded-lg shadow-md border-b-2 border-slate-300">
+                    <p class="text-[9px] font-black uppercase text-slate-800 whitespace-nowrap">{{ node.label }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div v-if="activePopup" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-blue-900/40 backdrop-blur-md">
+        <div class="bg-white rounded-[3rem] border-8 border-blue-500 w-full max-w-lg p-10 animate__animated animate__backInUp text-center shadow-2xl">
+            <div class="text-8xl mb-4">{{ activePopup.emoji }}</div>
+            <h2 class="text-3xl font-900 uppercase italic text-blue-600 leading-none">{{ activePopup.name }}</h2>
+            <p class="text-slate-400 font-black text-[10px] uppercase tracking-widest mt-2 mb-6">Líder en: {{ activePopup.locationLabel }}</p>
+            
+            <div class="bg-green-50 p-6 rounded-3xl border-2 border-white shadow-inner text-left">
+                <div class="mb-4">
+                    <span class="text-[10px] font-black text-green-600 uppercase tracking-tighter">Aporte principal:</span>
+                    <p class="text-lg font-bold text-slate-700 leading-tight">{{ activePopup.achievement }}</p>
+                </div>
+                <div>
+                    <span class="text-[10px] font-black text-green-600 uppercase tracking-tighter">Impacto comunitario:</span>
+                    <p class="text-sm text-slate-500 italic">"{{ activePopup.impact }}"</p>
+                </div>
+            </div>
+
+            <button @click="activePopup = null" class="mt-8 w-full bg-blue-600 hover:bg-blue-500 text-white font-900 py-4 rounded-2xl shadow-lg transition-transform active:scale-95 uppercase tracking-widest">
+                ¡Qué Bien!
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const { createApp, ref, computed } = Vue;
+
+createApp({
+    setup() {
+        const leaders = ref([
+            { id: 1, name: "Dra. Elena", emoji: "👩‍⚕️", role: "Salud", targetId: "hospital", achievement: "Modernizó el sistema de urgencias.", impact: "Atención gratuita y rápida para todos los niños." },
+            { id: 2, name: "Profe Rosa", emoji: "👩‍🏫", role: "Educación", targetId: "school", achievement: "Biblioteca Digital Móvil.", impact: "Llevó libros y tablets a las zonas más alejadas." },
+            { id: 3, name: "Alcaldesa Lucía", emoji: "👩‍💼", role: "Gestión", targetId: "cityhall", achievement: "Parques Inclusivos.", impact: "Creó espacios de juego donde todos pueden participar." },
+            { id: 4, name: "Ing. Sara", emoji: "👩‍🔬", role: "Ciencia", targetId: "lab", achievement: "Energía Limpia.", impact: "Instaló paneles solares para iluminar la escuela." },
+            { id: 5, name: "Chef Carmen", emoji: "👩‍🍳", role: "Alimentación", targetId: "market", achievement: "Huertos Escolares.", impact: "Enseñó a cultivar alimentos sanos para el comedor." }
+        ]);
+
+        const mapNodes = ref([
+            { id: 'hospital', label: 'Hospital Comunitario', icon: '🏥', x: 20, y: 22, occupied: false, occupiedEmoji: '' },
+            { id: 'school', label: 'Escuela de la Paz', icon: '🏫', x: 80, y: 22, occupied: false, occupiedEmoji: '' },
+            { id: 'cityhall', label: 'Palacio Municipal', icon: '🏛️', x: 50, y: 50, occupied: false, occupiedEmoji: '' },
+            { id: 'lab', label: 'Laboratorio de Ideas', icon: '🧪', x: 20, y: 78, occupied: false, occupiedEmoji: '' },
+            { id: 'market', label: 'Mercado de Abastos', icon: '🛒', x: 80, y: 78, occupied: false, occupiedEmoji: '' }
+        ]);
+
+        const trees = ref([
+            {x: 8, y: 45, e: '🌳'}, {x: 90, y: 45, e: '🌲'}, {x: 32, y: 12, e: '🌳'},
+            {x: 65, y: 12, e: '🌲'}, {x: 35, y: 88, e: '🌲'}, {x: 68, y: 88, e: '🌳'}
+        ]);
+
+        const draggedLeader = ref(null);
+        const placedIds = ref([]);
+        const activePopup = ref(null);
+
+        const availableLeaders = computed(() => {
+            return leaders.value.filter(l => !placedIds.value.includes(l.id));
+        });
+
+        const onDragStart = (e, leader) => {
+            draggedLeader.value = leader;
+            e.dataTransfer.effectAllowed = "move";
+        };
+
+        const onDrop = (e, node) => {
+            if (!draggedLeader.value || node.occupied) return;
+
+            if (draggedLeader.value.targetId === node.id) {
+                node.occupied = true;
+                node.occupiedEmoji = draggedLeader.value.emoji;
+                placedIds.value.push(draggedLeader.value.id);
+                activePopup.value = { ...draggedLeader.value, locationLabel: node.label };
+                
+                confetti({ 
+                    particleCount: 100, spread: 70, origin: { y: 0.7 },
+                    colors: ['#22c55e', '#3b82f6', '#ffffff'] 
+                });
+            } else {
+                gsap.to(e.target, { x: 5, repeat: 5, yoyo: true, duration: 0.05 });
+            }
+            draggedLeader.value = null;
+        };
+
+        return { leaders, mapNodes, trees, availableLeaders, activePopup, onDragStart, onDrop, placedIds };
+    }
+}).mount('#app');
+</script>
+</body>
+</html>

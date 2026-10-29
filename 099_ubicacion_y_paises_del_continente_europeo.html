@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>¡Super Europa! 🌍</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --azul-fuerte: #003566;
+            --azul-claro: #4CC9F0;
+            --verde-ok: #2DCE89;
+            --rosa: #F72585;
+            --fondo: #f0f4f8;
+            --blanco: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Fredoka', sans-serif; }
+        h1, h2, .btn-accion { font-family: 'Luckiest Guy', cursive; }
+
+        body {
+            background: var(--azul-fuerte);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        /* Contenedor Adaptable */
+        .app-container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--blanco);
+            border: 8px solid var(--azul-claro);
+            border-radius: 40px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            max-height: 95vh;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        /* Pantallas */
+        .pantalla {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            min-height: 400px;
+            justify-content: center;
+        }
+
+        h1 { font-size: clamp(2.5rem, 8vw, 4rem); color: var(--azul-fuerte); margin-bottom: 20px; line-height: 1; }
+        h2 { font-size: clamp(1.8rem, 6vw, 2.5rem); color: var(--rosa); margin-bottom: 15px; }
+        p { font-size: clamp(1.1rem, 4vw, 1.5rem); color: #334155; font-weight: 600; line-height: 1.4; }
+
+        /* Botones */
+        .btn-accion {
+            background: var(--verde-ok);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.8rem;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #1a9b65;
+            margin-top: 25px;
+            width: 100%;
+            max-width: 400px;
+        }
+        .btn-accion:active { transform: translateY(4px); box-shadow: 0 4px 0 #1a9b65; }
+
+        /* Cuadrícula de Países */
+        .grid-paises {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            width: 100%;
+            margin-top: 25px;
+        }
+
+        .tarjeta {
+            background: var(--fondo);
+            border: 4px solid var(--azul-claro);
+            border-radius: 25px;
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            transition: 0.2s;
+        }
+        .tarjeta.completado { border-color: var(--verde-ok); background: #e8fcf4; }
+
+        .bandera-img { width: 60px; height: 40px; border-radius: 8px; object-fit: cover; border: 2px solid #ddd; }
+
+        .check-marcador {
+            position: absolute; top: -10px; right: -10px;
+            background: var(--verde-ok); color: white;
+            width: 35px; height: 35px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; border: 3px solid white;
+        }
+
+        /* Modal de Info */
+        .modal-full {
+            position: fixed; inset: 0; background: var(--azul-fuerte);
+            z-index: 1000; padding: 20px; display: flex; align-items: center; justify-content: center;
+        }
+        .modal-contenido {
+            background: white; padding: 30px; border-radius: 30px; width: 100%; max-width: 500px;
+            border: 6px solid var(--azul-claro);
+        }
+
+        /* Quiz */
+        .opciones-container {
+            display: grid; grid-template-columns: 1fr; gap: 12px; width: 100%; margin-top: 20px;
+        }
+        .btn-opt {
+            background: var(--fondo); border: 3px solid var(--azul-claro);
+            padding: 18px; border-radius: 15px; font-size: 1.3rem; font-weight: 700;
+            color: var(--azul-fuerte); cursor: pointer;
+        }
+        .btn-opt:hover { background: var(--azul-claro); color: white; }
+
+        /* Ajustes Móvil */
+        @media (max-width: 600px) {
+            .app-container { border-radius: 20px; border-width: 4px; }
+            .pantalla { padding: 20px; }
+            .grid-paises { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body x-data="aventuraApp()">
+
+    <div class="app-container">
+        
+        <div class="pantalla" x-show="paso === 'inicio'">
+            <div style="font-size: 6rem;">🌍</div>
+            <h1>¡SUPER EUROPA!</h1>
+            <p>Conviértete en un experto de los países vecinos.</p>
+            <button class="btn-accion" @click="paso = 'info'">¡EMPEZAR!</button>
+        </div>
+
+        <div class="pantalla" x-show="paso === 'info'">
+            <h2>TU MISIÓN:</h2>
+            <p>1. Toca los 4 países del mapa.<br>2. Aprende sus secretos.<br>3. ¡Gana el examen final!</p>
+            <div style="background: #e0f2fe; padding: 15px; border-radius: 15px; margin-top: 20px; border-left: 5px solid var(--azul-claro);">
+                <strong>Ideal para:</strong> Primaria (Geografía)
+            </div>
+            <button class="btn-accion" @click="paso = 'mapa'">¡VAMOS!</button>
+        </div>
+
+        <div class="pantalla" x-show="paso === 'mapa'">
+            <h2>ELIGE UN PAÍS</h2>
+            <p>Debes revisar todos para continuar</p>
+            
+            <div class="grid-paises">
+                <template x-for="p in paises" :key="p.id">
+                    <div class="tarjeta" :class="p.visto && 'completado'" @click="mostrarDato(p)">
+                        <template x-if="p.visto"><div class="check-marcador">✓</div></template>
+                        <img :src="p.img" class="bandera-img" :alt="p.nombre">
+                        <span style="font-size: 1.8rem; font-weight: 900; color: var(--azul-fuerte);" x-text="p.nombre"></span>
+                    </div>
+                </template>
+            </div>
+
+            <div class="modal-full" x-show="modal" x-transition>
+                <div class="modal-contenido">
+                    <img :src="paises[idSel-1]?.img" style="width: 120px; border-radius: 10px; margin-bottom: 15px;">
+                    <h1 x-text="paises[idSel-1]?.nombre"></h1>
+                    <div style="text-align: left; background: #f8fafc; padding: 20px; border-radius: 20px; border: 2px solid #e2e8f0;">
+                        <p style="color: var(--rosa); font-weight: 900;">📍 CAPITAL: <span x-text="paises[idSel-1]?.capital" style="color: var(--azul-fuerte);"></span></p>
+                        <p style="font-size: 1.2rem; margin-top: 10px;" x-text="paises[idSel-1]?.dato"></p>
+                    </div>
+                    <button class="btn-accion" style="background: var(--azul-fuerte); box-shadow: 0 8px 0 #001d3d;" @click="modal = false">¡LO TENGO!</button>
+                </div>
+            </div>
+
+            <button class="btn-accion" x-show="revisados >= 4" @click="paso = 'quiz'">¡HACER EL EXAMEN!</button>
+        </div>
+
+        <div class="pantalla" x-show="paso === 'quiz'">
+            <h2 style="color: var(--azul-claro);">PREGUNTA <span x-text="qIdx + 1"></span>/4</h2>
+            <p style="font-size: 1.8rem; margin-bottom: 20px;" x-text="preguntas[qIdx].t"></p>
+            
+            <div class="opciones-container">
+                <template x-for="o in preguntas[qIdx].ops">
+                    <button class="btn-opt" @click="validar(o)" x-text="o"></button>
+                </template>
+            </div>
+        </div>
+
+        <div class="pantalla" x-show="paso === 'fin'">
+            <div style="font-size: 6rem;">🏆</div>
+            <h1>¡ERES UN CRACK!</h1>
+            <p>Has superado todos los retos de Europa.</p>
+            <button class="btn-accion" @click="location.reload()">REPETIR AVENTURA</button>
+        </div>
+
+    </div>
+
+    <script>
+        function aventuraApp() {
+            return {
+                paso: 'inicio',
+                modal: false,
+                idSel: 1,
+                revisados: 0,
+                qIdx: 0,
+                paises: [
+                    { id: 1, nombre: 'ESPAÑA', img: 'https://flagcdn.com/w160/es.png', capital: 'MADRID', visto: false, dato: '¡Es el país de la alegría! Aquí se inventó el Chupa Chups y tiene castillos de cuentos.' },
+                    { id: 2, nombre: 'FRANCIA', img: 'https://flagcdn.com/w160/fr.png', capital: 'PARÍS', visto: false, dato: '¡Es gigante! Su capital tiene una torre de hierro muy alta llamada Torre Eiffel.' },
+                    { id: 3, nombre: 'ITALIA', img: 'https://flagcdn.com/w160/it.png', capital: 'ROMA', visto: false, dato: '¡Parece una bota! Aquí se inventó la pizza y el helado más rico del mundo.' },
+                    { id: 4, nombre: 'ALEMANIA', img: 'https://flagcdn.com/w160/de.png', capital: 'BERLÍN', visto: false, dato: '¡Es el país de los inventores! Tienen más de 20,000 castillos preciosos.' }
+                ],
+                preguntas: [
+                    { t: "¿Cuál es el país que tiene forma de bota? 👢", ops: ["España", "Alemania", "Italia", "Francia"], c: "Italia" },
+                    { t: "¿En qué ciudad está la Torre Eiffel? 🗼", ops: ["Berlín", "Madrid", "París", "Roma"], c: "París" },
+                    { t: "Si visitas Madrid, estás en... 🇪🇸", ops: ["Francia", "España", "Italia", "Portugal"], c: "España" },
+                    { t: "¿Cuál es la capital de Alemania? 🥨", ops: ["Berlín", "Roma", "París", "Madrid"], c: "Berlín" }
+                ],
+                mostrarDato(p) {
+                    this.idSel = p.id;
+                    this.modal = true;
+                    if (!p.visto) {
+                        p.visto = true;
+                        this.revisados++;
+                    }
+                },
+                validar(o) {
+                    if (o === this.preguntas[this.qIdx].c) {
+                        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+                        if (this.qIdx < 3) this.qIdx++;
+                        else this.paso = 'fin';
+                    } else {
+                        gsap.to(".app-container", { x: 10, repeat: 3, yoyo: true, duration: 0.05 });
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

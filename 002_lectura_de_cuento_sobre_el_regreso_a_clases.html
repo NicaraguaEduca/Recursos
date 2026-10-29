@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardi y su Regreso a Clases</title>
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --secondary-color: #fdd835;
+            --bg-color: #e8f5e9;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        #story-container {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .scene-text {
+            font-size: 1.5rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .options-container {
+            display: grid;
+            gap: 10px;
+        }
+
+        button {
+            background-color: white;
+            border: 2px solid var(--primary-color);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .nav-btn {
+            background-color: var(--primary-color);
+            color: white;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        #feedback {
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 24px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #ccc;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        #progress-fill {
+            height: 100%;
+            background: var(--primary-color);
+            width: 0%;
+            transition: width 0.5s;
+        }
+    </style>
+</head>
+<body>
+
+<div id="story-container">
+    <div class="progress-bar"><div id="progress-fill"></div></div>
+    <div id="content">
+        </div>
+    <div id="feedback"></div>
+</div>
+
+<script>
+    const scenes = [
+        { type: 'text', text: "¡Hola! Soy Guardi el Guardabarranco. ¿Me acompañas en mi primer día de clases? 🦜", action: "Guardi saluda con el ala." },
+        { type: 'text', text: "El sol salió muy temprano en el bosque. Guardi se levantó saltando de alegría. ¡Hoy es el gran día! ☀️", action: "Sol brillante y Guardi en su nido." },
+        { type: 'text', text: "Antes de salir, Guardi revisó su mochila verde. Llevaba su merienda y sus lápices de colores favoritos. 🎒", action: "Guardi cierra su mochilita." },
+        { 
+            type: 'quiz', 
+            text: "¿Cómo se siente Guardi por volver a la escuela?", 
+            options: [
+                { text: "Asustado 😟", correct: false, msg: "¡Mira su sonrisa de nuevo! No parece asustado." },
+                { text: "Muy emocionado 😊", correct: true, msg: "¡Exacto! Salta de alegría por el gran día." },
+                { text: "Enojado 😡", correct: false, msg: "¡Oh no! Guardi está feliz, no está molesto." }
+            ] 
+        },
+        { type: 'text', text: "¡Correcto! Guardi voló sobre los árboles de Sacuanjoche, sintiendo el aire fresco en sus plumas largas. 🌸", action: "Vuelo entre flores." },
+        { type: 'text', text: "Al llegar a la escuela, la primera en recibirlo con un gran abrazo fue la Ardilla Susi, la bibliotecaria. 🐿️", action: "Abrazo con Susi." },
+        { 
+            type: 'quiz', 
+            text: "¿A quién saludó Guardi primero al llegar?", 
+            options: [
+                { text: "Al León 🦁", correct: false, msg: "¡Mmm no! El león no estaba en la puerta." },
+                { text: "A la Ardilla Susi 🐿️", correct: true, msg: "¡Sí! Susi le dio un gran abrazo de bienvenida." },
+                { text: "Al Mono Congo 🐒", correct: false, msg: "¡Casi! Pero fue una amiga con cola esponjosa." }
+            ] 
+        },
+        { type: 'text', text: "En el salón, la Maestra Tortuga les dijo: 'Saquen sus materiales para dibujar nuestros sueños'. 🐢", action: "Maestra Tortuga en la pizarra." },
+        { 
+            type: 'quiz', 
+            text: "¿Qué traía Guardi en su mochila para la clase de dibujo?", 
+            options: [
+                { text: "Una pelota ⚽", correct: false, msg: "Eso sirve para el recreo, pero no para dibujar." },
+                { text: "Sus lápices de colores ✏️", correct: true, msg: "¡Muy bien! Con ellos dibujará sus sueños." },
+                { text: "Un camión de juguete 🚛", correct: false, msg: "¡Divertido! Pero no es lo que guardó en su mochila verde." }
+            ] 
+        },
+        { type: 'text', text: "¡Lo lograste! Eres un gran observador. ¡Bienvenido a clases 2026! 🎉", action: "Celebración final." }
+    ];
+
+    let currentScene = 0;
+
+    function renderScene() {
+        const container = document.getElementById('content');
+        const feedback = document.getElementById('feedback');
+        const progress = document.getElementById('progress-fill');
+        const scene = scenes[currentScene];
+        
+        feedback.innerText = "";
+        progress.style.width = `${((currentScene + 1) / scenes.length) * 100}%`;
+
+        if (scene.type === 'text') {
+            container.innerHTML = `
+                <p class="scene-text">${scene.text}</p>
+                <p style="font-style: italic; color: #666;">[${scene.action}]</p>
+                <button class="nav-btn" onclick="nextScene()">${currentScene === scenes.length -1 ? 'Empezar de nuevo' : 'Continuar →'}</button>
+            `;
+        } else {
+            container.innerHTML = `<p class="scene-text">${scene.text}</p><div class="options-container"></div>`;
+            const optionsDiv = container.querySelector('.options-container');
+            scene.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.innerText = opt.text;
+                btn.onclick = () => checkAnswer(opt);
+                optionsDiv.appendChild(btn);
+            });
+        }
+    }
+
+    function checkAnswer(opt) {
+        const feedback = document.getElementById('feedback');
+        if (opt.correct) {
+            feedback.style.color = "green";
+            feedback.innerText = "⭐ " + opt.msg;
+            setTimeout(nextScene, 2000);
+        } else {
+            feedback.style.color = "red";
+            feedback.innerText = "❌ " + opt.msg;
+        }
+    }
+
+    function nextScene() {
+        currentScene++;
+        if (currentScene >= scenes.length) currentScene = 0;
+        renderScene();
+    }
+
+    renderScene();
+</script>
+
+</body>
+</html>

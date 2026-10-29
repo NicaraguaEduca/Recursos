@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>El Expreso Matemático</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&family=Titan+One&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --sky-top: #4FC3F7;
+            --sky-bot: #E1F5FE;
+            --highlight-yellow: #FFD600; /* Amarillo solicitado */
+            --dark-bg: #263238;
+        }
+
+        body {
+            margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden;
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(to bottom, var(--sky-top), var(--sky-bot));
+            user-select: none;
+            touch-action: none;
+        }
+
+        /* --- ESCENARIO --- */
+        .scene { position: absolute; width: 100%; height: 100%; top: 0; left: 0; overflow: hidden; }
+
+        .mountains {
+            position: absolute; bottom: 180px; width: 200%; height: 300px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'%3E%3Cpath d='M0,300 L0,150 L200,50 L400,200 L600,80 L800,220 L1000,100 L1200,300 Z' fill='%2390CAF9' opacity='0.6'/%3E%3C/svg%3E");
+            background-size: 50% 100%; opacity: 0.8;
+        }
+        
+        .hills {
+            position: absolute; bottom: 130px; width: 200%; height: 150px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 150' preserveAspectRatio='none'%3E%3Cpath d='M0,150 C300,0 600,150 900,50 L1200,150 Z' fill='%2381C784'/%3E%3C/svg%3E");
+            background-size: 50% 100%;
+        }
+
+        .track-bed {
+            position: absolute; bottom: 130px; width: 100%; height: 20px;
+            background: repeating-linear-gradient(90deg, #3E2723 0, #3E2723 20px, transparent 20px, transparent 40px);
+            border-top: 8px solid #90A4AE;
+            box-shadow: 0 10px 10px rgba(0,0,0,0.2);
+        }
+
+        /* --- TREN --- */
+        #train-container {
+            position: absolute; bottom: 152px;
+            left: 50%; 
+            /* El transform se maneja en JS para evitar conflictos en móvil */
+            display: flex; align-items: flex-end;
+            gap: 5px;
+            filter: drop-shadow(0 10px 5px rgba(0,0,0,0.3));
+            transform-origin: bottom center; /* Clave para el escalado */
+        }
+
+        .wagon-shape {
+            width: 180px; height: 140px; position: relative;
+            display: flex; justify-content: center; align-items: center; box-sizing: border-box;
+        }
+
+        .flatcar {
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 140'%3E%3Crect x='10' y='100' width='160' height='20' fill='%235D4037' stroke='%233E2723' stroke-width='3'/%3E%3Ccircle cx='40' cy='125' r='15' fill='%23333' stroke='%23999' stroke-width='3'/%3E%3Ccircle cx='140' cy='125' r='15' fill='%23333' stroke='%23999' stroke-width='3'/%3E%3Crect x='170' y='105' width='10' height='10' fill='%23111'/%3E%3C/svg%3E") no-repeat center bottom;
+            align-items: flex-end; padding-bottom: 40px;
+        }
+
+        .boxcar {
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 140'%3E%3Crect x='10' y='20' width='160' height='100' rx='5' fill='%231976D2' stroke='%230D47A1' stroke-width='3'/%3E%3Cline x1='10' y1='50' x2='170' y2='50' stroke='rgba(0,0,0,0.2)' stroke-width='2'/%3E%3Cline x1='10' y1='90' x2='170' y2='90' stroke='rgba(0,0,0,0.2)' stroke-width='2'/%3E%3Cpath d='M5 20 L15 10 L165 10 L175 20 Z' fill='%23424242'/%3E%3Ccircle cx='40' cy='125' r='15' fill='%23333' stroke='%23999' stroke-width='3'/%3E%3Ccircle cx='140' cy='125' r='15' fill='%23333' stroke='%23999' stroke-width='3'/%3E%3Crect x='170' y='105' width='10' height='10' fill='%23111'/%3E%3C/svg%3E") no-repeat center bottom;
+            z-index: 5;
+        }
+
+        .locomotive {
+            width: 240px; height: 190px; z-index: 10;
+            transform: scaleX(-1); 
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 190'%3E%3Crect x='130' y='50' width='90' height='110' rx='5' fill='%23D32F2F' stroke='%23B71C1C' stroke-width='4'/%3E%3Crect x='140' y='60' width='70' height='40' fill='%2381D4FA' stroke='%23333' stroke-width='2'/%3E%3Cpath d='M120 50 L230 50 L225 40 L125 40 Z' fill='%23212121'/%3E%3Crect x='20' y='80' width='120' height='80' fill='%23F44336' stroke='%23B71C1C' stroke-width='4'/%3E%3Cpath d='M40 80 L40 40 L30 30 L70 30 L60 40 L60 80 Z' fill='%23212121'/%3E%3Cpath d='M20 160 L0 160 L20 120 Z' fill='%23FFC107' stroke='%23333'/%3E%3Ccircle cx='50' cy='170' r='20' fill='%23333' stroke='%23999' stroke-width='3'/%3E%3Ccircle cx='100' cy='170' r='20' fill='%23333' stroke='%23999' stroke-width='3'/%3E%3Ccircle cx='175' cy='170' r='20' fill='%23333' stroke='%23999' stroke-width='3'/%3E%3C/svg%3E") no-repeat center bottom;
+            display: flex; justify-content: center; align-items: flex-end; padding-bottom: 50px; margin-left: -20px;
+        }
+
+        .loco-content {
+            transform: scaleX(-1); width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center; padding-top: 50px;
+            position: relative;
+        }
+
+        #current-number {
+            font-family: 'Titan One', cursive; font-size: 4rem; color: white;
+            text-shadow: 3px 3px 0 #000; background: rgba(0,0,0,0.2);
+            padding: 5px 15px; border-radius: 10px; margin-bottom: 20px;
+        }
+
+        .drop-zone {
+            width: 100px; height: 90px;
+            border: 3px dashed rgba(255,255,255,0.6); border-radius: 10px;
+            display: flex; justify-content: center; align-items: center;
+            position: relative; background: rgba(255,255,255,0.1);
+        }
+
+        /* --- GUÍAS VISUALES MEJORADAS --- */
+        .guide-tip {
+            position: absolute; top: -100px;
+            display: flex; flex-direction: column; align-items: center;
+            opacity: 0; pointer-events: none; z-index: 100;
+        }
+        
+        .guide-label {
+            background: var(--dark-bg); /* Fondo oscuro */
+            color: var(--highlight-yellow); /* Texto Amarillo */
+            font-weight: 700; font-size: 1.1rem;
+            padding: 8px 12px; border-radius: 12px;
+            border: 2px solid var(--highlight-yellow);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+            margin-bottom: -5px; white-space: nowrap;
+        }
+        
+        .guide-arrow {
+            font-size: 3.5rem; color: var(--highlight-yellow);
+            text-shadow: 0 4px 5px rgba(0,0,0,0.5); line-height: 1;
+        }
+
+        /* --- PLATAFORMA --- */
+        #platform {
+            position: absolute; bottom: 0; width: 100%; height: 130px;
+            background: #4E342E; border-top: 6px solid #8D6E63;
+            display: flex; justify-content: center; align-items: center; gap: 20px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.5); z-index: 50;
+        }
+
+        .cargo-crate {
+            width: 90px; height: 90px;
+            background: #FFB74D; border: 4px solid #E65100; border-radius: 10px;
+            display: flex; justify-content: center; align-items: center;
+            font-family: 'Titan One', cursive; font-size: 2.2rem; color: #BF360C;
+            cursor: grab; box-shadow: 0 6px 0 #E65100, 0 10px 10px rgba(0,0,0,0.2);
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.05) 10px, rgba(0,0,0,0.05) 20px);
+            z-index: 100; touch-action: none;
+        }
+        .cargo-crate:active { cursor: grabbing; transform: scale(1.1); }
+
+        /* --- INTERFAZ SUPERIOR --- */
+        #ui-bar {
+            position: absolute; top: 10px; left: 0; width: 100%;
+            display: flex; flex-direction: column; align-items: center;
+            z-index: 80; pointer-events: none;
+        }
+
+        .ui-row-top {
+            display: flex; justify-content: space-between; width: 100%; padding: 0 20px;
+            box-sizing: border-box; align-items: flex-start;
+        }
+
+        #lives-container {
+            background: rgba(255,255,255,0.9); padding: 5px 12px; border-radius: 30px;
+            border: 2px solid #333; display: flex; gap: 5px; align-items: center;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.1); pointer-events: auto;
+        }
+        .coal-life {
+            width: 30px; height: 30px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M20,50 Q30,20 50,25 Q80,10 85,40 Q95,60 80,80 Q50,95 30,80 Q10,70 20,50 Z' fill='%23212121'/%3E%3C/svg%3E");
+            background-size: contain; background-repeat: no-repeat;
+            transition: transform 0.3s, opacity 0.3s;
+        }
+        .coal-lost { opacity: 0.2; transform: scale(0.8); filter: grayscale(100%); }
+
+        #timer-container {
+            width: 250px; height: 30px;
+            background: #37474F; border: 3px solid #90A4AE; border-radius: 20px;
+            overflow: hidden; position: relative; pointer-events: auto;
+        }
+        #timer-bar {
+            height: 100%; width: 100%;
+            background: linear-gradient(90deg, #66BB6A, #FFC107, #EF5350);
+            transition: width 0.1s linear;
+        }
+        #timer-label {
+            position: absolute; width: 100%; top: 50%; transform: translateY(-50%);
+            text-align: center; color: white; font-weight: bold; font-family: 'Share Tech Mono', monospace;
+            text-shadow: 1px 1px 1px black; font-size: 0.8rem;
+        }
+
+        #round-panel {
+            background: rgba(255,255,255,0.9); padding: 5px 15px; border-radius: 30px;
+            font-weight: bold; font-size: 1.1rem; color: #333;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.1); border: 2px solid #333; pointer-events: auto;
+        }
+
+        /* --- NUEVO ESTILO DE INSTRUCCIÓN --- */
+        #instruction-display {
+            background: rgba(38, 50, 56, 0.85); /* Fondo oscuro */
+            color: white;
+            padding: 8px 20px; border-radius: 15px;
+            margin-top: 8px; font-size: 1.2rem; text-align: center;
+            border: 2px solid var(--highlight-yellow); /* Borde amarillo */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            font-family: 'Fredoka', sans-serif; /* Misma fuente de pregunta */
+            pointer-events: auto; max-width: 90%;
+        }
+        #instruction-display strong { 
+            color: var(--highlight-yellow); 
+            font-size: 1.3rem;
+        }
+
+        /* --- MODALES --- */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 200;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            color: white; text-align: center;
+        }
+        
+        .modal-box {
+            background: white; color: #333; padding: 30px; border-radius: 20px;
+            max-width: 500px; width: 90%;
+            box-shadow: 0 10px 0 #CCC, 0 20px 40px rgba(0,0,0,0.5);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .correct-viz {
+            display: flex; justify-content: center; gap: 10px; margin: 20px 0;
+            font-family: 'Titan One'; font-size: 2rem; color: white;
+        }
+        .viz-box { padding: 10px 20px; border-radius: 10px; border: 3px solid rgba(0,0,0,0.2); min-width: 60px; }
+
+        .btn {
+            background: #66BB6A; border: none; padding: 10px 30px;
+            font-size: 1.5rem; color: white; font-family: 'Titan One';
+            border-radius: 50px; cursor: pointer; margin-top: 15px;
+            box-shadow: 0 6px 0 #2E7D32; transition: transform 0.1s;
+        }
+        .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #2E7D32; }
+        .btn-retry { background: #FF7043; box-shadow: 0 6px 0 #BF360C; }
+        .btn-retry:active { box-shadow: 0 2px 0 #BF360C; }
+
+        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .smoke { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.8); pointer-events: none; }
+
+        /* --- MEDIA QUERIES (CELULARES) --- */
+        @media (max-width: 768px) {
+            /* El tren se maneja vía JS para el centrado */
+            #train-container { bottom: 130px; }
+
+            .ui-row-top { padding: 0 10px; width: 100%; justify-content: space-between; }
+            #lives-container { padding: 4px 8px; }
+            .coal-life { width: 25px; height: 25px; }
+            #round-panel { font-size: 0.9rem; padding: 4px 10px; }
+            
+            #timer-container { width: 30%; height: 25px; }
+            #timer-label { font-size: 0.7rem; }
+            
+            #instruction-display { font-size: 0.9rem; padding: 5px 10px; width: 95%; margin-top: 5px; }
+
+            #platform { height: 100px; gap: 8px; }
+            .cargo-crate { width: 60px; height: 60px; font-size: 1.4rem; border-width: 3px; }
+            
+            /* Ajuste de guías en móvil para que no se salgan de pantalla */
+            .guide-tip { top: -90px; }
+            .guide-label { font-size: 0.9rem; padding: 4px 8px; }
+            .guide-arrow { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="scene">
+    <div class="mountains" id="bg-mountains"></div>
+    <div class="hills" id="bg-hills"></div>
+    <div class="track-bed"></div>
+
+    <div id="train-container">
+        <div class="wagon-shape flatcar">
+            <div class="guide-tip" id="guide-prev">
+                <div class="guide-label">ANTECESOR</div>
+                <div class="guide-arrow">⬇</div>
+            </div>
+            <div class="drop-zone" id="zone-prev" data-label="ANTERIOR"></div>
+        </div>
+
+        <div class="wagon-shape boxcar">
+            <span id="current-number">?</span>
+        </div>
+
+        <div class="wagon-shape locomotive">
+            <div class="loco-content">
+                <div class="guide-tip" id="guide-next">
+                    <div class="guide-label">SUCESOR</div>
+                    <div class="guide-arrow">⬇</div>
+                </div>
+                <div class="drop-zone" id="zone-next" data-label="SIGUIENTE"></div>
+                <div id="chimney-point" style="position:absolute; top:10px; right:60px; width:1px; height:1px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="platform"></div>
+
+<div id="ui-bar">
+    <div class="ui-row-top">
+        <div id="lives-container">
+            <div class="coal-life" id="life-1"></div>
+            <div class="coal-life" id="life-2"></div>
+            <div class="coal-life" id="life-3"></div>
+        </div>
+
+        <div id="timer-container">
+            <div id="timer-label">PRESIÓN</div>
+            <div id="timer-bar"></div>
+        </div>
+
+        <div id="round-panel">Ronda <span id="round-display">1</span>/10</div>
+    </div>
+
+    <div id="instruction-display">
+        ¿Qué número va <strong>antes</strong> del <span id="target-instr">?</span> y cuál va <strong>después</strong>?
+    </div>
+</div>
+
+<div id="intro-overlay" class="overlay" style="display:flex;">
+    <h1 style="font-family:'Titan One'; font-size: 3rem; color:#FFCA28; text-shadow: 3px 3px 0 #E65100;">EL EXPRESO MATEMÁTICO</h1>
+    <p style="font-size:1.3rem; max-width:600px; color:#EEE;">
+        ¡Carga el vagón <strong>ANTERIOR</strong> y el <strong>SIGUIENTE</strong>!<br>
+        Tienes 3 carbones. ¡No dejes que se apague el tren!
+    </p>
+    <button class="btn" onclick="startGame()">¡A JUGAR!</button>
+</div>
+
+<div id="correction-overlay" class="overlay">
+    <div class="modal-box">
+        <h2 style="color:#EF5350; margin:0; font-family:'Titan One'">¡UPS! SE NOS FUE...</h2>
+        <p>Perdiste un carbón. Mira el orden correcto:</p>
+        
+        <div class="correct-viz">
+            <div class="viz-box" style="background:#8D6E63;" id="corr-prev"></div>
+            <div class="viz-box" style="background:#1976D2;" id="corr-curr"></div>
+            <div class="viz-box" style="background:#D32F2F;" id="corr-next"></div>
+        </div>
+        
+        <p style="background: #E3F2FD; color: #1565C0; padding: 10px; border-radius: 8px; font-size: 1rem; margin: 15px 0;">
+            💡 <strong>Recuerda:</strong> El vagón de atrás lleva <strong>uno menos (-1)</strong> y la locomotora lleva <strong>uno más (+1)</strong>.
+        </p>
+        
+        <button class="btn" onclick="closeCorrection()">CONTINUAR</button>
+    </div>
+</div>
+
+<div id="gameover-overlay" class="overlay">
+    <div class="modal-box">
+        <h1 style="font-size:4rem; margin:0;">🚂🚫</h1>
+        <h2 style="font-family:'Titan One'; color:#333;">EL TREN NO PUDO ARRANCAR</h2>
+        <p>Te quedaste sin carbón.</p>
+        <button class="btn btn-retry" onclick="resetGame()">VOLVER A INTENTAR</button>
+    </div>
+</div>
+
+<div id="victory-overlay" class="overlay">
+    <div class="modal-box" style="background: #FFF9C4;">
+        <h1 style="font-size:4rem; margin:0;">🏆🚂</h1>
+        <h2 style="font-family:'Titan One'; color:#E65100;">¡EXCELENTE TRABAJO!</h2>
+        <p>Completaste las 10 rutas. ¡Eres un maquinista experto!</p>
+        <button class="btn" onclick="resetGame()">JUGAR DE NUEVO</button>
+    </div>
+</div>
+
+<script>
+    let lives = 3;
+    let round = 1;
+    const maxRounds = 10;
+    let currentNum = 0;
+    let filled = { prev: false, next: false };
+    let maxTime = 20; 
+    let currentTime = maxTime;
+    let timerInterval = null;
+    let isPaused = false;
+
+    // --- DETECCIÓN DE MÓVIL ---
+    function getScaleFactor() {
+        return window.innerWidth < 768 ? 0.55 : 1;
+    }
+
+    // --- MANEJO DE GUÍAS VISUALES ---
+    function toggleGuides(show) {
+        if(show) {
+            gsap.to(".guide-tip", { opacity: 1, duration: 0.5 });
+            gsap.to(".guide-tip", { 
+                y: -10, 
+                duration: 0.8, yoyo: true, repeat: -1, ease: "sine.inOut" 
+            });
+        } else {
+            gsap.to(".guide-tip", { opacity: 0, duration: 0.3 });
+            gsap.killTweensOf(".guide-tip", "y"); 
+            gsap.set(".guide-tip", { y: 0 });
+        }
+    }
+
+    function puffSmoke() {
+        const point = document.getElementById('chimney-point').getBoundingClientRect();
+        for(let i=0; i<6; i++) {
+            const el = document.createElement('div');
+            el.className = 'smoke';
+            const size = Math.random() * 20 + 20;
+            el.style.width = size + 'px'; el.style.height = size + 'px';
+            el.style.left = point.left + 'px'; el.style.top = point.top + 'px';
+            document.body.appendChild(el);
+            
+            gsap.to(el, {
+                y: -100 - Math.random()*100, x: -50 - Math.random()*50, 
+                scale: 2 + Math.random(), opacity: 0, duration: 1.5,
+                onComplete: () => el.remove()
+            });
+        }
+    }
+
+    function animateBackground(play) {
+        if(play) {
+            gsap.to(".mountains", { backgroundPositionX: "-=150px", duration: 2, ease: "none", repeat: -1 });
+            gsap.to(".hills", { backgroundPositionX: "-=400px", duration: 2, ease: "none", repeat: -1 });
+        } else {
+            gsap.killTweensOf(".mountains");
+            gsap.killTweensOf(".hills");
+        }
+    }
+
+    function startGame() {
+        gsap.to("#intro-overlay", { opacity: 0, duration: 0.5, onComplete: () => {
+            document.getElementById('intro-overlay').style.display = 'none';
+            resetGame();
+        }});
+    }
+
+    function resetGame() {
+        lives = 3;
+        round = 1;
+        updateLivesUI();
+        document.getElementById('round-display').innerText = round;
+        document.getElementById('gameover-overlay').style.display = 'none';
+        document.getElementById('victory-overlay').style.display = 'none';
+        newRound();
+    }
+
+    function newRound() {
+        document.getElementById('zone-prev').innerHTML = '';
+        document.getElementById('zone-next').innerHTML = '';
+        filled = { prev: false, next: false };
+        isPaused = false;
+        document.getElementById('round-display').innerText = round;
+
+        animateBackground(true);
+        toggleGuides(false);
+
+        // CONFIGURACIÓN DE POSICIÓN Y ESCALA SEGÚN PANTALLA
+        const scale = getScaleFactor();
+        
+        // Empieza fuera a la izquierda (con escala aplicada)
+        gsap.set("#train-container", { xPercent: -200, left: "50%", scale: scale }); 
+
+        // Entra al centro (manteniendo la escala)
+        gsap.to("#train-container", { 
+            xPercent: -50, 
+            duration: 2.5, 
+            ease: "power2.out", 
+            onComplete: () => {
+                animateBackground(false);
+                puffSmoke();
+                setupNumber();
+                startTimer();
+                toggleGuides(true); 
+            }
+        });
+        
+        document.getElementById('platform').innerHTML = '';
+    }
+
+    function setupNumber() {
+        let range = 100 + (round * 50); 
+        currentNum = Math.floor(Math.random() * range) + 20;
+        
+        const numDisplay = document.getElementById('current-number');
+        numDisplay.innerText = currentNum;
+        
+        document.getElementById('target-instr').innerText = currentNum;
+        gsap.from("#instruction-display", { y: -10, opacity: 0, duration: 0.5 });
+
+        gsap.from(numDisplay, { scale: 0, duration: 0.5, ease: "back.out(2)" });
+        generateCrates();
+    }
+
+    function generateCrates() {
+        const container = document.getElementById('platform');
+        container.innerHTML = '';
+        
+        let values = [currentNum - 1, currentNum + 1, currentNum + 10, currentNum - 10];
+        if(round > 5) values.push(currentNum + 2);
+
+        values.sort(() => Math.random() - 0.5);
+
+        values.forEach((val, index) => {
+            const crate = document.createElement('div');
+            crate.className = 'cargo-crate';
+            crate.innerHTML = `<span>${val}</span>`;
+            crate.dataset.value = val;
+            container.appendChild(crate);
+            gsap.from(crate, { y: 150, duration: 0.5, delay: index * 0.1, ease: "back.out" });
+        });
+        initDrag();
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        maxTime = Math.max(15, 26 - round); 
+        currentTime = maxTime;
+        updateTimerVisual();
+        
+        timerInterval = setInterval(() => {
+            if(!isPaused) {
+                currentTime -= 0.1;
+                updateTimerVisual();
+                if (currentTime <= 0) {
+                    clearInterval(timerInterval);
+                    handleError(true); 
+                }
+            }
+        }, 100);
+    }
+
+    function updateTimerVisual() {
+        const percentage = (currentTime / maxTime) * 100;
+        const bar = document.getElementById('timer-bar');
+        bar.style.width = percentage + '%';
+        if (percentage > 50) bar.style.background = '#66BB6A';
+        else if (percentage > 20) bar.style.background = '#FFC107';
+        else bar.style.background = '#EF5350';
+    }
+
+    function initDrag() {
+        Draggable.create(".cargo-crate", {
+            type: "x,y",
+            edgeResistance: 0.65,
+            bounds: "body",
+            inertia: true,
+            onDragStart: function() { 
+                if(isPaused) { this.endDrag(); return; } 
+                gsap.to(this.target, { scale: 1.1, zIndex: 1000 }); 
+            },
+            onDragEnd: function() {
+                gsap.to(this.target, { scale: 1, zIndex: 1 });
+                checkDrop(this.target);
+            }
+        });
+    }
+
+    function checkDrop(el) {
+        if(isPaused) return;
+
+        const val = parseInt(el.dataset.value);
+        const rect = el.getBoundingClientRect();
+        const prevZone = document.getElementById('zone-prev');
+        const nextZone = document.getElementById('zone-next');
+        let target = null;
+        let isCorrect = false;
+
+        if(hitTest(rect, prevZone.getBoundingClientRect())) {
+            if(val === currentNum - 1) { target = prevZone; isCorrect = true; filled.prev = true; }
+            else { handleError(false); return; }
+        }
+        else if(hitTest(rect, nextZone.getBoundingClientRect())) {
+            if(val === currentNum + 1) { target = nextZone; isCorrect = true; filled.next = true; }
+            else { handleError(false); return; }
+        }
+
+        if(isCorrect && target) {
+            target.appendChild(el);
+            gsap.set(el, { x: 0, y: 0, position: 'static' });
+            confetti({ particleCount: 20, spread: 40, origin: { x: (rect.left+50)/window.innerWidth, y: rect.top/window.innerHeight } });
+
+            if(filled.prev && filled.next) {
+                clearInterval(timerInterval);
+                isPaused = true;
+                setTimeout(roundComplete, 600);
+            }
+        } else {
+            gsap.to(el, { x: 0, y: 0, duration: 0.4, ease: "elastic.out(1, 0.5)" });
+        }
+    }
+
+    function handleError(isTimeout) {
+        clearInterval(timerInterval);
+        isPaused = true;
+        lives--;
+        updateLivesUI();
+        toggleGuides(false); 
+
+        if(lives <= 0) {
+            setTimeout(() => {
+                document.getElementById('gameover-overlay').style.display = 'flex';
+            }, 500);
+        } else {
+            const overlay = document.getElementById('correction-overlay');
+            document.getElementById('corr-prev').innerText = currentNum - 1;
+            document.getElementById('corr-curr').innerText = currentNum;
+            document.getElementById('corr-next').innerText = currentNum + 1;
+            overlay.style.display = 'flex';
+        }
+    }
+
+    function updateLivesUI() {
+        for(let i=1; i<=3; i++) {
+            const coal = document.getElementById(`life-${i}`);
+            if(i > lives) coal.classList.add('coal-lost');
+            else coal.classList.remove('coal-lost');
+        }
+    }
+
+    function closeCorrection() {
+        document.getElementById('correction-overlay').style.display = 'none';
+        departTrain(false);
+    }
+
+    function roundComplete() {
+        if(round >= maxRounds) {
+            document.getElementById('victory-overlay').style.display = 'flex';
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        } else {
+            round++;
+            departTrain(true);
+        }
+    }
+
+    function departTrain(success) {
+        toggleGuides(false); 
+        puffSmoke(); puffSmoke();
+        animateBackground(true);
+        
+        gsap.to("#train-container", {
+            xPercent: 200, // Sale hacia la derecha
+            duration: 1.5, ease: "power1.in",
+            onComplete: () => {
+                animateBackground(false);
+                newRound();
+            }
+        });
+    }
+
+    function hitTest(a, b) {
+        return !(((a.y + a.height) < (b.y)) || (a.y > (b.y + b.height)) || ((a.x + a.width) < b.x) || (a.x > (b.x + b.width)));
+    }
+    
+    // Listener para ajustar si el usuario rota el celular
+    window.addEventListener('resize', () => {
+        const scale = getScaleFactor();
+        if(!isPaused && document.getElementById('intro-overlay').style.display === 'none') {
+             gsap.set("#train-container", { scale: scale });
+        }
+    });
+</script>
+
+</body>
+</html>

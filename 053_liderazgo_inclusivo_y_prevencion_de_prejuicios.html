@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misión: El Futuro es de Todos | ECO</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+        
+        body { 
+            font-family: 'Fredoka', sans-serif; 
+            background: #6366f1;
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .comic-card {
+            background: white;
+            border: 6px solid #1e293b;
+            border-radius: 2.5rem;
+            box-shadow: 12px 12px 0px #1e293b;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1000px;
+            max-height: 90vh;
+        }
+
+        .scroll-area {
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        /* Estilo de las tarjetas de personajes */
+        .character-bubble {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            border: 4px solid #f1f5f9;
+        }
+
+        .character-bubble:hover {
+            transform: scale(1.02);
+            border-color: #fbbf24;
+            background: #fffbeb;
+        }
+
+        .selected-talent {
+            border-color: #6366f1 !important;
+            background: #eef2ff !important;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Espacios de misión */
+        .role-slot {
+            background: #f8fafc;
+            border: 3px dashed #cbd5e1;
+            border-radius: 1.5rem;
+            transition: 0.3s;
+            min-height: 160px;
+        }
+
+        .role-slot.active {
+            border-color: #6366f1;
+            background: #f5f3ff;
+            animation: pulse-border 2s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% { border-color: #6366f1; }
+            50% { border-color: #a855f7; }
+            100% { border-color: #6366f1; }
+        }
+
+        .murmullo-box {
+            background: #1e293b;
+            color: #cbd5e1;
+            padding: 0.75rem;
+            border-radius: 1rem;
+            font-style: italic;
+            font-size: 0.8rem;
+            line-height: 1.2;
+        }
+
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="app" v-cloak class="w-full flex justify-center">
+
+    <div v-if="gameState === 'intro'" class="comic-card p-12 text-center animate__animated animate__backInDown">
+        <div class="text-8xl mb-6">✨</div>
+        <h1 class="text-5xl font-bold text-slate-800 mb-4 tracking-tight">Misión: <span class="text-indigo-600">Líderes Escolares</span></h1>
+        <p class="text-xl text-slate-600 mb-10 max-w-xl mx-auto">
+            ¡Hola! Necesitamos formar un equipo increíble para mejorar la escuela. Elige a los líderes por sus <b>sueños</b> y no por prejuicios.
+        </p>
+        <button @click="gameState = 'playing'" class="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-bold text-2xl px-16 py-6 rounded-full shadow-xl transition-all hover:scale-105 border-b-8 border-yellow-600 uppercase">
+            ¡Empezar ahora!
+        </button>
+    </div>
+
+    <div v-if="gameState === 'playing'" class="comic-card p-6 md:p-8 animate__animated animate__fadeIn">
+        
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div>
+                <h2 class="text-3xl font-bold text-slate-800 tracking-tight">Crea tu <span class="text-indigo-600">Equipo</span></h2>
+                <p class="text-slate-500 font-medium">Toca un talento y asígnalo a una misión</p>
+            </div>
+            <div class="bg-indigo-600 text-white px-6 py-2 rounded-full font-bold shadow-lg">
+                {{ misionesAsignadas }} de 4 Misiones
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 overflow-hidden flex-grow">
+            
+            <div class="md:col-span-4 flex flex-col overflow-hidden">
+                <div class="scroll-area flex-grow pr-2">
+                    <div v-for="t in talentosDisponibles" 
+                         :key="t.id"
+                         @click="seleccionarTalento(t)"
+                         class="character-bubble p-4 rounded-2xl bg-white flex items-center gap-4 mb-3"
+                         :class="{'selected-talent': seleccionado?.id === t.id}">
+                        <div class="text-4xl bg-slate-50 w-14 h-14 flex items-center justify-center rounded-xl shadow-inner">{{ t.emoji }}</div>
+                        <div>
+                            <p class="font-bold text-slate-800">{{ t.nombre }}</p>
+                            <p class="text-[11px] text-indigo-500 font-bold uppercase tracking-wider">{{ t.don }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:col-span-8 flex flex-col overflow-hidden">
+                <div class="scroll-area grid grid-cols-1 sm:grid-cols-2 gap-4 flex-grow">
+                    <div v-for="(mision, key) in misiones" 
+                         :key="key"
+                         @click="asignarAMision(key)"
+                         class="role-slot p-5 text-center cursor-pointer flex flex-col items-center justify-center"
+                         :class="{'active': seleccionado && !mision.lider}">
+                        
+                        <div v-if="!mision.lider">
+                            <div class="text-3xl mb-2 opacity-30">{{ mision.icono }}</div>
+                            <h4 class="font-bold text-slate-700 leading-tight mb-2">{{ mision.titulo }}</h4>
+                            <div class="murmullo-box">
+                                "{{ mision.murmullo }}"
+                            </div>
+                        </div>
+
+                        <div v-else class="animate__animated animate__zoomIn w-full">
+                            <div class="text-5xl mb-2">{{ mision.lider.emoji }}</div>
+                            <p class="text-[10px] font-black text-indigo-500 uppercase">{{ mision.titulo }}</p>
+                            <p class="font-bold text-slate-800 text-lg">{{ mision.lider.nombre }}</p>
+                            <p class="text-[11px] italic text-slate-500 leading-tight mt-1">"{{ mision.lider.sueno }}"</p>
+                            <button @click.stop="removerLider(key)" class="mt-3 text-[10px] font-bold text-red-500 bg-red-50 px-3 py-1 rounded-full hover:bg-red-100 uppercase">Cambiar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 pt-4 border-t-2 border-slate-100">
+                    <button v-if="equipoCompleto" 
+                            @click="finalizar"
+                            class="w-full bg-green-500 hover:bg-green-400 text-white font-bold py-5 rounded-2xl shadow-xl transition-all transform hover:scale-[1.02] active:scale-95 text-xl uppercase tracking-widest animate__animated animate__pulse animate__infinite">
+                        🚀 ¡Lanzar Proyecto Escolar!
+                    </button>
+                    <div v-else class="text-center p-4 bg-slate-50 rounded-xl">
+                        <p class="text-slate-400 font-bold italic text-sm">
+                            Asigna a los líderes para activar el botón final...
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div v-if="gameState === 'success'" class="fixed inset-0 bg-indigo-900/98 backdrop-blur-xl flex items-center justify-center p-6 z-50">
+        <div class="comic-card p-10 max-w-2xl text-center animate__animated animate__jackInTheBox">
+            <div class="text-7xl mb-4">🏆</div>
+            <h2 class="text-4xl font-bold text-slate-800 mb-6 uppercase">¡Equipo de Élite!</h2>
+            <p class="text-lg text-slate-600 mb-8 font-medium">
+                Has formado un equipo basado en <b>talentos reales</b>. Al elegir a niñas para liderar tecnología y construcción, ayudaste a romper las barreras que limitan el futuro de todos.
+            </p>
+            <div class="bg-indigo-50 p-6 rounded-3xl mb-8 flex justify-around border-2 border-indigo-100">
+                <div v-for="m in misiones" class="text-center">
+                    <div class="text-3xl">{{ m.lider.emoji }}</div>
+                    <p class="text-[10px] font-black text-indigo-400 mt-1">{{ m.lider.nombre }}</p>
+                </div>
+            </div>
+            <button @click="reset" class="bg-indigo-600 text-white font-bold px-12 py-5 rounded-full shadow-lg text-xl uppercase hover:bg-indigo-500 transition-colors">
+                Jugar de nuevo
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const { createApp, ref, computed } = Vue;
+
+createApp({
+    setup() {
+        const gameState = ref('intro');
+        const seleccionado = ref(null);
+
+        const talentos = ref([
+            { id: 1, nombre: "Lucía", emoji: "👩‍🚀", don: "Genio Espacial", sueno: "Diseñar naves para limpiar el cielo.", genero: "f" },
+            { id: 2, nombre: "Matias", emoji: "👨‍🎨", don: "Artista Visual", sueno: "Llenar los muros de mensajes de paz.", genero: "m" },
+            { id: 3, nombre: "Isabella", emoji: "👩‍🔧", don: "Maestra de Obras", sueno: "Construir refugios para animales.", genero: "f" },
+            { id: 4, nombre: "Daniela", emoji: "👩‍💻", don: "Hada del Código", sueno: "Programar robots que planten árboles.", genero: "f" },
+            { id: 5, nombre: "Samuel", emoji: "👨‍🌾", don: "Eco-Guardián", sueno: "Crear un huerto solar gigante.", genero: "m" },
+            { id: 6, nombre: "Valentina", emoji: "👩‍💼", don: "Gran Oradora", sueno: "Que las niñas sean escuchadas siempre.", genero: "f" }
+        ]);
+
+        const misiones = ref({
+            tech: { titulo: "Ingeniería de Vuelo", icono: "⚙️", murmullo: "¿Una niña arreglando motores?", lider: null },
+            digital: { titulo: "Jefa de Sistemas", icono: "💻", murmullo: "Dicen que el código es para niños...", lider: null },
+            dir: { titulo: "Presidencia Escolar", icono: "📣", murmullo: "Buscamos un líder con voz fuerte.", lider: null },
+            const: { titulo: "Dir. de Construcción", icono: "🏗️", murmullo: "Es un trabajo muy pesado y sucio.", lider: null }
+        });
+
+        const talentosDisponibles = computed(() => {
+            const idsAsignados = Object.values(misiones.value).filter(m => m.lider).map(m => m.lider.id);
+            return talentos.value.filter(t => !idsAsignados.includes(t.id));
+        });
+
+        const equipoCompleto = computed(() => Object.values(misiones.value).every(m => m.lider));
+        const misionesAsignadas = computed(() => Object.values(misiones.value).filter(m => m.lider).length);
+
+        const seleccionarTalento = (t) => { seleccionado.value = t; };
+
+        const asignarAMision = (key) => {
+            if (seleccionado.value) {
+                misiones.value[key].lider = seleccionado.value;
+                seleccionado.value = null;
+            }
+        };
+
+        const removerLider = (key) => { misiones.value[key].lider = null; };
+
+        const finalizar = () => {
+            confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
+            gameState.value = 'success';
+        };
+
+        const reset = () => {
+            Object.keys(misiones.value).forEach(k => misiones.value[k].lider = null);
+            gameState.value = 'intro';
+        };
+
+        return { 
+            gameState, seleccionado, talentosDisponibles, misiones, 
+            equipoCompleto, seleccionarTalento, asignarAMision, removerLider, 
+            finalizar, reset, misionesAsignadas 
+        };
+    }
+}).mount('#app');
+</script>
+
+</body>
+</html>

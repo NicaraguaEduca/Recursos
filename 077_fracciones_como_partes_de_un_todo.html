@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>La Pizzería Lógica - Fracciones Visuales</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary: #E67E22; 
+            --secondary: #D35400;
+            --accent: #F1C40F;
+            --bg: #F4F7F6;
+            --text: #2C3E50;
+            --white: #FFFFFF;
+            --success: #27AE60;
+            --error: #C0392B;
+            --subject: #8E44AD;
+            --num-color: #E74C3C;
+            --den-color: #2980B9;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        .app-container {
+            background: var(--white);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border-bottom: 8px solid var(--primary);
+            padding: 20px;
+            position: relative;
+            max-height: 98vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .badge {
+            background: var(--subject);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            display: inline-block;
+            margin: 0 auto 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        h1 { font-size: clamp(1.2rem, 5vw, 1.6rem); margin-bottom: 8px; color: var(--primary); text-align: center; }
+
+        /* --- PANTALLAS --- */
+        .screen { display: none; flex-direction: column; height: 100%; }
+        .screen.active { display: flex; }
+
+        .objetivo-box {
+            background-color: #FFF9F2;
+            border: 2px solid #FFE5CC;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #A04000;
+            text-align: left;
+        }
+
+        .btn-main {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 5px 0 var(--secondary);
+            margin: 10px auto;
+            display: block;
+            transition: all 0.2s;
+        }
+        .btn-main:active { transform: translateY(3px); box-shadow: none; }
+
+        /* --- JUEGO: PIZZERÍA --- */
+        .orden-box {
+            background: #fdfdfd;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+            border: 2px solid #EEE;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .guia-fraccion {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-weight: bold;
+        }
+        
+        .num-label { color: var(--num-color); font-size: 0.6rem; text-transform: uppercase; }
+        .den-label { color: var(--den-color); font-size: 0.6rem; text-transform: uppercase; }
+        
+        .fraction-display {
+            font-size: 2.8rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+        .frac-line { border: 2px solid var(--text); width: 100%; margin: 2px 0; }
+
+        .pizza-area {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            margin: 0 auto 15px;
+            background: #FAD7A0; /* Masa */
+            border-radius: 50%;
+            border: 8px solid #BA4A00; /* Borde de pizza */
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .slice {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #E67E22;
+            border: 1px solid rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: rgba(255,255,255,0.5);
+            transform-origin: 50% 50%;
+        }
+
+        .slice.selected {
+            background: #F1C40F;
+            color: #BA4A00;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        .status-bar {
+            background: #E8F6F3;
+            padding: 10px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: bold;
+            color: var(--success);
+            font-size: 0.9rem;
+        }
+
+        /* --- MODAL --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 400px;
+            padding: 30px;
+            border-radius: 24px;
+            text-align: center;
+            border-top: 8px solid var(--primary);
+            animation: slideUp 0.4s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .modal-icon { font-size: 3.5rem; margin-bottom: 10px; }
+        .modal-title { font-size: 1.4rem; font-weight: 800; color: var(--primary); margin-bottom: 10px; }
+        .modal-text { font-size: 1rem; color: #444; margin-bottom: 25px; line-height: 1.6; }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- PANTALLA INICIAL -->
+        <div id="screen-start" class="screen active">
+            <div class="badge">Matemáticas</div>
+            <h1>La Pizzería Lógica</h1>
+            
+            <div class="objetivo-box">
+                <strong>🎯 El Sentido del Reto:</strong><br><br>
+                Aprenderás a ver las <b>Fracciones</b> como partes de un todo. <br><br>
+                • <b style="color:var(--num-color)">Numerador:</b> Es cuántos pedazos eliges para servir.<br>
+                • <b style="color:var(--den-color)">Denominador:</b> Es en cuántos pedazos cortamos la pizza entera.
+            </div>
+
+            <button class="btn-main" onclick="startApp()">¡Abrir Pizzería! 🍕</button>
+        </div>
+
+        <!-- PANTALLA DE JUEGO -->
+        <div id="screen-game" class="screen">
+            <div class="badge">Orden del Cliente <span id="current-lvl">1</span></div>
+            
+            <div class="orden-box">
+                <div style="text-align: left; font-size: 0.8rem; font-weight: bold; color: #7F8C8D;">
+                    EL CLIENTE PIDE:
+                </div>
+                <div class="guia-fraccion">
+                    <span class="num-label">Sirves</span>
+                    <div class="fraction-display">
+                        <span id="req-num" style="color:var(--num-color)">1</span>
+                        <div class="frac-line"></div>
+                        <span id="req-den" style="color:var(--den-color)">2</span>
+                    </div>
+                    <span class="den-label">Total</span>
+                </div>
+            </div>
+
+            <div class="pizza-area" id="pizza-container">
+                <!-- Se genera según el denominador -->
+            </div>
+
+            <div class="status-bar" id="status-bar">
+                Llevas: 0 pedazos servidos
+            </div>
+
+            <button class="btn-main" onclick="checkOrder()">Entregar Pedido 📦</button>
+        </div>
+
+    </div>
+
+    <!-- MODAL DE FEEDBACK -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-content">
+            <div class="modal-icon" id="modal-icon">🍕</div>
+            <div class="modal-title" id="modal-title">¡Buen Trabajo!</div>
+            <div class="modal-text" id="modal-text">Mensaje.</div>
+            
+            <button class="btn-main" id="btn-modal-next" onclick="nextOrder()">Siguiente Orden ➡️</button>
+            <button class="btn-main" id="btn-modal-finish" onclick="resetApp()" style="display:none">Cerrar Negocio 🏠</button>
+        </div>
+    </div>
+
+    <script>
+        const levels = [
+            { num: 1, den: 2, logic: "Has servido <b>1 de 2</b> partes iguales. ¡Eso es exactamente la mitad de la pizza!" },
+            { num: 3, den: 4, logic: "¡Excelente! Has dividido la pizza en 4 y serviste 3. Solo dejaste <b>1/4</b> en la caja." },
+            { num: 2, den: 4, logic: "¡Mira! 2 pedazos de 4 es lo mismo que <b>media pizza</b>. A esto le llamamos fracciones equivalentes." },
+            { num: 5, den: 8, logic: "Cortaste la pizza en 8 pedazos pequeños y serviste 5. ¡Tu lógica de repartición es perfecta!" }
+        ];
+
+        let currentIdx = 0;
+        let selectedCount = 0;
+
+        function startApp() {
+            document.getElementById('screen-start').classList.remove('active');
+            document.getElementById('screen-game').classList.add('active');
+            loadOrder();
+        }
+
+        function loadOrder() {
+            const level = levels[currentIdx];
+            document.getElementById('current-lvl').textContent = currentIdx + 1;
+            document.getElementById('req-num').textContent = level.num;
+            document.getElementById('req-den').textContent = level.den;
+            
+            selectedCount = 0;
+            renderPizza(level.den);
+            updateStatus();
+            hideModal();
+        }
+
+        function renderPizza(den) {
+            const container = document.getElementById('pizza-container');
+            container.innerHTML = '';
+            
+            const angle = 360 / den;
+
+            for (let i = 0; i < den; i++) {
+                const slice = document.createElement('div');
+                slice.className = 'slice';
+                
+                // Rotación y forma del pedazo
+                const rotation = i * angle;
+                slice.style.transform = `rotate(${rotation}deg)`;
+                
+                // Clip path dinámico para simular el corte
+                if (den === 2) {
+                    slice.style.clipPath = i === 0 ? "inset(0 50% 0 0)" : "inset(0 0 0 50%)";
+                    slice.style.transform = "none";
+                } else {
+                    const extra = den === 8 ? 12.5 : 25; // Ajuste visual según cantidad
+                    slice.style.clipPath = `polygon(50% 50%, 50% 0, 100% 0, 100% ${extra}%)`;
+                }
+
+                // Número de guía en el pedazo
+                slice.innerHTML = `<span style="transform: rotate(${-rotation}deg)">${i + 1}</span>`;
+
+                slice.onclick = () => {
+                    slice.classList.toggle('selected');
+                    selectedCount = document.querySelectorAll('.slice.selected').length;
+                    updateStatus();
+                };
+                
+                container.appendChild(slice);
+            }
+        }
+
+        function updateStatus() {
+            const level = levels[currentIdx];
+            const status = document.getElementById('status-bar');
+            status.textContent = `Llevas: ${selectedCount} / ${level.den} seleccionados`;
+            
+            if (selectedCount > level.num) status.style.color = "var(--error)";
+            else if (selectedCount === level.num) status.style.color = "var(--success)";
+            else status.style.color = "var(--text)";
+        }
+
+        function checkOrder() {
+            const level = levels[currentIdx];
+            if (selectedCount === level.num) {
+                showModal(level.logic, "¡Orden Perfecta!", "🌟", true);
+            } else {
+                let msg = `El cliente pidió <b>${level.num}</b> partes, pero serviste <b>${selectedCount}</b>.`;
+                if (selectedCount > level.num) msg += " ¡Te pasaste!";
+                else msg += " ¡Faltan pedazos!";
+                showModal(msg, "Revisa la Orden", "🤨", false);
+            }
+        }
+
+        function showModal(text, title, icon, success) {
+            const modal = document.getElementById('modal');
+            const content = modal.querySelector('.modal-content');
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-text').innerHTML = text;
+            document.getElementById('modal-icon').textContent = icon;
+            
+            modal.style.display = 'flex';
+            
+            const btnNext = document.getElementById('btn-modal-next');
+            const btnFinish = document.getElementById('btn-modal-finish');
+
+            if (success) {
+                content.style.borderTopColor = "var(--success)";
+                if (currentIdx === levels.length - 1) {
+                    btnNext.style.display = 'none';
+                    btnFinish.style.display = 'block';
+                    celebrar();
+                } else {
+                    btnNext.style.display = 'block';
+                    btnFinish.style.display = 'none';
+                }
+            } else {
+                content.style.borderTopColor = "var(--error)";
+                btnNext.style.display = 'none';
+                btnFinish.style.display = 'none';
+                setTimeout(hideModal, 2500);
+            }
+        }
+
+        function hideModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        function nextOrder() {
+            currentIdx++;
+            loadOrder();
+        }
+
+        function resetApp() {
+            currentIdx = 0;
+            hideModal();
+            document.getElementById('screen-game').classList.remove('active');
+            document.getElementById('screen-start').classList.add('active');
+        }
+
+        function celebrar() {
+            confetti({ particleCount: 200, spread: 70, origin: { y: 0.6 } });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mercado Doña María - 8 Compras</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --panel-left: #ffffff;
+            --panel-right: #2c3e50;
+            --accent: #d35400; /* Naranja quemado */
+            --c10: #7cb342; --c20: #fb8c00; --c50: #8e24aa; 
+            --c100: #039be5; --c200: #6d4c41; --c500: #c62828;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0; padding: 0;
+            height: 100vh; overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+            user-select: none;
+        }
+
+        /* Estructura Principal */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 65% 35%;
+            width: 95vw; height: 92vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        /* --- IZQUIERDA: TIENDA --- */
+        .shop-zone {
+            padding: 15px;
+            display: flex; flex-direction: column; align-items: center;
+            background-color: #fffde7; /* Fondo crema suave */
+            position: relative;
+            border-right: 4px solid #e0e0e0;
+        }
+
+        header { width: 100%; text-align: center; margin-bottom: 5px; }
+        h1 { color: #d84315; margin: 0; font-size: 1.6rem; }
+        .progress-bar { color: #757575; font-size: 0.9rem; margin-bottom: 5px; }
+
+        /* Misión (El Reto) */
+        .mission-box {
+            background: #ffffff; border: 3px dashed #ff6f00;
+            color: #333; padding: 10px 25px; border-radius: 12px;
+            margin-bottom: 10px; font-size: 1.2rem; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            text-align: center; width: 80%;
+        }
+        .highlight-num { color: #d50000; font-size: 1.5rem; font-weight: 900; }
+
+        /* Producto */
+        .product-display {
+            background: white; padding: 10px; border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1); text-align: center;
+            border: 1px solid #eee; margin-bottom: 10px; width: 50%;
+            animation: popIn 0.5s ease;
+        }
+        .emoji-icon { font-size: 70px; display: block; line-height: 1; margin-bottom: 5px;}
+        .prod-name { font-size: 1.2rem; font-weight: bold; color: #455a64; }
+        .prod-price { font-size: 1.8rem; color: #2e7d32; font-weight: bold; margin-top: 2px; }
+
+        /* Zona de Caja */
+        .cash-register {
+            flex-grow: 1; width: 90%;
+            background: #e0f7fa; border-radius: 20px 20px 0 0;
+            padding: 15px; display: flex; flex-direction: column; align-items: center;
+            border: 4px solid #4dd0e1;
+        }
+
+        .drop-area {
+            width: 100%; flex-grow: 1;
+            display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start;
+            gap: 8px; padding: 10px; background: rgba(255,255,255,0.7);
+            border-radius: 15px; overflow-y: auto; border: 2px dashed #b2ebf2;
+        }
+
+        .info-panel {
+            display: flex; justify-content: space-between; width: 100%; margin-top: 10px;
+        }
+        .info-box {
+            background: #37474f; color: #00e676; padding: 8px 15px;
+            border-radius: 8px; font-family: monospace; font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .btn-pay {
+            background: #43a047; color: white; border: none;
+            padding: 12px 60px; font-size: 1.3rem; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 0 #1b5e20; margin-top: 10px;
+            font-family: inherit; transition: transform 0.1s;
+        }
+        .btn-pay:active { transform: translateY(4px); box-shadow: none; }
+
+        .feedback { height: 30px; margin-top: 8px; font-weight: bold; font-size:1.1rem; text-align: center; }
+
+        /* --- DERECHA: BILLETERA --- */
+        .wallet-zone {
+            background-color: var(--panel-right);
+            padding: 15px; display: flex; flex-direction: column;
+            position: relative; color: white;
+        }
+
+        /* Banco */
+        .bank-controls {
+            background: rgba(255,255,255,0.1); padding: 10px; border-radius: 10px;
+            margin-bottom: 15px; text-align: center;
+        }
+        
+        .btn-exchange {
+            background: #039be5; color: white; border: none;
+            padding: 8px 15px; border-radius: 6px; cursor: pointer;
+            font-weight: bold; width: 100%; font-size: 1rem;
+            box-shadow: 0 3px 0 #01579b;
+        }
+        .btn-exchange:active { transform: translateY(2px); box-shadow: none; }
+        .exchange-active { background: #ffeb3b !important; color: #333 !important; box-shadow: 0 0 15px #ffeb3b; }
+
+        .wallet-title { text-align: center; margin-bottom: 10px; font-size: 1.1rem; border-bottom: 1px solid #546e7a; padding-bottom: 5px; }
+
+        .wallet-grid {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+            overflow-y: auto; flex-grow: 1; align-content: flex-start;
+        }
+
+        /* Billetes */
+        .bill {
+            width: 90px; height: 45px; border-radius: 5px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 6px; box-shadow: 0 3px 5px rgba(0,0,0,0.3);
+            cursor: pointer; position: relative; font-weight: bold; color: white;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.3);
+            transition: transform 0.1s;
+        }
+        .bill:hover { transform: scale(1.05); z-index: 10; }
+        .bill:active { transform: scale(0.95); }
+        
+        .bill-10 { background: var(--c10); }
+        .bill-20 { background: var(--c20); }
+        .bill-50 { background: var(--c50); }
+        .bill-100 { background: var(--c100); }
+        .bill-200 { background: var(--c200); }
+        .bill-500 { background: var(--c500); }
+
+        .bill-val { font-size: 20px; }
+        .bill-cord { font-size: 10px; position: absolute; top: 2px; left: 4px; }
+
+        /* Modal Fin */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: none; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 100; text-align: center;
+        }
+        .modal h2 { color: #ffeb3b; font-size: 3rem; margin-bottom: 10px; }
+        .modal p { color: white; font-size: 1.5rem; }
+
+        @keyframes popIn { 0% { transform: scale(0); } 80% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="main-layout">
+        
+        <section class="shop-zone">
+            <header>
+                <h1>🏪 Mercado Doña María</h1>
+                <div class="progress-bar">Producto <span id="current-turn">1</span> de 8</div>
+            </header>
+
+            <div class="mission-box" id="mission-text">...</div>
+            <div class="product-display" id="product-area"></div>
+
+            <div class="cash-register">
+                <div class="drop-area" id="pay-zone">
+                    <span style="width:100%; text-align:center; color:#006064; opacity:0.6; margin-top:50px;">
+                        (Tus billetes aquí)
+                    </span>
+                </div>
+                
+                <div class="info-panel">
+                    <div class="info-box" style="color:#ffca28">Billetes: <span id="bills-count">0</span></div>
+                    <div class="info-box">Total: C$ <span id="payment-display">0</span></div>
+                </div>
+
+                <div class="feedback" id="feedback-msg"></div>
+                <button class="btn-pay" onclick="verifyPayment()">¡PAGAR!</button>
+            </div>
+        </section>
+
+        <section class="wallet-zone">
+            
+            <div class="bank-controls">
+                <button class="btn-exchange" id="btn-exchange" onclick="toggleExchangeMode()">
+                    🏦 Cambiar Billete
+                </button>
+                <div id="bank-msg" style="color: #b2ebf2; font-size: 0.8rem; height:15px; margin-top:5px;"></div>
+            </div>
+
+            <div class="wallet-title">Tu Dinero (Sobra = Ahorro)</div>
+            <div class="wallet-grid" id="my-wallet"></div>
+        </section>
+
+    </div>
+
+    <div class="modal" id="game-modal">
+        <h2 id="modal-title">¡Excelente!</h2>
+        <p id="modal-msg">Has completado las 8 compras.</p>
+        <button class="btn-pay" onclick="location.reload()">Jugar Otra Vez</button>
+    </div>
+
+<script>
+    // --- LISTA DE 8 ÍTEMS EXACTOS ---
+    const fixedInventory = [
+        { name: "Tortilla", price: 10, emoji: "🫓", validCounts: [1] },
+        { name: "Gaseosa", price: 20, emoji: "🥤", validCounts: [1, 2] }, // 20 o 10+10
+        { name: "Bolsa de Pan", price: 30, emoji: "🥖", validCounts: [2, 3] }, // 20+10 o 10+10+10
+        { name: "Quesillo", price: 40, emoji: "🧀", validCounts: [2, 3, 4] },
+        { name: "Recarga", price: 50, emoji: "📱", validCounts: [1, 3] }, // 50 o 20+20+10
+        { name: "Gallo Pinto", price: 60, emoji: "🍛", validCounts: [2] }, 
+        { name: "Libras de Queso", price: 80, emoji: "🧀", validCounts: [3] },
+        { name: "Pollo Asado", price: 150, emoji: "🍗", validCounts: [2] }
+    ];
+
+    // --- BILLETERA SURTIDA (Para evitar uso excesivo del banco) ---
+    const initialCash = [
+        // Bastante "sencillo" para misiones de 3 billetes
+        10, 10, 10, 10, 10, 10, 10, 10,
+        20, 20, 20, 20, 20, 20, 
+        50, 50, 50, 50,
+        100, 100, 100,
+        200, 
+        500
+    ];
+
+    // --- VARIABLES ---
+    let productsQueue = [];
+    let currentProduct = null;
+    let targetBillCount = 0;
+    let currentPayment = 0;
+    let currentBillsUsed = 0;
+    let turnNumber = 0;
+    let isExchangeMode = false;
+
+    // --- DOM ---
+    const dom = {
+        mission: document.getElementById('mission-text'),
+        prodArea: document.getElementById('product-area'),
+        payZone: document.getElementById('pay-zone'),
+        total: document.getElementById('payment-display'),
+        count: document.getElementById('bills-count'),
+        wallet: document.getElementById('my-wallet'),
+        feedback: document.getElementById('feedback-msg'),
+        modal: document.getElementById('game-modal'),
+        btnExchange: document.getElementById('btn-exchange'),
+        bankMsg: document.getElementById('bank-msg'),
+        turnInd: document.getElementById('current-turn')
+    };
+
+    window.onload = initGame;
+
+    function initGame() {
+        // Clonar lista
+        productsQueue = [...fixedInventory];
+        turnNumber = 0;
+        loadWallet(initialCash);
+        nextTurn();
+    }
+
+    function loadWallet(moneyArray) {
+        dom.wallet.innerHTML = '';
+        moneyArray.sort((a,b) => a - b);
+        moneyArray.forEach(val => createBill(val, dom.wallet));
+    }
+
+    function createBill(val, container) {
+        let bill = document.createElement('div');
+        bill.className = `bill bill-${val}`;
+        bill.dataset.value = val;
+        bill.innerHTML = `<span class="bill-cord">C$</span><span class="bill-val">${val}</span>`;
+        bill.onclick = () => handleBillClick(bill);
+        container.appendChild(bill);
+    }
+
+    function handleBillClick(bill) {
+        if (isExchangeMode && bill.parentElement === dom.wallet) {
+            performExchange(bill);
+            return;
+        }
+        moveBill(bill);
+    }
+
+    function moveBill(bill) {
+        const val = parseInt(bill.dataset.value);
+
+        if (bill.parentElement === dom.wallet) {
+            // Pagar
+            dom.payZone.appendChild(bill);
+            currentPayment += val;
+            currentBillsUsed++;
+            hideHelpText();
+        } else {
+            // Devolver
+            dom.wallet.appendChild(bill);
+            currentPayment -= val;
+            currentBillsUsed--;
+            sortContainer(dom.wallet);
+            showHelpTextIfEmpty();
+        }
+        updateDisplay();
+    }
+
+    function hideHelpText() {
+        const help = dom.payZone.querySelector('span');
+        if(help) help.style.display = 'none';
+    }
+
+    function showHelpTextIfEmpty() {
+        // Si no hay billetes (divs con clase bill), mostrar texto
+        const bills = dom.payZone.querySelectorAll('.bill');
+        const help = dom.payZone.querySelector('span');
+        if(bills.length === 0 && help) help.style.display = 'block';
+    }
+
+    // --- BANCO ---
+    function toggleExchangeMode() {
+        isExchangeMode = !isExchangeMode;
+        if (isExchangeMode) {
+            dom.btnExchange.innerText = "Toca un billete...";
+            dom.btnExchange.classList.add("exchange-active");
+            dom.bankMsg.innerText = "Selecciona un billete para cambiar";
+        } else {
+            dom.btnExchange.innerText = "🏦 Cambiar Billete";
+            dom.btnExchange.classList.remove("exchange-active");
+            dom.bankMsg.innerText = "";
+        }
+    }
+
+    function performExchange(bill) {
+        const val = parseInt(bill.dataset.value);
+        let newBills = [];
+
+        if (val === 10) {
+            dom.bankMsg.innerText = "¡El 10 es el más pequeño!";
+            return;
+        } else if (val === 20) newBills = [10, 10];
+        else if (val === 50) newBills = [20, 20, 10];
+        else if (val === 100) newBills = [50, 20, 20, 10];
+        else if (val === 200) newBills = [100, 50, 50];
+        else if (val === 500) newBills = [200, 200, 100];
+
+        bill.remove();
+        newBills.forEach(v => createBill(v, dom.wallet));
+        sortContainer(dom.wallet);
+        toggleExchangeMode();
+        dom.bankMsg.innerText = `¡Cambiaste C$ ${val}! ✅`;
+        setTimeout(() => dom.bankMsg.innerText = "", 1500);
+    }
+
+    function sortContainer(container) {
+        const items = Array.from(container.querySelectorAll('.bill'));
+        items.sort((a, b) => parseInt(a.dataset.value) - parseInt(b.dataset.value));
+        items.forEach(item => container.appendChild(item));
+    }
+
+    function updateDisplay() {
+        dom.total.innerText = currentPayment;
+        dom.count.innerText = currentBillsUsed;
+        dom.feedback.innerText = "";
+        dom.feedback.style.color = "#333";
+    }
+
+    // --- FLUJO ---
+    function nextTurn() {
+        resetTable();
+
+        if (productsQueue.length === 0) {
+            // Contar el ahorro sobrante
+            let savings = 0;
+            dom.wallet.querySelectorAll('.bill').forEach(b => savings += parseInt(b.dataset.value));
+            
+            dom.modal.querySelector('#modal-title').innerText = "¡Misión Cumplida! 🎉";
+            dom.modal.querySelector('#modal-msg').innerText = `Compraste los 8 productos y te sobraron C$ ${savings}.`;
+            dom.modal.style.display = 'flex';
+            return;
+        }
+
+        turnNumber++;
+        dom.turnInd.innerText = turnNumber;
+
+        // Extraer producto (siempre el primero del array para mantener orden, o random)
+        // Usaremos random para que el orden varíe en cada juego, pero los ítems sean los mismos 8.
+        const randomIndex = Math.floor(Math.random() * productsQueue.length);
+        currentProduct = productsQueue[randomIndex];
+        productsQueue.splice(randomIndex, 1);
+
+        const possibleMissions = currentProduct.validCounts;
+        targetBillCount = possibleMissions[Math.floor(Math.random() * possibleMissions.length)];
+
+        renderProduct();
+    }
+
+    function renderProduct() {
+        dom.prodArea.innerHTML = `
+            <span class="emoji-icon">${currentProduct.emoji}</span>
+            <div class="prod-name">${currentProduct.name}</div>
+            <div class="prod-price">Precio: C$ ${currentProduct.price}</div>
+        `;
+        dom.mission.innerHTML = `MISIÓN: Paga usando EXACTAMENTE <span class="highlight-num">${targetBillCount}</span> billetes`;
+    }
+
+    function resetTable() {
+        currentPayment = 0;
+        currentBillsUsed = 0;
+        updateDisplay();
+        
+        // Devolver dinero si quedó
+        const leftOver = dom.payZone.querySelectorAll('.bill');
+        leftOver.forEach(b => dom.wallet.appendChild(b));
+        sortContainer(dom.wallet);
+
+        dom.payZone.innerHTML = '<span style="width:100%; text-align:center; color:#006064; opacity:0.6; margin-top:50px;">(Tus billetes aquí)</span>';
+    }
+
+    function verifyPayment() {
+        if (currentPayment !== currentProduct.price) {
+            feedback("El monto total no es correcto.", "error");
+            return;
+        }
+        if (currentBillsUsed !== targetBillCount) {
+            feedback(`Monto correcto, pero la misión pide ${targetBillCount} billetes.`, "warn");
+            return;
+        }
+
+        feedback("¡Correcto! 🌟", "success");
+        dom.payZone.innerHTML = ''; // Consumir billetes
+        setTimeout(nextTurn, 1500);
+    }
+
+    function feedback(msg, type) {
+        dom.feedback.innerText = msg;
+        dom.feedback.style.color = type === 'error' ? "#c62828" : (type === 'warn' ? "#f57f17" : "#2e7d32");
+    }
+
+</script>
+</body>
+</html>

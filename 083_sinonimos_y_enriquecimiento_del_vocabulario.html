@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nube de Sinónimos - Enriquecimiento Léxico</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary: #6C5CE7;
+            --secondary: #A29BFE;
+            --accent: #FDCB6E;
+            --background: #F0F3F4;
+            --text: #2D3436;
+            --success: #00B894;
+            --error: #D63031;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            background-image: radial-gradient(#d1d1d1 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--text);
+            text-align: center;
+            padding: 15px;
+            margin: 0;
+            user-select: none; 
+            -webkit-user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .tarjeta {
+            background: white;
+            width: 100%;
+            max-width: 650px;
+            padding: 30px 20px;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(108, 92, 231, 0.2);
+            box-sizing: border-box;
+            border-bottom: 8px solid var(--primary);
+            position: relative;
+        }
+
+        h1 { margin: 0 0 10px 0; color: var(--primary); font-size: clamp(1.6rem, 5vw, 2.4rem); font-weight: 800; }
+
+        /* --- PANTALLA DE INICIO --- */
+        /* Cambié el emoji por uno universalmente compatible (Estrella clásica) */
+        #pantalla-inicio .icono-grande { font-size: 5rem; margin-bottom: 10px; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1)); }
+        
+        .objetivo-caja {
+            background-color: #F3F0FF;
+            border: 2px solid var(--secondary);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            font-size: clamp(1rem, 4vw, 1.2rem);
+            line-height: 1.6;
+            color: #4834D4;
+            text-align: left;
+        }
+
+        /* Centrado estricto de botones de acción */
+        .btn-accion {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            font-size: clamp(1.1rem, 4vw, 1.3rem);
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #4834D4;
+            font-weight: bold;
+            transition: all 0.2s;
+            width: 100%;
+            max-width: 320px;
+            text-transform: uppercase;
+            display: block; /* Asegura comportamiento de bloque para centrar */
+            margin: 0 auto; /* Centrado horizontal automático */
+        }
+        .btn-accion:active { transform: translateY(6px); box-shadow: 0 0 0 #4834D4; }
+
+        /* --- ÁREA DE JUEGO --- */
+        #area-juego { display: none; }
+        
+        .progreso-contenedor {
+            width: 100%;
+            background-color: #E0E0E0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            height: 10px;
+            overflow: hidden;
+        }
+        .progreso-barra {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .instrucciones { font-size: 0.9rem; color: #636E72; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;}
+        
+        .frase-contenedor {
+            background-color: #FBFAFF;
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            border: 2px solid #EEE;
+            font-size: clamp(1.2rem, 4.5vw, 1.6rem);
+            line-height: 1.4;
+            color: #2D3436;
+        }
+
+        .palabra-gastada {
+            color: var(--error);
+            text-decoration: underline wavy var(--accent);
+            font-weight: bold;
+            padding: 0 5px;
+        }
+
+        .pregunta {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .opciones-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        @media (min-width: 480px) {
+            .opciones-container { grid-template-columns: 1fr 1fr; }
+        }
+
+        .btn-opcion {
+            background-color: white;
+            border: 2px solid #DFE6E9;
+            color: var(--text);
+            padding: 15px;
+            font-size: 1.1rem;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 #DFE6E9;
+        }
+
+        .btn-opcion:active { transform: translateY(4px); box-shadow: 0 0 0 #DFE6E9; }
+
+        .btn-opcion.correcta { background-color: var(--success); border-color: #009475; box-shadow: 0 4px 0 #009475; color: white; }
+        .btn-opcion.incorrecta { background-color: var(--error); border-color: #B32626; box-shadow: 0 4px 0 #B32626; color: white; }
+
+        #mensaje { font-size: 1.3rem; font-weight: bold; margin-top: 25px; min-height: 35px; }
+
+        /* Ajuste de márgenes para centrado perfecto */
+        #btn-siguiente { display: none; margin-top: 20px; background-color: var(--success); box-shadow: 0 6px 0 #009475;}
+        #btn-reiniciar { display: none; margin-top: 20px; background-color: var(--accent); box-shadow: 0 6px 0 #E1A32A; color: #2D3436;}
+
+    </style>
+</head>
+<body>
+
+    <div id="pantalla-inicio" class="tarjeta">
+        <div class="icono-grande">⭐</div>
+        <h1>Nube de Sinónimos</h1>
+        
+        <div class="objetivo-caja">
+            <strong>🎯 Tu Misión:</strong><br><br>
+            ¡Eres un Mago de las Palabras! Tu objetivo es cambiar las palabras "aburridas" y "gastadas" por palabras mucho más brillantes y elegantes para que tus textos se vean increíbles.
+        </div>
+
+        <button class="btn-accion" onclick="iniciarJuego()">¡Empezar a Jugar! ▶️</button>
+    </div>
+
+    <div id="area-juego" class="tarjeta">
+        
+        <div class="progreso-contenedor">
+            <div class="progreso-barra" id="barra-progreso"></div>
+        </div>
+
+        <p class="instrucciones" id="indicador-nivel">Reto 1</p>
+        
+        <div class="frase-contenedor" id="frase-display">
+            </div>
+        
+        <div class="pregunta">
+            Elige el mejor sinónimo para la palabra en rojo:
+        </div>
+
+        <div class="opciones-container" id="opciones">
+            </div>
+
+        <div id="mensaje"></div>
+        <button id="btn-siguiente" class="btn-accion" onclick="siguienteReto()">Siguiente Palabra ⬇️</button>
+        <button id="btn-reiniciar" class="btn-accion" onclick="reiniciarJuego()">🔄 Volver a intentar</button>
+    </div>
+
+    <script>
+        const retos = [
+            {
+                frasePre: "Mi mamá va a ",
+                palabra: "hacer",
+                frasePost: " un delicioso pastel de chocolate.",
+                opciones: ["Cocinar", "Fabricar", "Preparar"],
+                respuestaCorrecta: 2
+            },
+            {
+                frasePre: "El martillo es una ",
+                palabra: "cosa",
+                frasePost: " muy útil para clavar clavos.",
+                opciones: ["Herramienta", "Objeto", "Cachivache"],
+                respuestaCorrecta: 0
+            },
+            {
+                frasePre: "Juan me ",
+                palabra: "dijo",
+                frasePost: " un gran secreto ayer en el recreo.",
+                opciones: ["Confesó", "Habló", "Contó"],
+                respuestaCorrecta: 0
+            },
+            {
+                frasePre: "El gigante vive en un ",
+                palabra: "grande",
+                frasePost: " castillo arriba de las nubes.",
+                opciones: ["Gordo", "Enorme", "Espacioso"],
+                respuestaCorrecta: 1
+            },
+            {
+                frasePre: "Tengo que ",
+                palabra: "poner",
+                frasePost: " los libros dentro de mi mochila.",
+                opciones: ["Lanzar", "Guardar", "Colocar"],
+                respuestaCorrecta: 1 
+            }
+        ];
+
+        let nivelActual = 0;
+        let bloqueado = false;
+
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const areaJuego = document.getElementById('area-juego');
+        const displayFrase = document.getElementById('frase-display');
+        const contenedorOpciones = document.getElementById('opciones');
+        const elMensaje = document.getElementById('mensaje');
+        const btnSiguiente = document.getElementById('btn-siguiente');
+        const btnReiniciar = document.getElementById('btn-reiniciar');
+        const indicadorNivel = document.getElementById('indicador-nivel');
+        const barraProgreso = document.getElementById('barra-progreso');
+
+        function iniciarJuego() {
+            pantallaInicio.style.display = 'none';
+            areaJuego.style.display = 'block';
+            cargarReto();
+        }
+
+        function cargarReto() {
+            bloqueado = false;
+            elMensaje.textContent = "";
+            btnSiguiente.style.display = "none";
+            btnReiniciar.style.display = "none";
+            
+            indicadorNivel.textContent = `Reto ${nivelActual + 1} de ${retos.length}`;
+            barraProgreso.style.width = (nivelActual / retos.length) * 100 + '%';
+
+            const dato = retos[nivelActual];
+            displayFrase.innerHTML = `${dato.frasePre}<span class="palabra-gastada">${dato.palabra}</span>${dato.frasePost}`;
+            
+            contenedorOpciones.innerHTML = '';
+            dato.opciones.forEach((opcion, index) => {
+                const btn = document.createElement('button');
+                btn.classList.add('btn-opcion');
+                btn.textContent = opcion;
+                btn.onclick = () => verificarRespuesta(index, btn);
+                contenedorOpciones.appendChild(btn);
+            });
+        }
+
+        function verificarRespuesta(indice, boton) {
+            if (bloqueado) return;
+            bloqueado = true;
+
+            if (indice === retos[nivelActual].respuestaCorrecta) {
+                boton.classList.add('correcta');
+                elMensaje.style.color = "var(--success)";
+                elMensaje.textContent = "¡Palabra brillante! ⭐ ¡Muy bien!";
+                
+                if (nivelActual < retos.length - 1) {
+                    btnSiguiente.style.display = "block";
+                } else {
+                    barraProgreso.style.width = '100%';
+                    elMensaje.textContent = "¡Felicidades, Maestro de las Palabras! 🎉";
+                    btnReiniciar.style.display = "block";
+                    celebrar();
+                }
+            } else {
+                boton.classList.add('incorrecta');
+                elMensaje.style.color = "var(--error)";
+                elMensaje.textContent = "Esa palabra es buena, ¡pero hay una mejor! 🤔";
+                setTimeout(() => {
+                    boton.classList.remove('incorrecta');
+                    elMensaje.textContent = "";
+                    bloqueado = false;
+                }, 1500);
+            }
+        }
+
+        function siguienteReto() {
+            nivelActual++;
+            cargarReto();
+        }
+
+        function reiniciarJuego() {
+            nivelActual = 0;
+            cargarReto();
+        }
+
+        function celebrar() {
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#6C5CE7', '#FDCB6E', '#00B894'] });
+        }
+    </script>
+</body>
+</html>

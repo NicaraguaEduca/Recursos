@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Semáforo de Mi Cuerpo: Límites Personales</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f8fafc;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 24px 24px;
+            height: 100vh;
+            overflow-x: hidden;
+            color: #1e293b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 30px;
+            box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.15);
+            border: 2px solid rgba(255, 255, 255, 1);
+        }
+
+        .pedagogy-card { border-left: 12px solid #06b6d4; } /* Cyan */
+
+        /* Estilos del Semáforo */
+        .traffic-light-box {
+            background: #1e293b;
+            border-radius: 40px;
+            padding: 16px;
+            display: flex;
+            gap: 16px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.2);
+            border: 4px solid #334155;
+        }
+
+        .light-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.1);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        /* Colores Apagados vs Encendidos */
+        .light-red { background-color: #450a0a; }
+        .light-yellow { background-color: #422006; }
+        .light-green { background-color: #052e16; }
+
+        .light-red:hover, .light-red:active { background-color: #ef4444; box-shadow: 0 0 30px #ef4444, inset 0 0 10px white; border-color: white; transform: scale(1.05); }
+        .light-yellow:hover, .light-yellow:active { background-color: #eab308; box-shadow: 0 0 30px #eab308, inset 0 0 10px white; border-color: white; transform: scale(1.05); }
+        .light-green:hover, .light-green:active { background-color: #22c55e; box-shadow: 0 0 30px #22c55e, inset 0 0 10px white; border-color: white; transform: scale(1.05); }
+
+        /* Animación de Tarjetas (Swipe Effect) */
+        .card-enter { animation: slideInUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes slideInUp {
+            from { transform: translateY(50px) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        .shake-warning { animation: shake-warn 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake-warn {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+    </style>
+</head>
+<body x-data="semaforoApp()">
+
+    <main class="w-full max-w-4xl p-4 md:p-6 relative h-full flex flex-col justify-center mx-auto">
+        
+        <div x-show="estado === 'ficha'" class="glass-panel pedagogy-card p-8 md:p-12 mx-auto max-w-3xl" x-transition.opacity>
+            <div class="flex items-center gap-4 mb-8 border-b-2 border-slate-100 pb-6">
+                <span class="text-5xl drop-shadow-md">🛡️</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold text-slate-800 tracking-tight">Ficha del Recurso</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                <div class="bg-cyan-50 p-5 rounded-2xl border border-cyan-200">
+                    <span class="block text-sm font-bold text-cyan-600 uppercase tracking-widest mb-2">Asignatura</span>
+                    <span class="text-xl font-bold text-slate-800">Desarrollo Personal</span>
+                </div>
+                
+                <div class="bg-indigo-50 p-5 rounded-2xl border border-indigo-200">
+                    <span class="block text-sm font-bold text-indigo-600 uppercase tracking-widest mb-2">Eje Temático</span>
+                    <span class="text-xl font-bold text-slate-800">Autocuidado y Sexualidad</span>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 md:col-span-2 shadow-sm">
+                    <span class="block text-sm font-bold text-slate-500 uppercase tracking-widest mb-2">Objetivo de Aprendizaje</span>
+                    <p class="text-lg font-medium text-slate-700 leading-relaxed">
+                        Reconocer los límites personales corporales. Diferenciar entre contactos físicos seguros (afecto y cuidado médico con supervisión), situaciones incómodas (derecho a decir NO) y riesgos inminentes (tocamientos indebidos o secretos peligrosos).
+                    </p>
+                </div>
+            </div>
+
+            <button @click="estado = 'instrucciones'" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-5 rounded-xl text-xl transition-all shadow-xl hover:-translate-y-1">
+                Entendido, iniciar actividad →
+            </button>
+        </div>
+
+        <div x-show="estado === 'instrucciones'" class="glass-panel p-8 md:p-12 text-center max-w-2xl mx-auto" style="display: none;" x-transition.opacity>
+            <div class="text-7xl mb-6">🚦</div>
+            <h1 class="text-4xl font-extrabold text-slate-800 mb-4">El Semáforo de Mi Cuerpo</h1>
+            <p class="text-lg text-slate-600 mb-8 font-medium">Tú eres el dueño de tu cuerpo. Vamos a aprender a clasificar situaciones para mantenernos seguros.</p>
+            
+            <div class="bg-slate-50 p-6 rounded-2xl mb-8 text-left border border-slate-200 shadow-inner space-y-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-8 h-8 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] shrink-0"></div>
+                    <p class="text-slate-700 font-bold">VERDE (Seguro): <span class="font-medium">Muestras de cariño normales o revisión médica con mamá/papá presentes.</span></p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="w-8 h-8 rounded-full bg-yellow-500 shadow-[0_0_10px_#eab308] shrink-0"></div>
+                    <p class="text-slate-700 font-bold">AMARILLO (Dudoso): <span class="font-medium">Contactos que te incomodan o no quieres. Tienes derecho a decir "NO".</span></p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="w-8 h-8 rounded-full bg-red-500 shadow-[0_0_10px_#ef4444] shrink-0"></div>
+                    <p class="text-slate-700 font-bold">ROJO (Peligro): <span class="font-medium">Nadie debe tocar tus partes íntimas o pedirte guardar "secretos" malos. ¡Pide ayuda!</span></p>
+                </div>
+            </div>
+
+            <button @click="iniciarJuego()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-5 rounded-xl text-xl transition-all shadow-xl hover:-translate-y-1">
+                Empezar a Clasificar
+            </button>
+        </div>
+
+        <div x-show="estado === 'jugando'" class="flex flex-col items-center justify-between w-full h-full py-4 max-w-2xl mx-auto" style="display: none;" x-transition.opacity>
+            
+            <div class="w-full flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-6">
+                <span class="font-bold text-slate-400 uppercase tracking-widest text-sm">Situación <span x-text="indiceActual + 1"></span> de <span x-text="casos.length"></span></span>
+                <span class="text-2xl">🛡️</span>
+            </div>
+
+            <div class="flex-1 w-full relative perspective-1000 flex items-center justify-center min-h-[300px]">
+                <template x-if="casoActual && !mostrarFeedback">
+                    <div class="glass-panel w-full p-8 md:p-12 text-center absolute card-enter border-b-8"
+                         :class="efectoError ? 'shake-warning border-b-red-500' : 'border-b-cyan-500'">
+                        <div class="text-7xl mb-6 drop-shadow-md" x-text="casoActual.emoji"></div>
+                        <h3 class="text-2xl md:text-3xl font-bold text-slate-800 leading-tight" x-text="casoActual.situacion"></h3>
+                    </div>
+                </template>
+
+                <div x-show="mostrarFeedback" class="glass-panel w-full p-8 md:p-10 text-center absolute z-20 border-4"
+                     :class="feedbackExito ? 'border-green-400' : 'border-red-400'"
+                     x-transition:enter="transition ease-out duration-300 transform"
+                     x-transition:enter-start="opacity-0 scale-90"
+                     x-transition:enter-end="opacity-100 scale-100">
+                    
+                    <div class="flex justify-center mb-4">
+                        <div class="w-20 h-20 rounded-full flex items-center justify-center text-4xl shadow-lg border-4 border-white"
+                             :class="getColorClass(casoActual?.color)">
+                            <span x-text="getEmojiForColor(casoActual?.color)"></span>
+                        </div>
+                    </div>
+                    
+                    <h3 class="text-2xl font-black mb-3" :class="feedbackExito ? 'text-green-600' : 'text-red-600'" x-text="feedbackExito ? '¡Muy bien identificado!' : 'Revisemos esto juntos...' "></h3>
+                    <p class="text-slate-700 text-lg font-medium leading-relaxed mb-8" x-text="casoActual?.explicacion"></p>
+                    
+                    <button @click="siguienteCaso()" class="w-full bg-slate-800 text-white font-bold py-4 rounded-xl text-lg hover:-translate-y-1 transition-transform">
+                        Entendido, continuar
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-8 mb-4">
+                <div class="traffic-light-box flex-row md:flex-row">
+                    <button @click="evaluar('rojo')" :disabled="mostrarFeedback" class="light-btn light-red" aria-label="Riesgo">🛑</button>
+                    <button @click="evaluar('amarillo')" :disabled="mostrarFeedback" class="light-btn light-yellow" aria-label="Incomodidad">⚠️</button>
+                    <button @click="evaluar('verde')" :disabled="mostrarFeedback" class="light-btn light-green" aria-label="Seguro">✅</button>
+                </div>
+            </div>
+            
+            <p class="text-sm text-slate-400 font-bold uppercase tracking-widest text-center mt-2">Presiona el botón correcto</p>
+
+        </div>
+
+        <div x-show="estado === 'fin'" class="glass-panel p-8 md:p-12 text-center max-w-3xl mx-auto border-t-8 border-t-cyan-500" style="display: none;" x-transition.opacity.duration.800ms>
+            <div class="text-8xl mb-6 drop-shadow-lg">🦸🏽‍♂️✨</div>
+            <h2 class="text-4xl md:text-5xl font-extrabold text-cyan-600 mb-6">¡Eres el guardián de tu cuerpo!</h2>
+            <p class="text-xl text-slate-700 mb-8 font-medium leading-relaxed">Recuerda siempre: tu cuerpo es tuyo. Si alguien te hace sentir incómodo, te lastima o te pide guardar "secretos" que te hacen sentir mal, <b>¡corre y cuéntaselo a un adulto en quien confíes!</b></p>
+            
+            <button @click="reiniciar()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-5 rounded-xl text-xl transition-all shadow-xl hover:-translate-y-1">
+                Finalizar Lección
+            </button>
+        </div>
+
+    </main>
+
+    <script>
+        function semaforoApp() {
+            return {
+                estado: 'ficha', 
+                indiceActual: 0,
+                mostrarFeedback: false,
+                feedbackExito: false,
+                efectoError: false,
+
+                // Casos Pedagógicos cuidadosamente redactados
+                casos: [
+                    {
+                        emoji: '🖐️',
+                        situacion: 'Chocar los cinco con un amigo o amiga después de jugar un buen partido.',
+                        color: 'verde',
+                        explicacion: 'Este es un contacto SEGURO. Es una muestra de compañerismo normal y ocurre frente a los demás en un ambiente de juego respetuoso.'
+                    },
+                    {
+                        emoji: '🤫',
+                        situacion: 'Alguien te pide tocar partes privadas de tu cuerpo y te dice que es un "secreto".',
+                        color: 'rojo',
+                        explicacion: 'Este es un PELIGRO GRAVE. Nadie debe tocar tus partes íntimas (las que cubre tu ropa interior) ni pedirte guardar secretos que te hagan sentir mal. ¡Debes contárselo a un adulto en quien confíes de inmediato!'
+                    },
+                    {
+                        emoji: '🧑‍⚕️',
+                        situacion: 'Un doctor te revisa la garganta y los pulmones porque estás enfermo, y tu mamá o papá están ahí contigo.',
+                        color: 'verde',
+                        explicacion: 'Este es un contacto SEGURO y NECESARIO. Los doctores revisan tu salud, pero siempre con respeto, explicándote qué harán y con un adulto responsable a tu lado.'
+                    },
+                    {
+                        emoji: '😕',
+                        situacion: 'Un familiar te quiere obligar a darle un beso en el cachete para saludar, pero tú no quieres.',
+                        color: 'amarillo',
+                        explicacion: 'Esta es una situación DUDOSA/INCÓMODA. Tu cuerpo es tuyo. Aunque sea familia, si no quieres dar un beso o un abrazo, tienes derecho a decir "NO" y puedes ofrecer un saludo de mano o de lejos.'
+                    },
+                    {
+                        emoji: '🎁',
+                        situacion: 'Un adulto desconocido te ofrece regalos o dulces y te pide que vayas con él tomados de la mano.',
+                        color: 'rojo',
+                        explicacion: '¡ALERTA ROJA! Los regalos de desconocidos pueden ser una trampa. Nunca debes irte a ningún lado ni tomar de la mano a alguien que no conoces, no importa lo que te ofrezca. ¡Aléjate rápido!'
+                    },
+                    {
+                        emoji: '🫂',
+                        situacion: 'Un amigo te abraza muy fuerte jugando, pero te aprieta demasiado y te duele o te asusta.',
+                        color: 'amarillo',
+                        explicacion: 'Esta situación es AMARILLA. Puede que no lo haya hecho con mala intención, pero te incomoda. Recuerda que puedes decirle "Suéltame, me lastimas" y la otra persona debe respetar tus límites.'
+                    }
+                ],
+
+                get casoActual() {
+                    return this.casos[this.indiceActual] || null;
+                },
+
+                iniciarJuego() {
+                    this.indiceActual = 0;
+                    this.mostrarFeedback = false;
+                    this.efectoError = false;
+                    // Barajar el array para que no siempre salgan en el mismo orden
+                    this.casos.sort(() => Math.random() - 0.5);
+                    this.estado = 'jugando';
+                },
+
+                evaluar(colorSeleccionado) {
+                    if(this.mostrarFeedback) return;
+
+                    if (colorSeleccionado === this.casoActual.color) {
+                        // Acierto
+                        this.feedbackExito = true;
+                        this.efectoError = false;
+                        
+                        // Confeti según el color acertado
+                        let confetiColor = colorSeleccionado === 'verde' ? '#22c55e' : (colorSeleccionado === 'amarillo' ? '#eab308' : '#ef4444');
+                        confetti({ particleCount: 30, spread: 50, origin: { y: 0.6 }, colors: [confetiColor, '#ffffff'] });
+                        
+                        setTimeout(() => { this.mostrarFeedback = true; }, 300);
+                    } else {
+                        // Error
+                        this.efectoError = true;
+                        this.feedbackExito = false;
+                        
+                        // Mostrar feedback educativo para corregir el error
+                        setTimeout(() => { 
+                            this.efectoError = false; 
+                            this.mostrarFeedback = true; 
+                        }, 500);
+                    }
+                },
+
+                siguienteCaso() {
+                    this.mostrarFeedback = false;
+                    
+                    if (this.indiceActual < this.casos.length - 1) {
+                        this.indiceActual++;
+                    } else {
+                        this.estado = 'fin';
+                        setTimeout(() => {
+                            confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } });
+                        }, 300);
+                    }
+                },
+
+                getColorClass(color) {
+                    if(color === 'verde') return 'bg-green-500';
+                    if(color === 'amarillo') return 'bg-yellow-500';
+                    if(color === 'rojo') return 'bg-red-500';
+                    return 'bg-slate-500';
+                },
+
+                getEmojiForColor(color) {
+                    if(color === 'verde') return '✅';
+                    if(color === 'amarillo') return '⚠️';
+                    if(color === 'rojo') return '🛑';
+                    return '';
+                },
+
+                reiniciar() {
+                    this.estado = 'instrucciones';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

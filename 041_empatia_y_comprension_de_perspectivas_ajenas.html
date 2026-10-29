@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Empatía</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&display=swap');
+        :root { --accent: #3b82f6; }
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: #020617; 
+            color: #f8fafc; 
+            min-height: 100vh; 
+            overflow-y: auto; 
+            transition: background 1.5s ease;
+        }
+        @media (min-width: 1024px) {
+            body { overflow: hidden; height: 100vh; }
+        }
+
+        .glass-card { 
+            background: rgba(15, 23, 42, 0.6); 
+            backdrop-filter: blur(25px); 
+            border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 2.5rem; 
+        }
+        .perspective-btn { 
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            border-left: 8px solid transparent;
+        }
+        .perspective-btn.active { 
+            transform: translateX(10px); 
+            background: rgba(255,255,255,0.1);
+            border-left-color: var(--accent);
+        }
+        .stress-bar { transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        #bg-canvas { position: fixed; inset: 0; z-index: -1; opacity: 0.4; }
+        .glow-text { text-shadow: 0 0 15px var(--accent); }
+        
+        .pulse-danger { animation: pulse-red 2s infinite; }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .modal-container {
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body :style="{ backgroundColor: currentBg }">
+
+<div id="app" class="min-h-screen w-full flex flex-col items-center justify-between p-4 md:p-6 relative">
+    <canvas id="bg-canvas"></canvas>
+
+    <header class="w-full max-w-6xl flex justify-between items-end animate__animated animate__fadeInDown mb-6">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <span class="px-2 py-0.5 bg-blue-500 text-[10px] font-black rounded text-white uppercase tracking-tighter">Módulo 1</span>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Social Intelligence</span>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-black italic tracking-tighter glow-text">EL PRISMA <span class="font-light">360°</span></h1>
+        </div>
+        
+        <div class="hidden md:flex flex-col items-end">
+            <p class="text-[10px] font-bold text-slate-500 mb-2 uppercase">Sincronización de Empatía</p>
+            <div class="flex gap-2">
+                <div v-for="(v, i) in unlocked" :key="i" 
+                     :class="['w-12 h-2 rounded-full transition-all duration-1000', 
+                              unlocked[i] ? 'bg-blue-400 shadow-[0_0_10px_#3b82f6]' : 'bg-slate-800']">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-6 items-center flex-grow mb-6">
+        
+        <div class="lg:col-span-4 flex flex-col gap-3 md:gap-6">
+            <div v-for="(char, index) in characters" :key="index"
+                 @click="selectChar(index)"
+                 :class="['perspective-btn glass-card p-4 md:p-6 cursor-pointer flex items-center gap-4 md:gap-5', 
+                          activeIndex === index ? 'active' : 'opacity-40 hover:opacity-80']">
+                <div class="text-3xl md:text-5xl drop-shadow-lg">{{char.emoji}}</div>
+                <div>
+                    <h3 class="font-black text-base md:text-xl leading-tight">{{char.name}}</h3>
+                    <p class="text-[9px] md:text-xs font-bold uppercase tracking-widest opacity-60">{{char.role}}</p>
+                </div>
+                <div v-if="unlocked[index]" class="ml-auto text-blue-400">✓</div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-8 glass-card p-6 md:p-12 min-h-[400px] md:min-h-[500px] relative flex flex-col justify-center shadow-2xl overflow-hidden"
+             :class="{'pulse-danger': characters[activeIndex].stress > 80}">
+            
+            <div class="absolute -top-10 -right-10 text-[180px] md:text-[300px] opacity-5 pointer-events-none select-none transition-all duration-1000">
+                {{characters[activeIndex].emoji}}
+            </div>
+
+            <div class="relative z-10 space-y-4 md:space-y-8">
+                <div class="space-y-2">
+                    <h2 class="text-3xl md:text-6xl font-black leading-none tracking-tighter" :style="{ color: characters[activeIndex].color }">
+                        "{{characters[activeIndex].title}}"
+                    </h2>
+                    <p class="text-blue-400 font-bold uppercase tracking-[0.3em] text-[10px] md:text-xs">Pensamiento Interno Capturado</p>
+                </div>
+
+                <div class="perspective-box">
+                    <p class="text-lg md:text-3xl text-slate-100 leading-snug md:leading-tight font-medium italic border-l-4 border-white/20 pl-4 md:pl-6">
+                        {{characters[activeIndex].thought}}
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 md:gap-8 pt-4 md:pt-8">
+                    <div>
+                        <p class="text-[9px] md:text-[10px] uppercase font-black text-slate-500 mb-2 tracking-widest">Carga Emocional</p>
+                        <div class="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                            <div class="stress-bar h-full" :style="{ width: characters[activeIndex].stress + '%', backgroundColor: characters[activeIndex].color }"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-[9px] md:text-[10px] uppercase font-black text-slate-500 mb-2 tracking-widest">Frecuencia Mental</p>
+                        <p class="text-sm md:text-xl font-bold italic">{{characters[activeIndex].mood}}</p>
+                    </div>
+                </div>
+            </div>
+
+            <button v-if="allSeen && !showReflexion" 
+                    @click="showReflexion = true"
+                    class="mt-8 md:mt-12 bg-white text-black font-black py-3 px-8 md:py-4 md:px-10 rounded-2xl self-start hover:bg-blue-500 hover:text-white transition-all animate__animated animate__pulse animate__infinite">
+                INICIAR RESOLUCIÓN 
+            </button>
+        </div>
+    </main>
+
+    <footer class="w-full max-w-6xl flex items-center justify-between border-t border-white/5 pt-4 pb-4">
+        <div class="flex items-center gap-3 md:gap-4">
+            <div class="w-10 h-10 md:w-12 md:h-12 bg-blue-600 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-2xl shadow-lg shadow-blue-500/40">🤖</div>
+            <p class="text-xs md:text-sm font-bold text-slate-300 max-w-xs md:max-w-md">
+                <span class="text-blue-400 text-[10px] block font-black uppercase tracking-widest">Asistente ECO:</span>
+                {{ helperText }}
+            </p>
+        </div>
+    </footer>
+
+    <div v-if="showReflexion" class="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-slate-950/95 backdrop-blur-2xl animate__animated animate__fadeIn">
+        <div class="glass-card max-w-4xl w-full p-6 md:p-12 text-center relative modal-container">
+            <h2 class="text-3xl md:text-5xl font-black mb-4 italic tracking-tighter">EL MOMENTO DE <span class="text-blue-500 text-4xl md:text-6xl">ELEGIR</span></h2>
+            <p class="text-slate-300 text-lg md:text-2xl mb-8 md:mb-12 max-w-2xl mx-auto font-medium">
+                Has habitado tres realidades. Tu decisión ahora determinará cómo estas personas recordarán este día.
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                <div v-for="(op, i) in reflexions" :key="i"
+                        @click="finish(op)"
+                        class="p-6 md:p-8 bg-slate-900/50 hover:bg-blue-600/20 border border-white/10 rounded-[2rem] transition-all cursor-pointer group hover:scale-105 hover:border-blue-500">
+                    <div class="text-4xl md:text-5xl mb-4 group-hover:scale-110 transition-transform">{{op.icon}}</div>
+                    <h4 class="font-black text-xl md:text-2xl mb-3 uppercase tracking-tighter group-hover:text-blue-400 transition-colors">{{op.title}}</h4>
+                    <p class="text-sm md:text-base text-slate-400 leading-relaxed group-hover:text-slate-200">{{op.desc}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const { createApp, ref, computed, onMounted } = Vue;
+
+createApp({
+    setup() {
+        const activeIndex = ref(0);
+        const unlocked = ref([true, false, false]);
+        const showReflexion = ref(false);
+        const currentBg = ref('#020617');
+
+        // --- MOTOR DE AUDIO (Web Audio API) ---
+        const playSound = (freq, type = 'sine', duration = 0.1) => {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + duration);
+            } catch (e) { console.log("Audio no soportado"); }
+        };
+        
+        const characters = [
+            {
+                name: "Mateo", role: "Ejecutivo", emoji: "👔",
+                title: "¡Un desastre total!",
+                thought: "Iba revisando los últimos datos del contrato en el móvil y, de la nada, una chica me golpeó y me tiró el café encima. ¡Mi laptop está empapada y la reunión empieza en 5 minutos! No entiendo cómo la gente puede ir por la vida tan distraída y sin cuidado.",
+                stress: 92, mood: "Agresivo / Ansioso", color: "#ef4444", bg: "#1e0a0a"
+            },
+            {
+                name: "Elena", role: "Estudiante", emoji: "🎨",
+                title: "No lo vi venir...",
+                thought: "Acababa de recibir un mensaje sobre la salud de mi madre y me quedé en shock. No vi que el señor venía girando y choqué con él. El café voló por todas partes. Antes de que pudiera pedir perdón, empezó a gritarme... me sentí tan pequeña y asustada.",
+                stress: 70, mood: "Vulnerable / Triste", color: "#3b82f6", bg: "#0a141e"
+            },
+            {
+                name: "Samuel", role: "Barista", emoji: "☕",
+                title: "Nadie se detuvo a mirar",
+                thought: "Desde la barra vi el impacto. Él no quitaba los ojos de su teléfono y ella estaba pálida mirando su propia pantalla. El choque era inevitable. Ahora él solo ve su laptop dañada y ella solo siente el miedo del grito. Ninguno se da cuenta de la batalla que el otro está librando.",
+                stress: 15, mood: "Empático / Calmo", color: "#f59e0b", bg: "#1e140a"
+            }
+        ];
+
+        const reflexions = [
+            { icon: "🤝", title: "Conexión", desc: "Mateo nota la palidez de Elena y se detiene. 'Lo siento, yo también iba distraído'.", type: 'positive' },
+            { icon: "🍃", title: "Mediación", desc: "Samuel interviene con servilletas: 'Fue un accidente, ambos estaban en sus teléfonos'.", type: 'neutral' },
+            { icon: "⚡", title: "Impacto Brusco", desc: "Cada uno se va rumiando su rabia. La brecha social y emocional se hace más grande.", type: 'negative' }
+        ];
+
+        const allSeen = computed(() => unlocked.value.every(v => v === true));
+        const helperText = computed(() => {
+            if (showReflexion.value) return "Elige el desenlace que dicte tu conciencia.";
+            if (allSeen.value) return "Análisis completo. Presiona el botón para decidir el destino de la escena.";
+            return "Cambia entre los personajes para sintonizar sus frecuencias emocionales.";
+        });
+
+        const selectChar = (index) => {
+            // Sonido de cambio (Agudo según el índice)
+            playSound(300 + (index * 150), 'triangle', 0.1);
+            
+            activeIndex.value = index;
+            unlocked.value[index] = true;
+            currentBg.value = characters[index].bg;
+            document.documentElement.style.setProperty('--accent', characters[index].color);
+            gsap.from(".perspective-box", { opacity: 0, scale: 0.95, duration: 0.6, ease: "expo.out" });
+        };
+
+        const finish = (op) => {
+            // Fanfarria de éxito
+            playSound(440, 'sine', 0.4);
+            setTimeout(() => playSound(660, 'sine', 0.4), 100);
+            setTimeout(() => playSound(880, 'sine', 0.6), 200);
+
+            const colors = op.type === 'positive' ? ['#3b82f6', '#10b981'] : ['#f59e0b', '#64748b'];
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors });
+
+            // Reemplazo del Alert por pantalla final
+            const modalContent = document.querySelector('.modal-container');
+            gsap.to(modalContent, {
+                opacity: 0, scale: 0.9, duration: 0.4, onComplete: () => {
+                    modalContent.innerHTML = `
+                        <div class="animate__animated animate__zoomIn">
+                            <div class="text-7xl mb-6">${op.icon}</div>
+                            <h2 class="text-4xl md:text-6xl font-black mb-4 uppercase tracking-tighter text-blue-400">${op.title}</h2>
+                            <p class="text-xl md:text-2xl text-slate-200 mb-10 leading-relaxed max-w-xl mx-auto italic">
+                                "${op.desc}"<br><br>
+                                <span class="text-lg text-slate-500 not-italic">La empatía no es estar de acuerdo con el otro, es entender la carga que lleva.</span>
+                            </p>
+                            <button onclick="location.reload()" class="bg-white text-black font-black py-4 px-10 rounded-2xl hover:bg-blue-500 hover:text-white transition-all shadow-xl">
+                                REINICIAR EXPERIENCIA
+                            </button>
+                        </div>
+                    `;
+                    gsap.to(modalContent, { opacity: 1, scale: 1, duration: 0.4 });
+                }
+            });
+        };
+
+        onMounted(() => {
+            const canvas = document.getElementById('bg-canvas');
+            const ctx = canvas.getContext('2d');
+            const resize = () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+            let p = Array.from({length: 40}, () => ({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*2, v: Math.random()*0.3 }));
+            function draw() {
+                ctx.clearRect(0,0,canvas.width, canvas.height);
+                ctx.fillStyle = "white";
+                p.forEach(i => { i.y -= i.v; if(i.y < 0) i.y = canvas.height; ctx.beginPath(); ctx.arc(i.x, i.y, i.r, 0, Math.PI*2); ctx.fill(); });
+                requestAnimationFrame(draw);
+            }
+            draw();
+        });
+
+        return { characters, activeIndex, selectChar, unlocked, allSeen, showReflexion, reflexions, finish, helperText, currentBg };
+    }
+}).mount('#app');
+</script>
+</body>
+</html>

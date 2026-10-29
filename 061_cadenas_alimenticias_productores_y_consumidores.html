@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Simulador Lógico de Ecosistemas - Cadena Alimenticia</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --green-dark: #1b5e20;
+            --green-main: #2e7d32;
+            --green-light: #81c784;
+            --sun-color: #fbc02d;
+            --bg-color: #f1f8e9;
+            --text-color: #263238;
+            --white: #ffffff;
+            --error: #c62828;
+            --success: #2e7d32;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 15px;
+            overflow: hidden;
+        }
+
+        .contenedor-app {
+            background: var(--white);
+            width: 100%;
+            max-width: 750px;
+            border-radius: 24px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+            border-bottom: 8px solid var(--green-main);
+            padding: 24px;
+            position: relative;
+            max-height: 98vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .etiqueta-asignatura {
+            background: var(--green-main);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: inline-block;
+            margin: 0 auto 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        h1 { font-size: clamp(1.4rem, 5vw, 1.8rem); margin-bottom: 8px; color: var(--green-dark); text-align: center; }
+
+        /* --- PANTALLAS --- */
+        .pantalla { display: none; flex-direction: column; height: 100%; }
+        .pantalla.activa { display: flex; }
+
+        /* Pantalla Inicial con Objetivo */
+        .objetivo-contenedor {
+            background-color: #f1f8e9;
+            border: 2px solid var(--green-light);
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            font-size: clamp(0.9rem, 3.5vw, 1.05rem);
+            line-height: 1.5;
+            color: var(--green-dark);
+            text-align: left;
+        }
+
+        .grid-ecosistemas {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 5px;
+        }
+
+        .tarjeta-eco {
+            padding: 15px;
+            border-radius: 20px;
+            border: 2px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: center;
+            background: #fafafa;
+        }
+        .tarjeta-eco:hover { 
+            transform: translateY(-4px); 
+            border-color: var(--green-main);
+            background: #f1f8e9;
+        }
+        .tarjeta-eco span { font-size: 2.5rem; display: block; margin-bottom: 5px; }
+        .tarjeta-eco h3 { font-size: 0.9rem; color: var(--green-dark); }
+
+        /* Área de Juego */
+        .barra-progreso {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progreso-llenado {
+            height: 100%;
+            background: var(--green-main);
+            width: 0%;
+            transition: width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .visor-cadena {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #fcfcfc;
+            border-radius: 20px;
+            border: 1px solid #f0f0f0;
+            overflow-x: auto;
+        }
+
+        .espacio-slot {
+            width: 75px;
+            height: 90px;
+            background: #ffffff;
+            border: 2px dashed #ccc;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            text-align: center;
+            flex-shrink: 0;
+            transition: all 0.3s;
+            color: #999;
+        }
+        .espacio-slot.activo { border-color: var(--sun-color); background: #fffde7; color: #fbc02d; font-weight: bold; }
+        .espacio-slot.lleno { border: 2px solid var(--green-main); color: var(--green-dark); font-weight: bold; }
+        .espacio-slot .icono { font-size: 2rem; margin-bottom: 4px; }
+
+        .flecha { font-size: 1rem; color: #ddd; font-weight: bold; }
+
+        .grid-opciones {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn-opcion {
+            background: white;
+            border: 2px solid #e0e0e0;
+            padding: 10px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 3px 0 #eee;
+        }
+        .btn-opcion:active { transform: translateY(2px); box-shadow: none; }
+        .btn-opcion.usado { opacity: 0.3; filter: grayscale(1); pointer-events: none; }
+        .btn-opcion .icono { font-size: 1.8rem; margin-bottom: 4px; }
+        .btn-opcion .nombre { font-size: 0.7rem; font-weight: bold; color: #555; }
+
+        .mensaje-logico {
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: #f8f9fa;
+            border: 1px solid #eee;
+        }
+
+        .btn-finalizar {
+            background: var(--green-main);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 4px 0 var(--green-dark);
+            margin: 10px auto;
+            display: none;
+        }
+
+        @keyframes vibrar {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-4px); }
+            60% { transform: translateX(4px); }
+        }
+        .error-vibracion { animation: vibrar 0.3s linear; border-color: var(--error) !important; color: var(--error); }
+
+    </style>
+</head>
+<body>
+
+    <div class="contenedor-app">
+        
+        <!-- PANTALLA INICIAL: SELECCIÓN LÓGICA CON OBJETIVO -->
+        <div id="pantalla-inicio" class="pantalla activa">
+            <div class="etiqueta-asignatura">Ciencias Naturales</div>
+            <h1>Cadena Alimenticia Lógica</h1>
+            
+            <div class="objetivo-contenedor">
+                <strong>🎯 Objetivo del Recurso:</strong><br>
+                Comprender cómo fluye la energía en la naturaleza, identificando que todo comienza con el <strong>Sol</strong> y continúa a través de los <strong>Productores</strong> y <strong>Consumidores</strong> para mantener el equilibrio del ecosistema.
+            </div>
+
+            <p style="text-align: center; color: #666; font-size: 0.85rem; margin-bottom: 10px; font-weight: bold;">
+                Selecciona un ecosistema para empezar la misión:
+            </p>
+            
+            <div class="grid-ecosistemas">
+                <div class="tarjeta-eco" onclick="iniciarNivel('granja')">
+                    <span>🚜</span>
+                    <h3>La Granja</h3>
+                </div>
+                <div class="tarjeta-eco" onclick="iniciarNivel('humedal')">
+                    <span>🦆</span>
+                    <h3>El Humedal</h3>
+                </div>
+                <div class="tarjeta-eco" onclick="iniciarNivel('bosque')">
+                    <span>🌲</span>
+                    <h3>Bosque Local</h3>
+                </div>
+                <div class="tarjeta-eco" onclick="iniciarNivel('oceano')">
+                    <span>🐳</span>
+                    <h3>Costa y Mar</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA DE JUEGO -->
+        <div id="pantalla-juego" class="pantalla">
+            <div class="etiqueta-asignatura" id="nombre-ecosistema">Ecosistema</div>
+            
+            <div class="barra-progreso">
+                <div class="progreso-llenado" id="barra-llenado"></div>
+            </div>
+
+            <div class="visor-cadena" id="contenedor-slots">
+                <!-- Se genera dinámicamente -->
+            </div>
+
+            <p style="font-size: 0.75rem; font-weight: bold; color: #888; margin-bottom: 8px; text-transform: uppercase; text-align: center;">
+                Toca el siguiente eslabón:
+            </p>
+
+            <div class="grid-opciones" id="grid-opciones">
+                <!-- Se genera dinámicamente -->
+            </div>
+
+            <div class="mensaje-logico" id="mensaje-texto">
+                Busca la fuente de energía original: El Sol.
+            </div>
+
+            <button class="btn-finalizar" id="btn-volver" onclick="irAInicio()">Misión Completada 🏠</button>
+        </div>
+
+    </div>
+
+    <script>
+        const datosEcosistemas = {
+            granja: {
+                nombre: "Ciclo de la Granja",
+                cadena: [
+                    { id: "sol", nombre: "Sol", icono: "☀️", explicacion: "El Sol es la fuente de energía para todos los seres vivos." },
+                    { id: "maiz", nombre: "Maíz", icono: "🌽", explicacion: "El maíz es el Productor. Usa el sol para crear su propio alimento." },
+                    { id: "gallina", nombre: "Gallina", icono: "🐔", explicacion: "La gallina es el Consumidor Primario. Come el maíz para obtener energía." },
+                    { id: "zorro", nombre: "Zorro", icono: "🦊", explicacion: "El zorro es el Depredador. Mantiene el equilibrio comiendo otros animales." }
+                ],
+                distractores: ["🚜", "🪵", "🏠"]
+            },
+            humedal: {
+                nombre: "Vida en el Humedal",
+                cadena: [
+                    { id: "sol", nombre: "Sol", icono: "☀️", explicacion: "Sin luz solar, las plantas acuáticas no podrían crecer." },
+                    { id: "alga", nombre: "Alga", icono: "🌿", explicacion: "Las algas son los Productores que limpian el agua y dan oxígeno." },
+                    { id: "pez", nombre: "Pez Pequeño", icono: "🐟", explicacion: "Los peces pequeños comen algas para crecer." },
+                    { id: "garza", nombre: "Garza", icono: "🦢", explicacion: "La garza es una gran cazadora de peces en el humedal." }
+                ],
+                distractores: ["🛶", "🐚", "🥤"]
+            },
+            bosque: {
+                nombre: "Equilibrio del Bosque",
+                cadena: [
+                    { id: "sol", nombre: "Sol", icono: "☀️", explicacion: "La energía viaja millones de kilómetros hasta llegar a los árboles." },
+                    { id: "arbol", nombre: "Pino", icono: "🌲", explicacion: "El árbol produce semillas y refugio para el bosque." },
+                    { id: "ardilla", nombre: "Ardilla", icono: "🐿️", explicacion: "La ardilla recolecta piñones y semillas para alimentarse." },
+                    { id: "buho", nombre: "Búho", icono: "🦉", explicacion: "El búho vigila el bosque y es un consumidor secundario." }
+                ],
+                distractores: ["🏕️", "🎒", "🪓"]
+            },
+            oceano: {
+                nombre: "Cadena Oceánica",
+                cadena: [
+                    { id: "sol", nombre: "Sol", icono: "☀️", explicacion: "La luz llega hasta las capas profundas para iniciar la vida." },
+                    { id: "fitoplancton", nombre: "Plantas Marinas", icono: "🍀", explicacion: "El plancton vegetal alimenta a millones de seres en el mar." },
+                    { id: "tortuga", nombre: "Tortuga", icono: "🐢", explicacion: "Las tortugas viajan miles de kilómetros buscando algas." },
+                    { id: "tiburon", nombre: "Tiburón", icono: "🦈", explicacion: "El tiburón está en la cima de la cadena alimenticia marina." }
+                ],
+                distractores: ["🚢", "⚓", "📦"]
+            }
+        };
+
+        let nivelActual = null;
+        let pasoActual = 0;
+        let bloqueado = false;
+
+        function iniciarNivel(ecoKey) {
+            nivelActual = datosEcosistemas[ecoKey];
+            pasoActual = 0;
+            bloqueado = false;
+
+            document.getElementById('pantalla-inicio').classList.remove('activa');
+            document.getElementById('pantalla-juego').classList.add('activa');
+            document.getElementById('nombre-ecosistema').textContent = nivelActual.nombre;
+            document.getElementById('btn-volver').style.display = 'none';
+            document.getElementById('mensaje-texto').textContent = "Busca la fuente de energía original: El Sol.";
+            document.getElementById('mensaje-texto').style.color = "#555";
+
+            generarSlots();
+            generarOpciones();
+            actualizarProgreso();
+        }
+
+        function generarSlots() {
+            const contenedor = document.getElementById('contenedor-slots');
+            contenedor.innerHTML = '';
+            nivelActual.cadena.forEach((paso, index) => {
+                const slot = document.createElement('div');
+                slot.className = 'espacio-slot' + (index === 0 ? ' activo' : '');
+                slot.id = `slot-${index}`;
+                slot.innerHTML = `<strong>?</strong><br>Paso ${index + 1}`;
+                contenedor.appendChild(slot);
+
+                if (index < nivelActual.cadena.length - 1) {
+                    const flecha = document.createElement('div');
+                    flecha.className = 'flecha';
+                    flecha.textContent = '➔';
+                    contenedor.appendChild(flecha);
+                }
+            });
+        }
+
+        function generarOpciones() {
+            const grid = document.getElementById('grid-opciones');
+            grid.innerHTML = '';
+            
+            const opciones = [
+                ...nivelActual.cadena.map(item => ({ ...item, esReal: true })),
+                ...nivelActual.distractores.map(icon => ({ id: 'fake', nombre: "Objeto", icono: icon, esReal: false }))
+            ].sort(() => Math.random() - 0.5);
+
+            opciones.forEach(opt => {
+                const btn = document.createElement('div');
+                btn.className = 'btn-opcion';
+                btn.innerHTML = `<span class="icono">${opt.icono}</span><span class="nombre">${opt.nombre}</span>`;
+                btn.onclick = () => procesarEleccion(opt, btn);
+                grid.appendChild(btn);
+            });
+        }
+
+        function procesarEleccion(opt, btn) {
+            if (bloqueado || btn.classList.contains('usado')) return;
+
+            const objetivo = nivelActual.cadena[pasoActual];
+
+            if (opt.id === objetivo.id) {
+                btn.classList.add('usado');
+                llenarSlot(pasoActual, objetivo);
+                pasoActual++;
+                actualizarProgreso();
+
+                if (pasoActual === nivelActual.cadena.length) {
+                    finalizarNivel();
+                } else {
+                    activarSiguienteSlot();
+                    actualizarMensaje(objetivo.explicacion, "var(--success)");
+                }
+            } else {
+                bloqueado = true;
+                btn.classList.add('error-vibracion');
+                
+                let pista = "Eso no encaja en la cadena vital.";
+                if (!opt.esReal) pista = "Ese objeto no es un ser vivo, no puede transportar energía.";
+                else if (pasoActual === 0 && opt.id !== "sol") pista = "Recuerda: toda la energía en la Tierra viene primero del Sol.";
+                else pista = `¡Piensa! El ${opt.nombre} no se alimenta directamente de lo anterior.`;
+
+                actualizarMensaje(pista, "var(--error)");
+
+                setTimeout(() => {
+                    btn.classList.remove('error-vibracion');
+                    bloqueado = false;
+                }, 800);
+            }
+        }
+
+        function llenarSlot(idx, data) {
+            const slot = document.getElementById(`slot-${idx}`);
+            slot.classList.remove('activo');
+            slot.classList.add('lleno');
+            slot.innerHTML = `<span class="icono">${data.icono}</span><br>${data.nombre}`;
+        }
+
+        function activarSiguienteSlot() {
+            if (pasoActual < nivelActual.cadena.length) {
+                document.getElementById(`slot-${pasoActual}`).classList.add('activo');
+            }
+        }
+
+        function actualizarProgreso() {
+            const barra = document.getElementById('barra-llenado');
+            barra.style.width = (pasoActual / nivelActual.cadena.length * 100) + '%';
+        }
+
+        function actualizarMensaje(msg, color) {
+            const txt = document.getElementById('mensaje-texto');
+            txt.textContent = msg;
+            txt.style.color = color;
+        }
+
+        function finalizarNivel() {
+            bloqueado = true;
+            actualizarMensaje("¡Excelente! Has restaurado el equilibrio del ecosistema.", "var(--green-dark)");
+            document.getElementById('btn-volver').style.display = 'block';
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#2e7d32', '#fbc02d', '#81c784']
+            });
+        }
+
+        function irAInicio() {
+            document.getElementById('pantalla-juego').classList.remove('activa');
+            document.getElementById('pantalla-inicio').classList.add('activa');
+        }
+    </script>
+</body>
+</html> 

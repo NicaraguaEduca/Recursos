@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Laboratorio Virtual - El Método Científico</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        
+        :root {
+            --primary: #00A8CC; /* Azul científico */
+            --secondary: #0C7B93;
+            --accent: #FFC93C;  /* Dorado de descubrimiento */
+            --background: #F0F4F8;
+            --text: #14274E;
+            --success: #27AE60;
+            --error: #E74C3C;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            background-image: radial-gradient(var(--primary) 0.5px, transparent 0.5px);
+            background-size: 20px 20px;
+            color: var(--text);
+            text-align: center;
+            padding: 10px;
+            margin: 0;
+            overflow: hidden;
+            touch-action: none; 
+            user-select: none; 
+            -webkit-user-select: none;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .tarjeta {
+            background: white;
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            border-top: 8px solid var(--primary);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            max-height: 95vh;
+        }
+
+        h1 { margin: 0 0 10px 0; color: var(--primary); font-size: clamp(1.4rem, 4vw, 2.2rem); font-weight: 800; }
+
+        /* --- PANTALLA DE INICIO --- */
+        #pantalla-inicio .icono-grande { font-size: 4rem; margin-bottom: 10px; }
+        .objetivo-caja {
+            background-color: #E1F5FE;
+            border: 2px solid var(--primary);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            font-size: clamp(1rem, 3.5vw, 1.2rem);
+            line-height: 1.5;
+            color: var(--secondary);
+            text-align: left;
+        }
+
+        .btn-accion {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: clamp(1.1rem, 4vw, 1.4rem);
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 var(--secondary);
+            font-weight: bold;
+            transition: all 0.2s;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+            text-transform: uppercase;
+            display: block;
+        }
+        .btn-accion:active { transform: translateY(6px); box-shadow: 0 0 0 var(--secondary); }
+
+        /* --- ÁREA DE JUEGO --- */
+        #area-juego { display: none; }
+        
+        .instrucciones { font-size: 0.85rem; color: #555; font-weight: bold; margin-bottom: 10px; text-transform: uppercase;}
+        
+        .panel-interactivo {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            flex-grow: 1;
+            overflow: hidden;
+            height: 450px;
+        }
+
+        .columna {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+
+        .paso-ficha {
+            background-color: white;
+            border: 2px solid #D1D8E0;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: grab;
+            font-size: clamp(0.75rem, 2.5vw, 0.95rem);
+            font-weight: bold;
+            box-shadow: 0 4px 0 #D1D8E0;
+            touch-action: none;
+            position: relative;
+        }
+
+        .zona-drop {
+            background-color: #F8F9FA;
+            border: 2px dashed #B0BEC5;
+            border-radius: 10px;
+            min-height: 65px;
+            display: flex;
+            align-items: center;
+            padding: 5px 10px;
+            position: relative;
+        }
+
+        .numero-guia {
+            background: var(--primary);
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .zona-drop.correct { background-color: #D5F5E3; border-color: var(--success); border-style: solid; }
+        .zona-drop.correct .paso-ficha { box-shadow: none; border: none; padding: 0; background: transparent; cursor: default; }
+
+        #mensaje { font-size: 1.1rem; font-weight: bold; margin-top: 15px; min-height: 25px; color: var(--success); }
+
+        .ficha-fantasma {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.9;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+            transform: scale(1.05);
+            background: white;
+            border: 2px solid var(--primary);
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        #btn-reiniciar { display: none; margin-top: 10px; background-color: var(--accent); color: var(--text); box-shadow: 0 6px 0 #D4A316;}
+
+    </style>
+</head>
+<body>
+
+    <div id="pantalla-inicio" class="tarjeta">
+        <div class="icono-grande">🧪</div>
+        <h1>Laboratorio Virtual</h1>
+        
+        <div class="objetivo-caja">
+            <strong>🎯 Misión Científica:</strong><br><br>
+            ¡Bienvenido, Pequeño Científico! Tu misión es ordenar los 5 pasos para descubrir cosas nuevas. Arrastra cada paso para aprender cómo los científicos resuelven misterios.
+        </div>
+
+        <button class="btn-accion" onclick="iniciarJuego()">¡Abrir Laboratorio! 🔬</button>
+    </div>
+
+    <div id="area-juego" class="tarjeta">
+        <h1>Paso a Paso</h1>
+        <p class="instrucciones">Ordena los pasos de arriba hacia abajo</p>
+        
+        <div class="panel-interactivo">
+            <div class="columna" id="contenedor-zonas">
+                <div class="zona-drop" data-accept="1"><div class="numero-guia">1</div></div>
+                <div class="zona-drop" data-accept="2"><div class="numero-guia">2</div></div>
+                <div class="zona-drop" data-accept="3"><div class="numero-guia">3</div></div>
+                <div class="zona-drop" data-accept="4"><div class="numero-guia">4</div></div>
+                <div class="zona-drop" data-accept="5"><div class="numero-guia">5</div></div>
+            </div>
+
+            <div class="columna" id="contenedor-fichas">
+                </div>
+        </div>
+
+        <div id="mensaje"></div>
+        <button id="btn-reiniciar" class="btn-accion" onclick="reiniciarJuego()">🔄 Nuevo Experimento</button>
+    </div>
+
+    <script>
+        const pasosMetodo = [
+            { id: "1", texto: "Observar: ¡Veo algo curioso! 👀" },
+            { id: "2", texto: "Preguntar: ¿Por qué pasa esto? ❓" },
+            { id: "3", texto: "Hipótesis: Yo creo que pasa por... 💡" },
+            { id: "4", texto: "Experimentar: ¡Hagamos la prueba! 🧪" },
+            { id: "5", texto: "Conclusión: ¡Esto fue lo que aprendí! ✅" }
+        ];
+
+        let aciertos = 0;
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const areaJuego = document.getElementById('area-juego');
+        const contenedorFichas = document.getElementById('contenedor-fichas');
+        const zonas = document.querySelectorAll('.zona-drop');
+        const mensaje = document.getElementById('mensaje');
+        const btnReiniciar = document.getElementById('btn-reiniciar');
+
+        function iniciarJuego() {
+            pantallaInicio.style.display = 'none';
+            areaJuego.style.display = 'flex';
+            cargarLaboratorio();
+        }
+
+        function cargarLaboratorio() {
+            aciertos = 0;
+            mensaje.textContent = "";
+            btnReiniciar.style.display = "none";
+            
+            zonas.forEach(z => {
+                z.classList.remove('correct');
+                const num = z.querySelector('.numero-guia');
+                z.innerHTML = '';
+                z.appendChild(num);
+            });
+
+            // Desordenar pasos
+            let pasosDesordenados = [...pasosMetodo].sort(() => Math.random() - 0.5);
+
+            contenedorFichas.innerHTML = '';
+            pasosDesordenados.forEach(paso => {
+                const div = document.createElement('div');
+                div.classList.add('paso-ficha');
+                div.setAttribute('data-id', paso.id);
+                div.textContent = paso.texto;
+                div.addEventListener('pointerdown', iniciarArrastre);
+                contenedorFichas.appendChild(div);
+            });
+        }
+
+        // --- MOTOR DE ARRASTRE UNIVERSAL ---
+        let elementoArrastrado = null;
+        let fantasma = null;
+
+        function iniciarArrastre(e) {
+            e.preventDefault();
+            elementoArrastrado = e.target;
+            fantasma = elementoArrastrado.cloneNode(true);
+            fantasma.classList.add('ficha-fantasma');
+            fantasma.style.width = elementoArrastrado.offsetWidth + 'px';
+            document.body.appendChild(fantasma);
+            elementoArrastrado.style.opacity = '0.3';
+            moverFantasma(e.clientX, e.clientY);
+            document.addEventListener('pointermove', duranteArrastre);
+            document.addEventListener('pointerup', soltarArrastre);
+        }
+
+        function duranteArrastre(e) { moverFantasma(e.clientX, e.clientY); }
+        function moverFantasma(x, y) {
+            fantasma.style.left = (x - fantasma.offsetWidth / 2) + 'px';
+            fantasma.style.top = (y - fantasma.offsetHeight / 2) + 'px';
+        }
+
+        function soltarArrastre(e) {
+            document.removeEventListener('pointermove', duranteArrastre);
+            document.removeEventListener('pointerup', soltarArrastre);
+            const debajo = document.elementFromPoint(e.clientX, e.clientY);
+            const zona = debajo ? debajo.closest('.zona-drop') : null;
+            
+            fantasma.remove();
+            elementoArrastrado.style.opacity = '1';
+
+            if (zona && !zona.classList.contains('correct')) {
+                if (elementoArrastrado.getAttribute('data-id') === zona.getAttribute('data-accept')) {
+                    zona.appendChild(elementoArrastrado);
+                    zona.classList.add('correct');
+                    aciertos++;
+                    if (aciertos === 5) {
+                        mensaje.textContent = "¡Súper! Resolviste el misterio. 🎉";
+                        btnReiniciar.style.display = "block";
+                        celebrar();
+                    }
+                } else {
+                    zona.style.backgroundColor = '#FADBD8';
+                    setTimeout(() => zona.style.backgroundColor = '', 500);
+                }
+            }
+        }
+
+        function reiniciarJuego() { cargarLaboratorio(); }
+        function celebrar() {
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#00A8CC', '#FFC93C', '#27AE60'] });
+        }
+    </script>
+</body>
+</html>
+```

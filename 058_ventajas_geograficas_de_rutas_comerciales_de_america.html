@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Simulador de Comercio | Ventajas Geográficas</title>
+    
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/topojson-client@3"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=Space+Grotesk:wght@500;700&display=swap');
+        
+        :root {
+            /* NUEVA PALETA VÍVIDA (Índigo, Turquesa y Amarillo) */
+            --space-bg: #1e1b4b; /* Indigo 950 */
+            --globe-ocean: #2e1065; /* Purple 900 */
+            --globe-land: #4c1d95; /* Purple 800 */
+            --globe-border: #7c3aed; /* Violet 600 */
+            --accent-cyan: #2dd4bf; /* Teal 400 */
+            --accent-gold: #facc15; /* Yellow 400 */
+            --accent-emerald: #10b981;
+        }
+
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: var(--space-bg);
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 4px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 3px),
+                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 4px);
+            background-size: 550px 550px, 350px 350px, 250px 250px; 
+            background-position: 0 0, 40px 60px, 130px 270px;
+            color: white; margin: 0; padding: 0; 
+            display: flex; align-items: center; justify-content: center; 
+            height: 100dvh; overflow: hidden;
+        }
+
+        .title-font { font-family: 'Space Grotesk', sans-serif; }
+
+        /* Contenedor Principal */
+        .app-container {
+            width: 98vw; max-width: 1150px; height: 94dvh; 
+            background: rgba(30, 27, 75, 0.85); /* Indigo base */
+            backdrop-filter: blur(15px);
+            border-radius: 1.2rem; border: 1px solid rgba(45, 212, 191, 0.3);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 0 40px rgba(45, 212, 191, 0.1);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        /* HEADER */
+        .header-panel {
+            flex-shrink: 0; padding: 0.8rem 1.5rem; border-bottom: 2px solid rgba(45, 212, 191, 0.4);
+            display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(90deg, #1e1b4b 0%, #312e81 100%);
+        }
+
+        /* LAYOUT CENTRAL */
+        .main-content {
+            flex-grow: 1; display: flex; flex-direction: row; min-height: 0;
+            overflow: hidden; 
+        }
+
+        /* PANEL IZQUIERDO: LOGÍSTICA */
+        .mission-panel {
+            width: 35%; padding: 1.5rem; display: flex; flex-direction: column;
+            justify-content: flex-start; 
+            border-right: 2px solid rgba(45, 212, 191, 0.2);
+            overflow-y: auto; scroll-behavior: smooth;
+        }
+        .mission-panel::-webkit-scrollbar { width: 5px; }
+        .mission-panel::-webkit-scrollbar-thumb { background: rgba(45, 212, 191, 0.5); border-radius: 10px; }
+
+        /* PANEL DERECHO: MAPA D3 */
+        .map-panel {
+            width: 65%; position: relative; display: flex; align-items: center; justify-content: center;
+            background: radial-gradient(circle at center, rgba(45, 212, 191, 0.05) 0%, transparent 80%);
+        }
+
+        /* ESTILOS DEL MAPA VÍVIDO (D3) */
+        .sphere { fill: var(--globe-ocean); }
+        .land { fill: var(--globe-land); stroke: var(--globe-border); stroke-width: 0.8px; transition: fill 0.3s; }
+        .land:hover { fill: #5b21b6; }
+        .atmosphere {
+            fill: none; stroke: var(--accent-cyan); stroke-width: 4px;
+            filter: drop-shadow(0 0 20px var(--accent-cyan)); opacity: 0.6;
+        }
+        
+        /* Nodos Comerciales */
+        .hub-node { cursor: pointer; transition: all 0.3s; }
+        .hub-circle { fill: var(--accent-cyan); stroke: white; stroke-width: 2px; }
+        .hub-pulse { fill: none; stroke: var(--accent-cyan); stroke-width: 2px; animation: nodePulse 2s infinite; }
+        .hub-node:hover .hub-circle { fill: var(--accent-gold); transform: scale(1.2); }
+        .hub-active .hub-circle { fill: var(--accent-gold); stroke: white; }
+        .hub-active .hub-pulse { stroke: var(--accent-gold); animation: nodePulseFast 1s infinite; }
+
+        @keyframes nodePulse { 0% { r: 5; opacity: 1; } 100% { r: 25; opacity: 0; } }
+        @keyframes nodePulseFast { 0% { r: 6; opacity: 1; } 100% { r: 35; opacity: 0; } }
+
+        /* Rutas Comerciales Animadas */
+        .trade-route {
+            fill: none; stroke: var(--accent-gold); stroke-width: 3px;
+            stroke-dasharray: 10 5; opacity: 0.9;
+            filter: drop-shadow(0 0 10px var(--accent-gold));
+        }
+
+        /* Tarjetas de Datos */
+        .data-card {
+            background: rgba(49, 46, 129, 0.9); border: 1px solid #4338ca;
+            padding: 1rem; border-radius: 1rem; margin-bottom: 1rem;
+            border-left: 4px solid var(--accent-cyan);
+        }
+
+        /* INTRO MODAL */
+        .intro-modal {
+            position: absolute; inset: 0; z-index: 100;
+            background: rgba(30, 27, 75, 0.95); backdrop-filter: blur(8px);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 2rem; text-align: center;
+        }
+
+        .loading-text { font-family: 'Space Grotesk', monospace; letter-spacing: 2px; }
+
+        /* RESPONSIVE CELULAR */
+        @media (max-width: 768px) {
+            .app-container { height: 100dvh; width: 100vw; border-radius: 0; border: none; }
+            .main-content { flex-direction: column; }
+            .map-panel { width: 100%; height: 45%; border-bottom: 2px solid rgba(45, 212, 191, 0.3); }
+            .mission-panel { width: 100%; height: 55%; padding: 1.2rem; }
+        }
+
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="app" v-cloak class="w-full h-full flex justify-center items-center relative">
+    
+    <div v-if="showIntro" class="intro-modal animate__animated animate__fadeIn">
+        <div class="bg-indigo-900 p-6 md:p-10 rounded-[2rem] max-w-2xl w-full border-2 border-teal-400 shadow-[0_0_50px_rgba(45,212,191,0.3)] relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-500 via-teal-400 to-yellow-400"></div>
+            
+            <div class="text-6xl mb-4 animate__animated animate__bounceIn">🚢</div>
+            <h1 class="title-font text-3xl md:text-4xl text-white mb-2 uppercase tracking-wide">Simulador de Comercio</h1>
+            <p class="text-teal-300 font-bold mb-6 uppercase tracking-widest text-xs">Análisis de Ventajas Geográficas</p>
+            
+            <div class="bg-indigo-950 p-5 rounded-xl border border-indigo-700 mb-6 text-left">
+                <h3 class="font-bold text-white mb-2 flex items-center gap-2 text-sm">
+                    <span>🎯</span> Objetivo Logístico:
+                </h3>
+                <p class="text-indigo-100 text-sm mb-4 leading-relaxed">
+                    América tiene una geografía privilegiada. Tu misión es analizar escenarios comerciales y <b>tocar el Puerto o Canal estratégico</b> correcto en el mapa para establecer la ruta.
+                </p>
+                <div class="flex items-start gap-3 text-xs text-indigo-200 bg-indigo-900 p-3 rounded-lg border border-indigo-700">
+                    <span class="text-lg text-yellow-400">💡</span> 
+                    <span>Toca los círculos brillantes (nodos) en el mapa para activar las rutas internacionales. La cámara se alejará automáticamente para mostrarte el mundo entero.</span>
+                </div>
+            </div>
+            
+            <button @click="initSimulator" class="w-full bg-teal-600 hover:bg-teal-500 text-white font-black text-lg px-8 py-4 rounded-xl shadow-[0_4px_0_#0d9488] active:translate-y-1 active:shadow-none transition-all uppercase tracking-widest">
+                ¡INICIAR SIMULACIÓN!
+            </button>
+        </div>
+    </div>
+
+    <div class="app-container">
+        
+        <header class="header-panel">
+            <div class="flex flex-col">
+                <span class="title-font text-lg md:text-xl font-bold text-white tracking-wide">HUB TÁCTICO GLOBAL</span>
+                <span class="text-[9px] text-teal-300 uppercase tracking-widest font-mono">Red de Transporte Americano</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-right hidden md:block">
+                    <div class="text-[9px] text-indigo-200 uppercase tracking-widest">Contratos Completados</div>
+                    <div class="font-mono text-yellow-400 font-bold text-lg">{{ currentMission }} / {{ missions.length }}</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            
+            <div class="mission-panel" ref="missionPanelRef">
+                <div v-if="!isCompleted" class="flex flex-col w-full pb-4">
+                    
+                    <div class="data-card shadow-lg shrink-0 animate__animated animate__fadeInRight">
+                        <div class="flex justify-between items-start mb-2">
+                            <p class="text-[10px] text-teal-300 uppercase font-bold tracking-widest flex items-center gap-1">
+                                <span class="animate-pulse">🔴</span> Solicitud de Ruta
+                            </p>
+                            <span class="text-xs bg-indigo-800 px-2 py-1 rounded text-indigo-200 font-mono border border-indigo-600">Nivel {{ currentMission + 1 }}</span>
+                        </div>
+                        <h2 class="text-base md:text-lg font-bold text-white leading-snug">
+                            {{ missions[currentMission].scenario }}
+                        </h2>
+                        <p class="text-xs text-indigo-300 mt-3 font-mono border-t border-indigo-700 pt-2">
+                            ACCIÓN REQUERIDA: Toca el nodo geográfico correspondiente en el mapa.
+                        </p>
+                    </div>
+
+                    <div v-if="showFeedback" class="mt-2 p-4 rounded-xl text-sm font-bold text-left animate__animated animate__fadeIn border shrink-0 relative shadow-lg" :class="feedbackClass">
+                        
+                        <div class="flex items-center gap-2 mb-2 border-b border-white/20 pb-2">
+                            <span class="text-2xl">{{ feedbackSuccess ? '✅' : '❌' }}</span>
+                            <span class="uppercase tracking-widest text-xs">{{ feedbackSuccess ? 'Ruta Establecida' : 'Error Logístico' }}</span>
+                        </div>
+                        
+                        <p class="mb-4 leading-relaxed text-sm font-medium">{{ feedbackText }}</p>
+                        
+                        <button v-if="feedbackSuccess" @click="nextMission" class="w-full py-3 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-colors uppercase tracking-widest text-xs font-black shadow-sm border border-white/10">
+                            {{ isLast ? 'Ver Reporte de Impacto' : 'Siguiente Contrato ➔' }}
+                        </button>
+                    </div>
+                </div>
+
+                <div v-else class="h-full flex flex-col justify-center text-center animate__animated animate__zoomIn pb-4">
+                    <div class="text-6xl mb-4 text-teal-400">🌐</div>
+                    <h2 class="title-font text-2xl text-white mb-2">¡Red Logística Optimizada!</h2>
+                    <p class="text-indigo-200 text-sm mb-6 px-2 leading-relaxed">
+                        Has analizado correctamente cómo la posición geográfica de América (sus costas y pasos naturales) le otorga una inmensa ventaja en el comercio mundial.
+                    </p>
+                    <button @click="resetApp" class="bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 rounded-xl shadow-md uppercase tracking-widest text-sm transition-all shrink-0">
+                        Nueva Simulación
+                    </button>
+                </div>
+
+            </div>
+
+            <div class="map-panel" ref="mapContainer">
+                <div v-if="isLoading" class="absolute flex flex-col items-center">
+                    <div class="w-12 h-12 border-4 border-teal-500/30 border-t-teal-400 rounded-full animate-spin mb-3"></div>
+                    <p class="loading-text text-teal-300 text-xs uppercase animate-pulse">Conectando Satélite...</p>
+                </div>
+                
+                <svg ref="mapSvg" width="100%" height="100%"></svg>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+const { createApp, ref, computed, nextTick } = Vue;
+
+createApp({
+    setup() {
+        const showIntro = ref(true);
+        const isLoading = ref(true);
+        const mapContainer = ref(null);
+        const mapSvg = ref(null);
+        const missionPanelRef = ref(null); 
+        
+        const currentMission = ref(0);
+        const showFeedback = ref(false);
+        const feedbackText = ref('');
+        const feedbackClass = ref('');
+        const feedbackSuccess = ref(false);
+        const isCompleted = ref(false);
+
+        let projection, path, svg, gMap, gRoutes, gNodes;
+        
+        let baseScale, outScale;
+        const baseRotation = [85, 0]; 
+
+        const nodesData = [
+            { id: 'panama', coords: [-79.9, 9.1] },
+            { id: 'pacific', coords: [-118.2, 34.0] },
+            { id: 'atlantic', coords: [-74.0, 40.7] },
+            { id: 'strait', coords: [-70.9, -53.1] }
+        ];
+
+        const missions = [
+            {
+                scenario: "Un inmenso barco de carga viaja desde China hacia Nueva York. Para no rodear todo el sur del continente, ¿qué obra de ingeniería estratégica debe usar?",
+                targetNode: 'panama',
+                viewRotation: [110, -10], 
+                destinations: [[118, 35], [-74, 40]], 
+                feedbackCorrect: "¡Magnífico! El Canal de Panamá une el Océano Pacífico con el Atlántico, ahorrando miles de kilómetros de viaje intercontinental.",
+                feedbackWrong: "Ruta ineficiente. Busca el punto de conexión en el centro del continente que corta la tierra en dos."
+            },
+            {
+                scenario: "El mercado asiático demanda productos agrícolas americanos. ¿Qué zona costera ofrece la ventaja geográfica directa para cruzar hacia Asia sin obstáculos?",
+                targetNode: 'pacific',
+                viewRotation: [150, -15], 
+                destinations: [[139, 35], [114, 22], [151, -33]], 
+                feedbackCorrect: "¡Exacto! Toda la costa Occidental tiene salida libre al inmenso Océano Pacífico, conectándonos de frente con las economías asiáticas.",
+                feedbackWrong: "Analiza el mapa: ¿Qué océano baña la costa izquierda (Oeste) de América y conecta con Asia?"
+            },
+            {
+                scenario: "Históricamente, Europa es un gran socio comercial. ¿Qué zona geográfica de América nos permite establecer rutas de barco directas hacia el 'Viejo Continente'?",
+                targetNode: 'atlantic',
+                viewRotation: [30, -20], 
+                destinations: [[-0.1, 51.5], [4.9, 52.3], [-9.1, 38.7]], 
+                feedbackCorrect: "¡Muy bien! La extensa costa Oriental nos coloca 'frente a frente' con Europa y África cruzando el Atlántico.",
+                feedbackWrong: "Piensa en el Océano que cruzó Colón. ¿Qué costa de América mira hacia Europa?"
+            },
+            {
+                scenario: "El Canal de Panamá está saturado. ¿Qué paso natural en el extremo sur del continente permite que los barcos crucen de un océano a otro?",
+                targetNode: 'strait',
+                viewRotation: [60, 40], 
+                destinations: [[18, -34], [144, -37]], 
+                feedbackCorrect: "¡Ruta Austral trazada! El Estrecho de Magallanes es una ventaja natural vital para cruzar de océano cuando los canales artificiales no son opción.",
+                feedbackWrong: "Busca en el extremo más al sur de Suramérica, cerca de la Antártida."
+            }
+        ];
+
+        const isLast = computed(() => currentMission.value === missions.length - 1);
+
+        const initSimulator = () => {
+            showIntro.value = false;
+            nextTick(() => { drawMap(); });
+        };
+
+        const drawMap = async () => {
+            const width = mapContainer.value.clientWidth;
+            const height = mapContainer.value.clientHeight;
+            const size = Math.min(width, height);
+
+            baseScale = size * 0.45; 
+            outScale = size * 0.30;
+
+            svg = d3.select(mapSvg.value).attr("viewBox", `0 0 ${width} ${height}`);
+            svg.selectAll("*").remove(); 
+
+            projection = d3.geoOrthographic()
+                .scale(baseScale)
+                .translate([width / 2, height / 2])
+                .rotate(baseRotation) 
+                .clipAngle(90);
+
+            path = d3.geoPath().projection(projection);
+
+            gMap = svg.append("g");
+            gRoutes = svg.append("g");
+            gNodes = svg.append("g");
+
+            gMap.append("circle")
+                .attr("cx", width / 2).attr("cy", height / 2)
+                .attr("r", projection.scale())
+                .attr("class", "atmosphere");
+                
+            gMap.append("circle")
+                .attr("cx", width / 2).attr("cy", height / 2)
+                .attr("r", projection.scale())
+                .attr("class", "sphere");
+
+            try {
+                const worldData = await d3.json("https://unpkg.com/world-atlas@2.0.2/countries-110m.json");
+                const countries = topojson.feature(worldData, worldData.objects.countries).features;
+
+                gMap.selectAll(".land")
+                    .data(countries).enter().append("path")
+                    .attr("class", "land").attr("d", path);
+
+                drawNodes();
+                isLoading.value = false;
+            } catch (error) {
+                alert("Error de conexión al satélite (Falla de red).");
+            }
+        };
+
+        const updateProjection = () => {
+            svg.selectAll("path.sphere").attr("d", path);
+            svg.selectAll("path.land").attr("d", path);
+            svg.select(".atmosphere").attr("r", projection.scale());
+            svg.select(".sphere").attr("r", projection.scale());
+
+            gNodes.selectAll(".hub-node").attr("transform", d => {
+                const p = projection(d.coords);
+                const isVisible = d3.geoDistance(d.coords, projection.invert([projection.translate()[0], projection.translate()[1]])) < Math.PI / 2;
+                return (isVisible && p) ? `translate(${p[0]},${p[1]}) scale(1)` : "scale(0)";
+            });
+        };
+
+        const drawNodes = () => {
+            gNodes.selectAll("*").remove();
+            const nodes = gNodes.selectAll(".hub-node")
+                .data(nodesData).enter().append("g")
+                .attr("class", "hub-node")
+                .on("click", (event, d) => handleNodeClick(d, event.currentTarget));
+
+            nodes.append("circle").attr("class", "hub-pulse").attr("r", 5);
+            nodes.append("circle").attr("class", "hub-circle").attr("r", 6);
+            updateProjection();
+        };
+
+        const animateToView = (targetRotation, targetScale, callback) => {
+            const rInterp = d3.interpolate(projection.rotate(), targetRotation);
+            const sInterp = d3.interpolate(projection.scale(), targetScale);
+
+            d3.transition()
+                .duration(1500)
+                .ease(d3.easeCubicInOut)
+                .tween("zoom-pan", () => {
+                    return (t) => {
+                        projection.rotate(rInterp(t));
+                        projection.scale(sInterp(t));
+                        updateProjection();
+                    };
+                })
+                .on("end", () => { if(callback) callback(); });
+        };
+
+        const handleNodeClick = (node, nodeElement) => {
+            if (showFeedback.value && feedbackSuccess.value) return;
+
+            const mission = missions[currentMission.value];
+            showFeedback.value = true;
+            gRoutes.selectAll("*").remove();
+            d3.selectAll(".hub-node").classed("hub-active", false);
+
+            if (node.id === mission.targetNode) {
+                feedbackSuccess.value = true;
+                feedbackText.value = mission.feedbackCorrect;
+                feedbackClass.value = "bg-emerald-900/50 text-emerald-300 border-emerald-500";
+                d3.select(nodeElement).classed("hub-active", true);
+
+                animateToView(mission.viewRotation, outScale, () => {
+                    drawAnimatedRoutes(node.coords, mission.destinations);
+                });
+                
+                try { confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } }); } catch(e){}
+            } else {
+                feedbackSuccess.value = false;
+                feedbackText.value = mission.feedbackWrong;
+                feedbackClass.value = "bg-rose-900/50 text-rose-300 border-rose-500";
+                
+                d3.select(nodeElement).select(".hub-circle")
+                    .transition().duration(50).attr("transform", "translate(-5,0)")
+                    .transition().duration(50).attr("transform", "translate(5,0)")
+                    .transition().duration(50).attr("transform", "translate(-5,0)")
+                    .transition().duration(50).attr("transform", "translate(0,0)");
+            }
+
+            nextTick(() => {
+                if (missionPanelRef.value) {
+                    missionPanelRef.value.scrollTo({ top: missionPanelRef.value.scrollHeight, behavior: 'smooth' });
+                }
+            });
+        };
+
+        const drawAnimatedRoutes = (origin, destinations) => {
+            destinations.forEach(dest => {
+                const route = { type: "LineString", coordinates: [origin, dest] };
+                const routePath = gRoutes.append("path").datum(route).attr("class", "trade-route").attr("d", path);
+
+                const totalLength = routePath.node().getTotalLength();
+
+                routePath
+                    .attr("stroke-dasharray", totalLength + " " + totalLength)
+                    .attr("stroke-dashoffset", totalLength)
+                    .transition().duration(2000).ease(d3.easeCubicInOut)
+                    .attr("stroke-dashoffset", 0)
+                    .on("end", function() {
+                        d3.select(this)
+                            .attr("stroke-dasharray", "8 8")
+                            .append("animate")
+                            .attr("attributeName", "stroke-dashoffset")
+                            .attr("values", "16;0")
+                            .attr("dur", "1s")
+                            .attr("repeatCount", "indefinite");
+                    });
+            });
+        };
+
+        const nextMission = () => {
+            showFeedback.value = false;
+            feedbackSuccess.value = false;
+            gRoutes.selectAll("*").remove();
+            d3.selectAll(".hub-node").classed("hub-active", false);
+            
+            if (!isLast.value) {
+                currentMission.value++;
+                animateToView(baseRotation, baseScale);
+            } else {
+                isCompleted.value = true;
+                animateToView([0, 0], outScale);
+            }
+        };
+
+        const resetApp = () => {
+            currentMission.value = 0;
+            isCompleted.value = false;
+            showFeedback.value = false;
+            gRoutes.selectAll("*").remove();
+            d3.selectAll(".hub-node").classed("hub-active", false);
+            animateToView(baseRotation, baseScale);
+        };
+
+        window.addEventListener('resize', () => {
+            if (!showIntro.value && !isLoading.value) drawMap();
+        });
+
+        return { 
+            showIntro, isLoading, mapContainer, mapSvg, missionPanelRef,
+            currentMission, missions, showFeedback, feedbackText, feedbackClass, feedbackSuccess, isCompleted, isLast,
+            initSimulator, nextMission, resetApp
+        };
+    }
+}).mount('#app');
+</script>
+</body>
+</html>

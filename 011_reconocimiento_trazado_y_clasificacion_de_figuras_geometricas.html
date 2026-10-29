@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taller de Formas: Recorta y Clasifica</title>
+    <style>
+        :root {
+            --bg-color: #e0f7fa;
+            --primary: #00acc1;
+            --accent: #ff9800;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Comic Sans MS', sans-serif;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#b2ebf2 20%, transparent 20%),
+            radial-gradient(#b2ebf2 20%, transparent 20%);
+            background-size: 30px 30px;
+            margin: 0; padding: 0; height: 100vh; overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+            user-select: none;
+            /* Evitar rebote en móvil */
+            overscroll-behavior: none;
+        }
+
+        /* --- UI GENERAL (Escritorio) --- */
+        .workspace {
+            display: grid;
+            grid-template-columns: 35% 65%;
+            width: 95vw; height: 85vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+            border: 8px solid var(--primary);
+            position: relative;
+            margin-top: 60px;
+        }
+
+        /* --- BANNER SUPERIOR --- */
+        .instruction-banner {
+            position: absolute; top: 15px;
+            background: white; padding: 10px 40px;
+            border-radius: 50px; 
+            border: 4px solid var(--accent);
+            font-size: 1.5rem; font-weight: bold; color: #e65100;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            z-index: 200; transition: all 0.3s;
+            text-align: center;
+            width: 80%; max-width: 600px;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+
+        /* IZQUIERDA: MESA DE CORTE */
+        .cutting-mat {
+            background-color: #f5f5f5;
+            border-right: 4px dashed #bdbdbd;
+            position: relative;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        .paper-sheet {
+            width: 260px; height: 260px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex; justify-content: center; align-items: center;
+            border-radius: 15px;
+            border: 1px solid #eee;
+        }
+
+        .section-label {
+            position: absolute; top: 15px;
+            font-weight: 800; color: #90a4ae; letter-spacing: 1px;
+            background: rgba(255,255,255,0.9); padding: 5px 15px; border-radius: 20px;
+            text-transform: uppercase; font-size: 0.9rem;
+        }
+
+        /* DERECHA: TABLERO DE ENCAJE (GRANDE) */
+        .sorting-board {
+            background-color: #fff9c4;
+            position: relative;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .board-slots {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px; 
+            padding: 40px;
+            background: #fbc02d;
+            border-radius: 20px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+        }
+
+        .target-slot {
+            width: 135px; height: 135px;
+            background: rgba(0,0,0,0.25);
+            border-radius: 15px;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: inset 2px 2px 8px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .target-slot::after {
+            content: ''; position: absolute;
+            width: 70px; height: 70px;
+            background: rgba(255,255,255,0.2);
+            pointer-events: none;
+        }
+        
+        .target-slot.highlight { background: rgba(255,255,255,0.4); transform: scale(1.05); border: 3px solid white; }
+
+        /* ICONOS VISUALES */
+        .slot-circle::after { border-radius: 50%; }
+        .slot-square::after { border-radius: 0; }
+        .slot-triangle::after { clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
+        .slot-star::after { clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+        .slot-pentagon::after { clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%); }
+        .slot-rhombus::after { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
+
+        /* --- SVG Y PIEZAS --- */
+        .piece-wrapper {
+            position: relative; display: flex; justify-content: center; align-items: center;
+            pointer-events: auto; touch-action: none;
+        }
+        .piece-wrapper.draggable-active {
+            cursor: grab !important; z-index: 1000;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+            transition: transform 0.2s; animation: bounceReady 0.5s;
+        }
+        .piece-wrapper.draggable-active:active { cursor: grabbing !important; transform: scale(0.9); }
+
+        .cut-shape-container { overflow: visible; touch-action: none; }
+        .outline-dashed { fill: #eeeeee; stroke: #9e9e9e; stroke-width: 4; stroke-dasharray: 10, 5; opacity: 0.8; }
+        .outline-cut { fill: none; stroke: #ff5722; stroke-width: 6; stroke-linecap: round; }
+        .hit-area { fill: transparent; stroke: transparent; stroke-width: 40; cursor: crosshair; }
+        .start-dot { fill: #00e676; stroke: #fff; stroke-width: 3; animation: pulse 1s infinite; pointer-events: none; }
+
+        .svg-finished .outline-dashed { fill: var(--final-color); stroke: #333; stroke-width: 3; stroke-dasharray: 0; opacity: 1; }
+        .svg-finished .outline-cut { display: none; }
+        .svg-finished .start-dot { display: none; }
+
+        /* --- MODALES --- */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: flex; 
+            flex-direction: column; justify-content: center; align-items: center; z-index: 300;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-card {
+            background: white; padding: 40px; border-radius: 20px;
+            text-align: center; max-width: 500px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 5px solid var(--primary);
+        }
+
+        .modal-title { font-size: 2rem; color: var(--primary); margin-bottom: 20px; }
+        .instructions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        
+        .inst-step {
+            background: #e0f7fa; padding: 15px; border-radius: 10px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .inst-icon { font-size: 3rem; margin-bottom: 10px; }
+        .inst-text { font-size: 1rem; color: #455a64; line-height: 1.4; }
+        .inst-text strong { display: block; color: #00838f; margin-bottom: 5px; font-size: 1.1rem; }
+
+        .btn-start {
+            padding: 15px 50px; font-size: 1.5rem; font-weight: bold;
+            background: #ff9800; color: white; border: none; border-radius: 50px;
+            cursor: pointer; transition: transform 0.1s;
+            box-shadow: 0 5px 0 #e65100;
+        }
+        .btn-start:active { transform: translateY(4px); box-shadow: 0 1px 0 #e65100; }
+
+        @keyframes pulse { 0% { r: 6; } 50% { r: 9; } 100% { r: 6; } }
+        @keyframes bounceReady { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        /* =========================================
+           📱 MODO CELULAR (RESPONSIVE COMPACTO)
+           Este bloque está dentro del style correctamente
+           ========================================= */
+        @media (max-width: 1024px) {
+            
+            /* 1. Contenedor Vertical */
+            .workspace {
+                display: flex;
+                flex-direction: column;
+                height: auto;
+                min-height: 85vh;
+                margin-top: 75px; 
+                width: 95vw;
+                border-width: 4px; 
+            }
+
+            /* 2. Mesa de Corte (Arriba) */
+            .cutting-mat {
+                width: 100%;
+                height: 280px;
+                border-right: none;
+                border-bottom: 4px dashed #bdbdbd;
+                padding: 5px 0;
+                order: 1;
+            }
+
+            /* Hoja más pequeña */
+            .paper-sheet {
+                transform: scale(0.75); 
+                margin: 0;
+                box-shadow: none; 
+            }
+
+            /* 3. Tablero Amarillo (Abajo) - COMPACTO */
+            .sorting-board {
+                width: 100%;
+                flex: 1;
+                order: 2;
+                padding: 10px 0;
+                align-items: flex-start; 
+            }
+
+            /* 4. Rejilla de 3 Columnas x 2 Filas */
+            .board-slots {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;           
+                padding: 15px;       
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            /* 5. Huecos optimizados */
+            .target-slot {
+                width: 100%;         
+                aspect-ratio: 1 / 1; 
+                height: auto;        
+                max-width: 90px;     
+                border-radius: 8px;
+            }
+            
+            .target-slot::after { width: 40%; height: 40%; }
+
+            /* 6. Ajustes de Texto */
+            .instruction-banner {
+                width: 95%;
+                font-size: 1rem;
+                padding: 8px 10px;
+                top: 5px;
+                white-space: nowrap; 
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .section-label { font-size: 0.7rem; top: 5px; padding: 2px 8px; }
+            
+            /* Modal Responsive */
+            .modal-card { width: 85%; padding: 20px; }
+            .instructions-grid { grid-template-columns: 1fr; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="instruction-banner" id="msg">
+        <span>👋</span> ¡Hola! Lee las instrucciones.
+    </div>
+
+    <div class="modal" id="start-modal">
+        <div class="modal-card">
+            <h1 class="modal-title">Taller de Formas</h1>
+            <p style="color: #777; margin-bottom: 20px;">Instrucciones:</p>
+            
+            <div class="instructions-grid">
+                <div class="inst-step">
+                    <div class="inst-icon">✂️</div>
+                    <div class="inst-text">
+                        <strong>1. Recorta</strong>
+                        Toca el punto verde y sigue la línea.
+                    </div>
+                </div>
+                <div class="inst-step">
+                    <div class="inst-icon">🧩</div>
+                    <div class="inst-text">
+                        <strong>2. Clasifica</strong>
+                        Arrastra la figura a su hueco.
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-start" onclick="startGame()">¡Jugar!</button>
+        </div>
+    </div>
+
+    <div class="modal" id="end-modal" style="display: none;">
+        <div class="modal-card">
+            <div style="font-size: 4rem; margin-bottom: 10px;">🏆</div>
+            <h2 class="modal-title">¡Excelente!</h2>
+            <p style="font-size: 1.2rem; color: #555; margin-bottom: 30px;">Completaste la colección.</p>
+            <button class="btn-start" style="background: #4caf50; box-shadow: 0 5px 0 #2e7d32;" onclick="location.reload()">Jugar Otra Vez</button>
+        </div>
+    </div>
+
+    <div class="workspace">
+        <div class="cutting-mat">
+            <span class="section-label">1. Recortar</span>
+            <div class="paper-sheet" id="paper-sheet"></div>
+        </div>
+
+        <div class="sorting-board">
+            <span class="section-label" style="right: 20px;">2. Clasificar</span>
+            <div class="board-slots">
+                <div class="target-slot slot-circle" data-part="circle"></div>
+                <div class="target-slot slot-square" data-part="square"></div>
+                <div class="target-slot slot-triangle" data-part="triangle"></div>
+                <div class="target-slot slot-star" data-part="star"></div>
+                <div class="target-slot slot-pentagon" data-part="pentagon"></div>
+                <div class="target-slot slot-rhombus" data-part="rhombus"></div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const parts = [
+        { id: "circle", name: "CÍRCULO", path: "M 70 10 A 60 60 0 1 1 69.9 10", width: 140, height: 140, color: "#f44336", viewBox: "0 0 140 140" },
+        { id: "square", name: "CUADRADO", path: "M 10 10 L 130 10 L 130 130 L 10 130 L 10 10", width: 140, height: 140, color: "#2196f3", viewBox: "0 0 140 140" },
+        { id: "triangle", name: "TRIÁNGULO", path: "M 70 10 L 130 130 L 10 130 L 70 10", width: 140, height: 140, color: "#4caf50", viewBox: "0 0 140 140" },
+        { id: "star", name: "ESTRELLA", path: "M 70 10 L 85 55 L 135 55 L 95 85 L 110 130 L 70 105 L 30 130 L 45 85 L 5 55 L 55 55 L 70 10", width: 140, height: 140, color: "#ffeb3b", viewBox: "0 0 140 140" },
+        { id: "pentagon", name: "PENTÁGONO", path: "M 70 10 L 130 55 L 110 130 L 30 130 L 10 55 L 70 10", width: 140, height: 140, color: "#ff9800", viewBox: "0 0 140 140" },
+        { id: "rhombus", name: "ROMBO", path: "M 70 10 L 130 70 L 70 130 L 10 70 L 70 10", width: 140, height: 140, color: "#9c27b0", viewBox: "0 0 140 140" }
+    ];
+
+    let currentPartIndex = 0;
+    let isCutting = false;
+    let currentLength = 0; 
+    let totalLength = 0;
+    
+    let cutPath = null;
+    let hitPath = null;
+    let currentSvg = null;
+    let currentWrapper = null; 
+    
+    // VARIABLES PARA ARRASTRE TÁCTIL (TOUCH)
+    let touchOffsetX = 0;
+    let touchOffsetY = 0;
+    let activeTouchId = null;
+
+    const paperSheet = document.getElementById('paper-sheet');
+    const msg = document.getElementById('msg');
+    const startModal = document.getElementById('start-modal');
+
+    function startGame() {
+        startModal.style.display = "none";
+        loadNextPart();
+    }
+
+    function loadNextPart() {
+        if (currentPartIndex >= parts.length) {
+            showWin();
+            return;
+        }
+
+        const part = parts[currentPartIndex];
+        paperSheet.innerHTML = '';
+        updateMsg(`✂️ Recorta el <b>${part.name}</b> (Punto VERDE)`, "cut");
+
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('piece-wrapper');
+        wrapper.id = `wrapper-${part.id}`;
+        wrapper.style.width = `${part.width}px`;
+        wrapper.style.height = `${part.height}px`;
+
+        const svgNS = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(svgNS, "svg");
+        svg.setAttribute("width", part.width);
+        svg.setAttribute("height", part.height);
+        svg.setAttribute("viewBox", part.viewBox);
+        svg.classList.add("cut-shape-container");
+        svg.style.setProperty("--final-color", part.color);
+
+        const guide = document.createElementNS(svgNS, "path");
+        guide.setAttribute("d", part.path);
+        guide.classList.add("outline-dashed");
+        svg.appendChild(guide);
+
+        cutPath = document.createElementNS(svgNS, "path");
+        cutPath.setAttribute("d", part.path);
+        cutPath.classList.add("outline-cut");
+        totalLength = guide.getTotalLength();
+        cutPath.style.strokeDasharray = totalLength;
+        cutPath.style.strokeDashoffset = totalLength; 
+        svg.appendChild(cutPath);
+
+        hitPath = document.createElementNS(svgNS, "path");
+        hitPath.setAttribute("d", part.path);
+        hitPath.classList.add("hit-area");
+        svg.appendChild(hitPath);
+
+        const pt = guide.getPointAtLength(0);
+        const dot = document.createElementNS(svgNS, "circle");
+        dot.setAttribute("cx", pt.x);
+        dot.setAttribute("cy", pt.y);
+        dot.setAttribute("r", 8);
+        dot.classList.add("start-dot");
+        svg.appendChild(dot);
+
+        wrapper.appendChild(svg);
+        paperSheet.appendChild(wrapper);
+
+        currentSvg = svg;
+        currentWrapper = wrapper;
+        currentLength = 0; 
+
+        // Mouse Events (Corte)
+        hitPath.addEventListener('mousedown', startCut);
+        window.addEventListener('mouseup', stopCut); 
+        svg.addEventListener('mousemove', handleMove);
+        
+        // Touch Events (Corte)
+        hitPath.addEventListener('touchstart', (e) => { e.preventDefault(); startCut(e.touches[0]); }, {passive: false});
+        svg.addEventListener('touchmove', (e) => { e.preventDefault(); handleMove(e.touches[0]); }, {passive: false});
+        window.addEventListener('touchend', stopCut);
+    }
+
+    function startCut(e) {
+        const mousePos = getMousePos(e);
+        const targetPt = cutPath.getPointAtLength(currentLength);
+        const dist = Math.hypot(mousePos.x - targetPt.x, mousePos.y - targetPt.y);
+
+        if (dist < 35) {
+            isCutting = true;
+            updateMsg("✨ ¡Sigue la línea punteada!", "active-cut");
+        } else {
+            wiggle(currentWrapper);
+            updateMsg("⚠️ Debes empezar en el punto VERDE", "error");
+        }
+    }
+
+    function stopCut() {
+        isCutting = false;
+        if (currentLength < totalLength && currentLength > 0) {
+            updateMsg("⏸️ Continúa desde la línea naranja.", "warning");
+        }
+    }
+
+    function handleMove(e) {
+        if (!isCutting) return;
+        const mousePos = getMousePos(e);
+        const lookAheadDist = 15; 
+        const nextPt = cutPath.getPointAtLength(currentLength + lookAheadDist);
+        const distToNext = Math.hypot(mousePos.x - nextPt.x, mousePos.y - nextPt.y);
+
+        if (distToNext < 30) {
+            currentLength += lookAheadDist;
+            if (currentLength >= totalLength) currentLength = totalLength;
+            cutPath.style.strokeDashoffset = totalLength - currentLength;
+            if (currentLength >= totalLength) finishCut();
+        }
+    }
+
+    function getMousePos(evt) {
+        const CTM = currentSvg.getScreenCTM();
+        return {
+            x: (evt.clientX - CTM.e) / CTM.a,
+            y: (evt.clientY - CTM.f) / CTM.d
+        };
+    }
+
+    function finishCut() {
+        isCutting = false;
+        currentSvg.classList.add('svg-finished');
+        hitPath.remove(); 
+        
+        currentWrapper.classList.add('draggable-active');
+        currentWrapper.setAttribute('draggable', true);
+        
+        // --- EVENTOS DRAG & DROP MOUSE ---
+        currentWrapper.ondragstart = (e) => {
+            e.dataTransfer.setData('text/plain', parts[currentPartIndex].id);
+        };
+
+        // --- EVENTOS TOUCH DRAG (CELULARES) ---
+        currentWrapper.addEventListener('touchstart', handleTouchStart, {passive: false});
+        currentWrapper.addEventListener('touchmove', handleTouchMove, {passive: false});
+        currentWrapper.addEventListener('touchend', handleTouchEnd, {passive: false});
+
+        updateMsg("✅ ¡Muy bien! Ahora <b>ARRASTRA</b> la figura a su hueco ➡️", "drag");
+    }
+
+    // --- LÓGICA TOUCH DRAG PARA CELULAR ---
+    function handleTouchStart(e) {
+        if(e.targetTouches.length === 1) {
+            const touch = e.targetTouches[0];
+            activeTouchId = touch.identifier;
+            const rect = currentWrapper.getBoundingClientRect();
+            touchOffsetX = touch.clientX - rect.left;
+            touchOffsetY = touch.clientY - rect.top;
+            
+            // Sacar del flujo normal para moverlo libremente
+            currentWrapper.style.position = 'fixed';
+            currentWrapper.style.zIndex = '1000';
+            currentWrapper.style.width = parts[currentPartIndex].width + 'px';
+            moveElement(touch.clientX, touch.clientY);
+        }
+    }
+
+    function handleTouchMove(e) {
+        e.preventDefault(); // Prevenir scroll
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === activeTouchId) {
+                moveElement(e.changedTouches[i].clientX, e.changedTouches[i].clientY);
+                break;
+            }
+        }
+    }
+
+    function handleTouchEnd(e) {
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === activeTouchId) {
+                const touch = e.changedTouches[i];
+                
+                // Detectar si cayó sobre un target
+                currentWrapper.style.visibility = 'hidden'; // Ocultar temp para ver qué hay abajo
+                const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                currentWrapper.style.visibility = 'visible';
+                
+                const targetSlot = elemBelow ? elemBelow.closest('.target-slot') : null;
+
+                if (targetSlot) {
+                    checkDrop(targetSlot);
+                } else {
+                    // Si falla, volver a la mesa
+                    resetPiecePosition();
+                }
+                activeTouchId = null;
+                break;
+            }
+        }
+    }
+
+    function moveElement(clientX, clientY) {
+        currentWrapper.style.left = (clientX - touchOffsetX) + 'px';
+        currentWrapper.style.top = (clientY - touchOffsetY) + 'px';
+    }
+
+    function resetPiecePosition() {
+        currentWrapper.style.position = 'relative';
+        currentWrapper.style.left = 'auto';
+        currentWrapper.style.top = 'auto';
+        currentWrapper.style.zIndex = 'auto';
+        wiggle(currentWrapper);
+        updateMsg("❌ Intenta ponerlo dentro de un recuadro amarillo", "error");
+    }
+
+    // --- LÓGICA DROP MOUSE ---
+    const targets = document.querySelectorAll('.target-slot');
+    targets.forEach(target => {
+        target.ondragover = (e) => { e.preventDefault(); target.classList.add('highlight'); };
+        target.ondragleave = () => target.classList.remove('highlight');
+        target.ondrop = (e) => {
+            e.preventDefault();
+            target.classList.remove('highlight');
+            checkDrop(target);
+        };
+    });
+
+    function checkDrop(target) {
+        const currentId = parts[currentPartIndex].id;
+        const targetId = target.getAttribute('data-part');
+
+        if (target.children.length > 0) {
+             updateMsg("⛔ Ese espacio ya está ocupado.", "error");
+             if(activeTouchId !== null) resetPiecePosition();
+             return;
+        }
+
+        if (currentId === targetId) {
+            placePiece(target);
+        } else {
+            updateMsg("❌ Esa figura no va en este hueco.", "error");
+            if(activeTouchId !== null) resetPiecePosition();
+            else wiggle(target);
+        }
+    }
+
+    function placePiece(target) {
+        // Limpiar estilos de drag
+        currentWrapper.removeEventListener('touchstart', handleTouchStart);
+        currentWrapper.removeEventListener('touchmove', handleTouchMove);
+        currentWrapper.removeEventListener('touchend', handleTouchEnd);
+        currentWrapper.classList.remove('draggable-active');
+        currentWrapper.setAttribute('draggable', false);
+        
+        currentWrapper.style.position = 'static'; 
+        currentWrapper.style.transform = "scale(0.7)"; 
+        currentWrapper.style.left = 'auto';
+        currentWrapper.style.top = 'auto';
+        
+        target.appendChild(currentWrapper);
+
+        updateMsg("🌟 ¡Correcto! Siguiente figura...", "success");
+        currentPartIndex++;
+        setTimeout(loadNextPart, 1000);
+    }
+
+    function updateMsg(text, type) {
+        msg.innerHTML = text;
+        if(type === 'cut') { msg.style.borderColor = "#ff9800"; msg.style.color = "#e65100"; msg.style.backgroundColor = "white"; }
+        else if (type === 'active-cut') { msg.style.borderColor = "#2196f3"; msg.style.color = "#0d47a1"; msg.style.backgroundColor = "#e3f2fd"; }
+        else if (type === 'drag') { msg.style.borderColor = "#4caf50"; msg.style.color = "#1b5e20"; msg.style.backgroundColor = "#e8f5e9"; }
+        else if (type === 'error') { msg.style.borderColor = "#f44336"; msg.style.color = "#b71c1c"; msg.style.backgroundColor = "#ffebee"; }
+        else if (type === 'success') { msg.style.borderColor = "#ffd700"; msg.style.color = "#333"; msg.style.backgroundColor = "#fffde7"; }
+        else { msg.style.borderColor = "#ff9800"; msg.style.color = "#e65100"; msg.style.backgroundColor = "#fff3e0"; }
+    }
+
+    function wiggle(element) {
+        element.style.transform = "translateX(-5px)";
+        setTimeout(() => element.style.transform = "translateX(5px)", 50);
+        setTimeout(() => element.style.transform = "translateX(-5px)", 100);
+        setTimeout(() => element.style.transform = "translateX(0)", 150);
+    }
+
+    function showWin() { document.getElementById('end-modal').style.display = 'flex'; }
+</script>
+</body>
+</html>

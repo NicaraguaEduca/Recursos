@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Detective de Noticias - Hecho vs Opinión</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        
+        :root {
+            --primary: #2C3E50; /* Azul Periodístico */
+            --secondary: #E74C3C; /* Rojo Noticia */
+            --accent: #F1C40F;
+            --background: #ECF0F1;
+            --text: #2C3E50;
+            --success: #27AE60;
+            --error: #C0392B;
+            --subject-color: #9B59B6; /* Lengua */
+            --highlight: #3498DB;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            background-image: 
+                linear-gradient(rgba(44, 62, 80, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(44, 62, 80, 0.03) 1px, transparent 1px);
+            background-size: 25px 25px;
+            color: var(--text);
+            text-align: center;
+            padding: 10px;
+            margin: 0;
+            user-select: none; 
+            -webkit-user-select: none;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .tarjeta {
+            background: white;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            border-top: 10px solid var(--primary);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            max-height: 98vh;
+        }
+
+        .badge-asignatura {
+            background-color: var(--subject-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: inline-block;
+            margin: 0 auto 10px auto;
+            text-transform: uppercase;
+        }
+
+        h1 { margin: 0 0 10px 0; color: var(--primary); font-size: clamp(1.2rem, 4.5vw, 1.8rem); font-weight: 800; }
+
+        /* --- PANTALLA DE INICIO --- */
+        #pantalla-inicio .icono-grande { font-size: 4rem; margin-bottom: 15px; }
+        
+        .objetivo-caja {
+            background-color: #F4F6F7;
+            border: 2px solid var(--primary);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            font-size: clamp(0.95rem, 3.5vw, 1.1rem);
+            line-height: 1.5;
+            color: var(--primary);
+            text-align: left;
+        }
+
+        .btn-accion {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: clamp(1rem, 4vw, 1.2rem);
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #1A252F;
+            font-weight: bold;
+            transition: all 0.2s;
+            width: 100%;
+            max-width: 280px;
+            margin: 10px auto;
+            text-transform: uppercase;
+            display: block;
+        }
+        .btn-accion:active { transform: translateY(4px); box-shadow: 0 1px 0 #1A252F; }
+
+        /* --- ÁREA DE JUEGO --- */
+        #area-juego { display: none; flex-direction: column; height: 100%; overflow: hidden;}
+        
+        .progreso-contenedor {
+            width: 100%;
+            background-color: #D5DBDB;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            height: 10px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .progreso-barra {
+            height: 100%;
+            background: var(--highlight);
+            width: 0%;
+            transition: width 0.4s;
+        }
+
+        .instrucciones { font-size: 0.8rem; color: #7F8C8D; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;}
+        
+        /* Contenedor de la noticia actual */
+        .noticia-visor {
+            background: #FFF;
+            border: 2px solid #BDC3C7;
+            border-left: 8px solid var(--secondary);
+            padding: 25px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.1rem, 4vw, 1.4rem);
+            font-weight: 600;
+            line-height: 1.4;
+            font-style: italic;
+            color: #34495E;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+
+        /* Botones de Clasificación */
+        .botones-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .btn-filtro {
+            background-color: white;
+            border: 3px solid #BDC3C7;
+            padding: 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-filtro:active { transform: scale(0.95); }
+        .btn-filtro.selected { border-color: var(--highlight); background: #EBF5FB; }
+
+        .filtro-icono { font-size: 2.5rem; margin-bottom: 10px; }
+        .filtro-label { font-size: 0.9rem; font-weight: 800; text-transform: uppercase; }
+
+        #feedback { font-size: 1.1rem; font-weight: bold; margin-top: 15px; min-height: 30px; }
+
+        #btn-siguiente { display: none; }
+        #btn-reiniciar { display: none; }
+
+        /* Animaciones */
+        @keyframes successPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); background: #D4EFDF; }
+            100% { transform: scale(1); }
+        }
+        .correct-anim { animation: successPop 0.4s ease-out; border-color: var(--success) !important; color: var(--success) !important; }
+
+        @keyframes errorShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+        .error-anim { animation: errorShake 0.3s ease-in-out; border-color: var(--error) !important; color: var(--error) !important; }
+
+    </style>
+</head>
+<body>
+
+    <!-- PANTALLA DE INICIO -->
+    <div id="pantalla-inicio" class="tarjeta">
+        <div class="badge-asignatura">Lengua y Literatura</div>
+        <div class="icono-grande">📰</div>
+        <h1>Detective de Noticias</h1>
+        
+        <div class="objetivo-caja">
+            <strong>🎯 Tu Misión de Verdad:</strong><br><br>
+            ¡Hola, Detective! En el periódico han mezclado las noticias reales con las opiniones de la gente. Tu tarea es clasificar cada frase:<br><br>
+            ✅ <strong>Hecho:</strong> Algo que es real y se puede probar.<br>
+            🤔 <strong>Opinión:</strong> Lo que alguien piensa o siente.
+        </div>
+
+        <button class="btn-accion" onclick="iniciarJuego()">¡Empezar Investigación! 🔍</button>
+    </div>
+
+    <!-- ÁREA DE JUEGO -->
+    <div id="area-juego" class="tarjeta">
+        <div class="badge-asignatura">Filtro: Hecho vs Opinión</div>
+        
+        <div class="progreso-contenedor">
+            <div class="progreso-barra" id="barra-progreso"></div>
+        </div>
+
+        <p class="instrucciones">¿Es un hecho o una opinión?</p>
+        
+        <div class="noticia-visor" id="noticia-texto">
+            <!-- La noticia aparece aquí -->
+        </div>
+
+        <div class="botones-grid">
+            <button class="btn-filtro" id="btn-hecho" onclick="verificar('hecho')">
+                <div class="filtro-icono">✅</div>
+                <div class="filtro-label">Hecho</div>
+            </button>
+            <button class="btn-filtro" id="btn-opinion" onclick="verificar('opinion')">
+                <div class="filtro-icono">🤔</div>
+                <div class="filtro-label">Opinión</div>
+            </button>
+        </div>
+
+        <div id="feedback"></div>
+        
+        <button id="btn-siguiente" class="btn-accion" onclick="proximaNoticia()">Siguiente Caso ➡️</button>
+        <button id="btn-reiniciar" class="btn-accion" onclick="reiniciar()">🔄 Nueva Investigación</button>
+    </div>
+
+    <script>
+        const noticias = [
+            { texto: "El agua hierve a 100 grados Celsius al nivel del mar.", tipo: "hecho" },
+            { texto: "Las manzanas rojas son mucho más ricas que las verdes.", tipo: "opinion" },
+            { texto: "Nicaragua se encuentra ubicada en el centro de América.", tipo: "hecho" },
+            { texto: "El fútbol es el deporte más divertido de todo el mundo.", tipo: "opinion" },
+            { texto: "Los seres humanos necesitan oxígeno para poder respirar.", tipo: "hecho" },
+            { texto: "Ese perro es el animal más tierno que he visto hoy.", tipo: "opinion" },
+            { texto: "El año tiene doce meses y trescientos sesenta y cinco días.", tipo: "hecho" },
+            { texto: "La película de ayer fue demasiado larga y aburrida.", tipo: "opinion" }
+        ];
+
+        let indiceActual = 0;
+        let aciertos = 0;
+        let bloqueado = false;
+
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const areaJuego = document.getElementById('area-juego');
+        const noticiaTexto = document.getElementById('noticia-texto');
+        const feedback = document.getElementById('feedback');
+        const barra = document.getElementById('barra-progreso');
+        const btnSiguiente = document.getElementById('btn-siguiente');
+        const btnReiniciar = document.getElementById('btn-reiniciar');
+
+        function iniciarJuego() {
+            pantallaInicio.style.display = 'none';
+            areaJuego.style.display = 'flex';
+            reiniciar();
+        }
+
+        function reiniciar() {
+            indiceActual = 0;
+            aciertos = 0;
+            bloqueado = false;
+            btnReiniciar.style.display = "none";
+            // Mezclamos las noticias para que no siempre sea el mismo orden
+            noticias.sort(() => Math.random() - 0.5);
+            mostrarNoticia();
+        }
+
+        function mostrarNoticia() {
+            bloqueado = false;
+            feedback.textContent = "";
+            btnSiguiente.style.display = "none";
+            
+            document.getElementById('btn-hecho').className = 'btn-filtro';
+            document.getElementById('btn-opinion').className = 'btn-filtro';
+            
+            noticiaTexto.textContent = `"${noticias[indiceActual].texto}"`;
+            
+            const progreso = (indiceActual / noticias.length) * 100;
+            barra.style.width = progreso + "%";
+        }
+
+        function verificar(seleccion) {
+            if (bloqueado) return;
+            bloqueado = true;
+
+            const esCorrecto = seleccion === noticias[indiceActual].tipo;
+            const boton = document.getElementById(`btn-${seleccion}`);
+
+            if (esCorrecto) {
+                aciertos++;
+                boton.classList.add('correct-anim');
+                feedback.textContent = "¡Correcto! Eres un gran detective. ⭐";
+                feedback.style.color = "var(--success)";
+            } else {
+                boton.classList.add('error-anim');
+                feedback.textContent = "¡Cuidado! Eso no es correcto. ❌";
+                feedback.style.color = "var(--error)";
+            }
+
+            setTimeout(() => {
+                if (indiceActual < noticias.length - 1) {
+                    btnSiguiente.style.display = "block";
+                } else {
+                    finalizar();
+                }
+            }, 600);
+        }
+
+        function proximaNoticia() {
+            indiceActual++;
+            mostrarNoticia();
+        }
+
+        function finalizar() {
+            barra.style.width = "100%";
+            noticiaTexto.textContent = "¡Caso Cerrado!";
+            feedback.textContent = `Has logrado ${aciertos} de ${noticias.length} aciertos.`;
+            feedback.style.color = "var(--primary)";
+            btnReiniciar.style.display = "block";
+            
+            if (aciertos >= noticias.length / 2) {
+                celebrar();
+            }
+        }
+
+        function celebrar() {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#2C3E50', '#E74C3C', '#F1C40F']
+            });
+        }
+    </script>
+</body>
+</html>

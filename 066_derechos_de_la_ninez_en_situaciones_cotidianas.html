@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Defensor Digital: Casos de Rescate v3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #0f172a;
+            background-image: radial-gradient(#334155 1px, transparent 1px);
+            background-size: 20px 20px;
+            height: 100vh;
+            overflow: hidden;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: manipulation;
+        }
+
+        .comic-font { font-family: 'Bangers', cursive; letter-spacing: 2px; }
+
+        .panel {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 4px solid #3b82f6;
+            box-shadow: 8px 8px 0px #3b82f6;
+            border-radius: 20px;
+            width: 100%;
+        }
+
+        .pedagogy-card {
+            background: rgba(255, 255, 255, 0.95);
+            color: #1e293b;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            border: 4px solid #e2e8f0;
+        }
+
+        .btn-escudo {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .btn-escudo:hover { transform: translateY(-3px) scale(1.02); }
+        .btn-escudo:active { transform: translateY(2px) scale(0.98); }
+
+        .shake-error {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+            border-color: #ef4444 !important;
+            box-shadow: 8px 8px 0px #ef4444 !important;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+    </style>
+</head>
+<body x-data="superHeroApp()">
+
+    <main class="w-full max-w-md p-4 relative h-full flex flex-col justify-center">
+        
+        <div x-show="estado === 'ficha'" class="pedagogy-card p-6 md:p-8" x-transition.opacity.duration.500ms>
+            <div class="flex items-center gap-3 mb-6 border-b-2 border-slate-200 pb-4">
+                <span class="text-4xl">📋</span>
+                <h2 class="text-2xl font-black text-slate-800 tracking-tight">Ficha del Recurso</h2>
+            </div>
+            
+            <div class="space-y-4 mb-8">
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                    <span class="block text-xs font-bold text-blue-600 uppercase tracking-widest mb-1">Asignatura</span>
+                    <span class="text-lg font-bold text-slate-700">Valores / Formación Cívica</span>
+                </div>
+                
+                <div class="bg-purple-50 p-4 rounded-xl border border-purple-100">
+                    <span class="block text-xs font-bold text-purple-600 uppercase tracking-widest mb-1">Grado Sugerido</span>
+                    <span class="text-lg font-bold text-slate-700">Educación Primaria</span>
+                </div>
+
+                <div class="bg-green-50 p-4 rounded-xl border border-green-100">
+                    <span class="block text-xs font-bold text-green-600 uppercase tracking-widest mb-1">Objetivo de Aprendizaje</span>
+                    <p class="text-sm font-semibold text-slate-700 leading-relaxed">
+                        Identificar los Derechos de la Niñez y comprender su aplicación práctica mediante la resolución de casos de vulnerabilidad en la vida cotidiana.
+                    </p>
+                </div>
+            </div>
+
+            <button @click="estado = 'inicio'" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 rounded-xl text-lg transition-colors shadow-lg shadow-slate-300">
+                Entendido, ir al juego →
+            </button>
+        </div>
+
+        <div x-show="estado === 'inicio'" class="panel p-8 text-center" style="display: none;" x-transition.opacity.duration.500ms>
+            <div class="text-7xl mb-4 animate-bounce">🦸🏽‍♂️</div>
+            <h1 class="comic-font text-5xl text-yellow-400 mb-2" style="-webkit-text-stroke: 1px #b45309;">DEFENSOR<br>DIGITAL</h1>
+            <p class="text-slate-300 mb-8 font-bold">Resuelve los 5 casos usando el escudo de los Derechos correcto.</p>
+            <button @click="estado = 'jugando'" class="w-full bg-blue-500 hover:bg-blue-400 text-white font-bold py-4 rounded-xl text-xl border-b-4 border-blue-700 active:border-b-0 active:translate-y-1 transition-all">
+                ¡INICIAR MISIÓN!
+            </button>
+        </div>
+
+        <div x-show="estado === 'jugando'" class="flex flex-col gap-4 w-full" style="display: none;" x-transition.opacity.duration.500ms>
+            
+            <div class="flex justify-between items-center bg-slate-800 p-3 rounded-xl border-2 border-slate-600">
+                <span class="font-bold text-yellow-400 text-lg">Caso: <span x-text="casoActual + 1"></span>/<span x-text="casos.length"></span></span>
+                <span class="font-bold text-green-400 text-lg">Puntos: <span x-text="puntos"></span></span>
+            </div>
+
+            <div class="panel p-6 text-center relative transition-colors duration-300" :class="{ 'shake-error': mostrarError }">
+                <div class="absolute -top-4 -left-4 bg-red-500 text-white comic-font px-4 py-1 rounded-lg transform -rotate-12 border-2 border-white shadow-md">
+                    ¡ALERTA!
+                </div>
+                
+                <div class="text-6xl mb-4 mt-2 drop-shadow-lg" x-text="casos[casoActual].icono"></div>
+                <h2 class="text-xl font-bold text-slate-100 mb-2">Situación Detectada:</h2>
+                <p class="text-slate-300 bg-slate-900 p-4 rounded-lg border border-slate-700 text-sm md:text-base leading-relaxed" x-text="casos[casoActual].situacion"></p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 mt-1">
+                <template x-for="(opcion, index) in casos[casoActual].opciones" :key="index">
+                    <button @click="evaluarRespuesta(opcion)" 
+                            class="btn-escudo bg-slate-800 border-2 border-slate-600 p-3 rounded-xl flex items-center gap-4 hover:border-blue-400 hover:bg-slate-700 text-left w-full shadow-md">
+                        <span class="text-3xl bg-slate-900 p-2 rounded-lg shadow-inner" x-text="opcion.icono"></span>
+                        <div class="flex-1">
+                            <span class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Activar Escudo</span>
+                            <span class="block text-base md:text-lg font-bold text-white leading-tight" x-text="opcion.texto"></span>
+                        </div>
+                    </button>
+                </template>
+            </div>
+        </div>
+
+        <div x-show="estado === 'fin'" class="panel p-8 text-center" style="display: none;" x-transition.opacity.duration.800ms>
+            <div class="text-7xl mb-4">🌟</div>
+            <h2 class="comic-font text-5xl text-green-400 mb-4" style="-webkit-text-stroke: 1px #166534;">¡MISIÓN<br>CUMPLIDA!</h2>
+            <p class="text-slate-300 mb-6">La ciudad está a salvo gracias a tu conocimiento de los derechos.</p>
+            
+            <div class="bg-slate-900 p-4 rounded-xl mb-8 border-2 border-yellow-500">
+                <span class="block text-sm text-slate-400 uppercase font-bold">Puntaje Final</span>
+                <div class="text-5xl font-black text-yellow-400" x-text="puntos"></div>
+            </div>
+
+            <button @click="reiniciar()" class="w-full bg-blue-500 hover:bg-blue-400 text-white font-bold py-4 rounded-xl text-xl border-b-4 border-blue-700 active:border-b-0 active:translate-y-1 transition-all">
+                Jugar de Nuevo
+            </button>
+        </div>
+
+    </main>
+
+    <script>
+        function superHeroApp() {
+            return {
+                estado: 'ficha', // NUEVO ESTADO INICIAL: ficha -> inicio -> jugando -> fin
+                casoActual: 0,
+                puntos: 0,
+                mostrarError: false,
+                bloqueado: false,
+
+                casos: [
+                    {
+                        icono: "🤒",
+                        situacion: "Ana tiene mucha fiebre, pero en su comunidad dicen que los niños no necesitan ir al centro médico, que se curará sola.",
+                        respuestaCorrecta: "Salud",
+                        opciones: [
+                            { texto: "Derecho al Juego", icono: "⚽" },
+                            { texto: "Derecho a la Salud", icono: "🏥" },
+                            { texto: "Derecho a la Identidad", icono: "🆔" }
+                        ]
+                    },
+                    {
+                        icono: "🧱",
+                        situacion: "Carlos tiene 10 años. Lo obligan a trabajar cargando cajas en el mercado todo el día en lugar de ir a la escuela.",
+                        respuestaCorrecta: "Educación",
+                        opciones: [
+                            { texto: "Derecho a la Educación", icono: "📚" },
+                            { texto: "Derecho a la Familia", icono: "👨‍👩‍👧‍👦" },
+                            { texto: "Derecho a la Igualdad", icono: "⚖️" }
+                        ]
+                    },
+                    {
+                        icono: "🗣️",
+                        situacion: "A María no la dejan participar ni opinar en las decisiones del aula de clases porque le dicen que 'los niños pequeños deben guardar silencio'.",
+                        respuestaCorrecta: "Expresión",
+                        opciones: [
+                            { texto: "Derecho a la Salud", icono: "🏥" },
+                            { texto: "Derecho a la Identidad", icono: "🆔" },
+                            { texto: "Derecho a la Expresión", icono: "🎙️" }
+                        ]
+                    },
+                    {
+                        icono: "🧹",
+                        situacion: "A Luis le exigen limpiar toda la casa y cuidar a sus hermanos menores todo el día. Nunca le queda tiempo para divertirse o descansar.",
+                        respuestaCorrecta: "Juego",
+                        opciones: [
+                            { texto: "Derecho a la Identidad", icono: "🆔" },
+                            { texto: "Derecho al Juego y Descanso", icono: "🪁" },
+                            { texto: "Derecho a la Educación", icono: "📚" }
+                        ]
+                    },
+                    {
+                        icono: "🛑",
+                        situacion: "Un grupo de estudiantes mayores le quita la merienda a Pedro todos los días en el recreo, lo empujan y le dicen cosas malas.",
+                        respuestaCorrecta: "Protección",
+                        opciones: [
+                            { texto: "Derecho a la Protección", icono: "🛡️" },
+                            { texto: "Derecho a la Expresión", icono: "🎙️" },
+                            { texto: "Derecho a la Familia", icono: "👨‍👩‍👧‍👦" }
+                        ]
+                    }
+                ],
+
+                evaluarRespuesta(opcionSeleccionada) {
+                    if (this.bloqueado) return;
+                    this.bloqueado = true;
+
+                    const correcta = this.casos[this.casoActual].respuestaCorrecta;
+
+                    if (opcionSeleccionada.texto.includes(correcta)) {
+                        this.puntos += 100;
+                        confetti({ particleCount: 60, spread: 50, origin: { y: 0.6 }, colors: ['#3b82f6', '#facc15', '#4ade80'] });
+                        setTimeout(() => { this.siguienteCaso(); }, 1000);
+                    } else {
+                        this.mostrarError = true;
+                        this.puntos = Math.max(0, this.puntos - 25);
+                        setTimeout(() => { this.mostrarError = false; this.bloqueado = false; }, 500); 
+                    }
+                },
+
+                siguienteCaso() {
+                    if (this.casoActual < this.casos.length - 1) {
+                        this.casoActual++;
+                        this.bloqueado = false;
+                    } else {
+                        this.estado = 'fin';
+                        setTimeout(() => { 
+                            let end = Date.now() + 2000;
+                            let interval = setInterval(function() {
+                                if (Date.now() > end) return clearInterval(interval);
+                                confetti({ particleCount: 20, spread: 360, origin: { x: Math.random(), y: Math.random() - 0.2 } });
+                            }, 250);
+                        }, 300);
+                    }
+                },
+
+                reiniciar() {
+                    this.estado = 'inicio';
+                    this.casoActual = 0;
+                    this.puntos = 0;
+                    this.bloqueado = false;
+                    this.mostrarError = false;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

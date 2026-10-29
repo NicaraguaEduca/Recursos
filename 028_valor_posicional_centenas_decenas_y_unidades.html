@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fábrica de Centenas - Final</title>
+    
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&family=Share+Tech+Mono&display=swap" />
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --u-color: #29B6F6;
+            --d-color: #EF5350;
+            --c-color: #66BB6A;
+            --dark-metal: #263238;
+            --glass: rgba(255, 255, 255, 0.15);
+            --gold: #FFC107;
+        }
+
+        body {
+            margin: 0; padding: 0; height: 100vh; width: 100vw;
+            font-family: 'Fredoka', sans-serif;
+            background: url('https://static.vecteezy.com/system/resources/previews/047/785/646/non_2x/a-cartoon-illustration-of-a-warehouse-with-boxes-stacked-on-shelves-there-are-multiple-stacks-of-boxes-on-two-different-shelves-and-various-colors-including-orange-brown-and-grey-free-vector.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; user-select: none;
+        }
+
+        .backdrop {
+            position: absolute; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); z-index: 0;
+        }
+
+        /* --- PANTALLA DE INICIO --- */
+        #intro-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(33, 33, 33, 0.98); z-index: 300;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: white; padding: 20px; box-sizing: border-box;
+        }
+        
+        .intro-card {
+            background: #37474F; border: 4px solid #78909C;
+            padding: 30px; border-radius: 20px; max-width: 600px; width: 100%;
+            max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 20px 50px black; text-align: left;
+        }
+        .intro-title { 
+            font-size: 2.2rem; color: var(--gold); margin-bottom: 15px; 
+            font-family: 'Share Tech Mono', monospace; text-align: center;
+            border-bottom: 2px solid #546E7A; padding-bottom: 10px;
+        }
+        .intro-story {
+            background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px;
+            margin-bottom: 20px; font-size: 1.1rem; line-height: 1.4; color: #B0BEC5;
+            border-left: 4px solid var(--gold);
+        }
+        .instruct-row {
+            display: flex; align-items: center; gap: 15px; margin-bottom: 12px;
+            font-size: 1rem; color: #ECEFF1;
+        }
+        .mini-btn {
+            width: 35px; height: 35px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-weight: bold; font-size: 0.9rem; color: white;
+            box-shadow: 0 3px 0 rgba(0,0,0,0.3); flex-shrink: 0;
+        }
+        .mini-x { 
+            width: 30px; height: 25px; border-radius: 5px; background: var(--gold); 
+            color: black; border-top: 2px solid #FFE082; font-size: 0.8rem; 
+        }
+        .mini-pack {
+            width: 35px; height: 35px; border-radius: 8px; background: var(--gold);
+            font-size: 1rem; display: flex; justify-content: center; align-items: center;
+        }
+        .start-btn {
+            background: #66BB6A; color: white; border: none;
+            padding: 15px 40px; font-size: 1.5rem; font-weight: bold;
+            border-radius: 50px; cursor: pointer; box-shadow: 0 6px 0 #2E7D32;
+            transition: transform 0.2s; margin-top: 20px; width: 100%;
+        }
+        
+        .hover-scale { transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .hover-scale:hover { transform: scale(1.1); filter: brightness(1.1); }
+
+        /* --- LAYOUT DE JUEGO --- */
+        .game-area {
+            position: relative; width: 95%; max-width: 900px; height: 95vh;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        #machine-layout {
+            width: 100%; height: 100%; max-height: 800px;
+            background: var(--dark-metal);
+            border: 8px solid #546E7A; border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 0 50px rgba(0,0,0,0.5);
+            display: grid; grid-template-rows: auto 1fr auto; 
+            overflow: hidden; position: relative; z-index: 10;
+        }
+
+        /* HEADER */
+        #order-panel {
+            background: #212121; padding: 10px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 5px solid var(--gold); height: 90px; box-sizing: border-box;
+        }
+        .level-badge {
+            background: #455A64; color: #FFF; padding: 5px 10px; border-radius: 4px;
+            font-size: 0.9rem; font-family: 'Share Tech Mono', monospace; margin-bottom: 5px;
+        }
+        .digital-screen {
+            font-family: 'Share Tech Mono', monospace;
+            background: #000; color: #00E676; padding: 5px 15px; border-radius: 5px;
+            border: 2px solid #555; box-shadow: 0 0 10px rgba(0, 230, 118, 0.2);
+            font-size: 2.2rem; letter-spacing: 2px;
+        }
+        .order-label { color: #CFD8DC; font-size: 1rem; margin-right: 10px; }
+        .progress-bar-container { width: 100%; height: 6px; background: #333; margin-top: 5px; border-radius: 3px; overflow: hidden; }
+        #progress-fill { width: 0%; height: 100%; background: var(--gold); transition: width 0.3s, background 0.3s; }
+
+        /* SILOS */
+        #silo-container {
+            width: 100%; display: flex; justify-content: space-around; align-items: flex-end;
+            padding: 20px 10px; box-sizing: border-box;
+            background: repeating-linear-gradient(45deg, #37474F, #37474F 10px, #455A64 10px, #455A64 20px);
+            min-height: 0; overflow: hidden; 
+        }
+        .column-group { display: flex; flex-direction: column; align-items: center; width: 30%; height: 100%; position: relative; }
+        .silo-label {
+            color: white; font-weight: bold; margin-bottom: 10px;
+            background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px;
+            text-shadow: 0 2px 4px black; font-size: 1.1rem;
+            border-bottom: 4px solid transparent; flex-shrink: 0;
+        }
+        .lbl-c { border-color: var(--c-color); } .lbl-d { border-color: var(--d-color); } .lbl-u { border-color: var(--u-color); }
+        .glass-tube {
+            width: 100%; flex: 1; background: var(--glass);
+            border: 3px solid rgba(255,255,255,0.3); border-radius: 10px 10px 0 0; border-bottom: none;
+            display: flex; flex-direction: column-reverse; align-items: center; padding-bottom: 10px; overflow: visible;
+        }
+        
+        .block { margin: 2px; box-shadow: 2px 2px 0 rgba(0,0,0,0.3); flex-shrink: 0; border: 1px solid rgba(255,255,255,0.4); }
+        .b-unit { width: 50px; height: 40px; background: var(--u-color); border-radius: 4px; }
+        .b-ten { width: 70px; height: 40px; background: var(--d-color); border-radius: 4px; background-image: linear-gradient(90deg, transparent 50%, rgba(0,0,0,0.1) 50%); background-size: 10px 100%; }
+        .b-hund { width: 90%; height: 40px; background: var(--c-color); border-radius: 4px; background-image: linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px); background-size: 10px 10px; }
+
+        /* CONTROLES */
+        #control-deck {
+            background: #263238; padding: 10px 15px; display: flex; justify-content: space-around;
+            border-top: 5px solid #78909C; box-shadow: 0 -10px 20px rgba(0,0,0,0.5);
+            height: 140px; box-sizing: border-box; z-index: 20;
+        }
+        .ctrl-group { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        
+        .factory-btn {
+            width: 70px; height: 70px; border-radius: 50%; border: none;
+            color: white; font-size: 1.4rem; font-weight: bold; cursor: pointer;
+            box-shadow: 0 8px 0 rgba(0,0,0,0.4), 0 15px 20px rgba(0,0,0,0.4);
+            display: flex; justify-content: center; align-items: center;
+        }
+        .factory-btn:active { transform: translateY(6px) !important; box-shadow: 0 2px 0 rgba(0,0,0,0.4); }
+        .btn-u { background: var(--u-color); box-shadow: 0 6px 0 #0288D1; }
+        .btn-d { background: var(--d-color); box-shadow: 0 6px 0 #C62828; }
+        .btn-c { background: var(--c-color); box-shadow: 0 6px 0 #2E7D32; }
+        
+        /* BOTÓN AMARILLO */
+        .eject-btn {
+            width: 45px; height: 30px; border-radius: 0 0 10px 10px; border: none;
+            background: #FFC107; /* Amarillo */
+            color: #263238; /* Texto Oscuro */
+            font-weight: 800; cursor: pointer; margin-top: 2px; 
+            border-top: 2px solid #FFE082; /* Borde superior brillante */
+            box-shadow: 0 4px 0 rgba(0,0,0,0.8); /* Sombra negra pequeña */
+            transition: background 0.2s;
+        }
+        .eject-btn:hover { background: #FFD54F; }
+        .eject-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.8); }
+
+        .counter-display {
+            font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; color: #FFF;
+            background: #000; padding: 2px 10px; border-radius: 5px; border: 1px solid #555; width: 40px; text-align: center;
+        }
+        .alarm-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: red; opacity: 0; pointer-events: none; z-index: 90; }
+
+        /* BOTÓN EMPAQUETAR */
+        #submit-btn {
+            position: absolute; right: -160px; top: 50%; transform: translateY(-50%);
+            width: 140px; height: 140px;
+            background: var(--gold); color: black; border: none; 
+            font-size: 1.2rem; font-weight: bold; border-radius: 20px;
+            box-shadow: 0 10px 0 #FFA000, 0 20px 30px rgba(0,0,0,0.5); 
+            cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 10px;
+            z-index: 100;
+        }
+        #submit-btn:active { transform: translateY(-50%) translateY(6px); box-shadow: 0 4px 0 #FFA000; }
+        .submit-emoji { font-size: 3rem; }
+
+        /* --- ESCENA 3D (MEJORADA CON FONDO DE FÁBRICA) --- */
+        #packing-scene {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            /* Fondo de fábrica con tinte oscuro (Overlay) */
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://static.vecteezy.com/system/resources/previews/047/785/646/non_2x/a-cartoon-illustration-of-a-warehouse-with-boxes-stacked-on-shelves-there-are-multiple-stacks-of-boxes-on-two-different-shelves-and-various-colors-including-orange-brown-and-grey-free-vector.jpg');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            z-index: 150; display: none; justify-content: center; align-items: center;
+            perspective: 1200px; 
+        }
+        .box-3d {
+            width: 200px; height: 200px; position: relative;
+            transform-style: preserve-3d; transform: rotateX(-20deg) rotateY(-30deg);
+        }
+        .face { position: absolute; width: 200px; height: 200px; border: 2px solid #5D4037; }
+        .face-front { transform: translateZ(100px); background: #8D6E63; }
+        .face-back { transform: rotateY(180deg) translateZ(100px); background: #795548; }
+        .face-right { transform: rotateY(90deg) translateZ(100px); background: #6D4C41; }
+        .face-left { transform: rotateY(-90deg) translateZ(100px); background: #6D4C41; }
+        .face-bottom { transform: rotateX(-90deg) translateZ(100px); background: #4E342E; }
+        
+        .flap {
+            position: absolute; width: 200px; height: 100px; background: #A1887F; border: 2px solid #5D4037;
+            top: 0; left: 0; transform-origin: top; backface-visibility: hidden; 
+        }
+        .flap-front { transform: translateZ(100px) rotateX(120deg); }
+        .flap-back { transform: translateZ(-100px) rotateY(180deg) rotateX(120deg); }
+
+        .tape-3d {
+            position: absolute; width: 220px; height: 40px; background: rgba(255,255,255,0.7);
+            top: 50%; left: 50%; transform: translate(-50%, -50%) translateZ(102px); /* Z-index fix */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); opacity: 0;
+        }
+        .stamp-3d {
+            position: absolute; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%) translateZ(120px) rotate(-15deg) scale(3);
+            border: 8px solid #00E676; color: #00E676; padding: 10px 20px;
+            font-weight: bold; font-size: 3rem; opacity: 0; border-radius: 15px;
+            text-transform: uppercase; font-family: 'Share Tech Mono', monospace;
+            background: rgba(0, 230, 118, 0.1);
+            text-shadow: 0 0 10px #00E676;
+        }
+
+        /* --- PANTALLAS FINALES --- */
+        .overlay-screen {
+            position:fixed; top:0; left:0; width:100%; height:100%; 
+            background:rgba(0,0,0,0.95); z-index:200; 
+            display:none; justify-content:center; align-items:center; 
+            flex-direction:column; color:white; text-align:center;
+        }
+        
+        /* Estrellas para el final */
+        .star-container { display: flex; gap: 10px; margin-bottom: 20px; }
+        .star { font-size: 4rem; color: #444; transition: color 0.3s; }
+        .star.active { color: #FFC107; text-shadow: 0 0 20px #FFC107; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        @keyframes popIn { 0%{transform: scale(0);} 100%{transform: scale(1);} }
+
+        @media (max-width: 1250px) {
+            .game-area { flex-direction: column; height: 100vh; justify-content: flex-start; padding-top: 10px; }
+            #machine-layout { height: 75vh; width: 95%; max-height: none; }
+            #submit-btn { position: relative; right: auto; top: auto; transform: none; margin-top: 15px; width: 95%; height: 70px; flex-direction: row; }
+            #submit-btn:active { transform: translateY(6px); }
+        }
+        @media (max-width: 600px) {
+            #control-deck { height: 110px; padding: 5px; }
+            #order-panel { height: 80px; padding: 5px 10px; }
+            .digital-screen { font-size: 1.5rem; }
+            .star { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="backdrop"></div>
+
+<div id="intro-screen">
+    <div class="intro-card">
+        <div class="intro-title">MANUAL DE OPERARIO</div>
+        <div class="intro-story">
+            <strong>¡Hola Operario! 👷‍♂️</strong><br>
+            Llegaron nuevos pedidos. Tu misión es construir el <strong>NÚMERO EXACTO</strong> en los tubos. ¡Cuidado con sobrecargar la máquina!<br>
+        </div>
+
+        <div class="instruct-section">
+            <div class="instruct-row">
+                <div class="mini-btn hover-scale" style="background:var(--c-color);">+100</div>
+                <span>Agrega <strong>CENTENAS</strong>.</span>
+            </div>
+            <div class="instruct-row">
+                <div class="mini-btn hover-scale" style="background:var(--d-color);">+10</div>
+                <span>Agrega <strong>DECENAS</strong>.</span>
+            </div>
+            <div class="instruct-row">
+                <div class="mini-btn hover-scale" style="background:var(--u-color);">+1</div>
+                <span>Agrega <strong>UNIDADES</strong>.</span>
+            </div>
+            <div class="instruct-row">
+                <div class="mini-btn mini-x hover-scale">▼</div>
+                <span><strong>CORRIGE</strong> (Elimina bloques).</span>
+            </div>
+            <div class="instruct-row">
+                <div class="mini-btn mini-pack hover-scale">📦</div>
+                <span>Al terminar: <strong>EMPAQUETAR</strong>.</span>
+            </div>
+        </div>
+        <button class="start-btn" onclick="startGame()">¡A TRABAJAR!</button>
+    </div>
+</div>
+
+<div class="game-area">
+    <div id="machine-layout">
+        <div id="order-panel">
+            <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                <div class="level-badge" id="level-indicator">PEDIDO 1/6</div>
+                <div style="display: flex; align-items: center;">
+                    <span class="order-label">META:</span>
+                    <div class="digital-screen" id="target-display">000</div>
+                </div>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                <div style="display: flex; align-items: center;">
+                    <span class="order-label" style="font-size: 0.9rem;">ACTUAL:</span>
+                    <div class="digital-screen" id="current-display" style="color: #FFC107; font-size: 1.5rem;">000</div>
+                </div>
+                <div class="progress-bar-container"><div id="progress-fill"></div></div>
+            </div>
+        </div>
+
+        <div id="silo-container">
+            <div class="column-group"><div class="silo-label lbl-c">CENTENAS</div><div class="glass-tube" id="tube-c"></div></div>
+            <div class="column-group"><div class="silo-label lbl-d">DECENAS</div><div class="glass-tube" id="tube-d"></div></div>
+            <div class="column-group"><div class="silo-label lbl-u">UNIDADES</div><div class="glass-tube" id="tube-u"></div></div>
+        </div>
+        <div class="alarm-overlay" id="alarm"></div>
+
+        <div id="control-deck">
+            <div class="ctrl-group">
+                <div class="counter-display" id="count-c">0</div>
+                <button class="eject-btn hover-scale" onclick="removeBlock('c')">▼</button>
+                <button class="factory-btn btn-c hover-scale" onclick="addBlock('c')" style="margin-top:5px">+100</button>
+            </div>
+            <div class="ctrl-group">
+                <div class="counter-display" id="count-d">0</div>
+                <button class="eject-btn hover-scale" onclick="removeBlock('d')">▼</button>
+                <button class="factory-btn btn-d hover-scale" onclick="addBlock('d')" style="margin-top:5px">+10</button>
+            </div>
+            <div class="ctrl-group">
+                <div class="counter-display" id="count-u">0</div>
+                <button class="eject-btn hover-scale" onclick="removeBlock('u')">▼</button>
+                <button class="factory-btn btn-u hover-scale" onclick="addBlock('u')" style="margin-top:5px">+1</button>
+            </div>
+        </div>
+    </div>
+    <button id="submit-btn" class="hover-scale" onclick="checkOrder()"><span class="submit-emoji">📦</span>EMPAQUETAR</button>
+</div>
+
+<div id="packing-scene">
+    <div class="box-3d" id="anim-box">
+        <div class="face face-back"></div>
+        <div class="face face-bottom"></div>
+        <div class="face face-left"></div>
+        <div class="face face-right"></div>
+        <div class="face face-front"></div>
+        <div class="flap flap-front"></div>
+        <div class="flap flap-back"></div>
+        <div class="tape-3d"></div>
+        <div class="stamp-3d">APROBADO</div>
+    </div>
+</div>
+
+<div id="win-screen" class="overlay-screen">
+    <h1 style="color:#00E676; font-size:3rem; margin-bottom:10px;">¡PEDIDO LISTO!</h1>
+    <p style="font-size:1.5rem;">Excelente trabajo, operario.</p>
+    <button class="factory-btn hover-scale" style="width:220px; height:60px; border-radius:10px; background:#FFC107; color:black; margin-top:20px; font-size:1.2rem;" onclick="nextLevel()">Siguiente Pedido ➡</button>
+</div>
+
+<div id="grand-finale" class="overlay-screen">
+    <div class="star-container">
+        <div class="star">★</div><div class="star">★</div><div class="star">★</div><div class="star">★</div><div class="star">★</div>
+    </div>
+    <h1 style="color:#FFC107; font-size:3.5rem; margin:0; text-shadow:0 0 20px rgba(255,193,7,0.5);">¡ERES LO MÁXIMO!</h1>
+    <p style="font-size:1.5rem; color:#CFD8DC; margin-top:10px;">Has completado todos los pedidos a la perfección.</p>
+    <button class="factory-btn hover-scale" style="width:200px; height:60px; border-radius:10px; background:#00E676; color:white; margin-top:30px; font-size:1.2rem;" onclick="restartAll()">Jugar Otra Vez ↺</button>
+</div>
+
+<script>
+    let state = { c: 0, d: 0, u: 0 };
+    let targetNumber = 0;
+    let isProcessing = false; 
+    
+    // --- NUEVO: SISTEMA DE PROGRESIÓN ---
+    let currentLevel = 1;
+    const maxLevels = 6;
+
+    function startGame() {
+        gsap.to('#intro-screen', { opacity: 0, duration: 0.5, onComplete: () => {
+            document.getElementById('intro-screen').style.display = 'none';
+        }});
+        // Reset total
+        currentLevel = 1;
+        initGame();
+    }
+
+    function restartAll() {
+        document.getElementById('grand-finale').style.display = 'none';
+        document.getElementById('intro-screen').style.display = 'flex';
+        gsap.to('#intro-screen', { opacity: 1, duration: 0.5 });
+    }
+
+    function initGame() {
+        // Actualizar texto de nivel
+        document.getElementById('level-indicator').innerText = `PEDIDO ${currentLevel}/${maxLevels}`;
+        
+        targetNumber = Math.floor(Math.random() * 899) + 100;
+        document.getElementById('target-display').innerText = targetNumber;
+        state = { c: 0, d: 0, u: 0 };
+        document.getElementById('tube-c').innerHTML = '';
+        document.getElementById('tube-d').innerHTML = '';
+        document.getElementById('tube-u').innerHTML = '';
+        updateUI();
+        
+        document.getElementById('win-screen').style.display = 'none';
+        document.getElementById('packing-scene').style.display = 'none';
+        isProcessing = false;
+    }
+
+    // --- LÓGICA CORE (NO CAMBIADA) ---
+    function addBlock(type) {
+        if (isProcessing) return;
+        if (type === 'c' && state.c >= 9) return; 
+        state[type]++;
+        const tube = document.getElementById(`tube-${type}`);
+        const block = document.createElement('div');
+        if(type === 'u') block.className = 'block b-unit';
+        if(type === 'd') block.className = 'block b-ten';
+        if(type === 'c') block.className = 'block b-hund';
+        tube.appendChild(block);
+        gsap.from(block, { y: -200, opacity: 0, duration: 0.4, ease: "bounce.out" });
+        updateUI();
+        if (type === 'u' && state.u >= 10) triggerRegroup('u', 'd');
+        else if (type === 'd' && state.d >= 10) triggerRegroup('d', 'c');
+    }
+
+    function removeBlock(type) {
+        if (isProcessing) return;
+        const tube = document.getElementById(`tube-${type}`);
+        const blocks = tube.querySelectorAll('.block');
+        if (blocks.length === 0) { state[type] = 0; updateUI(); return; }
+        state[type]--;
+        const lastBlock = blocks[blocks.length - 1];
+        if (lastBlock) {
+            gsap.to(lastBlock, { y: 100, rotation: Math.random() * 90 - 45, opacity: 0, duration: 0.2, onComplete: () => { lastBlock.remove(); } });
+        }
+        updateUI();
+    }
+
+    function triggerRegroup(fromType, toType) {
+        isProcessing = true; 
+        const alarm = document.getElementById('alarm');
+        gsap.to(alarm, { opacity: 0.3, duration: 0.2, yoyo: true, repeat: 3 });
+        const fromTube = document.getElementById(`tube-${fromType}`);
+        const blocksToFuse = fromTube.querySelectorAll('.block');
+        const tl = gsap.timeline({ onComplete: () => { fromTube.innerHTML = ''; state[fromType] = 0; addBlock(toType); isProcessing = false; } });
+        tl.to(blocksToFuse, { backgroundColor: '#FFF', duration: 0.2, stagger: 0.05 })
+          .to(blocksToFuse, { scale: 0.1, y: -50, opacity: 0, duration: 0.5, ease: "back.in(1.7)" }, "+=0.1");
+    }
+
+    function updateUI() {
+        document.getElementById('count-c').innerText = Math.max(0, state.c);
+        document.getElementById('count-d').innerText = Math.max(0, state.d);
+        document.getElementById('count-u').innerText = Math.max(0, state.u);
+        const currentTotal = (state.c * 100) + (state.d * 10) + (state.u * 1);
+        const display = document.getElementById('current-display');
+        const bar = document.getElementById('progress-fill');
+        display.innerText = currentTotal;
+        if (currentTotal === targetNumber) {
+            display.style.color = '#00E676'; bar.style.backgroundColor = '#00E676'; bar.style.width = '100%';
+        } else if (currentTotal > targetNumber) {
+            display.style.color = '#EF5350'; bar.style.backgroundColor = '#EF5350'; bar.style.width = '100%';
+        } else {
+            display.style.color = '#FFC107'; bar.style.backgroundColor = '#FFC107';
+            let pct = (currentTotal / targetNumber) * 100; if(pct > 95) pct = 95; bar.style.width = pct + '%';
+        }
+    }
+
+    function checkOrder() {
+        const currentTotal = (state.c * 100) + (state.d * 10) + (state.u * 1);
+        if (currentTotal === targetNumber) {
+            playWinAnimation();
+        } else {
+            gsap.from("#machine-layout", { x: 10, duration: 0.1, repeat: 5, yoyo: true, ease: "power1.inOut" });
+            const btn = document.getElementById('submit-btn');
+            btn.style.background = "#EF5350"; btn.innerHTML = `<span class="submit-emoji">⚠️</span>REVISA`;
+            setTimeout(() => { btn.innerHTML = `<span class="submit-emoji">📦</span>EMPAQUETAR`; btn.style.background = "#FFC107"; }, 1500);
+        }
+    }
+
+    // --- ANIMACIÓN 3D SUAVIZADA Y MÁS LENTA ---
+    function playWinAnimation() {
+        const scene = document.getElementById('packing-scene');
+        scene.style.display = 'flex';
+        
+        // Reset
+        gsap.set("#anim-box", { rotationX: -20, rotationY: -30, scale: 0.5, opacity: 0 });
+        gsap.set(".flap", { rotationX: 120 }); // Abiertas
+        gsap.set(".tape-3d", { opacity: 0, scaleX: 0 });
+        gsap.set(".stamp-3d", { opacity: 0, scale: 3, rotation: 0, z: 120 });
+
+        const tl = gsap.timeline({
+            onComplete: () => {
+                // Chequear si es el final o siguiente nivel
+                if (currentLevel >= maxLevels) {
+                    showGrandFinale();
+                } else {
+                    fireConfetti(0.6);
+                    document.getElementById('win-screen').style.display = 'flex';
+                }
+                setTimeout(() => { scene.style.display = 'none'; }, 1000);
+            }
+        });
+
+        tl.to("#anim-box", { scale: 1, opacity: 1, duration: 0.8, ease: "elastic.out(1, 0.5)" })
+          // Ajuste de solapas
+          .to(".flap-front", { rotationX: 0, duration: 0.5, ease: "power2.inOut" }, "+=0.1")
+          .to(".flap-back", { rotationX: 0, duration: 0.5, ease: "power2.inOut" }, "<")
+          .to("#anim-box", { scale: 0.95, duration: 0.1, yoyo: true, repeat: 1 }) 
+          .to(".tape-3d", { opacity: 0.9, scaleX: 1, duration: 0.3, ease: "power2.out" })
+          // SELLO MÁS LENTO (1 Segundo)
+          .to(".stamp-3d", { opacity: 1, scale: 1, rotation: -15, duration: 1.0, ease: "bounce.out" })
+          // PAUSA FINAL (Dummy tween de 1.5s)
+          .to({}, {duration: 1.5});
+    }
+
+    function nextLevel() {
+        if (currentLevel < maxLevels) {
+            currentLevel++;
+            initGame();
+        }
+    }
+
+    function showGrandFinale() {
+        document.getElementById('grand-finale').style.display = 'flex';
+        
+        // Disparar fuegos artificiales masivos
+        const duration = 3000;
+        const end = Date.now() + duration;
+
+        (function frame() {
+            confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 } });
+            confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 } });
+            if (Date.now() < end) requestAnimationFrame(frame);
+        }());
+
+        // Animar estrellas
+        const stars = document.querySelectorAll('.star');
+        stars.forEach((star, i) => {
+            star.classList.remove('active');
+            setTimeout(() => star.classList.add('active'), i * 200);
+        });
+    }
+
+    function fireConfetti(yPos) {
+        confetti({ particleCount: 150, spread: 100, origin: { y: yPos } });
+    }
+</script>
+
+</body>
+</html>

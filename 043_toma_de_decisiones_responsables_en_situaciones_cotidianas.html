@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academia de Héroes</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
+        
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: #4facfe;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            min-height: 100vh;
+            color: #1e293b;
+            overflow-x: hidden;
+        }
+
+        .hero-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 5px solid #ffffff;
+            border-radius: 2.5rem;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            transition: all 0.4s ease;
+        }
+
+        /* Ficha sin completar: Gris */
+        .mission-locked {
+            filter: grayscale(1);
+            opacity: 0.8;
+        }
+
+        /* Ficha completada: Color total */
+        .mission-unlocked {
+            filter: grayscale(0);
+            opacity: 1;
+            border-color: currentColor;
+        }
+
+        .mission-btn:hover {
+            transform: translateY(-10px) scale(1.05);
+        }
+
+        .bg-pattern {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: radial-gradient(#ffffff 2px, transparent 2px);
+            background-size: 40px 40px;
+            opacity: 0.2;
+            z-index: -1;
+        }
+
+        .comic-border { border: 4px solid #1e293b; }
+
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="app" v-cloak class="max-w-5xl mx-auto p-4 md:p-8 min-h-screen flex flex-col">
+    <div class="bg-pattern"></div>
+
+    <header class="flex justify-between items-center mb-8 bg-white/50 p-4 rounded-3xl comic-border">
+        <div>
+            <h1 class="text-2xl font-900 text-blue-800 tracking-tighter">ACADEMIA DE HÉROES </h1>
+            <p class="text-xs font-bold text-blue-600 uppercase">Misiones completadas: {{ completedMissions }}/5</p>
+        </div>
+        <div class="flex gap-1">
+            <span v-for="i in 5" :key="i" class="text-2xl" :class="i <= completedMissions ? 'animate__animated animate__bounceIn' : 'grayscale opacity-30'">⭐</span>
+        </div>
+    </header>
+
+    <main v-if="!currentMission" class="animate__animated animate__fadeIn">
+        <div class="text-center mb-10">
+            <h2 class="text-4xl font-900 text-white drop-shadow-lg mb-2 italic">¡ELIGE TU MISIÓN!</h2>
+            <p class="text-blue-900 font-bold">Completa misiones para llenar el mundo de color</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div v-for="mission in missions" :key="mission.id" 
+                 @click="startMission(mission)"
+                 class="mission-btn hero-card p-6 cursor-pointer text-center group"
+                 :class="missionsHistory.has(mission.id) ? 'mission-unlocked' : 'mission-locked'"
+                 :style="{ color: missionsHistory.has(mission.id) ? mission.color : '#64748b' }">
+                <div class="text-6xl mb-4 group-hover:animate-bounce">{{ mission.icon }}</div>
+                <h3 class="text-xl font-black mb-2 uppercase">{{ mission.place }}</h3>
+                <p class="text-sm text-slate-600 font-medium">{{ mission.preview }}</p>
+            </div>
+        </div>
+    </main>
+
+    <main v-else class="flex-grow flex flex-col items-center justify-center animate__animated animate__zoomIn">
+        <div class="hero-card w-full max-w-2xl p-8 md:p-12 relative comic-border">
+            <button @click="currentMission = null" class="absolute -top-4 -left-4 bg-red-500 text-white p-2 rounded-full font-black text-xs hover:bg-red-700">X CERRAR</button>
+
+            <transition name="fade" mode="out-in">
+                <div :key="currentNode.id" class="space-y-8 text-center">
+                    <div class="text-8xl mb-4">{{ currentNode.emoji }}</div>
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-800 leading-tight">{{ currentNode.text }}</h2>
+
+                    <div v-if="!currentNode.isFinal" class="grid grid-cols-1 gap-4 pt-6">
+                        <button v-for="choice in randomizedChoices" 
+                                :key="choice.label"
+                                @click="makeChoice(choice)"
+                                class="p-5 rounded-2xl border-4 border-slate-100 hover:border-blue-400 hover:bg-blue-50 transition-all text-left flex items-center gap-4 group">
+                            <span class="text-4xl group-hover:scale-125 transition-transform">{{ choice.icon }}</span>
+                            <span class="font-bold text-lg text-slate-700">{{ choice.label }}</span>
+                        </button>
+                    </div>
+
+                    <div v-else class="pt-6">
+                        <div class="p-6 bg-green-50 rounded-3xl border-4 border-green-200 mb-6">
+                            <p class="text-xl text-green-800 font-bold italic">"{{ currentNode.resolution }}"</p>
+                        </div>
+                        <button @click="finishMission" class="bg-blue-600 text-white font-black py-4 px-10 rounded-2xl hover:bg-blue-800 transition-all shadow-xl scale-110">
+                            ¡MISIÓN COMPLETADA!
+                        </button>
+                    </div>
+                </div>
+            </transition>
+        </div>
+    </main>
+
+    <footer class="mt-8 flex items-center gap-4 bg-white/80 p-6 rounded-3xl comic-border">
+        <div class="text-5xl">🤖</div>
+        <div>
+            <p class="text-[10px] font-900 text-blue-500 uppercase tracking-widest">Consejo del Robot ECO</p>
+            <p class="text-sm font-bold text-slate-700">{{ helperText }}</p>
+        </div>
+    </footer>
+</div>
+
+<script>
+const { createApp, ref, computed } = Vue;
+
+createApp({
+    setup() {
+        const currentMission = ref(null);
+        const currentNode = ref(null);
+        const completedMissions = ref(0);
+        const missionsHistory = ref(new Set());
+        const randomizedChoices = ref([]);
+
+        const missions = [
+            { 
+                id: 'escuela', place: "EN LA ESCUELA", icon: "🎒", color: "#4f46e5", preview: "Un compañero necesita ayuda con su mochila.",
+                startNode: {
+                    id: 'e1', emoji: "🏫", text: "Ves que a Luis se le caen sus cosas y otros niños se ríen. ¿Qué haces?",
+                    choices: [
+                        { label: "Ayudar a Luis a recoger todo", icon: "🤝", next: 'e_good' },
+                        { label: "Reírte también para encajar", icon: "😆", next: 'e_bad' },
+                        { label: "Avisar a la maestra", icon: "👩‍🏫", next: 'e_neutral' }
+                    ]
+                }
+            },
+            { 
+                id: 'casa', place: "EN LA CASA", icon: "🏠", color: "#e11d48", preview: "Rompiste algo sin querer. ¿Qué dirás?",
+                startNode: {
+                    id: 'c1', emoji: "🏺", text: "Rompiste el florero favorito de mamá. Nadie te vio. ¿Qué decides?",
+                    choices: [
+                        { label: "Decir la verdad y pedir perdón", icon: "🗣️", next: 'c_good' },
+                        { label: "Esconder los pedazos", icon: "🤫", next: 'c_bad' },
+                        { label: "Culpar a tu mascota o hermano", icon: "🐶", next: 'c_neutral' }
+                    ]
+                }
+            },
+            { 
+                id: 'recreo', place: "EN EL RECREO", icon: "⚽", color: "#f59e0b", preview: "Alguien se cayó jugando fútbol.",
+                startNode: {
+                    id: 'r1', emoji: "🤕", text: "Un niño del otro equipo se cayó y le duele. Vas ganando el partido.",
+                    choices: [
+                        { label: "Detenerte y ayudarlo a levantarse", icon: "🚑", next: 'r_good' },
+                        { label: "Seguir corriendo y meter gol", icon: "🏃", next: 'r_bad' },
+                        { label: "Gritar por ayuda pero seguir jugando", icon: "📣", next: 'r_neutral' }
+                    ]
+                }
+            },
+            { 
+                id: 'super', place: "EN EL SÚPER", icon: "🛒", color: "#10b981", preview: "Recibiste cambio de más.",
+                startNode: {
+                    id: 's1', emoji: "💰", text: "La cajera te dio monedas de más por error. ¿Qué harás?",
+                    choices: [
+                        { label: "Devolver el dinero extra", icon: "⚖️", next: 's_good' },
+                        { label: "Quedártelo para un dulce", icon: "🍫", next: 's_bad' },
+                        { label: "Donarlo a la cajita de ayuda", icon: "🎁", next: 's_neutral' }
+                    ]
+                }
+            },
+            { 
+                id: 'parque', place: "EN EL PARQUE", icon: "🌳", color: "#8b5cf6", preview: "Hay mucha basura en el césped.",
+                startNode: {
+                    id: 'p1', emoji: "🧃", text: "Ves a alguien tirar un envase al suelo justo al lado de un bote.",
+                    choices: [
+                        { label: "Recogerlo y ponerlo en el bote", icon: "♻️", next: 'p_good' },
+                        { label: "No hacer nada, no es tu culpa", icon: "😒", next: 'p_bad' },
+                        { label: "Decirle amablemente que se le cayó", icon: "👋", next: 'p_neutral' }
+                    ]
+                }
+            }
+        ];
+
+        const allNodes = {
+            e_good: { isFinal: true, emoji: "🌟", resolution: "¡Excelente! Luis se siente feliz y tú demostraste que la bondad es tu mejor superpoder." },
+            e_bad: { isFinal: true, emoji: "😢", resolution: "Luis se puso triste. Recuerda que no necesitamos burlarnos de otros para ser populares." },
+            e_neutral: { isFinal: true, emoji: "👩‍🏫", resolution: "Pedir ayuda está bien, aunque a veces un pequeño gesto tuyo directamente ayuda mucho más." },
+            c_good: { isFinal: true, emoji: "💖", resolution: "Mamá valoró mucho tu honestidad. ¡La verdad siempre te hace sentir más ligero!" },
+            c_bad: { isFinal: true, emoji: "😰", resolution: "Te pasaste el día preocupado por si te descubrían. Ser honesto da mucha paz." },
+            c_neutral: { isFinal: true, emoji: "🐕", resolution: "Evitaste el regaño, pero tu corazón se sintió triste al ver que culparon a alguien inocente." },
+            r_good: { isFinal: true, emoji: "🏆", resolution: "¡Eso es juego limpio! Ganaste el respeto de todos, y eso vale más que cualquier trofeo." },
+            r_bad: { isFinal: true, emoji: "⚽", resolution: "Metiste el gol, pero perdiste la oportunidad de ser un gran compañero. ¿Valió la pena?" },
+            r_neutral: { isFinal: true, emoji: "🚑", resolution: "Alguien llegó a ayudarlo, pero el niño se sintió ignorado por sus amigos de juego." },
+            s_good: { isFinal: true, emoji: "💎", resolution: "¡Perfecto! La integridad es hacer lo correcto aunque nadie te esté mirando." },
+            s_bad: { isFinal: true, emoji: "🍬", resolution: "El dulce no supo tan rico porque sabías que ese dinero no era tuyo. ¡La próxima vez haz lo correcto!" },
+            s_neutral: { isFinal: true, emoji: "🎁", resolution: "Hiciste un bien, pero recuerda que el dinero no era tuyo para decidir. ¡Casi perfecto!" },
+            p_good: { isFinal: true, emoji: "🌍", resolution: "¡Héroe del planeta! Acciones pequeñas mantienen el mundo hermoso para todos nosotros." },
+            p_bad: { isFinal: true, emoji: "🗑️", resolution: "El parque se ve más sucio hoy. Si todos cuidamos un poquito, todos disfrutamos mucho." },
+            p_neutral: { isFinal: true, emoji: "🗣️", resolution: "¡Excelente! Ayudaste a que otra persona aprenda a cuidar el mundo. ¡Diste el ejemplo!" }
+        };
+
+        const shuffle = (array) => [...array].sort(() => Math.random() - 0.5);
+
+        const startMission = (mission) => {
+            currentMission.value = mission;
+            currentNode.value = mission.startNode;
+            randomizedChoices.value = shuffle(mission.startNode.choices);
+            const ctx = new AudioContext();
+            const osc = ctx.createOscillator();
+            osc.connect(ctx.destination);
+            osc.start(); osc.stop(ctx.currentTime + 0.1);
+        };
+
+        const makeChoice = (choice) => {
+            gsap.to(".hero-card", { scale: 0.9, opacity: 0, duration: 0.2, onComplete: () => {
+                currentNode.value = allNodes[choice.next];
+                if (!currentNode.value.isFinal) {
+                    randomizedChoices.value = shuffle(currentNode.value.choices);
+                }
+                gsap.to(".hero-card", { scale: 1, opacity: 1, duration: 0.4 });
+            }});
+        };
+
+        const finishMission = () => {
+            if (!missionsHistory.value.has(currentMission.value.id)) {
+                completedMissions.value++;
+                missionsHistory.value.add(currentMission.value.id);
+            }
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            currentMission.value = null;
+        };
+
+        const helperText = computed(() => {
+            if (!currentMission.value) return "Las misiones bloqueadas están en gris. ¡Complétalas para devolverles su color!";
+            if (currentNode.value.isFinal) return "¡Misión completada! Mira cómo ha cambiado tu ficha en el menú.";
+            return "Las opciones cambian de lugar cada vez. ¡Lee con mucha atención!";
+        });
+
+        return { missions, currentMission, currentNode, startMission, makeChoice, finishMission, completedMissions, helperText, missionsHistory, randomizedChoices };
+    }
+}).mount('#app');
+</script>
+</body>
+</html>

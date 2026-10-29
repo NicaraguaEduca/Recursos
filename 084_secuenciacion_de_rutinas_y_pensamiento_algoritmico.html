@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Programador de Mañanas - Pensamiento Lógico</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        
+        :root {
+            --primary: #FF9F43; /* Naranja amanecer */
+            --secondary: #EE5253;
+            --accent: #F1C40F;  /* Amarillo sol */
+            --background: #FFF9F2;
+            --text: #2D3436;
+            --success: #1DD1A1;
+            --error: #FF6B6B;
+            --subject-color: #54a0ff; /* Azul para la asignatura */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            background-image: radial-gradient(#FFD2A1 0.5px, transparent 0.5px);
+            background-size: 30px 30px;
+            color: var(--text);
+            text-align: center;
+            padding: 10px;
+            margin: 0;
+            overflow: hidden;
+            touch-action: none; 
+            user-select: none; 
+            -webkit-user-select: none;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .tarjeta {
+            background: white;
+            width: 100%;
+            max-width: 850px;
+            padding: 15px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            border-top: 10px solid var(--primary);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            max-height: 98vh;
+        }
+
+        .badge-asignatura {
+            background-color: var(--subject-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        h1 { margin: 0 0 5px 0; color: var(--primary); font-size: clamp(1.3rem, 4vw, 2rem); font-weight: 800; }
+
+        /* --- PANTALLA DE INICIO --- */
+        #pantalla-inicio .icono-grande { font-size: 3.5rem; margin-bottom: 5px; }
+        .objetivo-caja {
+            background-color: #FFF3E0;
+            border: 2px solid var(--primary);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            font-size: clamp(0.95rem, 3.5vw, 1.15rem);
+            line-height: 1.4;
+            color: #E67E22;
+            text-align: left;
+        }
+
+        .btn-accion {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            font-size: clamp(1rem, 4vw, 1.3rem);
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #E67E22;
+            font-weight: bold;
+            transition: all 0.2s;
+            width: 100%;
+            max-width: 280px;
+            margin: 0 auto;
+            text-transform: uppercase;
+            display: block;
+        }
+        .btn-accion:active { transform: translateY(6px); box-shadow: 0 0 0 #E67E22; }
+
+        /* --- ÁREA DE JUEGO --- */
+        #area-juego { display: none; }
+        
+        .instrucciones { font-size: 0.8rem; color: #555; font-weight: bold; margin-bottom: 8px; text-transform: uppercase;}
+        
+        .panel-interactivo {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            flex-grow: 1;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .columna {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+
+        /* Estilo para las piezas a arrastrar */
+        .paso-ficha {
+            background-color: white;
+            border: 2px solid #D1D8E0;
+            padding: 10px;
+            border-radius: 12px;
+            cursor: grab;
+            font-size: clamp(0.7rem, 2.5vw, 0.95rem);
+            font-weight: bold;
+            box-shadow: 0 4px 0 #D1D8E0;
+            touch-action: none;
+            position: relative;
+            line-height: 1.2;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Espacios de destino */
+        .zona-drop {
+            background-color: #F8F9FA;
+            border: 2px dashed #B0BEC5;
+            border-radius: 12px;
+            min-height: 65px;
+            display: flex;
+            align-items: center;
+            padding: 5px 8px;
+            position: relative;
+        }
+
+        .numero-guia {
+            background: var(--primary);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            margin-right: 8px;
+            flex-shrink: 0;
+            font-weight: bold;
+        }
+
+        .zona-drop.correct { background-color: #E8F8F5; border-color: var(--success); border-style: solid; }
+        .zona-drop.correct .paso-ficha { box-shadow: none; border: none; padding: 0; background: transparent; cursor: default; min-height: auto;}
+
+        #mensaje { font-size: 1.1rem; font-weight: bold; margin-top: 10px; min-height: 25px; color: var(--success); }
+
+        .ficha-fantasma {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.95;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            transform: scale(1.05);
+            background: white;
+            border: 3px solid var(--primary);
+            padding: 10px;
+            border-radius: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        #btn-reiniciar { display: none; margin-top: 10px; background-color: var(--accent); color: var(--text); box-shadow: 0 6px 0 #D4A316;}
+
+    </style>
+</head>
+<body>
+
+    <!-- PANTALLA DE INICIO -->
+    <div id="pantalla-inicio" class="tarjeta">
+        <div class="badge-asignatura">Asignatura: Pensamiento Lógico</div>
+        <div class="icono-grande">🌅</div>
+        <h1>Programador de Mañanas</h1>
+        
+        <div class="objetivo-caja">
+            <strong>🎯 Tu Misión de Programación:</strong><br><br>
+            ¡Hola, Programador! Para que el día salga bien, necesitamos un <strong>Algoritmo</strong> (pasos ordenados). Ordena los 6 pasos del 1 al 6 para que nuestro personaje esté listo, limpio y desayunado para ir a la escuela.
+        </div>
+
+        <button class="btn-accion" onclick="iniciarJuego()">¡Empezar Misión! 🚀</button>
+    </div>
+
+    <!-- ÁREA DE JUEGO -->
+    <div id="area-juego" class="tarjeta">
+        <div class="badge-asignatura">Pensamiento Lógico</div>
+        <h1>Mi Rutina Lógica</h1>
+        <p class="instrucciones">Ordena los pasos del algoritmo de arriba hacia abajo</p>
+        
+        <div class="panel-interactivo">
+            <div class="columna" id="contenedor-zonas">
+                <div class="zona-drop" data-accept="1"><div class="numero-guia">1</div></div>
+                <div class="zona-drop" data-accept="2"><div class="numero-guia">2</div></div>
+                <div class="zona-drop" data-accept="3"><div class="numero-guia">3</div></div>
+                <div class="zona-drop" data-accept="4"><div class="numero-guia">4</div></div>
+                <div class="zona-drop" data-accept="5"><div class="numero-guia">5</div></div>
+                <div class="zona-drop" data-accept="6"><div class="numero-guia">6</div></div>
+            </div>
+
+            <div class="columna" id="contenedor-fichas">
+                <!-- Se generan aquí -->
+            </div>
+        </div>
+
+        <div id="mensaje"></div>
+        <button id="btn-reiniciar" class="btn-accion" onclick="reiniciarJuego()">🔄 Reiniciar Algoritmo</button>
+    </div>
+
+    <script>
+        // --- RUTINA ACTUALIZADA CON 6 PASOS ---
+        const pasosRutina = [
+            { id: "1", texto: "¡Despertar y salir de la cama! 😴" },
+            { id: "2", texto: "Bañarme para estar fresquito y limpio. 🧼" },
+            { id: "3", texto: "Lavarme la cara y los dientes. 🪥" },
+            { id: "4", texto: "Ponerme el uniforme escolar. 👕" },
+            { id: "5", texto: "Desayunar algo rico para tener energía. 🍳" },
+            { id: "6", texto: "¡Ir camino a la escuela muy feliz! 🏫" }
+        ];
+
+        let aciertos = 0;
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const areaJuego = document.getElementById('area-juego');
+        const contenedorFichas = document.getElementById('contenedor-fichas');
+        const zonas = document.querySelectorAll('.zona-drop');
+        const mensaje = document.getElementById('mensaje');
+        const btnReiniciar = document.getElementById('btn-reiniciar');
+
+        function iniciarJuego() {
+            pantallaInicio.style.display = 'none';
+            areaJuego.style.display = 'flex';
+            cargarRutina();
+        }
+
+        function cargarRutina() {
+            aciertos = 0;
+            mensaje.textContent = "";
+            btnReiniciar.style.display = "none";
+            
+            zonas.forEach(z => {
+                z.classList.remove('correct');
+                const num = z.querySelector('.numero-guia');
+                z.innerHTML = '';
+                z.appendChild(num);
+            });
+
+            let pasosMezclados = [...pasosRutina].sort(() => Math.random() - 0.5);
+
+            contenedorFichas.innerHTML = '';
+            pasosMezclados.forEach(paso => {
+                const div = document.createElement('div');
+                div.classList.add('paso-ficha');
+                div.setAttribute('data-id', paso.id);
+                div.textContent = paso.texto;
+                div.addEventListener('pointerdown', iniciarArrastre);
+                contenedorFichas.appendChild(div);
+            });
+        }
+
+        let elementoArrastrado = null;
+        let fantasma = null;
+
+        function iniciarArrastre(e) {
+            if (e.target.parentElement.classList.contains('correct')) return;
+            
+            e.preventDefault();
+            elementoArrastrado = e.target;
+            
+            fantasma = elementoArrastrado.cloneNode(true);
+            fantasma.classList.add('ficha-fantasma');
+            fantasma.style.width = elementoArrastrado.offsetWidth + 'px';
+            document.body.appendChild(fantasma);
+            
+            elementoArrastrado.style.opacity = '0.3';
+            moverFantasma(e.clientX, e.clientY);
+
+            document.addEventListener('pointermove', duranteArrastre);
+            document.addEventListener('pointerup', soltarArrastre);
+        }
+
+        function duranteArrastre(e) { moverFantasma(e.clientX, e.clientY); }
+        function moverFantasma(x, y) {
+            fantasma.style.left = (x - fantasma.offsetWidth / 2) + 'px';
+            fantasma.style.top = (y - fantasma.offsetHeight / 2) + 'px';
+        }
+
+        function soltarArrastre(e) {
+            document.removeEventListener('pointermove', duranteArrastre);
+            document.removeEventListener('pointerup', soltarArrastre);
+            
+            const debajo = document.elementFromPoint(e.clientX, e.clientY);
+            const zona = debajo ? debajo.closest('.zona-drop') : null;
+            
+            fantasma.remove();
+            elementoArrastrado.style.opacity = '1';
+
+            if (zona && !zona.classList.contains('correct')) {
+                if (elementoArrastrado.getAttribute('data-id') === zona.getAttribute('data-accept')) {
+                    zona.appendChild(elementoArrastrado);
+                    zona.classList.add('correct');
+                    aciertos++;
+                    
+                    if (aciertos === 6) {
+                        mensaje.textContent = "¡Algoritmo perfecto! 🌟 ¡A clases!";
+                        btnReiniciar.style.display = "block";
+                        celebrar();
+                    }
+                } else {
+                    zona.style.backgroundColor = '#FFDADA';
+                    setTimeout(() => zona.style.backgroundColor = '', 500);
+                }
+            }
+        }
+
+        function reiniciarJuego() { cargarRutina(); }
+        function celebrar() {
+            confetti({ 
+                particleCount: 150, 
+                spread: 70, 
+                origin: { y: 0.6 }, 
+                colors: ['#FF9F43', '#54a0ff', '#1DD1A1'] 
+            });
+        }
+    </script>
+</body>
+</html>

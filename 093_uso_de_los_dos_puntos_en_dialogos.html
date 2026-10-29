@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bocadillos de Diálogo - Los Dos Puntos</title>
+    
+    <!-- Fuentes Google: Outfit (Textos) y Bangers (Títulos Cómic) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Outfit:wght@400;600;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuración de Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        comic: ['Bangers', 'cursive'],
+                    },
+                    colors: {
+                        pop: {
+                            red: '#E53935',
+                            green: '#43A047', 
+                            cyan: '#00ACC1',
+                            yellow: '#FFEB3B',
+                            purple: '#8E24AA',
+                            dark: '#1E1E1E',
+                            light: '#FAFAFA'
+                        }
+                    },
+                    boxShadow: {
+                        'comic': '8px 8px 0px 0px rgba(30, 30, 30, 1)',
+                        'comic-sm': '4px 4px 0px 0px rgba(30, 30, 30, 1)',
+                        'comic-hover': '2px 2px 0px 0px rgba(30, 30, 30, 1)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Fondos Pop-Art (Halftone dots) */
+        .bg-halftone-yellow {
+            background-color: #FFEB3B;
+            background-image: radial-gradient(#FBC02D 15%, transparent 16%), radial-gradient(#FBC02D 15%, transparent 16%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+        .bg-halftone-cyan {
+            background-color: #00ACC1;
+            background-image: radial-gradient(#00838F 15%, transparent 16%), radial-gradient(#00838F 15%, transparent 16%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+        .bg-halftone-red {
+            background-color: #E53935;
+            background-image: radial-gradient(#C62828 15%, transparent 16%), radial-gradient(#C62828 15%, transparent 16%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+        /* Clases utilitarias Cómic */
+        .comic-border { border: 2px solid #1E1E1E; }
+        .comic-border-thick { border: 4px solid #1E1E1E; }
+        
+        @media (min-width: 768px) {
+            .comic-border { border: 4px solid #1E1E1E; }
+            .comic-border-thick { border: 8px solid #1E1E1E; }
+        }
+        
+        .btn-comic {
+            border: 4px solid #1E1E1E;
+            box-shadow: 4px 4px 0px 0px rgba(30, 30, 30, 1);
+            transition: all 0.15s ease-out;
+            font-family: 'Bangers', cursive;
+            letter-spacing: 1px;
+        }
+        @media (min-width: 768px) {
+            .btn-comic {
+                box-shadow: 6px 6px 0px 0px rgba(30, 30, 30, 1);
+                letter-spacing: 2px;
+            }
+        }
+        .btn-comic:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px 0px rgba(30, 30, 30, 1);
+        }
+        @media (min-width: 768px) {
+            .btn-comic:hover {
+                box-shadow: 4px 4px 0px 0px rgba(30, 30, 30, 1);
+            }
+        }
+        .btn-comic:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px 0px rgba(30, 30, 30, 1);
+        }
+        @media (min-width: 768px) {
+            .btn-comic:active {
+                transform: translate(6px, 6px);
+            }
+        }
+
+        /* Animaciones para pase de pantallas */
+        .screen-enter { animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .screen-exit { animation: zoomOut 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards; }
+
+        @keyframes zoomIn {
+            0% { opacity: 0; transform: scale(0.8) translateY(50px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes zoomOut {
+            0% { opacity: 1; transform: scale(1) translateY(0); }
+            100% { opacity: 0; transform: scale(1.1) translateY(-50px); }
+        }
+
+        /* Animaciones de Juego */
+        .shake-error { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
+        .pow-in { animation: powIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 2) forwards; }
+        @keyframes powIn {
+            0% { opacity: 0; transform: scale(0.1) rotate(-20deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+
+        /* Hueco para colocar los dos puntos */
+        .colon-slot {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: clamp(25px, 5vw, 50px);
+            height: clamp(35px, 6vw, 60px);
+            margin: 0 6px;
+            border: 3px dashed #1E1E1E;
+            background-color: rgba(255,255,255,0.8);
+            border-radius: 8px;
+            cursor: pointer;
+            vertical-align: middle;
+            transition: all 0.2s;
+            color: transparent;
+            font-family: 'Bangers', cursive;
+            line-height: 1;
+            font-size: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            .colon-slot {
+                margin: 0 10px;
+                border: 4px dashed #1E1E1E;
+                border-radius: 10px;
+                font-size: 2rem;
+            }
+        }
+        .colon-slot:hover {
+            background-color: #FFEB3B;
+            border-style: solid;
+            transform: scale(1.1) rotate(5deg);
+            color: rgba(30,30,30,0.3);
+            content: ":";
+        }
+        .colon-slot.solved {
+            border-style: solid;
+            background-color: #43A047; /* pop-green */
+            color: white;
+            cursor: default;
+            transform: scale(1.2);
+            box-shadow: 2px 2px 0px rgba(30, 30, 30, 1);
+        }
+        @media (min-width: 768px) {
+            .colon-slot.solved {
+                box-shadow: 4px 4px 0px rgba(30, 30, 30, 1);
+            }
+        }
+
+        /* Estilo de Bocadillo de Diálogo (Speech Bubble) */
+        .speech-bubble {
+            position: relative;
+            background: #ffffff;
+            border: 4px solid #1E1E1E;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 4px 4px 0px rgba(30, 30, 30, 1);
+            transition: all 0.4s ease;
+        }
+        @media (min-width: 768px) {
+            .speech-bubble {
+                border: 6px solid #1E1E1E;
+                border-radius: 30px;
+                padding: 30px;
+                box-shadow: 8px 8px 0px rgba(30, 30, 30, 1);
+            }
+        }
+        .speech-bubble.inactive {
+            background: #e2e8f0;
+            border-style: dashed;
+            box-shadow: none;
+            opacity: 0.8;
+        }
+        /* Cola del bocadillo apuntando a la izquierda (hacia el avatar) */
+        .speech-bubble::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -20px;
+            transform: translateY(-50%);
+            border-width: 15px 20px 15px 0;
+            border-style: solid;
+            border-color: transparent #1E1E1E transparent transparent;
+            display: block;
+            width: 0;
+            transition: all 0.4s ease;
+        }
+        @media (min-width: 768px) {
+            .speech-bubble::before {
+                left: -30px;
+                border-width: 20px 30px 20px 0;
+            }
+        }
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -12px;
+            transform: translateY(-50%);
+            border-width: 10px 15px 10px 0;
+            border-style: solid;
+            border-color: transparent #ffffff transparent transparent;
+            display: block;
+            width: 0;
+            z-index: 1;
+            transition: all 0.4s ease;
+        }
+        @media (min-width: 768px) {
+            .speech-bubble::after {
+                left: -20px;
+                border-width: 14px 22px 14px 0;
+            }
+        }
+        .speech-bubble.inactive::before, .speech-bubble.inactive::after {
+            opacity: 0;
+        }
+
+        /* Ajuste de cola en móviles (apuntando arriba) */
+        @media (max-width: 768px) {
+            .speech-bubble::before {
+                top: -20px;
+                left: 50%;
+                transform: translateX(-50%);
+                border-width: 0 15px 20px 15px;
+                border-color: transparent transparent #1E1E1E transparent;
+            }
+            .speech-bubble::after {
+                top: -14px;
+                left: 50%;
+                transform: translateX(-50%);
+                border-width: 0 10px 15px 10px;
+                border-color: transparent transparent #ffffff transparent;
+            }
+        }
+    </style>
+</head>
+<body class="bg-pop-light h-[100dvh] w-full overflow-hidden flex items-center justify-center font-sans selection:bg-pop-yellow selection:text-pop-dark">
+
+    <!-- CONTENEDOR PRINCIPAL TIPO CÓMIC (App Window Expandida al 100%) -->
+    <div class="relative w-full h-full flex overflow-hidden">
+        
+        <!-- PANTALLA 1: INICIO -->
+        <section id="screen-1" class="absolute inset-0 bg-halftone-cyan flex flex-col items-center justify-center p-4 md:p-6 z-[60] overflow-y-auto">
+            <div class="bg-white comic-border-thick p-6 md:p-14 shadow-comic flex flex-col items-center max-w-4xl w-full text-center transform rotate-1 my-auto">
+                <span class="bg-pop-dark text-pop-yellow font-comic px-4 py-1 md:px-6 md:py-2 text-sm md:text-3xl tracking-widest mb-4 md:mb-6 -rotate-2 shadow-comic-sm">Ortografía - 5to Grado</span>
+                
+                <h1 class="text-5xl sm:text-6xl md:text-8xl lg:text-[7rem] font-comic leading-[0.9] mb-4 md:mb-8 text-pop-dark drop-shadow-md">
+                    Bocadillos de <br> <span class="text-pop-red text-6xl sm:text-7xl md:text-9xl lg:text-[9rem]">Diálogo</span>
+                </h1>
+                
+                <p class="text-base sm:text-xl md:text-3xl font-bold mb-6 md:mb-10 max-w-2xl text-gray-800 leading-snug">
+                    ¡Prepárate para darle voz a la historia! Descubre el superpoder de <strong class="bg-pop-yellow px-2 py-1 md:px-3 md:py-1 border-2 md:border-4 border-black inline-block mt-2">Los Dos Puntos ( : )</strong>
+                </p>
+                
+                <button onclick="goToScreen(2)" class="btn-comic bg-pop-yellow text-pop-dark text-2xl sm:text-3xl md:text-5xl px-6 py-3 md:px-10 md:py-5 rounded-xl md:rounded-2xl w-full md:w-auto hover:scale-105 active:scale-95 shrink-0">
+                    ¡ABRIR CÓMIC! 💥
+                </button>
+            </div>
+            <!-- Elementos flotantes -->
+            <div class="absolute top-4 left-4 md:top-10 md:left-10 text-[3rem] md:text-[8rem] font-comic text-white drop-shadow-lg -rotate-12 animate-pulse pointer-events-none">BAM!</div>
+            <div class="absolute bottom-4 right-4 md:bottom-10 md:right-10 text-[3rem] md:text-[8rem] font-comic text-white drop-shadow-lg rotate-12 animate-pulse pointer-events-none" style="animation-delay: 0.5s">ZAP!</div>
+        </section>
+
+        <!-- PANTALLA 2: EXPLICACIÓN (EL PRESENTADOR) -->
+        <section id="screen-2" class="absolute inset-0 bg-halftone-yellow flex flex-col items-center justify-center p-4 md:p-6 z-[50] hidden overflow-y-auto">
+            <div class="bg-white comic-border-thick p-6 md:p-14 shadow-comic w-full max-w-5xl flex flex-col md:flex-row gap-6 md:gap-12 items-center -rotate-1 my-auto">
+                <div class="text-[6rem] md:text-[12rem] flex-shrink-0 drop-shadow-xl animate-bounce">🥁</div>
+                <div class="flex flex-col text-center md:text-left">
+                    <h2 class="text-4xl sm:text-5xl md:text-7xl font-comic mb-4 md:mb-6 text-pop-red tracking-wide leading-none">¡Redoble de tambores!</h2>
+                    <p class="text-lg sm:text-2xl md:text-4xl font-bold mb-4 md:mb-6 leading-tight text-gray-800">
+                        Los <span class="bg-pop-dark text-white px-2 py-1 md:px-3 md:py-1 comic-border rounded-lg md:rounded-xl">dos puntos ( : )</span> son como los presentadores de un show. 
+                    </p>
+                    <p class="text-base sm:text-xl md:text-3xl font-bold bg-pop-light p-4 md:p-6 comic-border rounded-xl md:rounded-2xl shadow-comic-sm text-gray-700">
+                        Su trabajo es detener todo y decir: <br>
+                        <strong class="font-comic text-3xl sm:text-4xl md:text-6xl text-pop-cyan mt-2 block tracking-wide">"¡Atención, alguien va a hablar!"</strong>
+                    </p>
+                </div>
+            </div>
+            <div class="flex flex-wrap justify-center gap-4 mt-6 md:mt-10">
+                <button onclick="goToScreen(1)" class="btn-comic bg-white text-pop-dark text-xl sm:text-3xl md:text-4xl px-6 py-3 md:px-8 md:py-4 rounded-xl md:rounded-2xl shrink-0 hover:scale-105">
+                    ⬅ VOLVER
+                </button>
+                <button onclick="goToScreen(3)" class="btn-comic bg-pop-cyan text-white text-xl sm:text-3xl md:text-4xl px-8 py-3 md:px-12 md:py-4 rounded-xl md:rounded-2xl shrink-0 hover:scale-105">
+                    ¿CÓMO LOS USO? ➡
+                </button>
+            </div>
+        </section>
+
+        <!-- PANTALLA 3: SINTAXIS Y VERBOS -->
+        <section id="screen-3" class="absolute inset-0 bg-pop-purple flex flex-col items-center justify-start md:justify-center p-4 md:p-6 z-[40] hidden overflow-y-auto">
+            <div class="bg-white comic-border-thick p-4 md:p-12 shadow-comic w-full max-w-6xl flex flex-col items-center text-center my-auto py-8">
+                <h2 class="text-4xl sm:text-5xl md:text-7xl font-comic mb-4 text-pop-dark tracking-wide">La Fórmula Mágica</h2>
+                
+                <p class="text-base sm:text-xl md:text-3xl font-bold mb-6 md:mb-8 text-gray-700 max-w-4xl leading-tight">
+                    Siempre van <strong class="text-pop-purple underline decoration-2 md:decoration-4">después</strong> del verbo que anuncia que alguien va a hablar, y justo <strong class="text-pop-red underline decoration-2 md:decoration-4">antes</strong> de abrir las comillas.
+                </p>
+
+                <!-- Cuadrícula de fórmula -->
+                <div class="flex flex-col lg:flex-row items-center justify-center gap-2 md:gap-6 w-full mb-6 md:mb-10">
+                    <div class="bg-pop-yellow comic-border p-3 md:p-6 rounded-xl md:rounded-2xl shadow-comic-sm flex-1 w-full lg:w-auto">
+                        <span class="font-comic text-xl sm:text-2xl md:text-3xl block mb-1 md:mb-2 text-pop-dark">1. Personaje + Verbo</span>
+                        <span class="text-lg sm:text-2xl md:text-3xl font-black text-gray-800">El pirata gritó</span>
+                    </div>
+                    <div class="text-3xl sm:text-4xl md:text-5xl font-black text-white drop-shadow-md rotate-90 lg:rotate-0 my-1 md:my-0">➡</div>
+                    <div class="bg-pop-dark text-white comic-border p-3 md:p-6 rounded-xl md:rounded-2xl shadow-comic-sm flex-none transform hover:scale-110 transition-transform">
+                        <span class="font-comic text-[3rem] md:text-[4rem] leading-none text-pop-cyan">:</span>
+                    </div>
+                    <div class="text-3xl sm:text-4xl md:text-5xl font-black text-white drop-shadow-md rotate-90 lg:rotate-0 my-1 md:my-0">➡</div>
+                    <div class="bg-pop-light comic-border p-3 md:p-6 rounded-xl md:rounded-2xl shadow-comic-sm flex-1 w-full lg:w-auto">
+                        <span class="font-comic text-xl sm:text-2xl md:text-3xl block mb-1 md:mb-2 text-pop-dark">2. Comillas y Cita</span>
+                        <span class="text-lg sm:text-2xl md:text-3xl font-black text-pop-red">"¡Tierra a la vista!"</span>
+                    </div>
+                </div>
+                
+                <!-- Verbos comunes -->
+                <div class="w-full bg-gray-100 p-4 md:p-6 comic-border rounded-xl md:rounded-2xl">
+                    <p class="font-comic text-xl sm:text-2xl md:text-3xl mb-3 md:mb-4 text-gray-600">Verbos presentadores más comunes:</p>
+                    <div class="flex flex-wrap justify-center gap-2 md:gap-4 text-base sm:text-xl md:text-2xl font-bold">
+                        <span class="bg-white px-3 py-1 md:px-4 md:py-2 border-2 md:border-4 border-black rounded-lg md:rounded-xl shadow-comic-sm hover:-translate-y-1 transition-transform">dijo</span>
+                        <span class="bg-white px-3 py-1 md:px-4 md:py-2 border-2 md:border-4 border-black rounded-lg md:rounded-xl shadow-comic-sm hover:-translate-y-1 transition-transform">exclamó</span>
+                        <span class="bg-white px-3 py-1 md:px-4 md:py-2 border-2 md:border-4 border-black rounded-lg md:rounded-xl shadow-comic-sm hover:-translate-y-1 transition-transform">preguntó</span>
+                        <span class="bg-white px-3 py-1 md:px-4 md:py-2 border-2 md:border-4 border-black rounded-lg md:rounded-xl shadow-comic-sm hover:-translate-y-1 transition-transform">respondió</span>
+                    </div>
+                </div>
+
+            </div>
+            <div class="flex flex-wrap justify-center gap-4 mt-6 md:mt-8">
+                <button onclick="goToScreen(2)" class="btn-comic bg-white text-pop-dark text-xl sm:text-3xl md:text-4xl px-6 py-3 md:px-8 md:py-4 rounded-xl md:rounded-2xl shrink-0 hover:scale-105">
+                    ⬅ VOLVER
+                </button>
+                <button onclick="startGame()" class="btn-comic bg-pop-red text-white text-xl sm:text-3xl md:text-5xl px-8 py-3 md:px-12 md:py-4 rounded-xl md:rounded-2xl animate-bounce shrink-0">
+                    ¡A JUGAR! 🚀
+                </button>
+            </div>
+        </section>
+
+        <!-- PANTALLA 4: EL JUEGO (NIVELES HISTÓRICOS) -->
+        <section id="screen-4" class="absolute inset-0 bg-halftone-red flex flex-col z-[20] hidden">
+            
+            <!-- Header Juego (Estilo Panel de Cómic) -->
+            <div class="bg-white comic-border-thick border-t-0 border-l-0 border-r-0 p-3 md:p-6 flex justify-between items-center z-10 shadow-md">
+                <div class="font-comic text-xl sm:text-2xl md:text-4xl text-pop-dark tracking-wider flex items-center gap-2 md:gap-3">
+                    <button onclick="goToScreen(3)" class="btn-comic bg-white text-pop-dark px-2 py-1 md:px-4 md:py-2 rounded-lg md:rounded-xl text-sm sm:text-lg md:text-xl hover:-translate-y-1 transition-transform">⬅ VOLVER</button>
+                    <span class="bg-pop-red text-white px-2 py-1 md:px-4 md:py-2 rounded-lg md:rounded-xl border-2 border-black hidden sm:inline-block">HISTORIA</span>
+                </div>
+                <div id="progress-bar" class="flex gap-1 sm:gap-2 md:gap-4 text-2xl sm:text-3xl md:text-5xl">
+                    <span id="medal-0" class="opacity-30 grayscale drop-shadow-none">🎖️</span>
+                    <span id="medal-1" class="opacity-30 grayscale drop-shadow-none">🎖️</span>
+                    <span id="medal-2" class="opacity-30 grayscale drop-shadow-none">🎖️</span>
+                    <span id="medal-3" class="opacity-30 grayscale drop-shadow-none">🎖️</span>
+                </div>
+            </div>
+
+            <!-- Área del Juego principal -->
+            <div class="flex-grow flex flex-col items-center justify-start md:justify-center p-4 md:p-8 relative overflow-y-auto">
+                
+                <div class="bg-white comic-border px-4 py-2 md:px-8 md:py-3 shadow-comic-sm font-bold text-sm sm:text-xl md:text-2xl z-10 -rotate-1 text-center max-w-3xl mt-2 md:mt-0 md:absolute md:top-6">
+                    Toca el hueco para insertar los <strong class="font-comic text-xl md:text-3xl text-pop-red tracking-widest">:</strong> antes de que hable el personaje.
+                </div>
+
+                <!-- ESCENARIO DEL PERSONAJE -->
+                <div id="game-stage" class="w-full max-w-6xl flex flex-col items-center justify-center mt-6 md:mt-10 transition-opacity duration-300">
+                    
+                    <div class="flex flex-col md:flex-row items-center gap-6 md:gap-16 w-full mb-8">
+                        <!-- Avatar Personaje -->
+                        <div class="relative flex flex-col items-center shrink-0">
+                            <div class="relative">
+                                <div id="char-avatar" class="text-[6rem] sm:text-[8rem] md:text-[13rem] drop-shadow-xl z-10 relative leading-none">👨‍🚀</div>
+                                <div class="absolute inset-0 bg-pop-yellow rounded-full scale-90 -z-0 blur-md opacity-80"></div>
+                            </div>
+                            <!-- Letrero de Identidad -->
+                            <div id="char-name" class="font-comic text-lg sm:text-2xl md:text-4xl text-white bg-pop-dark px-4 py-1 md:px-6 md:py-2 comic-border rounded-lg md:rounded-xl shadow-comic transform rotate-3 mt-2 md:mt-4 text-center">
+                                Neil Armstrong
+                            </div>
+                        </div>
+
+                        <!-- Bocadillo / Frase Interactiva -->
+                        <div id="sentence-bubble" class="speech-bubble inactive w-full md:flex-grow flex flex-wrap items-center justify-center md:justify-start gap-y-4 gap-x-1 md:gap-y-6 md:gap-x-2 text-center md:text-left min-h-[150px] md:min-h-[200px]">
+                            <!-- JS inyecta la frase aquí -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Feedback dinámico -->
+                <div id="game-feedback" class="fixed bottom-4 md:absolute md:bottom-10 bg-white text-pop-dark comic-border px-6 py-3 md:px-10 md:py-5 font-comic text-xl sm:text-3xl md:text-5xl shadow-comic opacity-0 transition-opacity duration-200 uppercase tracking-widest z-50">
+                    ¡POW!
+                </div>
+            </div>
+        </section>
+
+        <!-- PANTALLA 5: VICTORIA -->
+        <section id="screen-5" class="absolute inset-0 bg-pop-yellow flex flex-col items-center justify-center p-4 md:p-6 z-[10] hidden overflow-y-auto">
+            <div class="bg-white comic-border-thick p-6 md:p-20 shadow-comic w-full max-w-5xl flex flex-col items-center text-center transform -rotate-1 relative my-auto">
+                <!-- Confeti cómic -->
+                <div class="absolute -top-6 -left-4 md:-top-10 md:-left-10 text-[4rem] md:text-[6rem] pow-in">💥</div>
+                <div class="absolute -bottom-6 -right-4 md:-bottom-10 md:-right-10 text-[4rem] md:text-[6rem] pow-in" style="animation-delay: 0.2s">✨</div>
+
+                <div class="text-[5rem] sm:text-[8rem] md:text-[12rem] mb-2 md:mb-4 pow-in leading-none" style="animation-delay: 0.4s">🏅</div>
+                <h2 class="text-4xl sm:text-6xl md:text-[7rem] font-comic mb-4 md:mb-6 text-pop-dark uppercase tracking-wide leading-none drop-shadow-md">¡Hiciste <br> Historia!</h2>
+                <p class="text-lg sm:text-2xl md:text-4xl font-bold mb-6 md:mb-10 text-gray-800 max-w-3xl">
+                    Colocaste todos los <strong class="text-pop-red font-comic text-2xl md:text-5xl">:</strong> perfectamente. ¡Los personajes por fin pudieron hablar!
+                </p>
+                <div class="flex flex-wrap justify-center gap-4 mt-2">
+                    <button onclick="goToScreen(1)" class="btn-comic bg-white text-pop-dark text-xl sm:text-3xl md:text-4xl px-6 py-4 md:px-10 md:py-5 rounded-xl md:rounded-2xl shrink-0 hover:scale-105">
+                        🏠 INICIO
+                    </button>
+                    <button onclick="location.reload()" class="btn-comic bg-pop-cyan text-white text-xl sm:text-3xl md:text-5xl px-8 py-4 md:px-12 md:py-5 rounded-xl md:rounded-2xl w-full md:w-auto hover:scale-105 shrink-0">
+                        NUEVA AVENTURA 🔄
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- SCRIPT DE NAVEGACIÓN Y LÓGICA DEL JUEGO -->
+    <script>
+        // Navegación de pantallas SPA
+        function goToScreen(screenNumber) {
+            const screens = document.querySelectorAll('section');
+            let currentScreen = Array.from(screens).find(s => !s.classList.contains('hidden') && s.id !== `screen-${screenNumber}`);
+            
+            if (currentScreen) {
+                currentScreen.classList.remove('screen-enter');
+                currentScreen.classList.add('screen-exit');
+                setTimeout(() => {
+                    currentScreen.classList.add('hidden');
+                    showNextScreen(screenNumber);
+                }, 400); 
+            } else {
+                showNextScreen(screenNumber);
+            }
+        }
+
+        function showNextScreen(screenNumber) {
+            const nextScreen = document.getElementById(`screen-${screenNumber}`);
+            nextScreen.classList.remove('hidden', 'screen-exit');
+            nextScreen.classList.add('screen-enter');
+        }
+
+        // --- LÓGICA DEL JUEGO ---
+
+        // Niveles. Se divide la frase pre-cita en partes.
+        const gameData = [
+            { 
+                avatar: "👨‍🚀", 
+                name: "Neil Armstrong", 
+                words: ["El", "astronauta", "anunció"], 
+                quote: '"Un pequeño paso para el hombre."',
+                correctSlot: 3 // Después de 'anunció'
+            },
+            { 
+                avatar: "👩‍🎨", 
+                name: "Frida Kahlo", 
+                words: ["La", "pintora", "pensó"], 
+                quote: '"Pies, ¿para qué los quiero si tengo alas para volar?"',
+                correctSlot: 3 
+            },
+            { 
+                avatar: "🔭", 
+                name: "Galileo Galilei", 
+                words: ["El", "científico", "susurró"], 
+                quote: '"Y sin embargo, se mueve."',
+                correctSlot: 3 
+            },
+            { 
+                avatar: "🎨", 
+                name: "Da Vinci", 
+                words: ["El", "genio", "escribió"], 
+                quote: '"La naturaleza nunca rompe sus propias leyes."',
+                correctSlot: 3 
+            }
+        ];
+
+        let currentLevel = 0;
+        let isProcessing = false;
+
+        const stageEl = document.getElementById('game-stage');
+        const avatarEl = document.getElementById('char-avatar');
+        const nameEl = document.getElementById('char-name');
+        const bubbleEl = document.getElementById('sentence-bubble');
+        const feedbackEl = document.getElementById('game-feedback');
+
+        function startGame() {
+            goToScreen(4);
+            currentLevel = 0;
+            updateMedals();
+            loadLevel();
+        }
+
+        function updateMedals() {
+            for(let i=0; i<4; i++){
+                const medal = document.getElementById(`medal-${i}`);
+                if (i < currentLevel) {
+                    medal.classList.remove('opacity-30', 'grayscale', 'drop-shadow-none');
+                    medal.classList.add('drop-shadow-lg');
+                } else {
+                    medal.classList.add('opacity-30', 'grayscale', 'drop-shadow-none');
+                    medal.classList.remove('drop-shadow-lg');
+                }
+            }
+        }
+
+        function loadLevel() {
+            if (currentLevel >= gameData.length) {
+                setTimeout(() => goToScreen(5), 600);
+                return;
+            }
+
+            isProcessing = false;
+            const data = gameData[currentLevel];
+            
+            // Fade In stage y reset
+            stageEl.classList.remove('opacity-0');
+            bubbleEl.classList.add('inactive'); // Modo inactivo (sin cola de bocadillo)
+            bubbleEl.innerHTML = '';
+            
+            avatarEl.innerText = data.avatar;
+            avatarEl.classList.remove('pow-in'); 
+            void avatarEl.offsetWidth; 
+            avatarEl.classList.add('pow-in');
+
+            nameEl.innerText = data.name;
+
+            // Construir la frase interactiva
+            let slotIndex = 0;
+
+            // Insertar palabras y huecos
+            data.words.forEach((word) => {
+                const wordSpan = document.createElement('span');
+                wordSpan.className = 'text-xl sm:text-3xl md:text-5xl font-bold text-gray-800';
+                wordSpan.innerText = word;
+                bubbleEl.appendChild(wordSpan);
+
+                // Slot después de cada palabra (para confundir y probar si saben que va tras el verbo)
+                slotIndex++;
+                bubbleEl.appendChild(createSlot(slotIndex, data.correctSlot));
+            });
+
+            // Insertar la Cita (El texto final entre comillas)
+            const quoteSpan = document.createElement('span');
+            // Borroso e inactivo al inicio
+            quoteSpan.className = 'text-xl sm:text-3xl md:text-5xl font-black text-gray-500 ml-1 md:ml-2 text-center w-full mt-2 md:w-auto md:mt-0 md:text-left transition-all duration-300 opacity-40 blur-[3px] select-none'; 
+            quoteSpan.id = 'quote-text';
+            quoteSpan.innerText = data.quote;
+            bubbleEl.appendChild(quoteSpan);
+        }
+
+        function createSlot(currentIndex, correctIndex) {
+            const slot = document.createElement('div');
+            slot.className = 'colon-slot';
+            slot.innerText = ':'; 
+            slot.onclick = () => handleSlotClick(slot, currentIndex === correctIndex);
+            return slot;
+        }
+
+        function handleSlotClick(slot, isCorrect) {
+            if (isProcessing || slot.classList.contains('solved')) return;
+
+            if (isCorrect) {
+                // ACIERTO
+                isProcessing = true;
+                
+                slot.classList.add('solved', 'pow-in');
+                slot.innerText = ':';
+                
+                // Activar el bocadillo cómic (Aparece la cola apuntando al personaje)
+                bubbleEl.classList.remove('inactive');
+                
+                // Activar la cita (Se vuelve legible y colorida)
+                const quoteText = document.getElementById('quote-text');
+                quoteText.classList.remove('opacity-40', 'blur-[3px]', 'text-gray-500');
+                quoteText.classList.add('text-pop-red', 'drop-shadow-sm', 'pow-in');
+
+                // Eliminar los otros huecos para limpiar la lectura
+                const allSlots = bubbleEl.querySelectorAll('.colon-slot');
+                allSlots.forEach(s => {
+                    if (!s.classList.contains('solved')) {
+                        s.style.display = 'none';
+                    }
+                });
+
+                showFeedback("¡BAM! CORRECTO ✨", "bg-pop-green", "text-white");
+                
+                currentLevel++;
+                updateMedals();
+
+                // Cargar siguiente nivel
+                setTimeout(() => {
+                    stageEl.classList.add('opacity-0');
+                    setTimeout(loadLevel, 300);
+                }, 3000); // 3 segundos para que puedan leer la frase completa
+
+            } else {
+                // ERROR
+                isProcessing = true;
+                slot.classList.add('shake-error');
+                slot.style.borderColor = '#E53935';
+                slot.style.backgroundColor = 'rgba(229, 57, 53, 0.2)';
+
+                showFeedback("¡UPS! DESPUÉS DEL VERBO.", "bg-pop-red", "text-white");
+
+                setTimeout(() => {
+                    slot.classList.remove('shake-error');
+                    slot.style.borderColor = '#1E1E1E';
+                    slot.style.backgroundColor = 'rgba(255,255,255,0.8)';
+                    isProcessing = false;
+                }, 1500);
+            }
+        }
+
+        function showFeedback(text, bgClass, textClass) {
+            feedbackEl.innerText = text;
+            
+            // Eliminar TODAS las clases de colores anteriores (incluyendo bg-white por defecto)
+            feedbackEl.classList.remove('bg-pop-green', 'bg-pop-red', 'bg-white', 'text-white', 'text-pop-dark', 'opacity-0', 'pow-in');
+            
+            // Aplicar los colores nuevos pasados como argumento
+            feedbackEl.classList.add(bgClass, textClass, 'pow-in');
+            
+            setTimeout(() => {
+                feedbackEl.classList.remove('pow-in');
+                feedbackEl.classList.add('opacity-0');
+            }, 2500);
+        }
+
+        // Iniciar pantalla 1
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('screen-1').classList.add('screen-enter');
+        });
+
+    </script>
+</body>
+</html>

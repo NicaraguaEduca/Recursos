@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscador de Sesgos | ECO</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
+        
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: #f0f9ff;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        .muro {
+            background: #cbd5e1;
+            background-image: 
+                linear-gradient(90deg, #94a3b8 2px, transparent 2px),
+                linear-gradient(#94a3b8 2px, transparent 2px);
+            background-size: 40px 40px;
+            border: 12px solid #64748b;
+            border-radius: 2.5rem;
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 12px;
+            padding: 15px;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.15);
+        }
+
+        .popstick {
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 6px 6px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 12px;
+            border-radius: 1rem;
+            font-size: 0.95rem;
+            line-height: 1.1;
+            font-weight: 800;
+        }
+
+        .popstick:hover {
+            transform: scale(1.05) rotate(0deg) !important;
+            z-index: 10;
+        }
+
+        .limpio {
+            background: #22c55e !important;
+            color: white !important;
+            border: 3px solid #16a34a !important;
+            transform: rotate(0deg) !important;
+        }
+
+        /* Colores */
+        .bg-color-1 { background: #fef08a; border-bottom: 5px solid #facc15; }
+        .bg-color-2 { background: #fed7aa; border-bottom: 5px solid #fb923c; }
+        .bg-color-3 { background: #fecdd3; border-bottom: 5px solid #fb7185; }
+        .bg-color-4 { background: #e9d5ff; border-bottom: 5px solid #c084fc; }
+        .bg-color-5 { background: #bae6fd; border-bottom: 5px solid #38bdf8; }
+
+        /* Estilo para opción incorrecta */
+        .option-error {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+            color: #b91c1c !important;
+        }
+
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="app" v-cloak class="h-full flex flex-col">
+    
+    <header class="text-center mb-3">
+        <h1 class="text-3xl font-900 text-slate-800 uppercase italic leading-none">
+            Escáner de <span class="text-blue-600">Igualdad</span>
+        </h1>
+        <p class="text-slate-500 font-bold uppercase text-[10px] tracking-[0.2em] mt-1">Identifica los sesgos y limpia nuestra comunidad</p>
+    </header>
+
+    <div class="muro">
+        <div v-for="(f, index) in frases" 
+             :key="index"
+             @click="analizarFrase(f)"
+             :class="['popstick animate__animated animate__fadeInUp', 
+                      f.limpia ? 'limpio' : 'bg-color-' + ((index % 5) + 1)]"
+             :style="{ transform: 'rotate(' + f.rotacion + 'deg)', animationDelay: (index * 0.05) + 's' }">
+            
+            <span v-if="f.limpia">✨ {{ f.textoLimpio }}</span>
+            <span v-else>{{ f.textoOriginal }}</span>
+        </div>
+    </div>
+
+    <div v-if="seleccionada" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div id="modalBox" class="bg-white rounded-[3rem] p-8 max-w-2xl w-full animate__animated animate__backInDown shadow-2xl border-[10px] border-blue-100">
+            
+            <div class="text-center mb-6">
+                <span class="bg-red-100 text-red-600 px-3 py-1 rounded-full text-[10px] font-900 uppercase tracking-widest">Sesgo Detectado</span>
+                <p class="text-3xl font-900 text-slate-800 mt-3 italic leading-tight">"{{ seleccionada.textoOriginal }}"</p>
+            </div>
+            
+            <div class="bg-slate-50 p-5 rounded-2xl border-2 border-slate-100 mb-6 text-center">
+                <p class="text-blue-600 font-900 italic text-sm uppercase tracking-widest mb-1">¿Por qué es un sesgo?</p>
+                <p class="text-lg text-slate-600 font-medium leading-tight">
+                    {{ seleccionada.explicacion }}
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3">
+                <button v-for="(opcion, idx) in opcionesMezcladas" 
+                        :key="idx"
+                        @click="corregir(opcion, $event)"
+                        class="btn-option w-full text-left p-4 rounded-xl border-4 border-slate-100 hover:border-blue-500 hover:bg-blue-50 transition-all text-xl font-black text-slate-700 flex justify-between items-center group">
+                    {{ opcion }}
+                    <span class="opacity-0 group-hover:opacity-100 transition-opacity">➡️</span>
+                </button>
+            </div>
+
+            <p class="text-center mt-6 text-slate-400 text-[10px] font-bold uppercase tracking-widest">Toca la opción que use un lenguaje respetuoso</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const { createApp, ref } = Vue;
+
+createApp({
+    setup() {
+        const seleccionada = ref(null);
+        const opcionesMezcladas = ref([]);
+        
+        // El textoLimpio debe coincidir EXACTAMENTE con una de las opciones
+        const frases = ref([
+            {
+                textoOriginal: "¡Ayudas mucho en la casa para ser hombre!",
+                textoLimpio: "Compartimos las tareas por igual.",
+                explicacion: "Insinúa que las tareas del hogar no son responsabilidad del hombre.",
+                opciones: ["Compartimos las tareas por igual.", "Él es un gran invitado.", "Es muy generoso por ayudar."],
+                limpia: false, rotacion: -2
+            },
+            {
+                textoOriginal: "Lloras como una niñita.",
+                textoLimpio: "Expresar emociones nos hace humanos.",
+                explicacion: "Asocia la sensibilidad con debilidad y solo con las mujeres.",
+                opciones: ["Expresar emociones nos hace humanos.", "Los hombres no deben llorar.", "Llorar es de personas débiles."],
+                limpia: false, rotacion: 3
+            },
+            {
+                textoOriginal: "Ese juego es solo para niños.",
+                textoLimpio: "Los juegos no tienen género.",
+                explicacion: "Limita el aprendizaje basado en estereotipos.",
+                opciones: ["Los juegos no tienen género.", "Las niñas juegan otras cosas.", "Hay juguetes para cada sexo."],
+                limpia: false, rotacion: -3
+            },
+            {
+                textoOriginal: "Es muy vieja para la tecnología.",
+                textoLimpio: "Todos podemos aprender a cualquier edad.",
+                explicacion: "Asume incapacidad basada únicamente en los años.",
+                opciones: ["Todos podemos aprender a cualquier edad.", "Los abuelos no entienden.", "Es mejor que no use Internet."],
+                limpia: false, rotacion: 2
+            },
+            {
+                textoOriginal: "Para ser mujer, manejas muy bien.",
+                textoLimpio: "La habilidad no depende del género.",
+                explicacion: "Asume que las mujeres son malas conductoras.",
+                opciones: ["La habilidad no depende del género.", "Eres una conductora diferente.", "Manejas como un hombre."],
+                limpia: false, rotacion: -4
+            },
+            {
+                textoOriginal: "Los hombres no saben cuidar bebés.",
+                textoLimpio: "La capacidad de cuidar es de todos.",
+                explicacion: "Niega la capacidad afectiva y de cuidado de los padres.",
+                opciones: ["La capacidad de cuidar es de todos.", "Solo mamá tiene el instinto.", "Papá solo sabe jugar."],
+                limpia: false, rotacion: 3
+            },
+            {
+                textoOriginal: "Ella es el 'jefe' de la casa.",
+                textoLimpio: "Lideramos nuestro hogar en equipo.",
+                explicacion: "No ve el hogar como un espacio de cooperación.",
+                opciones: ["Lideramos nuestro hogar en equipo.", "Ella manda a todos.", "En casa hay un solo líder."],
+                limpia: false, rotacion: -2
+            },
+            {
+                textoOriginal: "No inviten a Pedrito, él es 'especial'.",
+                textoLimpio: "¡Todos estamos invitados a jugar!",
+                explicacion: "Excluye a las personas por sus capacidades diferentes.",
+                opciones: ["¡Todos estamos invitados a jugar!", "Él prefiere estar solo.", "Necesita juegos diferentes."],
+                limpia: false, rotacion: 4
+            },
+            {
+                textoOriginal: "Se ve masculina con el cabello corto.",
+                textoLimpio: "El estilo personal es libre.",
+                explicacion: "Impone cómo debe verse una persona según su género.",
+                opciones: ["El estilo personal es libre.", "Debe usar cabello largo.", "Parece un niño así."],
+                limpia: false, rotacion: -3
+            },
+            {
+                textoOriginal: "Los niños no usan color rosado.",
+                textoLimpio: "¡Los colores son para todos!",
+                explicacion: "Asigna géneros a los colores limitando la expresión.",
+                opciones: ["¡Los colores son para todos!", "El azul es para niños.", "El rosa es de niñas."],
+                limpia: false, rotacion: 2
+            }
+        ]);
+
+        const analizarFrase = (f) => {
+            if (!f.limpia) {
+                seleccionada.value = f;
+                // Mezclamos las opciones de forma aleatoria cada vez que abre
+                opcionesMezcladas.value = [...f.opciones].sort(() => Math.random() - 0.5);
+            }
+        };
+
+        const corregir = (opcion, event) => {
+            const btn = event.currentTarget;
+
+            if (opcion === seleccionada.value.textoLimpio) {
+                // ACIERTO
+                seleccionada.value.limpia = true;
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#22c55e', '#ffffff', '#3b82f6']
+                });
+                
+                // Cerramos el modal después de un breve momento
+                setTimeout(() => {
+                    seleccionada.value = null;
+                }, 500);
+            } else {
+                // ERROR (SIN ALERT)
+                // Animación de vibración del modal
+                gsap.fromTo("#modalBox", 
+                    { x: -10 }, 
+                    { x: 10, duration: 0.05, repeat: 5, yoyo: true, ease: "power1.inOut" }
+                );
+                
+                // Feedback visual en el botón seleccionado
+                btn.classList.add('option-error');
+                setTimeout(() => {
+                    btn.classList.remove('option-error');
+                }, 1000);
+            }
+        };
+
+        return { frases, seleccionada, analizarFrase, corregir, opcionesMezcladas };
+    }
+}).mount('#app');
+</script>
+
+</body>
+</html>

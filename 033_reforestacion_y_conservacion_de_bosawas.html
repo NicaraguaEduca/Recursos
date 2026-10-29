@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Misión Bosawás: Reforestación</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&display=swap');
+
+        body {
+            margin: 0; padding: 0; overflow: hidden;
+            background-color: #222;
+            font-family: 'Fredoka', sans-serif;
+            touch-action: none;
+        }
+
+        #gameCanvas { display: block; width: 100%; height: 100%; }
+
+        /* --- INTERFAZ (HUD) --- */
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; display: flex; flex-direction: column;
+        }
+
+        .hud-top {
+            padding: 15px 20px; display: flex; justify-content: space-between; align-items: flex-start;
+        }
+
+        .stats-container { display: flex; gap: 10px; }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #33691E;
+            border-radius: 15px;
+            padding: 5px 15px;
+            font-size: 1.2rem; font-weight: bold; color: #1B5E20;
+            box-shadow: 0 4px 5px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .life-badge {
+            border-color: #D32F2F; color: #C62828;
+        }
+
+        /* MODALES */
+        .modal {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            pointer-events: auto;
+            transition: opacity 0.5s;
+            z-index: 100;
+        }
+
+        .card {
+            background: linear-gradient(to bottom, #FFF, #F1F8E9);
+            border-radius: 25px; padding: 30px;
+            text-align: center; max-width: 90%; width: 380px;
+            box-shadow: 0 15px 0 #33691E;
+            border: 4px solid #33691E;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Animación suave para el pájaro del menú */
+        .hero-bird-svg {
+            animation: floatBird 3s ease-in-out infinite;
+            filter: drop-shadow(0 10px 5px rgba(0,0,0,0.2));
+            margin-bottom: 10px;
+        }
+        @keyframes floatBird { 0%, 100% {transform: translateY(0) rotate(0deg);} 50% {transform: translateY(-10px) rotate(-5deg);} }
+
+        h1 { margin: 0 0 10px 0; color: #2E7D32; font-size: 2rem; letter-spacing: 1px; }
+        p { color: #555; font-size: 1.1rem; margin-bottom: 20px; line-height: 1.4; }
+
+        .btn-play {
+            background: linear-gradient(to bottom, #FFD700, #FFC107);
+            color: #3E2723; border: 3px solid #3E2723;
+            padding: 12px 40px; font-size: 1.5rem; border-radius: 50px;
+            font-weight: bold; cursor: pointer; display: inline-block;
+            box-shadow: 0 6px 0 #BF360C; transition: all 0.1s;
+        }
+        .btn-play:active { transform: translateY(6px); box-shadow: none; }
+
+        @keyframes popIn { from {transform: scale(0.5); opacity:0;} to {transform: scale(1); opacity:1;} }
+        .hidden { opacity: 0; pointer-events: none; }
+        
+        /* Mensaje Flotante de Siembra */
+        #plantingMsg {
+            position: absolute; top: 20%; width: 100%; text-align: center;
+            font-size: 2.5rem; color: #FFF; font-weight: bold;
+            text-shadow: 0 4px 0 #000;
+            opacity: 0; transition: opacity 0.5s;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="gameCanvas"></canvas>
+    <div id="plantingMsg">¡Hora de Sembrar! 🌱</div>
+
+    <div id="ui-layer">
+        <div class="hud-top">
+            <div class="stats-container">
+                <div class="badge life-badge">❤️ <span id="livesDisplay">3</span></div>
+            </div>
+            <div class="stats-container">
+                <div class="badge">🌺 <span id="flowerDisplay">0</span></div>
+                <div class="badge">🌱 <span id="treeDisplay">0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="startScreen" class="modal">
+        <div class="card">
+            
+            <svg class="hero-bird-svg" width="120" height="100" viewBox="0 0 100 80" style="overflow: visible;">
+                <path d="M 35 45 L 10 50" stroke="#006064" stroke-width="3" stroke-linecap="round" />
+                <path d="M 35 45 L 10 40" stroke="#006064" stroke-width="3" stroke-linecap="round" />
+                <circle cx="8" cy="50" r="5" fill="#0277BD" />
+                <circle cx="8" cy="40" r="5" fill="#0277BD" />
+                <ellipse cx="50" cy="40" rx="25" ry="18" fill="#26C6DA" />
+                <ellipse cx="45" cy="48" rx="14" ry="9" fill="#FF7043" />
+                <ellipse cx="45" cy="38" rx="12" ry="7" fill="#0277BD" transform="rotate(-10 45 38)" />
+                <circle cx="62" cy="35" r="6" fill="white" />
+                <circle cx="64" cy="35" r="2.5" fill="black" />
+                <path d="M 70 38 L 85 42 L 70 46 Z" fill="#212121" />
+            </svg>
+
+            <h1>Misión Bosawás</h1>
+            <p>Ayuda al Guardabarranco a recolectar vida para el bosque.</p>
+            <div style="background:#E8F5E9; padding:10px; border-radius:10px; margin-bottom:15px; text-align:left; font-size:0.9rem;">
+                🌺 <b>Sacuanjoches</b> (Flor Nacional)<br>
+                🌱 <b>Madroños</b> (Árbol Nacional)<br>
+                ⚠️ <b>Esquiva</b> la basura
+            </div>
+            <button class="btn-play" onclick="startGame()">¡A VOLAR!</button>
+        </div>
+    </div>
+
+    <div id="resultScreen" class="modal hidden">
+        <div class="card">
+            <h1 style="color:#2E7D32;">¡GRAN TRABAJO!</h1>
+            <p>Gracias a tu esfuerzo, Bosawás tiene nueva vida.</p>
+            
+            <div style="display:flex; justify-content:center; gap:20px; margin-bottom:20px;">
+                <div style="text-align:center;">
+                    <div style="font-size:2rem;">🌺</div>
+                    <div style="font-weight:bold; font-size:1.5rem; color:#E91E63;" id="finalFlower">0</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size:2rem;">🌳</div>
+                    <div style="font-weight:bold; font-size:1.5rem; color:#2E7D32;" id="finalTree">0</div>
+                </div>
+            </div>
+
+            <button class="btn-play" onclick="resetGame()">JUGAR OTRA VEZ</button>
+        </div>
+    </div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // AJUSTE DE PANTALLA
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // --- VARIABLES DEL JUEGO ---
+    let frames = 0;
+    let lives = 3;
+    let flowerCount = 0;
+    let treeCount = 0;
+    
+    let gameSpeed = 3.5; // Velocidad inicial
+    const maxSpeed = 8.0; // Velocidad máxima (tope)
+    
+    let gameState = 'start'; // start, playing, planting, result
+
+    // --- RECURSOS VISUALES (FONDO) ---
+    const clouds = [];
+    class Cloud {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * (canvas.height * 0.4);
+            this.radius = Math.random() * 30 + 30;
+            this.speed = Math.random() * 0.5 + 0.2;
+        }
+        update() { this.x -= this.speed; if(this.x < -100) this.x = canvas.width + 100; }
+        draw() {
+            ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+            ctx.arc(this.x+30, this.y-10, this.radius*0.8, 0, Math.PI*2);
+            ctx.arc(this.x+50, this.y+5, this.radius*0.9, 0, Math.PI*2);
+            ctx.fill();
+        }
+    }
+    for(let i=0; i<5; i++) clouds.push(new Cloud());
+
+    const background = {
+        bgX: 0, midX: 0, fgX: 0,
+        draw() {
+            const w = canvas.width; const h = canvas.height;
+            // Cielo
+            let grd = ctx.createLinearGradient(0,0,0,h);
+            grd.addColorStop(0,"#42A5F5"); grd.addColorStop(1,"#FFF176");
+            ctx.fillStyle = grd; ctx.fillRect(0,0,w,h);
+            
+            // Sol
+            ctx.fillStyle="#FFEB3B"; ctx.shadowBlur=40; ctx.shadowColor="white";
+            ctx.beginPath(); ctx.arc(w*0.8, h*0.15, 40, 0, Math.PI*2); ctx.fill();
+            ctx.shadowBlur=0;
+
+            clouds.forEach(c => { if(gameState==='playing') c.update(); c.draw(); });
+
+            // Volcán Momotombo
+            this.drawVolcano(w*0.5, h-80);
+
+            // Capas Parallax
+            if(gameState === 'playing') {
+                this.bgX -= gameSpeed * 0.2;
+                this.midX -= gameSpeed * 0.5;
+                this.fgX -= gameSpeed;
+                if(this.bgX <= -w) this.bgX = 0;
+                if(this.midX <= -w) this.midX = 0;
+                if(this.fgX <= -40) this.fgX = 0;
+            }
+
+            this.drawLayer(this.bgX, h, "#263238", 100); // Lejana
+            this.drawLayer(this.bgX+w, h, "#263238", 100);
+
+            this.drawLayer(this.midX, h, "#2E7D32", 60); // Media
+            this.drawLayer(this.midX+w, h, "#2E7D32", 60);
+
+            // Suelo
+            ctx.fillStyle = "#33691E"; ctx.fillRect(0, h-60, w, 60);
+            ctx.fillStyle = "#558B2F";
+            for(let i=this.fgX; i<w; i+=40) {
+                ctx.beginPath(); ctx.moveTo(i, h-60); ctx.lineTo(i+20, h-60); ctx.lineTo(i+10, h-75); ctx.fill();
+            }
+        },
+        drawVolcano(x, y) {
+            ctx.fillStyle = "#5D4037"; ctx.beginPath(); ctx.moveTo(x-200, y); ctx.lineTo(x, y-350); ctx.lineTo(x+200, y); ctx.fill();
+            ctx.fillStyle = "rgba(255,255,255,0.8)"; ctx.beginPath(); ctx.moveTo(x-60, y-245); ctx.lineTo(x, y-350); ctx.lineTo(x+60, y-245); ctx.fill();
+        },
+        drawLayer(off, h, col, bump) {
+            ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(off, h-60);
+            for(let i=0; i<=canvas.width; i+=50) ctx.lineTo(off+i, h-60 - (Math.sin(i*0.05)*30 + bump));
+            ctx.lineTo(off+canvas.width, h-60); ctx.fill();
+        }
+    };
+
+    // --- JUGADOR ---
+    const bird = {
+        x: 60, y: 200, velocity: 0, gravity: 0.35, jump: -5.5, angle: 0,
+        draw() {
+            ctx.save(); ctx.translate(this.x, this.y);
+            this.angle = Math.min(0.5, Math.max(-0.5, this.velocity*0.1));
+            ctx.rotate(gameState === 'playing' ? this.angle : 0);
+            
+            // Cola
+            ctx.strokeStyle="#006064"; ctx.lineWidth=2; 
+            ctx.beginPath(); ctx.moveTo(-10,5); ctx.lineTo(-35,8); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(-10,5); ctx.lineTo(-35,-5); ctx.stroke();
+            ctx.fillStyle="#0277BD"; 
+            ctx.beginPath(); ctx.arc(-37,8,4,0,Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(-37,-5,4,0,Math.PI*2); ctx.fill();
+
+            // Cuerpo
+            ctx.fillStyle="#26C6DA"; ctx.beginPath(); ctx.ellipse(0,0,20,15,0,0,Math.PI*2); ctx.fill();
+            ctx.fillStyle="#FF7043"; ctx.beginPath(); ctx.ellipse(-5,6,12,8,0,0,Math.PI*2); ctx.fill();
+            // Ala
+            ctx.fillStyle="#0277BD"; ctx.beginPath(); ctx.ellipse(-5,-2,10,6,-0.2,0,Math.PI*2); ctx.fill();
+            // Ojo/Pico
+            ctx.fillStyle="white"; ctx.beginPath(); ctx.arc(8,-4,5,0,Math.PI*2); ctx.fill();
+            ctx.fillStyle="black"; ctx.beginPath(); ctx.arc(10,-4,2,0,Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(15,-2); ctx.lineTo(25,2); ctx.lineTo(15,5); ctx.fill();
+            ctx.restore();
+        },
+        update() {
+            this.velocity += this.gravity;
+            this.y += this.velocity;
+            if(this.y >= canvas.height - 80) { this.y = canvas.height - 80; if(gameState==='playing') endGame(); }
+            if(this.y < 20) { this.y = 20; this.velocity = 0; }
+        },
+        flap() { this.velocity = this.jump; }
+    };
+
+    // --- OBSTÁCULOS & ITEMS ---
+    const obstacles = [];
+    const trashIcons = ['🥡', '🍾', '🚬', '🥤']; 
+    
+    class Item {
+        constructor() {
+            this.x = canvas.width;
+            this.y = Math.random() * (canvas.height - 200) + 50;
+            this.markedForDeletion = false;
+            
+            // Lógica de aparición
+            const rand = Math.random();
+            if (rand < 0.4) {
+                this.type = 'trash'; // 40% Basura
+                this.icon = trashIcons[Math.floor(Math.random()*trashIcons.length)];
+            } else if (rand < 0.7) {
+                this.type = 'flower'; // 30% Sacuanjoche
+                this.icon = '🌺';
+            } else {
+                this.type = 'tree'; // 30% Madroño
+                this.icon = '🌱';
+            }
+        }
+        update() {
+            this.x -= gameSpeed;
+            if(this.x < -50) this.markedForDeletion = true;
+        }
+        draw() {
+            ctx.font = "40px Arial"; ctx.textAlign="center"; ctx.textBaseline="middle";
+            // Efecto de brillo si es bueno
+            if(this.type !== 'trash') { ctx.shadowColor="#76FF03"; ctx.shadowBlur=15; }
+            else { ctx.shadowBlur=0; }
+            ctx.fillText(this.icon, this.x, this.y);
+            ctx.shadowBlur=0;
+        }
+    }
+
+    // --- SISTEMA DE PARTÍCULAS ---
+    const particles = [];
+    class Particle {
+        constructor(x, y, text, color) {
+            this.x = x; this.y = y; this.text = text; this.color = color;
+            this.life = 1;
+        }
+        update() { this.y -= 1.5; this.life -= 0.02; }
+        draw() {
+            ctx.globalAlpha = Math.max(0, this.life);
+            ctx.font = "bold 20px Fredoka"; ctx.fillStyle = this.color;
+            ctx.strokeStyle="white"; ctx.lineWidth=3;
+            ctx.strokeText(this.text, this.x, this.y);
+            ctx.fillText(this.text, this.x, this.y);
+            ctx.globalAlpha = 1;
+        }
+    }
+
+    // --- ANIMACIÓN DE SIEMBRA (PLANTS) ---
+    const plants = [];
+    class GrowingPlant {
+        constructor(type, x) {
+            this.type = type;
+            this.x = x;
+            this.y = canvas.height - 60; // Suelo
+            this.scale = 0;
+            this.maxScale = Math.random() * 0.5 + 0.8;
+            this.growthSpeed = Math.random() * 0.02 + 0.01;
+            this.icon = type === 'flower' ? '🌺' : '🌳';
+        }
+        update() {
+            if(this.scale < this.maxScale) this.scale += this.growthSpeed;
+        }
+        draw() {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.scale(this.scale, this.scale);
+            ctx.font = "50px Arial"; ctx.textAlign="center"; ctx.textBaseline="bottom";
+            // Sombra para dar profundidad
+            ctx.shadowColor="rgba(0,0,0,0.3)"; ctx.shadowBlur=5; ctx.shadowOffsetY=5;
+            ctx.fillText(this.icon, 0, 0);
+            ctx.restore();
+        }
+    }
+
+    // --- BUCLE PRINCIPAL ---
+    function loop() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        frames++;
+
+        // 1. Dibujar Mundo
+        background.draw();
+
+        if (gameState === 'playing') {
+            // DIFICULTAD DINÁMICA: Acelera poco a poco (VELOCIDAD)
+            if(frames % 300 === 0 && gameSpeed < maxSpeed) {
+                gameSpeed += 0.2;
+            }
+
+            // Generar objetos
+            if (frames % Math.floor(100 - (gameSpeed*2)) === 0) {
+                obstacles.push(new Item());
+            }
+
+            // Lógica Objetos
+            for(let i=obstacles.length-1; i>=0; i--) {
+                let o = obstacles[i];
+                o.update(); o.draw();
+
+                // Colisión
+                let dx = bird.x - o.x; let dy = bird.y - o.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                if(dist < 35) {
+                    if(o.type === 'trash') {
+                        lives--;
+                        playSound('hit');
+                        particles.push(new Particle(bird.x, bird.y, "-1 ❤️", "#EF5350"));
+                        if(lives <= 0) endGame();
+                    } else if (o.type === 'flower') {
+                        flowerCount++;
+                        playSound('coin');
+                        particles.push(new Particle(bird.x, bird.y, "+1 🌺", "#F06292"));
+                    } else { // tree
+                        treeCount++;
+                        playSound('coin');
+                        particles.push(new Particle(bird.x, bird.y, "+1 🌱", "#66BB6A"));
+                    }
+                    o.markedForDeletion = true;
+                }
+                if(o.markedForDeletion) obstacles.splice(i,1);
+            }
+
+            // Lógica Pájaro
+            bird.update();
+            bird.draw();
+
+        } else if (gameState === 'planting') {
+            // En modo siembra, el pájaro descansa en una esquina
+            bird.x = canvas.width/2; 
+            bird.y = canvas.height - 100;
+            bird.draw(); // Estático
+
+            // Dibujar plantas creciendo
+            plants.forEach(p => { p.update(); p.draw(); });
+        }
+
+        // Partículas (siempre visibles)
+        for(let i=particles.length-1; i>=0; i--) {
+            particles[i].update(); particles[i].draw();
+            if(particles[i].life <= 0) particles.splice(i,1);
+        }
+
+        updateHUD();
+        requestAnimationFrame(loop);
+    }
+
+    // --- CONTROL DE ESTADOS ---
+    function startGame() {
+        document.getElementById('startScreen').classList.add('hidden');
+        document.getElementById('resultScreen').classList.add('hidden');
+        document.getElementById('plantingMsg').style.opacity = '0';
+        
+        lives = 3; flowerCount = 0; treeCount = 0;
+        gameSpeed = 3.5; frames = 0;
+        obstacles.length = 0; particles.length = 0; plants.length = 0;
+
+        // --- AGREGA ESTA LÍNEA ---
+        bird.x = 60;   // <--- Esto devuelve al pájaro a la izquierda
+        // ------------------------
+        
+        bird.y = 200; bird.velocity = 0;
+        gameState = 'playing';
+    }
+
+    function endGame() {
+        gameState = 'planting';
+        document.getElementById('plantingMsg').style.opacity = '1';
+        
+        // Generar las plantas para la animación
+        // Distribuirlas en el ancho de la pantalla
+        const totalItems = flowerCount + treeCount;
+        
+        // Si no recogió nada, ponemos 1 de consolación
+        if(totalItems === 0) {
+            plants.push(new GrowingPlant('tree', canvas.width/2));
+        } else {
+            for(let i=0; i<flowerCount; i++) {
+                plants.push(new GrowingPlant('flower', Math.random() * (canvas.width - 40) + 20));
+            }
+            for(let i=0; i<treeCount; i++) {
+                plants.push(new GrowingPlant('tree', Math.random() * (canvas.width - 40) + 20));
+            }
+        }
+
+        // Esperar 4 segundos viendo crecer las plantas y luego mostrar resultado
+        setTimeout(() => {
+            document.getElementById('plantingMsg').style.opacity = '0';
+            showResult();
+        }, 4000);
+    }
+
+    function showResult() {
+        document.getElementById('finalFlower').innerText = flowerCount;
+        document.getElementById('finalTree').innerText = treeCount;
+        document.getElementById('resultScreen').classList.remove('hidden');
+    }
+
+    function resetGame() { startGame(); }
+
+    function updateHUD() {
+        document.getElementById('livesDisplay').innerText = lives;
+        document.getElementById('flowerDisplay').innerText = flowerCount;
+        document.getElementById('treeDisplay').innerText = treeCount;
+    }
+
+    // --- CONTROLES ---
+    function input(e) {
+        if(e.type === 'touchstart') e.preventDefault();
+        if(gameState === 'playing') bird.flap();
+    }
+    window.addEventListener('keydown', e => { if(e.code === 'Space') input(e); });
+    window.addEventListener('touchstart', input, {passive: false});
+    window.addEventListener('mousedown', input);
+
+    // --- AUDIO SINTETIZADO ---
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const actx = new AudioContext();
+    function playSound(type) {
+        if(actx.state === 'suspended') actx.resume();
+        const osc = actx.createOscillator(); const gain = actx.createGain();
+        osc.connect(gain); gain.connect(actx.destination);
+        const now = actx.currentTime;
+        
+        if(type === 'coin') {
+            osc.type='sine'; osc.frequency.setValueAtTime(800, now); 
+            osc.frequency.linearRampToValueAtTime(1200, now+0.1);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now+0.1);
+        } else {
+            osc.type='sawtooth'; osc.frequency.setValueAtTime(150, now); 
+            osc.frequency.linearRampToValueAtTime(50, now+0.2);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now+0.2);
+        }
+        osc.start(now); osc.stop(now+0.3);
+    }
+
+    // INICIAR
+    loop();
+
+</script>
+</body>
+</html>

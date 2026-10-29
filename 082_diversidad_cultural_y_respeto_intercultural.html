@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mural Intercultural: Diversidad y Respeto</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Permanent+Marker&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #fef3c7; /* Color crema suave */
+            background-image: radial-gradient(#f59e0b 0.5px, transparent 0.5px);
+            background-size: 20px 20px;
+            height: 100vh;
+            overflow: hidden;
+            color: #451a03;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: manipulation;
+        }
+
+        .mural-font { font-family: 'Permanent Marker', cursive; }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.1);
+            border: 2px solid #fbbf24;
+        }
+
+        .pedagogy-card { border-left: 12px solid #d97706; }
+
+        .mural-canvas {
+            background-color: #fff;
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            border: 8px solid #78350f;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.1);
+        }
+
+        .trait-card {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+        .trait-card:hover { transform: scale(1.05) rotate(2deg); }
+        .trait-selected { border: 4px solid #3b82f6 !important; transform: scale(1.1); z-index: 50; }
+
+        .country-slot {
+            transition: background-color 0.3s;
+            border: 3px dashed #d97706;
+        }
+        .slot-highlight { background-color: #fef3c7; border-style: solid; border-color: #3b82f6; }
+
+        .festival-banner {
+            animation: slide-down 0.8s ease-out;
+        }
+
+        @keyframes slide-down {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+    </style>
+</head>
+<body x-data="muralApp()">
+
+    <main class="w-full max-w-5xl p-4 md:p-6 relative h-full flex flex-col justify-center mx-auto">
+        
+        <div x-show="estado === 'ficha'" class="glass-card pedagogy-card p-8 md:p-12 mx-auto max-w-3xl" x-transition.opacity>
+            <div class="flex items-center gap-4 mb-8 border-b-2 border-orange-100 pb-6">
+                <span class="text-5xl drop-shadow-md">🌍</span>
+                <h2 class="text-3xl md:text-4xl font-bold text-orange-900 tracking-tight">Ficha del Recurso</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                <div class="bg-orange-50 p-5 rounded-2xl border border-orange-100">
+                    <span class="block text-sm font-bold text-orange-600 uppercase tracking-widest mb-2">Asignatura</span>
+                    <span class="text-xl font-bold text-orange-900">Valores / Convivencia</span>
+                </div>
+                
+                <div class="bg-yellow-50 p-5 rounded-2xl border border-yellow-100">
+                    <span class="block text-sm font-bold text-yellow-600 uppercase tracking-widest mb-2">Eje Temático</span>
+                    <span class="text-xl font-bold text-orange-900">Diversidad Cultural</span>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-orange-200 md:col-span-2 shadow-inner">
+                    <span class="block text-sm font-bold text-orange-600 uppercase tracking-widest mb-2">Objetivo de Aprendizaje</span>
+                    <p class="text-lg font-medium text-slate-700 leading-relaxed">
+                        Fomentar la inclusión y el respeto identificando rasgos culturales de diferentes naciones, comprendiendo que la diversidad enriquece nuestra comunidad.
+                    </p>
+                </div>
+            </div>
+
+            <button @click="estado = 'instrucciones'" class="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-5 rounded-xl text-xl transition-all shadow-xl hover:-translate-y-1">
+                Entendido, ir al Mural →
+            </button>
+        </div>
+
+        <div x-show="estado === 'instrucciones'" class="glass-card p-8 md:p-12 text-center max-w-2xl mx-auto" style="display: none;" x-transition.opacity>
+            <div class="text-7xl mb-6">🎨</div>
+            <h1 class="text-4xl font-bold text-orange-900 mb-4 mural-font">El Mural Comunitario</h1>
+            <p class="text-lg text-slate-600 mb-8 font-medium">Nuestro mural está incompleto. Debes unir cada símbolo cultural con el país al que pertenece para desbloquear el Festival Intercultural.</p>
+            
+            <div class="bg-orange-50 p-6 rounded-2xl mb-8 text-left border border-orange-200 shadow-inner text-lg">
+                <p class="font-bold text-orange-800 mb-3">¿Cómo participar?</p>
+                <ul class="list-disc pl-6 space-y-3 text-slate-600">
+                    <li><b>Toca</b> un símbolo de la parte inferior.</li>
+                    <li><b>Toca</b> el país correspondiente en el mural.</li>
+                    <li>O simplemente <b>arrastra</b> las piezas si usas una computadora.</li>
+                </ul>
+            </div>
+
+            <button @click="iniciarJuego()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-5 rounded-xl text-xl transition-all shadow-xl hover:-translate-y-1">
+                ¡Empezar a Pintar!
+            </button>
+        </div>
+
+        <div x-show="estado === 'jugando'" class="flex flex-col md:flex-row gap-6 w-full h-full py-2" style="display: none;" x-transition.opacity>
+            
+            <div class="flex-1 mural-canvas rounded-3xl p-6 relative flex flex-col">
+                <h3 class="mural-font text-center text-3xl text-orange-900 mb-6 drop-shadow-sm">Mural de las Naciones</h3>
+                
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 flex-1">
+                    <template x-for="pais in paises" :key="pais.id">
+                        <div class="country-slot rounded-2xl p-4 flex flex-col items-center justify-center text-center relative overflow-hidden"
+                             :class="{ 'slot-highlight': seleccionada && !uniones[pais.id] }"
+                             @click="unir(pais.id)"
+                             @dragover.prevent=""
+                             @drop="dropTrait($event, pais.id)">
+                            
+                            <span class="text-4xl mb-2" x-text="pais.bandera"></span>
+                            <span class="font-bold text-slate-800 uppercase tracking-tighter text-sm" x-text="pais.nombre"></span>
+                            
+                            <div x-show="uniones[pais.id]" 
+                                 x-transition:enter="transition ease-out duration-500 scale-0"
+                                 x-transition:enter-end="scale-100"
+                                 class="absolute inset-0 bg-white flex flex-col items-center justify-center animate-bounce shadow-inner">
+                                <span class="text-5xl mb-1" x-text="uniones[pais.id]?.icono"></span>
+                                <span class="text-[10px] font-bold text-blue-600 uppercase" x-text="uniones[pais.id]?.nombre"></span>
+                                <div class="absolute top-1 right-1">✅</div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="mt-6 bg-slate-200 h-4 rounded-full overflow-hidden border-2 border-white shadow-sm">
+                    <div class="bg-orange-500 h-full transition-all duration-1000" :style="`width: ${(totalUniones / paises.length) * 100}%`"></div>
+                </div>
+            </div>
+
+            <div class="w-full md:w-80 bg-orange-100 rounded-3xl p-5 shadow-inner border-2 border-orange-200 flex flex-col">
+                <h4 class="text-center font-bold text-orange-800 uppercase text-xs mb-4 tracking-widest">Símbolos del Mundo</h4>
+                
+                <div class="flex md:grid md:grid-cols-2 gap-3 overflow-x-auto md:overflow-y-auto hide-scroll pb-4 md:pb-0">
+                    <template x-for="rasgo in rasgosDisponibles" :key="rasgo.id">
+                        <div class="trait-card bg-white p-4 rounded-2xl shadow-md border-2 border-white flex flex-col items-center justify-center text-center min-w-[100px]"
+                             :class="{ 'trait-selected': seleccionada?.id === rasgo.id }"
+                             @click="seleccionar(rasgo)"
+                             draggable="true"
+                             @dragstart="dragStart($event, rasgo)">
+                            <span class="text-5xl mb-2" x-text="rasgo.icono"></span>
+                            <span class="text-[10px] font-bold text-slate-500 uppercase leading-none" x-text="rasgo.nombre"></span>
+                        </div>
+                    </template>
+                    <div x-show="rasgosDisponibles.length === 0" class="w-full text-center py-10 text-orange-400 font-bold italic">
+                        ¡Mural Completo!
+                    </div>
+                </div>
+
+                <button x-show="totalUniones === paises.length" @click="finalizar()" 
+                        class="w-full mt-4 bg-orange-600 hover:bg-orange-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all animate-pulse text-lg">
+                    ¡Abrir Festival! 🎊
+                </button>
+            </div>
+
+            <div x-show="error" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-red-600 text-white px-8 py-3 rounded-full font-bold shadow-2xl z-50" 
+                 x-transition:enter="transition ease-out duration-300 translate-y-10"
+                 x-transition:leave="transition ease-in duration-300 opacity-0">
+                ¡Inténtalo de nuevo! ❌
+            </div>
+        </div>
+
+        <div x-show="estado === 'fin'" class="glass-card p-12 text-center max-w-3xl mx-auto festival-banner" style="display: none;" x-transition.opacity.duration.800ms>
+            <div class="text-8xl mb-6">🎉🏢🤝</div>
+            <h2 class="mural-font text-5xl md:text-6xl text-orange-600 mb-6">¡Festival Desbloqueado!</h2>
+            <p class="text-xl text-slate-700 mb-8 font-medium leading-relaxed">Felicidades. Has completado el mural y demostrado que cada cultura aporta un color único a nuestra comunidad. ¡Viva la diversidad!</p>
+            
+            <div class="grid grid-cols-3 md:grid-cols-6 gap-2 mb-10">
+                <template x-for="p in paises" :key="p.id">
+                    <div class="bg-orange-50 p-3 rounded-xl border border-orange-200">
+                        <span class="text-3xl" x-text="p.bandera"></span>
+                    </div>
+                </template>
+            </div>
+
+            <button @click="reiniciar()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-5 rounded-xl text-xl transition-all shadow-xl hover:-translate-y-1">
+                Crear Nuevo Mural
+            </button>
+        </div>
+
+    </main>
+
+    <script>
+        function muralApp() {
+            return {
+                estado: 'ficha', // ficha, instrucciones, jugando, fin
+                seleccionada: null,
+                error: false,
+                uniones: {},
+                totalUniones: 0,
+
+                // Países y sus rasgos correspondientes
+                paises: [
+                    { id: 'mex', nombre: 'México', bandera: '🇲🇽', correcto: 'taco' },
+                    { id: 'jap', nombre: 'Japón', bandera: '🇯🇵', correcto: 'sushi' },
+                    { id: 'ita', nombre: 'Italia', bandera: '🇮🇹', correcto: 'pizza' },
+                    { id: 'fra', nombre: 'Francia', bandera: '🇫🇷', correcto: 'torre' },
+                    { id: 'bra', nombre: 'Brasil', bandera: '🇧🇷', correcto: 'samba' },
+                    { id: 'egy', nombre: 'Egipto', bandera: '🇪🇬', correcto: 'piramide' }
+                ],
+
+                // Banco de rasgos (Emojis universales versión 1.0)
+                rasgos: [
+                    { id: 'taco', nombre: 'Tacos', icono: '🌮' },
+                    { id: 'sushi', nombre: 'Sushi', icono: '🍣' },
+                    { id: 'pizza', nombre: 'Pizza', icono: '🍕' },
+                    { id: 'torre', nombre: 'Torre Eiffel', icono: '🗼' },
+                    { id: 'samba', nombre: 'Carnaval', icono: '🎭' },
+                    { id: 'piramide', nombre: 'Pirámides', icono: '🏟️' }
+                ],
+
+                rasgosDisponibles: [],
+
+                iniciarJuego() {
+                    // Mezclar rasgos para que no salgan en orden
+                    this.rasgosDisponibles = [...this.rasgos].sort(() => Math.random() - 0.5);
+                    this.uniones = {};
+                    this.totalUniones = 0;
+                    this.estado = 'jugando';
+                },
+
+                seleccionar(rasgo) {
+                    this.seleccionada = (this.seleccionada?.id === rasgo.id) ? null : rasgo;
+                },
+
+                unir(idPais) {
+                    if (!this.seleccionada) return;
+                    
+                    const pais = this.paises.find(p => p.id === idPais);
+                    if (pais.correcto === this.seleccionada.id) {
+                        // ¡Correcto!
+                        this.uniones[idPais] = this.seleccionada;
+                        this.rasgosDisponibles = this.rasgosDisponibles.filter(r => r.id !== this.seleccionada.id);
+                        this.seleccionada = null;
+                        this.totalUniones++;
+                        confetti({ particleCount: 30, spread: 60, origin: { y: 0.8 }, colors: ['#f59e0b', '#fbbf24'] });
+                    } else {
+                        // Error
+                        this.error = true;
+                        setTimeout(() => this.error = false, 1500);
+                    }
+                },
+
+                // Drag & Drop
+                dragStart(e, rasgo) {
+                    this.seleccionada = rasgo;
+                },
+
+                dropTrait(e, idPais) {
+                    this.unir(idPais);
+                },
+
+                finalizar() {
+                    this.estado = 'fin';
+                    confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
+                },
+
+                reiniciar() {
+                    this.estado = 'instrucciones';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

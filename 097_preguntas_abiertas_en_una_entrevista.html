@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Simulador de Entrevista | 6to Grado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Outfit', sans-serif;
+            background-color: #0f172a;
+            color: #f1f5f9;
+        }
+
+        .main-app {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            position: relative;
+        }
+
+        /* Pantalla de Inicio */
+        #welcome-screen {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            transition: opacity 0.5s ease;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            max-height: 700px;
+            display: flex;
+            flex-direction: column;
+            background-color: #1e293b;
+            border: 4px solid #334155;
+            border-radius: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .chat-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            scrollbar-width: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .chat-content::-webkit-scrollbar { display: none; }
+
+        .bubble {
+            max-width: 80%;
+            padding: 0.8rem 1.2rem;
+            border-radius: 1.2rem;
+            font-size: 1rem;
+            line-height: 1.4;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .bubble-bot {
+            background-color: #334155;
+            border-bottom-left-radius: 0.2rem;
+            align-self: flex-start;
+            border: 1px solid #475569;
+        }
+
+        .bubble-user {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-bottom-right-radius: 0.2rem;
+            align-self: flex-end;
+            color: white;
+            font-weight: 500;
+        }
+
+        .option-grid {
+            background-color: #0f172a;
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.6rem;
+            border-top: 2px solid #334155;
+        }
+
+        .option-btn {
+            background: #1e293b;
+            border: 2px solid #334155;
+            padding: 0.8rem 1rem;
+            border-radius: 1rem;
+            text-align: left;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .option-btn:hover {
+            border-color: #6366f1;
+            background-color: #2d3748;
+            transform: translateY(-2px);
+        }
+
+        .feedback-overlay {
+            position: absolute;
+            bottom: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ef4444;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 1rem;
+            font-weight: 800;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            z-index: 50;
+            display: none;
+            text-align: center;
+        }
+
+        .progress-dot {
+            height: 6px;
+            flex-grow: 1;
+            border-radius: 999px;
+            background: #334155;
+            transition: all 0.5s;
+        }
+        .dot-completed { background: #22c55e; }
+        .dot-active { background: #6366f1; box-shadow: 0 0 10px #6366f1; }
+
+        /* Modal de Final */
+        #final-modal {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.9);
+            z-index: 200;
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-app">
+        
+        <!-- PANTALLA DE INICIO -->
+        <div id="welcome-screen">
+            <div class="bg-indigo-600 text-white text-xs font-black px-4 py-1 rounded-full mb-4 uppercase tracking-widest">6to Grado • Comunicación</div>
+            <h1 class="text-5xl md:text-6xl font-black mb-4 leading-none">EL CHAT DE LA<br><span class="text-indigo-400">ENTREVISTA</span></h1>
+            <div class="max-w-lg bg-slate-800/50 p-6 rounded-3xl border border-slate-700 mb-8">
+                <h3 class="text-xl font-bold text-indigo-300 mb-2">Objetivo de la actividad:</h3>
+                <p class="text-slate-300 leading-relaxed">Aprender a formular preguntas abiertas y asertivas para obtener información valiosa en un reportaje profesional.</p>
+            </div>
+            <button onclick="startApp()" class="bg-indigo-500 hover:bg-indigo-400 text-white font-black px-12 py-5 rounded-2xl text-xl shadow-[0_0_20px_rgba(99,102,241,0.5)] transition-all hover:scale-105 active:scale-95">
+                COMENZAR MISIÓN
+            </button>
+        </div>
+
+        <!-- MODAL FINAL -->
+        <div id="final-modal">
+            <div class="bg-white text-slate-900 p-8 rounded-[3rem] max-w-md w-full text-center shadow-2xl scale-in">
+                <div class="text-6xl mb-4">🏆</div>
+                <h2 class="text-3xl font-black mb-2 uppercase">¡Reportaje Completo!</h2>
+                <p class="text-slate-600 font-medium mb-6">Has logrado obtener las declaraciones exclusivas del Capitán Nova. Tu reportaje está listo para la portada.</p>
+                
+                <div class="bg-slate-100 p-4 rounded-2xl mb-8">
+                    <span class="text-xs font-black text-slate-400 uppercase block mb-1">Calidad Periodística</span>
+                    <span id="final-score" class="text-4xl font-black text-indigo-600">0</span>
+                </div>
+
+                <button onclick="location.reload()" class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl hover:bg-slate-800 transition-all uppercase tracking-widest">
+                    Reiniciar Actividad
+                </button>
+            </div>
+        </div>
+
+        <!-- HEADER COMPACTO -->
+        <div class="w-full max-w-2xl flex items-center justify-between mb-4 px-2">
+            <div>
+                <h1 class="text-2xl font-black tracking-tight">Misión: <span class="text-indigo-400">Reportero</span></h1>
+            </div>
+            <div class="flex gap-2 w-32" id="progress-bar">
+                <!-- Dots -->
+            </div>
+            <div class="bg-slate-800 px-3 py-1 rounded-lg border border-slate-700">
+                <span class="text-xs font-bold text-slate-400 block uppercase">Puntos</span>
+                <span id="score-val" class="font-black text-yellow-400">0</span>
+            </div>
+        </div>
+
+        <div class="app-container relative">
+            <!-- FEEDBACK ERROR -->
+            <div id="feedback-pop" class="feedback-overlay">⚠️ ¡Inténtalo de nuevo!</div>
+
+            <!-- PERFIL -->
+            <div class="bg-slate-800/80 p-4 flex items-center justify-between border-b border-slate-700 backdrop-blur-md">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-xl shadow-lg">👨‍🚀</div>
+                    <div>
+                        <h2 class="font-bold text-white text-sm">Capitán Nova</h2>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                            <span class="text-[10px] text-slate-400 font-black uppercase">Señal desde Marte</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="status-emoji" class="text-2xl">⏳</div>
+            </div>
+
+            <!-- CHAT -->
+            <div id="chat-window" class="chat-content">
+                <div class="bubble bubble-bot">
+                    ¡Bienvenido a bordo! He pasado 700 días en Marte. ¿Qué pregunta tienes para iniciar esta exclusiva?
+                </div>
+            </div>
+
+            <!-- OPCIONES -->
+            <div id="options-container" class="option-grid">
+                <!-- Botones JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatWindow = document.getElementById('chat-window');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackPop = document.getElementById('feedback-pop');
+        const scoreVal = document.getElementById('score-val');
+        const progressBar = document.getElementById('progress-bar');
+        const statusEmoji = document.getElementById('status-emoji');
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const finalModal = document.getElementById('final-modal');
+
+        const script = [
+            {
+                bot: "El viaje duró 8 meses. El espacio es tan oscuro que las estrellas parecen diamantes flotando en petróleo.",
+                options: [
+                    { text: "¿Cómo se sintió ver la Tierra hacerse pequeña?", correct: true, points: 50 },
+                    { text: "¿A qué velocidad iba la nave?", correct: false, feedback: "Dato técnico. ¡Pregunta por sus sentimientos!" },
+                    { text: "¿Comiste pizza en el espacio?", correct: false, feedback: "Pregunta irrelevante para un reportaje serio." }
+                ],
+                emoji: "🌍"
+            },
+            {
+                bot: "Lo más difícil fue el retraso de 20 minutos en las llamadas. Decía 'Hola' y la respuesta llegaba casi media hora después.",
+                options: [
+                    { text: "¿Había internet en Marte?", correct: false, feedback: "Pregunta cerrada. Prueba algo sobre la comunicación." },
+                    { text: "¿Cómo manejaste ese aislamiento tan extremo?", correct: true, points: 50 },
+                    { text: "¿Te aburriste mucho?", correct: false, feedback: "Demasiado simple. Usa un vocabulario más rico." }
+                ],
+                emoji: "📡"
+            },
+            {
+                bot: "Descubrimos que bajo el polvo rojo hay hielo azul. ¡Es agua que lleva congelada millones de años!",
+                options: [
+                    { text: "¿Ese agua se puede beber?", correct: false, feedback: "Un poco obvio. Busca la importancia científica." },
+                    { text: "¿Qué significa este hallazgo para el futuro de los humanos?", correct: true, points: 50 },
+                    { text: "¿De qué color es el polvo?", correct: false, feedback: "¡Ya te lo acaba de decir! Presta atención al entrevistado." }
+                ],
+                emoji: "🧊"
+            },
+            {
+                bot: "Un día, una tormenta de arena cubrió mis paneles solares. Estuve a oscuras y con poco oxígeno por 3 días.",
+                options: [
+                    { text: "¿Tuviste miedo de no poder regresar?", correct: true, points: 50 },
+                    { text: "¿La arena ensucia mucho?", correct: false, feedback: "¡Estaba en peligro de muerte! No preguntes por la limpieza." },
+                    { text: "¿Hacía viento?", correct: false, feedback: "Pregunta cerrada. No aporta detalles emocionantes." }
+                ],
+                emoji: "🌪️"
+            },
+            {
+                bot: "Espero que mi misión inspire a vuestra generación. Marte es solo el comienzo de nuestra gran aventura.",
+                options: [
+                    { text: "¿Cuándo es la próxima misión?", correct: false, feedback: "Pregunta administrativa. Termina con algo inspirador." },
+                    { text: "¿Qué le dirías a los niños que hoy te ven como un héroe?", correct: true, points: 100 },
+                    { text: "Gracias por tu tiempo, Capitán.", correct: false, feedback: "¡Es tu última pregunta! Aprovecha para cerrar con broche de oro." }
+                ],
+                emoji: "🚀"
+            }
+        ];
+
+        let currentStep = 0;
+        let score = 0;
+
+        function startApp() {
+            welcomeScreen.style.opacity = '0';
+            setTimeout(() => {
+                welcomeScreen.style.display = 'none';
+            }, 500);
+        }
+
+        function init() {
+            script.forEach((_, i) => {
+                const dot = document.createElement('div');
+                dot.className = 'progress-dot';
+                dot.id = `dot-${i}`;
+                progressBar.appendChild(dot);
+            });
+            render();
+        }
+
+        function render() {
+            optionsContainer.innerHTML = '';
+            updateUI();
+
+            if (currentStep >= script.length) {
+                setTimeout(showFinalModal, 1500);
+                return;
+            }
+
+            script[currentStep].options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn text-white';
+                btn.innerHTML = `<span class="text-indigo-400 font-black">${idx + 1}</span> ${opt.text}`;
+                btn.onclick = () => {
+                    if(opt.correct) handleCorrect(opt);
+                    else handleWrong(opt.feedback);
+                };
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function showFinalModal() {
+            document.getElementById('final-score').innerText = score;
+            finalModal.style.display = 'flex';
+        }
+
+        function handleCorrect(opt) {
+            appendMsg(opt.text, 'user');
+            score += opt.points;
+            scoreVal.innerText = score;
+            statusEmoji.innerText = "✍️";
+            
+            setTimeout(() => {
+                appendMsg(script[currentStep].bot, 'bot');
+                statusEmoji.innerText = script[currentStep].emoji;
+                currentStep++;
+                render();
+            }, 1000);
+        }
+
+        function handleWrong(msg) {
+            feedbackPop.innerText = `⚠️ ${msg}`;
+            feedbackPop.style.display = 'block';
+            setTimeout(() => { feedbackPop.style.display = 'none'; }, 2500);
+        }
+
+        function appendMsg(text, type) {
+            const b = document.createElement('div');
+            b.className = `bubble bubble-${type}`;
+            b.innerText = text;
+            chatWindow.appendChild(b);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function updateUI() {
+            script.forEach((_, i) => {
+                const d = document.getElementById(`dot-${i}`);
+                if(i < currentStep) d.className = 'progress-dot dot-completed';
+                else if(i === currentStep) d.className = 'progress-dot dot-active';
+                else d.className = 'progress-dot';
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>

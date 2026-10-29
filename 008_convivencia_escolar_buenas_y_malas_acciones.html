@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constructores de Armonía</title>
+    <style>
+        :root {
+            --bg-wood: #d7ccc8;
+            --board-color: #4caf50; /* Verde Pizarra */
+            --card-bg: #fff9c4; /* Post-it amarillo */
+            --btn-good: #66bb6a;
+            --btn-bad: #ef5350;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background-color: var(--bg-wood);
+            background-image: linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            margin: 0; padding: 0;
+            height: 100vh; overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+            user-select: none;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 40% 60%;
+            width: 95vw; height: 90vh;
+            background: white;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            border-radius: 20px; overflow: hidden;
+            border: 8px solid #8d6e63;
+        }
+
+        /* --- IZQUIERDA: EL JUEZ (Tarjetas) --- */
+        .judge-zone {
+            background-color: #f5f5f5;
+            padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+            border-right: 4px dashed #bdbdbd;
+            position: relative;
+        }
+
+        h1 { color: #d84315; text-align: center; margin: 0 0 10px 0; font-size: 1.5rem; }
+        .instruction { color: #616161; margin-bottom: 20px; text-align: center; }
+
+        /* La Tarjeta de Situación */
+        .card-stack {
+            position: relative;
+            width: 280px; height: 320px;
+            perspective: 1000px;
+        }
+
+        .situation-card {
+            width: 100%; height: 100%;
+            background: var(--card-bg);
+            padding: 20px; box-sizing: border-box;
+            border-radius: 5px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center;
+            position: absolute; top: 0; left: 0;
+            transition: transform 0.5s, opacity 0.5s;
+            transform: rotate(-2deg);
+            border-top: 40px solid rgba(255,255,255,0.3); /* Efecto cinta adhesiva */
+        }
+        .situation-card::before { content: '📌'; position: absolute; top: -15px; font-size: 30px; }
+
+        .card-emoji { font-size: 80px; margin-bottom: 10px; }
+        .card-text { font-size: 1.4rem; color: #3e2723; font-weight: bold; line-height: 1.3; }
+
+        /* Botones de Decisión */
+        .decision-btns {
+            margin-top: 30px;
+            display: flex; gap: 20px; width: 100%; justify-content: center;
+        }
+
+        .btn-vote {
+            width: 80px; height: 80px; border-radius: 50%; border: none;
+            font-size: 2rem; cursor: pointer;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.2); transition: transform 0.1s;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .btn-vote:active { transform: translateY(4px); box-shadow: none; }
+        .btn-yes { background: var(--btn-good); color: white; }
+        .btn-no { background: var(--btn-bad); color: white; }
+
+        /* Feedback visual */
+        .feedback-pop {
+            position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 5rem; font-weight: bold; opacity: 0; pointer-events: none; z-index: 10;
+        }
+        @keyframes popUp { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); } 50% { opacity: 1; transform: translate(-50%, -80%) scale(1.2); } 100% { opacity: 0; transform: translate(-50%, -100%) scale(1); } }
+
+        /* --- DERECHA: EL AULA (Escenario) --- */
+        .classroom-scene {
+            background-color: #e0f7fa; /* Pared azul claro */
+            position: relative;
+            overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+        
+        /* Suelo */
+        .floor {
+            position: absolute; bottom: 0; width: 100%; height: 25%;
+            background: #8d6e63;
+            border-top: 5px solid #5d4037;
+        }
+
+        /* Pizarra Fija */
+        .blackboard {
+            position: absolute; top: 15%; left: 50%; transform: translateX(-50%);
+            width: 60%; height: 35%;
+            background: #263238; border: 8px solid #a1887f; border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: flex; justify-content: center; align-items: center;
+            color: white; font-size: 1.2rem; text-align: center; padding: 10px;
+        }
+
+        /* Objetos Desbloqueables (Ocultos al inicio) */
+        .prop {
+            position: absolute;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: scale(0); opacity: 0;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+        }
+        .prop.visible { transform: scale(1); opacity: 1; }
+
+        /* Posiciones de premios */
+        .p-sun { top: 20px; right: 20px; font-size: 80px; }
+        .p-plant { bottom: 20%; left: 10%; font-size: 90px; z-index: 5; }
+        .p-bookcase { bottom: 25%; right: 10%; font-size: 100px; z-index: 4; }
+        .p-pet { bottom: 15%; left: 40%; font-size: 70px; z-index: 6; }
+        .p-clock { top: 20px; left: 50px; font-size: 60px; }
+        .p-globe { bottom: 45%; right: 15%; font-size: 50px; z-index: 5; }
+        .p-decor { top: 10%; left: 30%; font-size: 60px; width: 40%; text-align: center;} /* Guirnaldas */
+
+        /* Mancha de error */
+        .mess {
+            position: absolute; font-size: 60px; opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        /* Barra de Progreso (Armonía) */
+        .harmony-meter {
+            position: absolute; bottom: 20px; left: 20px; right: 20px;
+            height: 30px; background: rgba(0,0,0,0.2); border-radius: 15px;
+            overflow: hidden; border: 2px solid white; z-index: 10;
+        }
+        .harmony-fill {
+            height: 100%; width: 0%; background: linear-gradient(90deg, #ffeb3b, #00e676);
+            transition: width 0.5s ease-out;
+        }
+        .harmony-label {
+            position: absolute; width: 100%; text-align: center; top: 0;
+            line-height: 30px; font-weight: bold; color: white; text-shadow: 1px 1px 2px black;
+        }
+
+        /* Modal Fin */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: none; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 100;
+        }
+        .modal h2 { color: #fff; font-size: 3rem; margin-bottom: 20px; }
+        /* .modal button se mantiene abajo, pero agrego estilos extra para los nuevos elementos */
+        
+        /* --- ESTILOS AGREGADOS (INICIO Y FIN MEJORADOS) --- */
+        .start-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 200;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        .intro-card {
+            background: white; padding: 40px; border-radius: 20px;
+            text-align: center; max-width: 600px;
+            border: 8px solid #ffca28;
+            box-shadow: 0 0 50px rgba(255, 202, 40, 0.5);
+            animation: bounceIn 0.8s;
+        }
+        .intro-title { font-size: 2.5rem; color: #d84315; margin-bottom: 20px; font-weight: bold; }
+        .intro-text { font-size: 1.3rem; color: #5d4037; margin-bottom: 30px; line-height: 1.6; }
+        .intro-icons { font-size: 3rem; margin-bottom: 20px; letter-spacing: 20px; }
+        
+        .btn-start {
+            background: #00e676; color: white; border: none;
+            padding: 15px 60px; font-size: 1.8rem; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 6px 0 #00a152; font-weight: bold;
+            transition: transform 0.1s;
+        }
+        .btn-start:active { transform: translateY(4px); box-shadow: none; }
+        .btn-start:hover { transform: scale(1.05); }
+
+        /* Estilos extra para el modal final mejorado */
+        .modal-content { animation: popUp 0.6s ease; text-align: center; }
+        .star-rating { font-size: 4rem; margin-bottom: 20px; }
+        .modal p { color: white; font-size: 1.5rem; margin-bottom: 30px; max-width: 80%; margin-left: auto; margin-right: auto; }
+        
+        @keyframes bounceIn { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.05); } 70% { transform: scale(0.9); } 100% { transform: scale(1); opacity: 1; } }
+
+    </style>
+</head>
+<body>
+    
+    <div class="start-overlay" id="start-screen">
+        <div class="intro-card">
+            <div class="intro-icons">🏫🎒😊</div>
+            <h1 class="intro-title">¡Misión: Aula Feliz!</h1>
+            <p class="intro-text">
+                El salón está vacío y triste. Ayúdanos a decorarlo.<br><br>
+                Si ves una <b>BUENA</b> acción, presiona 👍 (Verde).<br>
+                Si ves una <b>MALA</b> acción, presiona 👎 (Rojo).
+            </p>
+            <button class="btn-start" onclick="startGame()">¡A JUGAR!</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        
+        <section class="judge-zone">
+            <h1>📋 Decisiones de Aula</h1>
+            <p class="instruction">¿Esta acción ayuda a nuestra clase?</p>
+
+            <div class="card-stack" id="card-container">
+                </div>
+
+            <div class="feedback-pop" id="feedback-anim">👍</div>
+
+            <div class="decision-btns">
+                <button class="btn-vote btn-no" onclick="vote(false)">👎</button>
+                <div style="font-size:0.8rem; width:80px; text-align:center; align-self:center; color:#757575">
+                    (Malo / Incorrecto)
+                </div>
+                <div style="font-size:0.8rem; width:80px; text-align:center; align-self:center; color:#757575">
+                    (Bueno / Correcto)
+                </div>
+                <button class="btn-vote btn-yes" onclick="vote(true)">👍</button>
+            </div>
+        </section>
+
+        <section class="classroom-scene">
+            <div class="blackboard">
+                <div id="bb-text">¡Construyamos un aula feliz!</div>
+            </div>
+            <div class="floor"></div>
+
+            <div class="prop p-clock" id="item-0">⏰</div>
+            <div class="prop p-sun" id="item-1">☀️</div>
+            <div class="prop p-decor" id="item-2">🎉🎊🎉</div>
+            <div class="prop p-bookcase" id="item-3">📚</div>
+            <div class="prop p-globe" id="item-4">🌍</div>
+            <div class="prop p-plant" id="item-5">🌱</div>
+            <div class="prop p-pet" id="item-6">🐹</div>
+
+            <div class="mess" style="top:70%; left:30%;" id="mess-1">🧃</div>
+            <div class="mess" style="top:80%; left:60%;" id="mess-2">🗑️</div>
+
+            <div class="harmony-meter">
+                <div class="harmony-fill" id="progress-fill"></div>
+                <div class="harmony-label">NIVEL DE ARMONÍA</div>
+            </div>
+        </section>
+    </div>
+
+    <div class="modal" id="end-modal">
+        <div class="modal-content">
+            <div class="star-rating">⭐⭐⭐⭐⭐</div>
+            <h2>¡Felicidades!</h2>
+            <p>Gracias a tus buenas decisiones, ahora todos pueden convivir felices y aprender mejor. <br>¡Has construido un aula perfecta!</p>
+            <button class="btn-start" onclick="location.reload()">Jugar de Nuevo</button>
+        </div>
+    </div>
+
+<script>
+    // --- DATOS ---
+    // isGood: true (es buen comportamiento), false (es malo)
+    const scenarios = [
+        { text: "Levantar la mano para hablar", emoji: "🙋‍♂️", isGood: true },
+        { text: "Gritar cuando quiero algo", emoji: "📢", isGood: false },
+        { text: "Compartir mis colores", emoji: "🎨", isGood: true },
+        { text: "Correr dentro del salón", emoji: "🏃💨", isGood: false },
+        { text: "Tirar basura al suelo", emoji: "🚯", isGood: false },
+        { text: "Escuchar a la maestra", emoji: "👂", isGood: true },
+        { text: "Reírse si alguien se cae", emoji: "🤣", isGood: false },
+        { text: "Decir 'Por favor' y 'Gracias'", emoji: "🤝", isGood: true },
+        { text: "Empujar a los compañeros", emoji: "😠", isGood: false },
+        { text: "Ayudar a limpiar el aula", emoji: "🧹", isGood: true }
+    ];
+
+    // --- ESTADO ---
+    let queue = [];
+    let currentCard = null;
+    let score = 0; // Se necesitan 7 puntos para desbloquear todo
+    let mistakes = 0;
+    const itemsToUnlock = 7; 
+
+    // --- DOM ---
+    const dom = {
+        container: document.getElementById('card-container'),
+        feedback: document.getElementById('feedback-anim'),
+        fill: document.getElementById('progress-fill'),
+        bbText: document.getElementById('bb-text'),
+        modal: document.getElementById('end-modal')
+    };
+
+    // window.onload = initGame;  <-- ELIMINADO PARA QUE NO INICIE SOLO
+
+    function initGame() {
+        // Clonar y barajar
+        queue = [...scenarios].sort(() => Math.random() - 0.5);
+        loadNextCard();
+    }
+
+    function loadNextCard() {
+        if (queue.length === 0 || score >= itemsToUnlock) {
+            checkEndGame();
+            return;
+        }
+
+        currentCard = queue.pop();
+        
+        // Crear elemento visual
+        const el = document.createElement('div');
+        el.className = 'situation-card';
+        // Animación de entrada
+        el.style.transform = `scale(0.5) rotate(${Math.random() * 10 - 5}deg)`;
+        el.style.opacity = '0';
+        
+        el.innerHTML = `
+            <div class="card-emoji">${currentCard.emoji}</div>
+            <div class="card-text">"${currentCard.text}"</div>
+        `;
+        
+        dom.container.innerHTML = '';
+        dom.container.appendChild(el);
+
+        // Forzar reflow para animación
+        setTimeout(() => {
+            el.style.transform = `scale(1) rotate(${Math.random() * 4 - 2}deg)`;
+            el.style.opacity = '1';
+        }, 50);
+    }
+
+    function vote(userVotedGood) {
+        if (!dom.container.firstElementChild) return;
+
+        // ¿El usuario dice que es BUENO (true) o MALO (false)?
+        // Validar contra la realidad (currentCard.isGood)
+        
+        /* Lógica:
+           Si la tarjeta es BUENA y votas SI (true) -> Acierto
+           Si la tarjeta es MALA y votas NO (false) -> Acierto (Porque identificaste lo malo)
+           Cualquier otra combi es error.
+        */
+        
+        let isCorrect = (userVotedGood === currentCard.isGood);
+        
+        // Excepción visual: Si la tarjeta es "Mala" y votas "No" (dedito abajo), es correcto, 
+        // pero visualmente el botón rojo suele confundir.
+        // Simplifiquemos: El botón VERDE significa "Esto está bien", el ROJO "Esto está mal".
+        
+        const cardActionIsPos = currentCard.isGood; 
+        // Si la acción es positiva, debemos presionar VERDE (userVotedGood=true).
+        // Si la acción es negativa, debemos presionar ROJO (userVotedGood=false).
+        
+        if (userVotedGood === cardActionIsPos) {
+            handleSuccess(userVotedGood);
+        } else {
+            handleError();
+        }
+    }
+
+    function handleSuccess(wasPositiveAction) {
+        showFeedback("✨", "#4caf50");
+        
+        // Si acertamos identificando algo bueno o rechazando algo malo, el aula mejora
+        // Desbloquear item
+        const item = document.getElementById(`item-${score}`);
+        if(item) item.classList.add('visible');
+        
+        score++;
+        updateProgress();
+        dom.bbText.innerText = "¡Excelente elección!";
+        
+        animateCardOut();
+    }
+
+    function handleError() {
+        showFeedback("❌", "#f44336");
+        mistakes++;
+        
+        // Manchar el aula temporalmente
+        const mess = document.getElementById(`mess-${(mistakes % 2) + 1}`);
+        if(mess) {
+            mess.style.opacity = 1;
+            setTimeout(() => mess.style.opacity = 0, 2000);
+        }
+
+        dom.bbText.innerText = "¡Oh no! Piénsalo mejor...";
+        animateCardOut();
+    }
+
+    function updateProgress() {
+        const pct = (score / itemsToUnlock) * 100;
+        dom.fill.style.width = `${pct}%`;
+    }
+
+    function showFeedback(emoji, color) {
+        dom.feedback.innerText = emoji;
+        dom.feedback.style.color = color;
+        dom.feedback.style.animation = 'none';
+        dom.feedback.offsetHeight; /* trigger reflow */
+        dom.feedback.style.animation = 'popUp 0.8s forwards';
+    }
+
+    function animateCardOut() {
+        const card = dom.container.firstElementChild;
+        card.style.transform = "translateX(200%) rotate(20deg)";
+        card.style.opacity = "0";
+        
+        setTimeout(() => {
+            loadNextCard();
+        }, 500);
+    }
+
+    function checkEndGame() {
+        if (score >= itemsToUnlock) {
+            dom.bbText.innerText = "¡Lo lograste!";
+            dom.modal.style.display = 'flex';
+        } else {
+            // Si se acabaron las cartas y no llegó al score (raro, pero posible si falla muchas)
+            // Reiniciamos las cartas restantes
+            queue = [...scenarios].sort(() => Math.random() - 0.5);
+            loadNextCard();
+        }
+    }
+
+    // --- FUNCIÓN NUEVA PARA INICIAR EL JUEGO DESDE EL BOTÓN ---
+    function startGame() {
+        document.getElementById('start-screen').style.display = 'none';
+        initGame();
+    }
+
+</script>
+</body>
+</html>

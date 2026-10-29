@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Escáner de la Vida: Misión Final</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
+
+        body {
+            margin: 0; padding: 0; height: 100vh;
+            font-family: 'Fredoka', sans-serif;
+            overflow: hidden; background-color: #222;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            user-select: none;
+        }
+
+        /* --- PANTALLAS SUPERPUESTAS (Inicio y Victoria) --- */
+        .overlay-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: white; text-align: center;
+            transition: opacity 0.5s;
+        }
+        .hidden { opacity: 0; pointer-events: none; }
+        
+        .overlay-content {
+            background: linear-gradient(135deg, #0288d1, #005b9f);
+            padding: 40px; border-radius: 20px;
+            border: 4px solid #00ffcc;
+            box-shadow: 0 0 30px #00ffcc;
+            max-width: 500px; width: 90%;
+        }
+        
+        .overlay-content h1 { margin: 0 0 10px 0; font-size: 2.5rem; color: #ffeb3b; text-transform: uppercase; }
+        .overlay-content p { font-size: 1.2rem; line-height: 1.5; margin-bottom: 20px; }
+        .emphasis { color: #00ffcc; font-weight: bold; }
+
+        .btn-start, .btn-restart {
+            background: #ffeb3b; color: #333; border: none;
+            padding: 15px 40px; font-size: 1.5rem; border-radius: 50px;
+            font-family: 'Fredoka', sans-serif; font-weight: bold; cursor: pointer;
+            box-shadow: 0 5px 0 #fbc02d; transition: transform 0.1s;
+        }
+        .btn-start:active, .btn-restart:active { transform: translateY(4px); box-shadow: 0 1px 0 #fbc02d; }
+
+        /* --- INTERFAZ DE JUEGO (HUD) --- */
+        #hud {
+            position: absolute; top: 0; left: 0; width: 100%;
+            padding: 15px; box-sizing: border-box;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100; pointer-events: none; opacity: 0; transition: opacity 1s;
+        }
+        .status-box {
+            background: rgba(0, 20, 40, 0.9); border: 2px solid #00ffcc; color: #00ffcc;
+            padding: 8px 20px; border-radius: 20px; font-size: 1.2rem; font-weight: bold;
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+        }
+
+        /* --- PANTALLA PRINCIPAL --- */
+        #scanner-screen {
+            position: relative; width: 95%; max-width: 960px; height: 85%; max-height: 640px;
+            border: 5px solid #555; border-radius: 25px; overflow: hidden;
+            background: linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.7); cursor: none;
+            opacity: 0; transition: opacity 1s;
+        }
+
+        /* --- PAISAJE Y DECORACIÓN --- */
+        .landscape { position: absolute; width: 100%; height: 100%; bottom: 0; pointer-events: none; z-index: 1;}
+        
+        /* NUBES DE ADORNO */
+        .deco-cloud {
+            position: absolute; color: rgba(255,255,255,0.4); font-size: 5rem;
+            z-index: 0; animation: drift 60s linear infinite; pointer-events: none;
+        }
+        @keyframes drift { from { transform: translateX(-100px); } to { transform: translateX(1000px); } }
+
+        .volcano-container { position: absolute; bottom: 95px; left: 5%; width: 400px; height: 350px; z-index: 2; }
+        .volcano-base { position: absolute; bottom: 0; left: 20px; width: 0; height: 0; border-left: 180px solid transparent; border-right: 180px solid transparent; border-bottom: 300px solid #4a332a; }
+        .volcano-cone { position: absolute; bottom: 0; left: 70px; width: 0; height: 0; border-left: 130px solid transparent; border-right: 130px solid transparent; border-bottom: 220px solid #6d4c41; }
+        .volcano-crater { position: absolute; bottom: 215px; left: 165px; width: 70px; height: 20px; background: #3e2723; border-radius: 50%; }
+        .smoke { position: absolute; bottom: 230px; left: 150px; width: 100px; height: 60px; background: rgba(255,255,255,0.8); filter: blur(20px); border-radius: 50%; animation: smokeAnim 5s infinite alternate ease-in-out; }
+        
+        .lake { position: absolute; bottom: 0; width: 100%; height: 120px; background: linear-gradient(to bottom, #42a5f5, #1565c0); border-top: 3px solid #90caf9; z-index: 2; }
+        .grass { position: absolute; bottom: 100px; width: 100%; height: 120px; background: linear-gradient(to bottom, #7cb342, #558b2f); border-radius: 50% 50% 0 0 / 30px 30px 0 0; z-index: 2; }
+
+        /* --- OBJETOS INTERACTIVOS --- */
+        .scan-object {
+            position: absolute; cursor: none; font-size: 4rem;
+            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3));
+            transition: transform 0.2s; z-index: 10;
+        }
+        .scan-object:hover { transform: scale(1.15); filter: drop-shadow(0 0 20px #ffff00); }
+        .found { filter: grayscale(100%) opacity(0.6) !important; pointer-events: none; }
+
+        /* Ubicaciones */
+        #obj-tortuga { bottom: 95px; right: -10%; font-size: 3.5rem; z-index: 15; animation: walkTurtle 25s linear infinite; }
+        @keyframes walkTurtle { from { transform: translateX(0); } to { transform: translateX(-1200px); } }
+
+        #obj-flor { bottom: 130px; left: 5%; font-size: 3.5rem; z-index: 16; }
+        #obj-guardabarranco { top: 10%; right: 10%; animation: floatBird 4s infinite ease-in-out; }
+        @keyframes floatBird { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        #obj-madrono { bottom: 140px; right: 2%; font-size: 8rem; z-index: 5; }
+        #obj-pez { bottom: 30px; left: 15%; font-size: 3.5rem; z-index: 12; animation: swimFish 6s infinite ease-in-out; }
+        @keyframes swimFish { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(40px); } }
+        #obj-piedra { bottom: 110px; left: 35%; width: 100px; height: 80px; z-index: 7; } 
+        #obj-volcan { bottom: 160px; left: 10%; width: 300px; height: 250px; opacity: 0; z-index: 8; }
+        #obj-sol { top: 30px; left: 30px; font-size: 6rem; animation: spinSun 25s linear infinite; z-index: 3;}
+        @keyframes spinSun { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        #obj-nube { top: 15%; left: 45%; font-size: 7rem; opacity: 0.95; z-index: 4; animation: moveCloud 20s linear infinite alternate; }
+        @keyframes moveCloud { from { transform: translateX(-50px); } to { transform: translateX(80px); } }
+        #obj-bote { bottom: 55px; left: 55%; font-size: 4.5rem; z-index: 11; animation: bobBoat 3.5s infinite ease-in-out; }
+        @keyframes bobBoat { 0%, 100% { transform: translateY(0) rotate(1deg); } 50% { transform: translateY(8px) rotate(-2deg); } }
+
+
+        /* --- LENTE --- */
+        #scanner-lens {
+            position: fixed; pointer-events: none; width: 130px; height: 130px; display: none;
+            border: 4px solid #00ffcc; border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,255,204,0.2) 0%, rgba(0,0,0,0) 70%);
+            box-shadow: 0 0 25px #00ffcc, inset 0 0 15px #00ffcc;
+            z-index: 999; justify-content: center; align-items: center;
+            transform: translate(-50%, -50%);
+        }
+        #scanner-lens::before { content: ''; position: absolute; background: #00ffcc; width: 24px; height: 3px; }
+        #scanner-lens::after { content: ''; position: absolute; background: #00ffcc; width: 3px; height: 24px; }
+        .scanning { animation: scanPulse 0.6s infinite; border-color: #ffdd00 !important; background: rgba(255, 221, 0, 0.2) !important; }
+        @keyframes scanPulse { 0% { transform: translate(-50%, -50%) scale(0.9); } 50% { transform: translate(-50%, -50%) scale(1.15); } 100% { transform: translate(-50%, -50%) scale(0.9); } }
+
+        /* --- MODAL DE PREGUNTAS --- */
+        #modal {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+            background: #fff; width: 340px; padding: 30px; border-radius: 25px; text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.7); z-index: 500;
+            border: 6px solid #0288d1; cursor: default;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #modal.active { transform: translate(-50%, -50%) scale(1); }
+        #modal-icon { font-size: 6rem; display: block; margin: 15px 0; }
+        
+        button { border: none; padding: 15px 30px; border-radius: 15px; font-family: 'Fredoka', sans-serif; font-size: 1.2rem; cursor: pointer; margin: 8px; font-weight: bold; transition: all 0.2s ease; }
+        
+        /* Efecto Hover para botones de elección */
+        .btn-alive { background: linear-gradient(to bottom, #66bb6a, #43a047); color: white; box-shadow: 0 4px 0 #2e7d32; }
+        .btn-alive:hover { background: linear-gradient(to bottom, #81c784, #4caf50); transform: translateY(-3px); box-shadow: 0 6px 0 #2e7d32; }
+        .btn-alive:active { transform: translateY(2px); box-shadow: 0 0 0 #2e7d32; }
+
+        .btn-dead { background: linear-gradient(to bottom, #78909c, #546e7a); color: white; box-shadow: 0 4px 0 #37474f; }
+        .btn-dead:hover { background: linear-gradient(to bottom, #90a4ae, #607d8b); transform: translateY(-3px); box-shadow: 0 6px 0 #37474f; }
+        .btn-dead:active { transform: translateY(2px); box-shadow: 0 0 0 #37474f; }
+
+        .btn-close { background: #333; color: white; display: none; margin-top: 20px; width: 80%; }
+        
+        #feedback { font-weight: bold; margin-top: 20px; min-height: 30px; font-size: 1.1rem; }
+        .text-green { color: #2E7D32; } .text-red { color: #c62828; }
+
+    </style>
+</head>
+<body>
+
+    <div id="start-screen" class="overlay-screen">
+        <div class="overlay-content">
+            <h1>🔬 Misión Científica</h1>
+            <p>¡Bienvenido al paisaje nicaragüense!</p>
+            <p>Tu misión es usar el <strong>Escáner de Vida</strong> para analizar todo lo que veas.</p>
+            <p style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px;">
+                Debes encontrar <strong>10 objetos</strong> y decidir:<br>
+                🌱 <span class="emphasis">¿Tiene Vida?</span> (Nace, crece, respira)<br>
+                🌑 <span class="emphasis">¿No tiene Vida?</span> (Es inerte)
+            </p>
+            <button class="btn-start" onclick="startGame()">¡Encender Escáner!</button>
+        </div>
+    </div>
+
+    <div id="victory-screen" class="overlay-screen hidden">
+        <div class="overlay-content">
+            <h1>🏆 ¡Misión Cumplida!</h1>
+            <div style="font-size: 5rem;">🌟🌟🌟</div>
+            <p>¡Eres un biólogo experto!</p>
+            <p>Has clasificado correctamente todos los elementos bióticos y abióticos del ecosistema.</p>
+            <button class="btn-restart" onclick="location.reload()">Jugar otra vez</button>
+        </div>
+    </div>
+
+    <div id="scanner-lens"></div>
+
+    <div id="hud">
+        <div class="status-box">🕵️‍♂️ MODO EXPLORADOR</div>
+        <div class="status-box">Hallazgos: <span id="score">0</span>/10</div>
+    </div>
+
+    <div id="scanner-screen">
+        <div class="landscape">
+            <div class="deco-cloud" style="top: 50px; left: 10%;">☁️</div>
+            <div class="deco-cloud" style="top: 80px; left: 80%; font-size: 4rem; animation-duration: 80s;">☁️</div>
+            <div class="deco-cloud" style="top: 20px; left: 60%; font-size: 3rem; animation-duration: 90s;">☁️</div>
+
+            <div class="volcano-container">
+                <div class="volcano-base"></div>
+                <div class="volcano-cone"></div>
+                <div class="volcano-crater"></div>
+                <div class="smoke"></div>
+            </div>
+            <div class="grass"></div>
+            <div class="lake"></div>
+        </div>
+
+        <div class="scan-object" id="obj-guardabarranco" data-type="vivo" data-name="Guardabarranco">🐦</div>
+        <div class="scan-object" id="obj-madrono" data-type="vivo" data-name="Árbol de Madroño">🌳</div>
+        <div class="scan-object" id="obj-tortuga" data-type="vivo" data-name="Tortuga Terrestre">🐢</div>
+        <div class="scan-object" id="obj-flor" data-type="vivo" data-name="Sacuanjoche">🌺</div>
+        <div class="scan-object" id="obj-pez" data-type="vivo" data-name="Guapote">🐟</div>
+
+        <div class="scan-object" id="obj-piedra" data-type="novivo" data-name="Roca Volcánica">
+            <svg viewBox="0 0 100 80" width="100%" height="100%">
+                <path d="M 10 70 Q 5 40, 30 20 Q 60 0, 90 30 Q 100 60, 80 75 Q 40 85, 10 70 Z" fill="#90a4ae" stroke="#546e7a" stroke-width="3"/>
+                <path d="M 30 30 Q 40 40, 35 50" fill="none" stroke="#546e7a" stroke-width="2" opacity="0.5"/>
+            </svg>
+        </div>
+        
+        <div class="scan-object" id="obj-volcan" data-type="novivo" data-name="Volcán Momotombo"></div>
+        <div class="scan-object" id="obj-sol" data-type="novivo" data-name="El Sol">☀️</div>
+        <div class="scan-object" id="obj-nube" data-type="novivo" data-name="Nube Viajera">☁️</div>
+        <div class="scan-object" id="obj-bote" data-type="novivo" data-name="Bote de Madera">⛵</div>
+    </div>
+
+    <div id="modal">
+        <h2 id="modal-title">...</h2>
+        <div id="modal-icon">❓</div>
+        <p style="font-size: 1.2rem;">¿Tiene vida?</p>
+        <div id="btn-group">
+            <button class="btn-alive" onclick="check('vivo')">💚 Sí, es Ser Vivo</button>
+            <button class="btn-dead" onclick="check('novivo')">🌑 No, es No Vivo</button>
+        </div>
+        <p id="feedback"></p>
+        <button class="btn-close" onclick="closeModal()">Seguir buscando</button>
+    </div>
+
+<script>
+    const lens = document.getElementById('scanner-lens');
+    const modal = document.getElementById('modal');
+    const scoreEl = document.getElementById('score');
+    const startScreen = document.getElementById('start-screen');
+    const victoryScreen = document.getElementById('victory-screen');
+    const gameScreen = document.getElementById('scanner-screen');
+    const hud = document.getElementById('hud');
+
+    let currentObj = null;
+    let foundCount = 0;
+    const totalItems = 10;
+    const foundIDs = [];
+    let gameActive = false;
+
+    function startGame() {
+        startScreen.classList.add('hidden');
+        setTimeout(() => {
+            gameScreen.style.opacity = 1;
+            hud.style.opacity = 1;
+            lens.style.display = 'flex';
+            document.body.style.cursor = 'none';
+            gameActive = true;
+        }, 500);
+    }
+
+    document.addEventListener('mousemove', e => {
+        if (!gameActive) return;
+        lens.style.left = e.clientX + 'px';
+        lens.style.top = e.clientY + 'px';
+    });
+
+    document.querySelectorAll('.scan-object').forEach(obj => {
+        obj.addEventListener('mouseenter', () => {
+            if(!obj.classList.contains('found') && gameActive) {
+                lens.style.borderColor = '#ffeb3b';
+                lens.style.transform = "translate(-50%, -50%) scale(1.3)";
+            }
+        });
+        obj.addEventListener('mouseleave', () => {
+            lens.style.borderColor = '#00ffcc';
+            lens.style.transform = "translate(-50%, -50%) scale(1)";
+        });
+
+        obj.addEventListener('click', () => {
+            if(obj.classList.contains('found') || !gameActive) return;
+            lens.classList.add('scanning');
+            setTimeout(() => {
+                lens.classList.remove('scanning');
+                showQuestion(obj);
+            }, 600);
+        });
+    });
+
+    function showQuestion(obj) {
+        currentObj = obj;
+        document.getElementById('modal-title').innerText = obj.dataset.name;
+        
+        let icon = obj.innerText;
+        if(obj.id === 'obj-volcan') icon = '🌋';
+        if(obj.id === 'obj-piedra') icon = '🪨';
+
+        document.getElementById('modal-icon').innerText = icon;
+        document.getElementById('feedback').innerText = "";
+        document.getElementById('btn-group').style.display = 'block';
+        document.querySelector('.btn-close').style.display = 'none';
+        
+        document.body.style.cursor = 'default';
+        lens.style.opacity = 0; 
+        modal.classList.add('active');
+    }
+
+    function check(answer) {
+        const type = currentObj.dataset.type;
+        const feedback = document.getElementById('feedback');
+
+        if(answer === type) {
+            // ACIERTO
+            feedback.innerHTML = "¡Correcto! ✅";
+            feedback.className = "text-green";
+            
+            if(type === 'vivo') feedback.innerHTML += "<br><small>¡Exacto! Nace, se alimenta y crece.</small>";
+            else feedback.innerHTML += "<br><small>¡Así es! Es materia inerte, no tiene vida.</small>";
+
+            if(!foundIDs.includes(currentObj.id)) {
+                foundCount++;
+                scoreEl.innerText = foundCount;
+                foundIDs.push(currentObj.id);
+                currentObj.classList.add('found');
+            }
+            document.getElementById('btn-group').style.display = 'none';
+            document.querySelector('.btn-close').style.display = 'inline-block';
+            
+            if(foundCount === totalItems) {
+                setTimeout(showVictory, 1000);
+            }
+        } else {
+            // ERROR - FEEDBACK EDUCATIVO MEJORADO
+            feedback.className = "text-red";
+            modal.classList.add('shake');
+            setTimeout(() => modal.classList.remove('shake'), 500);
+
+            // Analizamos qué es el objeto real para dar la pista correcta
+            if (type === 'vivo') {
+                // El niño dijo no vivo, pero ES vivo
+                feedback.innerHTML = "¡Piénsalo bien! 🤔<br><small style='color:#555'>Recuerda: Si nace, crece y respira... ¡Es un Ser Vivo! 🌱</small>";
+            } else {
+                // El niño dijo vivo, pero ES no vivo
+                feedback.innerHTML = "¡Piénsalo bien! 🤔<br><small style='color:#555'>Recuerda: No respira, no come y no crece... ¡Es No Vivo! 🌑</small>";
+            }
+        }
+    }
+
+    function closeModal() {
+        modal.classList.remove('active');
+        document.body.style.cursor = 'none';
+        lens.style.opacity = 1;
+    }
+
+    function showVictory() {
+        modal.classList.remove('active');
+        victoryScreen.classList.remove('hidden');
+        document.body.style.cursor = 'default';
+        gameActive = false;
+        confettiEffect();
+    }
+
+    const styleSheet = document.createElement("style");
+    styleSheet.innerText = `@keyframes shake { 0% { transform: translate(-50%, -50%) translateX(0); } 25% { transform: translate(-50%, -50%) translateX(-10px); } 75% { transform: translate(-50%, -50%) translateX(10px); } } .shake { animation: shake 0.3s; }`;
+    document.head.appendChild(styleSheet);
+
+    function confettiEffect() {
+        const colors = ['#f00', '#0f0', '#00f', '#ff0', '#0ff'];
+        for(let i=0; i<50; i++) {
+            const el = document.createElement('div');
+            el.style.position = 'fixed';
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.top = '-10px';
+            el.style.width = '10px'; el.style.height = '10px';
+            el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            el.style.zIndex = 3000;
+            document.body.appendChild(el);
+            
+            let pos = -10;
+            const speed = Math.random() * 5 + 2;
+            const interval = setInterval(() => {
+                pos += speed;
+                el.style.top = pos + 'px';
+                if(pos > window.innerHeight) { clearInterval(interval); el.remove(); }
+            }, 20);
+        }
+    }
+</script>
+</body>
+</html>

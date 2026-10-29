@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misión: Código del Diccionario</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,400,1,0" />
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #050505;
+            --terminal-bg: #0d1117;
+            --neon-green: #00ff41;
+            --neon-red: #ff003c;
+            --neon-blue: #0abde3;
+            --text-color: #e0e6ed;
+            --glass: rgba(13, 17, 23, 0.95);
+        }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background-color: var(--bg-color);
+            color: var(--neon-green);
+            margin: 0; padding: 0;
+            min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            overflow-x: hidden;
+            background-image: 
+                linear-gradient(rgba(0, 255, 65, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 65, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        /* --- EFECTO CRT (SCANLINES) --- */
+        body::before {
+            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2; background-size: 100% 2px, 3px 100%; pointer-events: none;
+        }
+
+        /* --- INTRODUCCIÓN TOP SECRET (NUEVO) --- */
+        .intro-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: black; z-index: 5000;
+            display: flex; justify-content: center; align-items: center;
+            flex-direction: column;
+        }
+
+        .secret-file {
+            width: 90%; max-width: 600px;
+            border: 2px solid var(--neon-green);
+            background: #000;
+            padding: 40px;
+            box-shadow: 0 0 50px rgba(0, 255, 65, 0.1);
+            position: relative;
+            text-align: center;
+            animation: slideDown 0.8s ease-out;
+        }
+
+        .top-secret-stamp {
+            border: 5px solid var(--neon-red);
+            color: var(--neon-red);
+            display: inline-block;
+            padding: 5px 20px;
+            font-size: 1.5rem; font-weight: bold; letter-spacing: 3px;
+            transform: rotate(-10deg);
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        .intro-title { 
+            font-size: 2rem; margin: 10px 0; color: white; text-transform: uppercase; 
+            border-bottom: 1px solid var(--neon-green); padding-bottom: 15px;
+        }
+        
+        .intro-text { 
+            font-family: 'Fredoka', sans-serif; font-size: 1.2rem; color: #ccc; 
+            line-height: 1.6; margin-bottom: 30px; text-align: left;
+        }
+
+        .btn-start {
+            background: var(--neon-green); color: black; border: none;
+            padding: 15px 40px; font-size: 1.5rem; font-family: 'Share Tech Mono';
+            cursor: pointer; font-weight: bold; text-transform: uppercase;
+            box-shadow: 0 0 15px var(--neon-green);
+            transition: 0.2s; animation: pulseBtn 2s infinite;
+        }
+        .btn-start:hover { background: white; box-shadow: 0 0 25px white; }
+
+        @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes pulseBtn { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
+
+
+        /* --- CONTENEDOR PRINCIPAL (TERMINAL) --- */
+        .terminal-container {
+            width: 90%; max-width: 800px;
+            background: var(--terminal-bg);
+            border: 2px solid var(--neon-green);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+            padding: 20px;
+            position: relative;
+            z-index: 10;
+            min-height: 500px;
+            display: none; /* Se oculta hasta aceptar misión */
+            flex-direction: column;
+        }
+
+        /* HEADER */
+        .header-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--neon-green);
+            padding-bottom: 10px; margin-bottom: 20px;
+        }
+        .mission-status {
+            font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px;
+            animation: blink 2s infinite;
+        }
+        .security-level {
+            background: var(--neon-green); color: black;
+            padding: 2px 8px; font-weight: bold; border-radius: 2px;
+        }
+
+        /* CONTENIDO DINÁMICO */
+        .level-screen {
+            display: none; flex-direction: column; align-items: center; flex: 1;
+            animation: fadeIn 0.5s;
+        }
+        .level-screen.active { display: flex; }
+
+        h2 { font-family: 'Fredoka', sans-serif; font-size: 2rem; margin-bottom: 10px; color: white; text-align: center;}
+        p.instruction { color: #aaa; font-size: 1.1rem; text-align: center; margin-bottom: 30px; font-family: 'Fredoka', sans-serif;}
+
+        /* --- NIVEL 1: ORDENAR --- */
+        .word-grid { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+        .hack-btn {
+            background: rgba(0, 255, 65, 0.1); border: 1px solid var(--neon-green);
+            color: var(--neon-green); padding: 15px 30px; font-size: 1.5rem; cursor: pointer;
+            font-family: 'Share Tech Mono', monospace; transition: all 0.3s; text-transform: uppercase;
+        }
+        .hack-btn:hover { background: var(--neon-green); color: black; box-shadow: 0 0 15px var(--neon-green); }
+        .hack-btn.disabled { opacity: 0.3; pointer-events: none; border-color: #555; color: #555; }
+        
+        .sequence-display {
+            margin-top: 30px; min-height: 40px; width: 100%;
+            border-bottom: 2px dashed #555; text-align: center;
+            font-size: 1.5rem; color: var(--neon-blue); letter-spacing: 1px;
+        }
+
+        /* --- NIVEL 2: PALABRAS GUÍA --- */
+        .dictionary-header {
+            background: white; color: black; padding: 10px 40px; border-radius: 5px;
+            font-family: serif; font-weight: bold; font-size: 1.5rem;
+            box-shadow: 0 0 15px white; margin-bottom: 30px; position: relative;
+        }
+        .dictionary-header::before { content: "PÁGINA 142"; position: absolute; top: -20px; left: 0; font-size: 0.8rem; color: #aaa; font-family: monospace;}
+
+        .target-word { font-size: 3rem; color: var(--neon-blue); margin-bottom: 30px; text-shadow: 0 0 10px var(--neon-blue); }
+
+        .action-buttons { display: flex; gap: 20px; width: 100%; justify-content: center; }
+        .nav-btn {
+            flex: 1; padding: 20px; background: transparent;
+            border: 2px solid #555; color: white; font-size: 1rem;
+            cursor: pointer; transition: 0.3s; border-radius: 5px; font-family: 'Share Tech Mono';
+        }
+        .nav-btn:hover { border-color: var(--neon-blue); color: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); }
+
+        /* --- NIVEL 3: SIGNIFICADO --- */
+        .context-sentence { font-size: 1.8rem; color: white; margin-bottom: 30px; text-align: center; }
+        .highlight { color: var(--neon-red); text-decoration: underline; font-weight: bold; }
+
+        .meaning-options { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        .meaning-card {
+            width: 200px; padding: 20px; border: 1px solid #555; background: rgba(255,255,255,0.05);
+            cursor: pointer; text-align: center; transition: 0.3s;
+        }
+        .meaning-card:hover { border-color: var(--neon-green); background: rgba(0, 255, 65, 0.1); }
+        .meaning-icon { font-size: 4rem; display: block; margin-bottom: 10px; }
+        .meaning-text { font-family: 'Fredoka'; font-size: 1rem; color: #ccc; }
+
+        /* --- PANTALLA VICTORIA --- */
+        .victory-screen { text-align: center; }
+        .lock-icon { font-size: 5rem; color: var(--neon-green); margin-bottom: 20px; }
+        .treasure-box { border: 4px double var(--neon-blue); padding: 20px; margin-top: 20px; color: var(--neon-blue); font-size: 1.2rem; }
+
+        /* --- FEEDBACK OVERLAY --- */
+        .feedback-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 100;
+            display: none; justify-content: center; align-items: center; flex-direction: column;
+        }
+        .feedback-title { font-size: 3rem; margin-bottom: 10px; }
+        .feedback-msg { font-size: 1.2rem; color: white; margin-bottom: 20px; }
+        .btn-next { background: var(--neon-green); border: none; padding: 10px 30px; font-family: 'Share Tech Mono'; font-size: 1.2rem; cursor: pointer; font-weight: bold; }
+
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .shake { animation: shake 0.5s; }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } 100% { transform: translateX(0); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="intro-overlay" id="intro-screen">
+        <div class="secret-file">
+            <div class="top-secret-stamp">TOP SECRET</div>
+            <h1 class="intro-title">Misión: El Diccionario</h1>
+            
+            <div class="intro-text">
+                <p><strong>Agente:</strong> El diccionario no es un libro común. Es una "Base de Datos" gigante que contiene el significado de todas las palabras de nuestro idioma.</p>
+                <p>Tu misión es usar tus habilidades de espía para encontrar información oculta. Deberás:</p>
+                <ul style="color:var(--neon-green); list-style: none; padding-left: 0;">
+                    <li>[1] Ordenar códigos alfabéticamente.</li>
+                    <li>[2] Rastrear palabras guía.</li>
+                    <li>[3] Decodificar significados.</li>
+                </ul>
+                <p style="text-align: center; color: white;">¿Aceptas el reto?</p>
+            </div>
+
+            <button class="btn-start" onclick="startMission()">ACEPTAR MISIÓN</button>
+        </div>
+    </div>
+
+    <div class="terminal-container" id="game-terminal">
+        
+        <div class="header-bar">
+            <div class="mission-status">Estado: <span id="status-text">ENCRIPTADO</span></div>
+            <div class="security-level" id="security-badge">NIVEL 1/3</div>
+        </div>
+
+        <div class="level-screen active" id="level-1">
+            <span class="material-symbols-rounded" style="font-size:4rem; color:var(--neon-green); margin-bottom:10px;">lock</span>
+            <h2>ACCESO NIVEL 1: El Candado</h2>
+            <p class="instruction">El diccionario está ordenado de la A a la Z. Haz clic en las palabras en orden alfabético para abrirlo.</p>
+            <div class="word-grid" id="word-container"></div>
+            <div class="sequence-display" id="sequence-display">> _</div>
+        </div>
+
+        <div class="level-screen" id="level-2">
+            <span class="material-symbols-rounded" style="font-size:4rem; color:var(--neon-blue); margin-bottom:10px;">radar</span>
+            <h2>ACCESO NIVEL 2: El Radar</h2>
+            <p class="instruction">Las "Palabras Guía" están arriba de cada página y nos dicen qué palabras hay dentro. ¿Dónde buscarías esto?</p>
+            <div class="dictionary-header">CABALLO - CAJÓN</div>
+            <div class="target-word">CABEZA</div>
+            <div class="action-buttons">
+                <button class="nav-btn" onclick="checkLevel2('before')">Página Anterior<br><small>(&lt; Caballo)</small></button>
+                <button class="nav-btn" onclick="checkLevel2('here')">ESTA PÁGINA<br><small>(Entre las dos)</small></button>
+                <button class="nav-btn" onclick="checkLevel2('after')">Página Siguiente<br><small>(> Cajón)</small></button>
+            </div>
+        </div>
+
+        <div class="level-screen" id="level-3">
+            <span class="material-symbols-rounded" style="font-size:4rem; color:var(--neon-red); margin-bottom:10px;">key</span>
+            <h2>ACCESO NIVEL 3: Decodificador</h2>
+            <p class="instruction">¡Cuidado! Una palabra puede tener varios significados. Elige el correcto para esta frase:</p>
+            <div class="context-sentence">"El pirata encontró el tesoro en la <span class="highlight">copa</span> del árbol."</div>
+            <div class="meaning-options">
+                <div class="meaning-card" onclick="checkLevel3('wrong')">
+                    <span class="material-symbols-rounded meaning-icon">wine_bar</span>
+                    <div class="meaning-text">Vaso con pie para beber líquidos.</div>
+                </div>
+                <div class="meaning-card" onclick="checkLevel3('correct')">
+                    <span class="material-symbols-rounded meaning-icon">park</span>
+                    <div class="meaning-text">Parte más alta de un árbol con hojas.</div>
+                </div>
+                <div class="meaning-card" onclick="checkLevel3('wrong')">
+                    <span class="material-symbols-rounded meaning-icon">emoji_events</span>
+                    <div class="meaning-text">Premio que se da en una competición.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="level-screen victory-screen" id="victory-screen">
+            <span class="material-symbols-rounded lock-icon">lock_open</span>
+            <h2 style="color:var(--neon-green)">¡ACCESO CONCEDIDO!</h2>
+            <p class="instruction">Has dominado el uso del diccionario. Misión cumplida.</p>
+            <div class="treasure-box">DATO SECRETO DESBLOQUEADO:<br>"La palabra 'reconocer' se lee igual al revés. ¡Es un palíndromo!"</div>
+            <button class="hack-btn" style="margin-top:30px;" onclick="location.reload()">REINICIAR MISIÓN</button>
+        </div>
+
+        <div class="feedback-overlay" id="feedback-modal">
+            <div class="feedback-title" id="fb-icon">🚫</div>
+            <h2 style="margin:0; color:white;" id="fb-title">ACCESO DENEGADO</h2>
+            <p class="feedback-msg" id="fb-msg">Inténtalo de nuevo.</p>
+            <button class="btn-next" id="fb-btn" onclick="closeFeedback()">REINTENTAR</button>
+        </div>
+    </div>
+
+<script>
+    // --- ESTADO GLOBAL ---
+    let currentLevel = 1;
+    let selectedWords = [];
+    
+    function startMission() {
+        const intro = document.getElementById('intro-screen');
+        const game = document.getElementById('game-terminal');
+        
+        intro.style.transition = "opacity 0.5s";
+        intro.style.opacity = "0";
+        setTimeout(() => {
+            intro.style.display = "none";
+            game.style.display = "flex"; // Mostrar terminal
+            // Efecto de encendido
+            game.style.animation = "fadeIn 1s";
+        }, 500);
+    }
+
+    // --- LÓGICA NIVEL 1 ---
+    const level1Words = [
+        { text: "Calcetín", order: 3 }, { text: "Caimán", order: 1 },
+        { text: "Calendario", order: 4 }, { text: "Caja", order: 2 }
+    ];
+
+    function initLevel1() {
+        const container = document.getElementById('word-container');
+        let shuffled = [...level1Words].sort(() => Math.random() - 0.5);
+        
+        shuffled.forEach(word => {
+            let btn = document.createElement('button');
+            btn.className = 'hack-btn';
+            btn.innerText = word.text;
+            btn.onclick = () => selectWord(btn, word);
+            container.appendChild(btn);
+        });
+    }
+
+    function selectWord(btn, wordObj) {
+        if(btn.classList.contains('disabled')) return;
+        btn.classList.add('disabled'); btn.style.borderColor = "#555";
+        selectedWords.push(wordObj);
+        document.getElementById('sequence-display').innerText = "> " + selectedWords.map(w => w.text).join(" - ");
+        if(selectedWords.length === 4) validateLevel1();
+    }
+
+    function validateLevel1() {
+        const isCorrect = selectedWords[0].order === 1 && selectedWords[1].order === 2 && selectedWords[2].order === 3 && selectedWords[3].order === 4;
+        if(isCorrect) showFeedback(true, "Candado abierto. Procediendo al Nivel 2.", 2);
+        else { showFeedback(false, "Secuencia incorrecta. Reiniciando protocolo.", 1); resetLevel1(); }
+    }
+
+    function resetLevel1() {
+        selectedWords = []; document.getElementById('sequence-display').innerText = "> _";
+        document.getElementById('word-container').innerHTML = ""; initLevel1();
+    }
+
+    // --- LÓGICA NIVEL 2 ---
+    function checkLevel2(choice) {
+        if(choice === 'here') showFeedback(true, "Palabra localizada. Procediendo al Nivel 3.", 3);
+        else {
+            let msg = "";
+            if(choice === 'before') msg = "Error. 'Cabeza' va DESPUÉS de 'Caballo'.";
+            if(choice === 'after') msg = "Error. 'Cabeza' va ANTES de 'Cajón'.";
+            showFeedback(false, msg, 2);
+        }
+    }
+
+    // --- LÓGICA NIVEL 3 ---
+    function checkLevel3(result) {
+        if(result === 'correct') launchVictory();
+        else showFeedback(false, "Contexto incorrecto. Relee la oración.", 3);
+    }
+
+    // --- SISTEMA DE FEEDBACK ---
+    function showFeedback(success, message, nextLevelId) {
+        const modal = document.getElementById('feedback-modal');
+        const icon = document.getElementById('fb-icon');
+        const title = document.getElementById('fb-title');
+        const msg = document.getElementById('fb-msg');
+        const btn = document.getElementById('fb-btn');
+
+        modal.style.display = 'flex';
+        msg.innerText = message;
+
+        if(success) {
+            icon.innerText = "✅"; title.innerText = "ACCESO CONCEDIDO";
+            title.style.color = "var(--neon-green)"; btn.innerText = "CONTINUAR";
+            btn.style.background = "var(--neon-green)";
+            btn.onclick = () => { modal.style.display = 'none'; goToLevel(nextLevelId); };
+        } else {
+            icon.innerText = "🚫"; title.innerText = "ACCESO DENEGADO";
+            title.style.color = "var(--neon-red)"; btn.innerText = "REINTENTAR";
+            btn.style.background = "var(--neon-red)";
+            document.querySelector('.terminal-container').classList.add('shake');
+            setTimeout(()=>document.querySelector('.terminal-container').classList.remove('shake'), 500);
+            btn.onclick = () => { modal.style.display = 'none'; };
+        }
+    }
+
+    function goToLevel(levelNum) {
+        document.querySelectorAll('.level-screen').forEach(el => el.classList.remove('active'));
+        if(levelNum === 3) { document.getElementById('level-3').classList.add('active'); updateStatus(3); }
+        else if (levelNum === 2) { document.getElementById('level-2').classList.add('active'); updateStatus(2); }
+    }
+
+    function launchVictory() {
+        document.querySelectorAll('.level-screen').forEach(el => el.classList.remove('active'));
+        document.getElementById('victory-screen').classList.add('active');
+        document.getElementById('status-text').innerText = "DESBLOQUEADO";
+        document.getElementById('status-text').style.color = "var(--neon-green)";
+        document.getElementById('security-badge').style.display = "none";
+        confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
+    }
+
+    function updateStatus(lvl) { document.getElementById('security-badge').innerText = `NIVEL ${lvl}/3`; }
+
+    // Iniciar
+    initLevel1();
+</script>
+</body>
+</html>

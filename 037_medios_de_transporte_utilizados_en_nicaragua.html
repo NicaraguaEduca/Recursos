@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorador Nica: Transportes</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+    <style>
+        :root {
+            --primary-color: #4facfe;
+            --secondary-color: #00f2fe;
+            --accent-color: #FFD200;
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            /* CAMBIO 1: Fondo azul profundo para contrastar con textos blancos */
+            background: linear-gradient(135deg, #01579B 0%, #4FC3F7 100%);
+            min-height: 100vh;
+            padding-bottom: 50px;
+        }
+
+        /* TÍTULOS */
+        h1 {
+            color: #fff;
+            text-shadow: 0 4px 0 rgba(0,0,0,0.2);
+            font-weight: 700;
+            font-size: 3rem;
+        }
+
+        /* --- BOTONES DE NAVEGACIÓN --- */
+        /* CAMBIO 2: Ajuste para móvil (evitar que se monten) */
+        .nav-pills {
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 50px;
+            padding: 5px;
+            display: inline-flex;
+            flex-wrap: nowrap; /* Fuerza una sola línea */
+            gap: 5px;
+        }
+
+        .nav-pills .nav-link {
+            background-color: rgba(255,255,255,0.3);
+            color: #fff;
+            font-size: 1.1rem;
+            margin: 0;
+            border-radius: 50px;
+            padding: 10px 20px;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            white-space: nowrap; /* Evita que el texto se rompa */
+        }
+        .nav-pills .nav-link.active {
+            background-color: #fff;
+            color: #0277BD;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-weight: bold;
+        }
+        .nav-pills .nav-link:hover:not(.active) {
+            background-color: rgba(255,255,255,0.5);
+        }
+
+        /* --- TARJETAS DE ESTUDIO (Glassmorphism) --- */
+        .transport-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            overflow: hidden;
+            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+        }
+        
+        .transport-card:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 20px 30px rgba(0,0,0,0.2);
+            background: white;
+        }
+
+        .card-icon {
+            font-size: 4.5rem;
+            margin-bottom: 10px;
+            transition: transform 0.3s;
+        }
+        .transport-card:hover .card-icon {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        .card-title {
+            color: #0277BD;
+            font-weight: 700;
+            font-size: 1.4rem;
+        }
+
+        /* --- JUEGO DE MEMORIA (3D FLIP) --- */
+        .memory-scene {
+            perspective: 1000px;
+            aspect-ratio: 1 / 1;
+            cursor: pointer;
+            /* CAMBIO 3: Tamaño más pequeño para evitar scroll en PC */
+            max-width: 110px; 
+            margin: 0 auto; /* Centrar en su columna */
+        }
+        
+        .memory-card {
+            width: 100%; height: 100%;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        }
+
+        .memory-card.flipped, .memory-card.matched {
+            transform: rotateY(180deg);
+        }
+
+        .memory-face {
+            position: absolute; width: 100%; height: 100%;
+            backface-visibility: hidden;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            border-radius: 12px;
+            font-weight: bold;
+            border: 3px solid white;
+        }
+
+        .memory-front {
+            background: linear-gradient(135deg, #FF9966 0%, #FF5E62 100%);
+            color: white;
+            font-size: 2rem;
+            text-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        }
+
+        .memory-back {
+            background: white;
+            transform: rotateY(180deg);
+            color: #333;
+            padding: 5px;
+        }
+        
+        /* Ajuste de texto dentro de las cartas pequeñas */
+        .memory-back div {
+            font-size: 0.8rem;
+            line-height: 1.1;
+        }
+
+        /* Ajuste para móviles */
+        @media (max-width: 576px) {
+            .card-icon { font-size: 3rem; }
+            h1 { font-size: 2rem; }
+            .memory-scene { max-width: 80px; } /* Aún más pequeñas en móvil */
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container py-4">
+    
+    <div class="text-center mb-4 animate__animated animate__fadeInDown">
+        <h1 class="mb-2">🇳🇮 Viajando por Nicaragua</h1>
+        <p class="lead text-white" style="font-weight: 600;">¡Descubre, Aprende y Juega!</p>
+        
+        <ul class="nav nav-pills justify-content-center mt-3" id="pills-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="pills-study-tab" data-bs-toggle="pill" data-bs-target="#pills-study" type="button">
+                    📖 Aprender
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-game-tab" data-bs-toggle="pill" data-bs-target="#pills-game" type="button" onclick="initGame()">
+                    🎮 Memoria
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="tab-content" id="pills-tabContent">
+        
+        <div class="tab-pane fade show active" id="pills-study" role="tabpanel">
+            <div class="container-fluid bg-white bg-opacity-10 p-4 rounded-4 shadow-lg border border-white border-opacity-25">
+                <h4 class="text-center text-white mb-4">Haz clic en un transporte para ver su secreto 🤫</h4>
+                
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3" id="gallery-container">
+                    </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="pills-game" role="tabpanel">
+            <div class="container bg-white bg-opacity-90 p-4 rounded-4 shadow-lg border border-white text-center" style="max-width: 800px;">
+                <div class="d-flex justify-content-between align-items-center mb-3 text-dark px-3">
+                    <h3 class="m-0 text-primary">Encuentra las parejas</h3>
+                    <div class="badge bg-warning text-dark fs-5 shadow">Parejas: <span id="matches-count">0</span>/10</div>
+                </div>
+
+                <div class="row row-cols-4 row-cols-md-5 g-2 justify-content-center" id="game-grid">
+                    </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const transportData = [
+        { 
+            id: 'caponera', name: 'Caponera', icon: '🛺', 
+            desc: 'La reina de los barrios. Es pequeña, ágil y económica. ¡Cuidado con las vueltas!', 
+            place: 'Managua y Departamentos' 
+        },
+        { 
+            id: 'bus', name: 'Bus Rutero', icon: '🚌', 
+            desc: 'El transporte más usado. A veces llevan música alegre y decoraciones coloridas.', 
+            place: 'Todo Nicaragua' 
+        },
+        { 
+            id: 'panga', name: 'Panga', icon: '🚤', 
+            desc: '¡Agárrate fuerte! Es una lancha rápida necesaria para viajar por ríos y mar.', 
+            place: 'Costa Caribe y Río San Juan' 
+        },
+        { 
+            id: 'taxi', name: 'Taxi', icon: '🚕', 
+            desc: 'Te lleva directo a la puerta de tu casa. En Managua a veces recogen a varios pasajeros.', 
+            place: 'Ciudades Principales' 
+        },
+        { 
+            id: 'caballo', name: 'Caballo', icon: '🐎', 
+            desc: 'Fuerte y fiel. Ayuda a los agricultores donde no hay carreteras pavimentadas.', 
+            place: 'Zonas Rurales y Montañas' 
+        },
+        { 
+            id: 'jeep', name: 'Camioneta', icon: '🚙', 
+            desc: 'Perfecta para caminos de tierra. Sirve para llevar personas y sacos de café.', 
+            place: 'Norte y Zonas Agrícolas' 
+        },
+        { 
+            id: 'avion', name: 'Avión', icon: '✈️', 
+            desc: 'Vuela muy alto para ir a otros países o a Corn Island en poco tiempo.', 
+            place: 'Aeropuerto Internacional' 
+        },
+        { 
+            id: 'carro', name: 'Carro', icon: '🚗', 
+            desc: 'Transporte familiar privado. Ideal para pasear los domingos.', 
+            place: 'Carreteras y Ciudades' 
+        },
+        { 
+            id: 'bici', name: 'Bicicleta', icon: '🚲', 
+            desc: 'No usa gasolina, solo la fuerza de tus piernas. ¡Es muy saludable!', 
+            place: 'Parques y Barrios' 
+        },
+        { 
+            id: 'moto', name: 'Moto', icon: '🏍️', 
+            desc: 'Rápida y gasta poca gasolina. ¡Siempre debes usar casco!', 
+            place: 'Todo el país' 
+        }
+    ];
+
+    const galleryContainer = document.getElementById('gallery-container');
+
+    transportData.forEach((item, index) => {
+        const col = document.createElement('div');
+        col.className = 'col animate__animated animate__fadeInUp';
+        col.style.animationDelay = `${index * 0.1}s`; 
+
+        col.innerHTML = `
+            <div class="card h-100 transport-card text-center p-3" onclick="showPopup('${item.id}')">
+                <div class="card-icon">${item.icon}</div>
+                <div class="card-title">${item.name}</div>
+            </div>
+        `;
+        galleryContainer.appendChild(col);
+    });
+
+    function showPopup(id) {
+        const t = transportData.find(i => i.id === id);
+        
+        Swal.fire({
+            title: `<span style="color:#0277BD">${t.name}</span>`,
+            html: `
+                <div style="font-size: 6rem; margin-bottom: 10px; animation: rubberBand 1s;">${t.icon}</div>
+                <p style="font-size: 1.2rem; color:#555;">${t.desc}</p>
+                <div class="badge rounded-pill bg-warning text-dark fs-6 mt-2 p-2">📍 ${t.place}</div>
+            `,
+            background: '#fff url("https://www.transparenttextures.com/patterns/cubes.png")',
+            showConfirmButton: true,
+            confirmButtonText: '¡Entendido!',
+            confirmButtonColor: '#4facfe',
+            buttonsStyling: true,
+            customClass: {
+                popup: 'rounded-4 shadow-lg border-0'
+            },
+            showClass: { popup: 'animate__animated animate__zoomInDown' },
+            hideClass: { popup: 'animate__animated animate__zoomOutUp' }
+        });
+    }
+
+    let gameGrid = document.getElementById('game-grid');
+    let cards = [];
+    let hasFlippedCard = false;
+    let lockBoard = false;
+    let firstCard, secondCard;
+    let matches = 0;
+
+    function initGame() {
+        matches = 0;
+        document.getElementById('matches-count').innerText = matches;
+        gameGrid.innerHTML = '';
+        cards = [];
+
+        transportData.forEach(t => {
+            cards.push({ id: t.id, type: 'icon', content: t.icon });
+            cards.push({ id: t.id, type: 'text', content: t.name });
+        });
+
+        cards.sort(() => 0.5 - Math.random());
+
+        cards.forEach(cardData => {
+            const scene = document.createElement('div');
+            scene.className = 'col memory-scene';
+            
+            let visualContent = cardData.type === 'icon' 
+                ? `<div style="font-size: 2.5rem;">${cardData.content}</div>`
+                : `<div style="font-size: 0.8rem; text-transform:uppercase;">${cardData.content}</div>`;
+
+            scene.innerHTML = `
+                <div class="memory-card" data-id="${cardData.id}">
+                    <div class="memory-face memory-front">?</div>
+                    <div class="memory-face memory-back">${visualContent}</div>
+                </div>
+            `;
+            
+            scene.addEventListener('click', function() {
+                flipCard(this.querySelector('.memory-card'));
+            });
+            gameGrid.appendChild(scene);
+        });
+    }
+
+    function flipCard(card) {
+        if (lockBoard) return;
+        if (card === firstCard) return;
+
+        card.classList.add('flipped');
+
+        if (!hasFlippedCard) {
+            hasFlippedCard = true;
+            firstCard = card;
+            return;
+        }
+
+        secondCard = card;
+        checkForMatch();
+    }
+
+    function checkForMatch() {
+        let isMatch = firstCard.dataset.id === secondCard.dataset.id;
+        isMatch ? disableCards() : unflipCards();
+    }
+
+    function disableCards() {
+        firstCard.classList.add('matched');
+        secondCard.classList.add('matched');
+        
+        const Toast = Swal.mixin({
+            toast: true, position: 'top-end', showConfirmButton: false, timer: 1000,
+            didOpen: (toast) => { toast.addEventListener('mouseenter', Swal.stopTimer); }
+        });
+        Toast.fire({ icon: 'success', title: '¡Bien hecho!' });
+
+        matches++;
+        document.getElementById('matches-count').innerText = matches;
+        
+        resetBoard();
+
+        if(matches === transportData.length) {
+            triggerWin();
+        }
+    }
+
+    function unflipCards() {
+        lockBoard = true;
+        setTimeout(() => {
+            firstCard.classList.remove('flipped');
+            secondCard.classList.remove('flipped');
+            resetBoard();
+        }, 1000);
+    }
+
+    function resetBoard() {
+        [hasFlippedCard, lockBoard] = [false, false];
+        [firstCard, secondCard] = [null, null];
+    }
+
+    function triggerWin() {
+        Swal.fire({
+            title: '¡ERES UN GENIO!',
+            text: 'Conoces todos los transportes de Nicaragua.',
+            icon: 'success',
+            confirmButtonText: 'Jugar de nuevo',
+            backdrop: `rgba(0,0,123,0.4)`
+        }).then(() => {
+            initGame();
+        });
+
+        var duration = 3000;
+        var end = Date.now() + duration;
+
+        (function frame() {
+            confetti({
+                particleCount: 5,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: ['#4facfe', '#00f2fe', '#FFD200']
+            });
+            confetti({
+                particleCount: 5,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 },
+                colors: ['#4facfe', '#00f2fe', '#FFD200']
+            });
+
+            if (Date.now() < end) {
+                requestAnimationFrame(frame);
+            }
+        }());
+    }
+</script>
+
+</body>
+</html>

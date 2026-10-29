@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Simulador de Tributos: Ciudadano Alcalde</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #f0fdf4;
+            background-image: radial-gradient(#bbf7d0 1px, transparent 1px);
+            background-size: 24px 24px;
+            height: 100vh;
+            overflow-x: hidden;
+            color: #1e293b;
+        }
+
+        .title-font { font-family: 'Space Grotesk', sans-serif; }
+
+        /* Tarjetas con estilo Neumorfismo suave / Moderno */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .pedagogy-card { border-left: 12px solid #22c55e; }
+
+        /* Animaciones para los Sectores de la Ciudad */
+        .sector-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .sector-card:hover { transform: translateY(-4px); }
+
+        .emoji-pop {
+            animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes pop-in {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Barras animadas */
+        .progress-bar { transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body x-data="alcaldeApp()">
+
+    <main class="w-full max-w-5xl p-4 md:p-6 relative min-h-full flex flex-col justify-center mx-auto">
+        
+        <div x-show="estado === 'ficha'" class="glass-card pedagogy-card p-8 md:p-12 mx-auto max-w-3xl" x-transition.opacity>
+            <div class="flex items-center gap-4 mb-8 border-b-2 border-slate-100 pb-6">
+                <span class="text-5xl drop-shadow-md">💰</span>
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800 tracking-tight title-font">Ficha del Recurso</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                <div class="bg-green-50 p-5 rounded-2xl border border-green-100">
+                    <span class="block text-sm font-bold text-green-600 uppercase tracking-widest mb-2">Asignatura</span>
+                    <span class="text-xl font-bold text-slate-700">Valores / Cívica</span>
+                </div>
+                
+                <div class="bg-blue-50 p-5 rounded-2xl border border-blue-100">
+                    <span class="block text-sm font-bold text-blue-600 uppercase tracking-widest mb-2">Eje Temático</span>
+                    <span class="text-xl font-bold text-slate-700">Educación Fiscal</span>
+                </div>
+
+                <div class="bg-amber-50 p-5 rounded-2xl border border-amber-100 md:col-span-2">
+                    <span class="block text-sm font-bold text-amber-600 uppercase tracking-widest mb-2">Objetivo de Aprendizaje</span>
+                    <p class="text-lg font-medium text-slate-700 leading-relaxed">
+                        Comprender que los impuestos son contribuciones ciudadanas destinadas a financiar servicios públicos esenciales (salud, educación, infraestructura). Evaluar el impacto social que tiene una correcta distribución del presupuesto.
+                    </p>
+                </div>
+            </div>
+
+            <button @click="estado = 'instrucciones'" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-5 rounded-xl text-xl transition-all shadow-xl hover:shadow-green-500/40 hover:-translate-y-1">
+                Entendido, ir al simulador →
+            </button>
+        </div>
+
+        <div x-show="estado === 'instrucciones'" class="glass-card p-8 md:p-12 text-center max-w-2xl mx-auto" style="display: none;" x-transition.opacity>
+            <div class="text-7xl mb-6">🏛️</div>
+            <h1 class="text-4xl font-bold text-slate-800 mb-4 title-font">¡Bienvenido, Alcalde!</h1>
+            <p class="text-lg text-slate-600 mb-8 font-medium">Los ciudadanos han pagado sus impuestos. Tu deber es invertirlos sabiamente en la ciudad.</p>
+            
+            <div class="bg-slate-50 p-6 rounded-2xl mb-8 text-left border border-slate-200 shadow-inner">
+                <p class="font-bold text-slate-800 text-lg mb-3">Tus Directrices:</p>
+                <ul class="list-disc pl-6 space-y-3 text-slate-600 text-lg">
+                    <li>Tienes <b>8 Bolsas de Oro</b> 💰 provenientes de los tributos.</li>
+                    <li>Invierte en los 4 sectores para mejorarlos (Cada mejora cuesta 1 bolsa).</li>
+                    <li><b>Regla de Oro:</b> Ningún sector puede quedar en nivel 0, o habrá crisis en esa área.</li>
+                    <li>Busca el equilibrio perfecto para lograr la felicidad máxima.</li>
+                </ul>
+            </div>
+
+            <button @click="iniciarJuego()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-5 rounded-xl text-xl transition-all shadow-xl hover:-translate-y-1">
+                Asumir el Cargo
+            </button>
+        </div>
+
+        <div x-show="estado === 'jugando'" class="flex flex-col gap-6 w-full h-full py-2" style="display: none;" x-transition.opacity>
+            
+            <div class="glass-card p-5 md:p-6 flex flex-col md:flex-row gap-6 justify-between items-center z-20">
+                
+                <div class="flex-1 bg-amber-50 p-4 rounded-xl border-2 border-amber-200 w-full md:w-auto text-center md:text-left">
+                    <span class="block text-xs font-bold text-amber-600 uppercase tracking-widest mb-1">Presupuesto Público</span>
+                    <div class="flex items-center justify-center md:justify-start gap-2">
+                        <span class="text-3xl font-black text-amber-500" x-text="presupuesto"></span>
+                        <span class="text-2xl">💰</span>
+                        <span class="text-sm font-bold text-slate-400 ml-2" x-text="presupuesto === 0 ? '¡Fondos asignados!' : 'Disponibles'"></span>
+                    </div>
+                </div>
+
+                <div class="flex-1 w-full">
+                    <div class="flex justify-between items-end mb-2">
+                        <span class="text-sm font-bold uppercase text-blue-600 tracking-wider">Felicidad Ciudadana</span>
+                        <span class="text-xl font-bold" :class="felicidad > 70 ? 'text-green-500' : (felicidad > 40 ? 'text-amber-500' : 'text-red-500')" x-text="felicidad + '%'"></span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-6 rounded-full overflow-hidden shadow-inner relative">
+                        <div class="h-full progress-bar bg-gradient-to-r from-red-500 via-amber-400 to-green-500" :style="`width: ${felicidad}%`"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 flex-1">
+                <template x-for="sector in sectores" :key="sector.id">
+                    <div class="sector-card glass-card p-5 flex flex-col justify-between border-b-4" :class="sector.colorBorde">
+                        
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800" x-text="sector.nombre"></h3>
+                                <p class="text-xs font-bold uppercase tracking-widest mt-1" :class="sector.colorTexto" x-text="sector.titulos[sector.nivel]"></p>
+                            </div>
+                            <div class="flex gap-1">
+                                <template x-for="i in 3">
+                                    <div class="w-4 h-4 rounded-full border-2" :class="i <= sector.nivel ? 'bg-amber-400 border-amber-500' : 'bg-slate-100 border-slate-300'"></div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class="flex-1 flex flex-col items-center justify-center py-6 bg-slate-50 rounded-2xl border border-slate-100 mb-4 overflow-hidden relative group">
+                            <div class="absolute inset-0 opacity-20 transition-colors duration-500" :class="sector.colorFondo"></div>
+                            
+                            <div :key="sector.nivel" class="text-7xl md:text-8xl drop-shadow-xl emoji-pop relative z-10" x-text="sector.emojis[sector.nivel]"></div>
+                            
+                            <p class="text-slate-500 text-sm font-medium mt-4 text-center px-4 relative z-10" x-text="sector.descripciones[sector.nivel]"></p>
+                        </div>
+
+                        <div class="flex justify-between items-center bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
+                            <button @click="retirar(sector)" :disabled="sector.nivel === 0" 
+                                    class="w-12 h-12 flex items-center justify-center rounded-lg font-black text-2xl transition-colors disabled:opacity-30"
+                                    :class="sector.nivel > 0 ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-slate-100 text-slate-400'">
+                                -
+                            </button>
+                            
+                            <div class="flex flex-col items-center">
+                                <span class="text-xs font-bold text-slate-400 uppercase">Inversión</span>
+                                <span class="text-lg font-black text-slate-700" x-text="sector.nivel + ' 💰'"></span>
+                            </div>
+
+                            <button @click="invertir(sector)" :disabled="presupuesto === 0 || sector.nivel === 3" 
+                                    class="w-12 h-12 flex items-center justify-center rounded-lg font-black text-2xl transition-colors disabled:opacity-30"
+                                    :class="(presupuesto > 0 && sector.nivel < 3) ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'bg-slate-100 text-slate-400'">
+                                +
+                            </button>
+                        </div>
+
+                    </div>
+                </template>
+            </div>
+
+            <button @click="evaluarCiudad()" 
+                    class="w-full mt-4 bg-slate-800 hover:bg-slate-700 text-white font-bold py-5 rounded-2xl shadow-2xl transition-all text-xl title-font"
+                    :class="presupuesto === 0 ? 'animate-pulse bg-green-600 hover:bg-green-500' : ''">
+                Terminar Mandato y Evaluar Gestión ✓
+            </button>
+            
+            <div x-show="mostrarFeedback" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" style="display: none;">
+                <div class="bg-white p-8 md:p-10 rounded-3xl shadow-2xl border-4 border-white max-w-md w-full text-center" @click.outside="mostrarFeedback = false">
+                    <div class="text-7xl mb-4" x-text="feedbackIcono"></div>
+                    <h3 class="text-2xl font-bold text-slate-800 mb-3 title-font" x-text="feedbackTitulo"></h3>
+                    <p class="text-slate-600 text-lg mb-8 leading-relaxed font-medium" x-text="feedbackMensaje"></p>
+                    <button @click="mostrarFeedback = false" class="w-full bg-amber-500 hover:bg-amber-400 text-white font-bold py-4 rounded-xl transition-colors text-lg">
+                        Entendido
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div x-show="estado === 'fin'" class="glass-card p-8 md:p-12 text-center max-w-2xl mx-auto" style="display: none;" x-transition.opacity.duration.800ms>
+            <div class="text-8xl mb-6 drop-shadow-lg">🏙️✨</div>
+            <h2 class="text-4xl md:text-5xl font-black text-green-600 mb-4 title-font">¡Ciudad Próspera!</h2>
+            <p class="text-xl text-slate-700 mb-8 font-medium">Felicidades. Has demostrado que los impuestos, cuando se administran con responsabilidad y equilibrio, son la clave para construir una sociedad donde todos viven mejor.</p>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+                <template x-for="sector in sectores" :key="sector.id">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center">
+                        <span class="text-4xl mb-2" x-text="sector.emojis[sector.nivel]"></span>
+                        <span class="text-xs font-bold text-slate-400 uppercase text-center" x-text="sector.nombre"></span>
+                    </div>
+                </template>
+            </div>
+
+            <button @click="reiniciar()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-5 rounded-xl text-xl transition-all shadow-xl hover:-translate-y-1">
+                Iniciar Nueva Gestión
+            </button>
+        </div>
+
+    </main>
+
+    <script>
+        function alcaldeApp() {
+            return {
+                estado: 'ficha', 
+                presupuesto: 8,
+                felicidad: 0,
+                mostrarFeedback: false,
+                feedbackTitulo: '',
+                feedbackMensaje: '',
+                feedbackIcono: '',
+
+                // Emojis universales asegurados (100% compatibles)
+                sectores: [
+                    { 
+                        id: 'salud', nombre: 'Salud Pública', nivel: 0, 
+                        colorBorde: 'border-red-500', colorTexto: 'text-red-600', colorFondo: 'bg-red-400',
+                        emojis: ['🤒', '⛺', '🏥', '🚑'], 
+                        titulos: ['Crisis Sanitaria', 'Puesto Básico', 'Hospital General', 'Red de Salud Avanzada'],
+                        descripciones: [
+                            'Faltan medicinas. La gente está enfermando sin atención.', 
+                            'Hay atención básica, pero no alcanza para cirugías.', 
+                            'Atención médica gratuita y de calidad para la mayoría.', 
+                            'Salud de primer nivel con ambulancias para todos.'
+                        ]
+                    },
+                    { 
+                        id: 'educacion', nombre: 'Educación', nivel: 0, 
+                        colorBorde: 'border-blue-500', colorTexto: 'text-blue-600', colorFondo: 'bg-blue-400',
+                        emojis: ['🏚️', '📚', '🏫', '🎓'], 
+                        titulos: ['Aulas en Ruinas', 'Escuela Básica', 'Instituto Moderno', 'Ciudad Universitaria'],
+                        descripciones: [
+                            'Los niños no tienen donde estudiar de forma segura.', 
+                            'Tienen libros y maestros, pero el espacio es pequeño.', 
+                            'Escuelas equipadas, laboratorios y deportes.', 
+                            'Todos tienen acceso a educación superior gratuita.'
+                        ]
+                    },
+                    { 
+                        id: 'parques', nombre: 'Espacios Públicos', nivel: 0, 
+                        colorBorde: 'border-green-500', colorTexto: 'text-green-600', colorFondo: 'bg-green-400',
+                        emojis: ['🗑️', '🌱', '🌳', '⛲'], 
+                        titulos: ['Terreno Abandonado', 'Zonas Verdes', 'Parque Recreativo', 'Gran Plaza Central'],
+                        descripciones: [
+                            'Basura en las calles, no hay lugares para jugar.', 
+                            'Árboles plantados, el aire comienza a limpiarse.', 
+                            'Canchas y juegos donde las familias se reúnen.', 
+                            'Una ciudad hermosa, ecológica y turística.'
+                        ]
+                    },
+                    { 
+                        id: 'infraestructura', nombre: 'Infraestructura', nivel: 0, 
+                        colorBorde: 'border-purple-500', colorTexto: 'text-purple-600', colorFondo: 'bg-purple-400',
+                        emojis: ['🚧', '🛣️', '🚌', '🏙️'], 
+                        titulos: ['Caminos Rotos', 'Calles Asfaltadas', 'Transporte Público', 'Smart City'],
+                        descripciones: [
+                            'Calles con baches, es difícil transportar alimentos.', 
+                            'Los vehículos circulan rápido y sin problemas.', 
+                            'Buses modernos que conectan toda la ciudad.', 
+                            'Luces LED, puentes seguros e internet público.'
+                        ]
+                    }
+                ],
+
+                iniciarJuego() {
+                    this.presupuesto = 8;
+                    this.sectores.forEach(s => s.nivel = 0);
+                    this.calcularFelicidad();
+                    this.estado = 'jugando';
+                },
+
+                invertir(sector) {
+                    if (this.presupuesto > 0 && sector.nivel < 3) {
+                        sector.nivel++;
+                        this.presupuesto--;
+                        this.calcularFelicidad();
+                        confetti({ particleCount: 15, spread: 40, origin: { y: 0.8 }, zIndex: 100, colors: ['#fbbf24', '#f59e0b'] });
+                    }
+                },
+
+                retirar(sector) {
+                    if (sector.nivel > 0) {
+                        sector.nivel--;
+                        this.presupuesto++;
+                        this.calcularFelicidad();
+                    }
+                },
+
+                calcularFelicidad() {
+                    let puntos = this.sectores.reduce((sum, s) => sum + s.nivel, 0);
+                    let base = (puntos / 12) * 100;
+                    let sectoresAbandonados = this.sectores.filter(s => s.nivel === 0).length;
+                    
+                    this.felicidad = Math.max(0, Math.round(base - (sectoresAbandonados * 20)));
+                },
+
+                evaluarCiudad() {
+                    // Validar si aún hay presupuesto disponible
+                    if (this.presupuesto > 0) {
+                        this.lanzarError(
+                            "Presupuesto Sobrante", 
+                            "Alcalde, aún tiene " + this.presupuesto + " 💰 en las arcas. Debe invertir todo el dinero recaudado en beneficio del pueblo antes de evaluar su gestión.", 
+                            "💰"
+                        );
+                        return;
+                    }
+
+                    // Validar si algún sector quedó en ruinas
+                    let sectorEnCrisis = this.sectores.find(s => s.nivel === 0);
+                    if (sectorEnCrisis) {
+                        this.lanzarError(
+                            "Crisis en " + sectorEnCrisis.nombre, 
+                            "Has dejado sin presupuesto a este sector. De nada sirve tener áreas muy avanzadas si la población sufre por falta de " + sectorEnCrisis.nombre.toLowerCase() + ".", 
+                            sectorEnCrisis.emojis[0]
+                        );
+                        return;
+                    }
+
+                    // Si pasó las validaciones, gana
+                    this.estado = 'fin';
+                    this.lanzarConfetiFinal();
+                },
+
+                lanzarError(titulo, mensaje, icono) {
+                    this.feedbackTitulo = titulo;
+                    this.feedbackMensaje = mensaje;
+                    this.feedbackIcono = icono;
+                    this.mostrarFeedback = true;
+                },
+
+                lanzarConfetiFinal() {
+                    let duration = 4 * 1000;
+                    let end = Date.now() + duration;
+
+                    (function frame() {
+                        confetti({ particleCount: 8, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#22c55e', '#3b82f6', '#f59e0b', '#a855f7'] });
+                        confetti({ particleCount: 8, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#22c55e', '#3b82f6', '#f59e0b', '#a855f7'] });
+                        if (Date.now() < end) requestAnimationFrame(frame);
+                    }());
+                },
+
+                reiniciar() {
+                    this.estado = 'instrucciones';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Súper de la Coma - Puntuación</title>
+    
+    <!-- Fuentes Google: Outfit y Space Mono (para el ticket) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuración de Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                    },
+                    colors: {
+                        neo: {
+                            yellow: '#FDE047',
+                            pink: '#EC4899',
+                            blue: '#06B6D4',
+                            purple: '#8B5CF6',
+                            green: '#4ADE80',
+                            orange: '#F97316',
+                            bg: '#F8FAFC'
+                        }
+                    },
+                    boxShadow: {
+                        'hard': '8px 8px 0px 0px rgba(0, 0, 0, 1)',
+                        'hard-sm': '4px 4px 0px 0px rgba(0, 0, 0, 1)',
+                        'hard-hover': '2px 2px 0px 0px rgba(0, 0, 0, 1)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Clases utilitarias Neo-Brutalistas */
+        .neo-border { border: 4px solid #000; }
+        .neo-border-thick { border: 8px solid #000; }
+        
+        .btn-neo {
+            border: 4px solid #000;
+            box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+            transition: all 0.15s ease-out;
+        }
+        .btn-neo:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+        }
+        .btn-neo:active {
+            transform: translate(6px, 6px);
+            box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 1);
+        }
+
+        /* Animaciones para el pase de pantallas */
+        .screen-enter {
+            animation: slideInUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        .screen-exit {
+            animation: slideOutUp 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
+        }
+
+        @keyframes slideInUp {
+            0% { opacity: 0; transform: translateY(50px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes slideOutUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-50px) scale(0.95); }
+        }
+
+        /* Animaciones de Juego */
+        .shake-error { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
+        .pop-in { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.5) forwards; }
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.2) rotate(-15deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+
+        /* Fondo dinámico de cuadrícula */
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
+        }
+
+        /* Hueco para la coma en el ticket */
+        .comma-slot {
+            display: inline-block;
+            width: clamp(20px, 4vw, 35px);
+            height: clamp(30px, 5vw, 45px);
+            margin: 0 4px;
+            border: 3px dashed #000;
+            background-color: #E2E8F0;
+            border-radius: 4px;
+            cursor: pointer;
+            vertical-align: bottom;
+            position: relative;
+            top: -4px;
+            transition: all 0.2s;
+        }
+        .comma-slot:hover {
+            background-color: #CBD5E1;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="bg-neo-bg bg-grid text-black h-[100dvh] w-full overflow-hidden flex items-center justify-center font-sans selection:bg-black selection:text-neo-yellow">
+
+    <!-- CONTENEDOR PRINCIPAL DE LA APP -->
+    <div class="relative w-full max-w-6xl h-full md:h-[90vh] md:rounded-[2rem] neo-border bg-white shadow-hard flex overflow-hidden">
+        
+        <!-- PANTALLA 1: INICIO -->
+        <section id="screen-1" class="absolute inset-0 bg-neo-yellow flex flex-col items-center justify-center p-8 z-[60]">
+            <div class="bg-white neo-border p-6 md:p-12 shadow-hard flex flex-col items-center max-w-4xl w-full text-center transform -rotate-1">
+                <span class="bg-black text-neo-yellow font-bold px-4 py-2 text-sm md:text-xl uppercase tracking-widest mb-6">Misión: Ortografía</span>
+                <div class="text-[5rem] md:text-[8rem] mb-2 leading-none">🛒</div>
+                <h1 class="text-5xl md:text-7xl lg:text-[6rem] font-black leading-none mb-6">
+                    El Súper <br> de la <span class="text-neo-pink underline decoration-8 underline-offset-8">Coma</span>
+                </h1>
+                <p class="text-xl md:text-3xl font-bold mb-10 max-w-2xl">
+                    ¡Te han contratado como cajero! Organiza las listas de compras para que nada se mezcle.
+                </p>
+                <button onclick="goToScreen(2)" class="btn-neo bg-neo-green text-black font-black text-2xl md:text-4xl px-8 py-4 rounded-xl w-full md:w-auto">
+                    EMPEZAR TURNO ▶
+                </button>
+            </div>
+        </section>
+
+        <!-- PANTALLA 2: EXPLICACIÓN (LA PAUSA) -->
+        <section id="screen-2" class="absolute inset-0 bg-neo-blue flex flex-col items-center justify-center p-8 z-[50] hidden">
+            <div class="bg-white neo-border p-8 md:p-12 shadow-hard w-full max-w-5xl flex flex-col md:flex-row gap-8 items-center rotate-1">
+                <div class="text-[6rem] md:text-[10rem] flex-shrink-0 animate-bounce">✋</div>
+                <div class="flex flex-col text-left">
+                    <h2 class="text-4xl md:text-6xl font-black mb-4">La regla de la Pausa</h2>
+                    <p class="text-2xl md:text-3xl font-bold mb-6">
+                        Cuando en una lista hay muchos productos, usamos la <span class="bg-neo-pink text-white px-2 py-1 neo-border">COMA ( , )</span> para separarlos y dar un respiro.
+                    </p>
+                    <div class="bg-neo-bg p-4 neo-border font-mono text-xl md:text-2xl font-bold">
+                        <span class="text-gray-400 line-through">Manzanas peras uvas.</span><br>
+                        <span class="text-black">Manzanas<span class="text-neo-pink text-3xl md:text-4xl">,</span> peras<span class="text-neo-pink text-3xl md:text-4xl">,</span> uvas.</span>
+                    </div>
+                </div>
+            </div>
+            <button onclick="goToScreen(3)" class="btn-neo mt-8 bg-neo-yellow text-black font-black text-xl md:text-3xl px-8 py-4 rounded-xl">
+                ¿Y QUÉ MÁS? ➡
+            </button>
+        </section>
+
+        <!-- PANTALLA 3: EXPLICACIÓN (EVITAR LA REPETICIÓN) -->
+        <section id="screen-3" class="absolute inset-0 bg-neo-pink flex flex-col items-center justify-center p-8 z-[40] hidden">
+            <div class="bg-white neo-border p-8 md:p-12 shadow-hard w-full max-w-5xl flex flex-col md:flex-row gap-8 items-center -rotate-1">
+                <div class="flex flex-col text-right order-2 md:order-1">
+                    <h2 class="text-4xl md:text-6xl font-black mb-4 text-black">¡No hables como robot!</h2>
+                    <p class="text-2xl md:text-3xl font-bold mb-6">
+                        Sin comas, repetiríamos la letra "Y" todo el tiempo. La coma tiene el <strong class="bg-neo-yellow px-2 neo-border">superpoder</strong> de borrar esas "y" adicionales.
+                    </p>
+                    <div class="bg-neo-bg p-4 neo-border font-mono text-xl md:text-2xl font-bold text-center">
+                        <span class="text-gray-400 line-through">Pan <span class="text-neo-pink">y</span> queso <span class="text-neo-pink">y</span> leche.</span><br>
+                        <span class="text-black">Pan<span class="text-neo-pink text-3xl">,</span> queso y leche.</span>
+                    </div>
+                </div>
+                <div class="text-[6rem] md:text-[10rem] flex-shrink-0 order-1 md:order-2 pop-in">🤖</div>
+            </div>
+            <button onclick="goToScreen(4)" class="btn-neo mt-8 bg-neo-blue text-white font-black text-xl md:text-3xl px-8 py-4 rounded-xl">
+                ¡GENIAL! SIGAMOS ➡
+            </button>
+        </section>
+
+        <!-- PANTALLA 4: EXPLICACIÓN (REGLA DE LA Y FINAL) -->
+        <section id="screen-4" class="absolute inset-0 bg-neo-purple flex flex-col items-center justify-center p-8 z-[30] hidden">
+            <div class="bg-white neo-border p-8 md:p-12 shadow-hard w-full max-w-5xl flex flex-col md:flex-row gap-8 items-center rotate-1">
+                <div class="text-[6rem] md:text-[10rem] flex-shrink-0">🚨</div>
+                <div class="flex flex-col text-left">
+                    <h2 class="text-4xl md:text-6xl font-black mb-4">La regla del Cierre</h2>
+                    <p class="text-2xl md:text-3xl font-bold mb-6">
+                        Al llegar al <strong>último</strong> producto, ¡cuidado! <strong>NUNCA</strong> pongas coma antes de la letra <span class="bg-neo-yellow px-2 py-1 neo-border text-black">"y"</span>.
+                    </p>
+                    <div class="bg-neo-bg p-4 neo-border font-mono text-xl md:text-2xl font-bold text-center">
+                        <span class="text-gray-400 line-through">pan, leche<span class="text-neo-pink text-3xl">,</span> y huevos.</span><br>
+                        <span class="text-black">pan, leche <strong class="text-neo-purple text-3xl underline">y</strong> huevos.</span>
+                    </div>
+                </div>
+            </div>
+            <button onclick="startGame()" class="btn-neo mt-8 bg-neo-green text-black font-black text-xl md:text-3xl px-8 py-4 rounded-xl">
+                ¡A LA CAJA REGISTRADORA! 🛒
+            </button>
+        </section>
+
+        <!-- PANTALLA 5: EL JUEGO (CAJA REGISTRADORA) -->
+        <section id="screen-5" class="absolute inset-0 bg-gray-200 flex flex-col z-[20] hidden">
+            
+            <!-- Barra Superior (Progreso) -->
+            <div class="bg-black text-white p-4 flex justify-between items-center neo-border-thick border-t-0 border-l-0 border-r-0">
+                <div class="font-black text-2xl flex items-center gap-2">
+                    <span class="animate-pulse text-neo-green">●</span> CAJA 01
+                </div>
+                <div id="progress-bar" class="flex gap-2 text-2xl md:text-4xl">
+                    <span id="star-0" class="opacity-30 grayscale">🧾</span>
+                    <span id="star-1" class="opacity-30 grayscale">🧾</span>
+                    <span id="star-2" class="opacity-30 grayscale">🧾</span>
+                    <span id="star-3" class="opacity-30 grayscale">🧾</span>
+                    <span id="star-4" class="opacity-30 grayscale">🧾</span>
+                </div>
+            </div>
+
+            <!-- Área del Cajero -->
+            <div class="flex-grow flex flex-col items-center justify-center p-4 relative overflow-hidden">
+                <!-- Instrucción flotante -->
+                <div class="absolute top-4 bg-white neo-border px-6 py-2 shadow-hard-sm font-bold text-lg md:text-xl z-10 -rotate-1">
+                    Toca los huecos para poner <strong class="text-neo-pink text-2xl">,</strong>
+                </div>
+
+                <!-- EL TICKET DE COMPRA -->
+                <div id="ticket-machine" class="w-full max-w-3xl flex flex-col items-center justify-start mt-12 transition-transform duration-300">
+                    
+                    <!-- Papel del Ticket -->
+                    <div class="bg-yellow-50 w-full p-8 md:p-12 neo-border relative shadow-[0_20px_0_0_rgba(0,0,0,0.1)]">
+                        <!-- Cabecera del ticket -->
+                        <div class="text-center border-b-4 border-dashed border-black pb-4 mb-6 font-mono">
+                            <h3 class="text-3xl md:text-5xl font-black uppercase">SÚPER NEO</h3>
+                            <p class="text-xl font-bold mt-2" id="ticket-id">TICKET #1</p>
+                        </div>
+                        
+                        <!-- Frase del Ticket -->
+                        <div id="ticket-content" class="font-mono font-bold text-2xl md:text-4xl leading-loose text-center min-h-[150px] flex flex-wrap justify-center items-center">
+                            <!-- Inyectado por JS -->
+                        </div>
+
+                        <!-- Sello de Pagado -->
+                        <div id="stamp" class="absolute inset-0 flex items-center justify-center pointer-events-none hidden z-20">
+                            <div class="text-neo-green border-[6px] border-neo-green px-8 py-2 md:text-6xl text-4xl font-black uppercase -rotate-12 bg-white/90 neo-border pop-in">
+                                PAGADO
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Borde inferior del ticket cortado (CSS trick) -->
+                    <div class="w-full h-8 bg-yellow-50" style="background-image: radial-gradient(circle at 15px 0, transparent 16px, #FEFCE8 17px); background-size: 30px 20px; background-repeat: repeat-x; border-left: 4px solid #000; border-right: 4px solid #000;"></div>
+                </div>
+
+                <!-- Feedback dinámico -->
+                <div id="game-feedback" class="absolute bottom-10 bg-neo-pink text-white neo-border px-8 py-4 font-black text-xl md:text-3xl shadow-hard-sm opacity-0 transition-opacity duration-200">
+                    Mensaje
+                </div>
+            </div>
+        </section>
+
+        <!-- PANTALLA 6: VICTORIA -->
+        <section id="screen-6" class="absolute inset-0 bg-neo-orange flex flex-col items-center justify-center p-8 z-[10] hidden">
+            <div class="bg-white neo-border p-8 md:p-16 shadow-hard w-full max-w-4xl flex flex-col items-center text-center transform rotate-1">
+                <div class="text-[6rem] md:text-[10rem] mb-4 pop-in">🏆</div>
+                <h2 class="text-5xl md:text-7xl font-black uppercase mb-4 text-black">¡Turno Perfecto!</h2>
+                <p class="text-2xl md:text-4xl font-bold mb-8">
+                    Organizaste todos los tickets correctamente usando las comas.
+                </p>
+                <button onclick="location.reload()" class="btn-neo bg-neo-purple text-white font-black text-xl md:text-3xl px-8 py-4 rounded-xl w-full md:w-auto">
+                    JUGAR DE NUEVO 🔄
+                </button>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- SCRIPT DE NAVEGACIÓN Y LÓGICA DEL JUEGO -->
+    <script>
+        // Sistema de Navegación de Pantallas
+        function goToScreen(screenNumber) {
+            // Ocultar todas con salida
+            const screens = document.querySelectorAll('section');
+            
+            // Encontrar la pantalla actual (la que no tiene 'hidden')
+            let currentScreen = Array.from(screens).find(s => !s.classList.contains('hidden') && s.id !== `screen-${screenNumber}`);
+            
+            if (currentScreen) {
+                currentScreen.classList.remove('screen-enter');
+                currentScreen.classList.add('screen-exit');
+                
+                // Esperar a que termine la animación de salida
+                setTimeout(() => {
+                    currentScreen.classList.add('hidden');
+                    showNextScreen(screenNumber);
+                }, 400); // 400ms match con la animación CSS
+            } else {
+                showNextScreen(screenNumber);
+            }
+        }
+
+        function showNextScreen(screenNumber) {
+            const nextScreen = document.getElementById(`screen-${screenNumber}`);
+            nextScreen.classList.remove('hidden', 'screen-exit');
+            nextScreen.classList.add('screen-enter');
+        }
+
+        // --- LÓGICA DEL JUEGO ---
+
+        const ticketsData = [
+            { id: 1, parts: ["Lápices", "borradores", "reglas", "y tijeras."], commas: [true, true, false] },
+            { id: 2, parts: ["Manzanas", "uvas", "y peras."], commas: [true, false] },
+            { id: 3, parts: ["Pantalón", "camisa", "zapatos", "gorra", "y calcetines."], commas: [true, true, true, false] },
+            { id: 4, parts: ["Queso", "jamón", "y pan."], commas: [true, false] },
+            { id: 5, parts: ["Perros", "gatos", "peces", "y loros."], commas: [true, true, false] }
+        ];
+
+        let currentTicketIndex = 0;
+        let requiredCommas = 0;
+        let foundCommas = 0;
+        let isProcessing = false;
+
+        const ticketContent = document.getElementById('ticket-content');
+        const ticketIdLabel = document.getElementById('ticket-id');
+        const feedbackEl = document.getElementById('game-feedback');
+        const stampEl = document.getElementById('stamp');
+        const machineEl = document.getElementById('ticket-machine');
+
+        // Esta función se llama al hacer clic en "¡A la caja!"
+        function startGame() {
+            goToScreen(5); // Ahora el juego es la pantalla 5
+            currentTicketIndex = 0;
+            updateStars();
+            loadTicket();
+        }
+
+        function updateStars() {
+            for(let i=0; i<5; i++){
+                const star = document.getElementById(`star-${i}`);
+                if (i < currentTicketIndex) {
+                    star.classList.remove('opacity-30', 'grayscale');
+                    star.innerText = "⭐";
+                } else {
+                    star.classList.add('opacity-30', 'grayscale');
+                    star.innerText = "🧾";
+                }
+            }
+        }
+
+        function loadTicket() {
+            if (currentTicketIndex >= ticketsData.length) {
+                setTimeout(() => goToScreen(6), 500); // Ahora la victoria es la pantalla 6
+                return;
+            }
+
+            isProcessing = false;
+            stampEl.classList.add('hidden');
+            machineEl.classList.remove('translate-y-full', 'opacity-0');
+            
+            const data = ticketsData[currentTicketIndex];
+            ticketIdLabel.innerText = `TICKET #${data.id}`;
+            ticketContent.innerHTML = '';
+            
+            requiredCommas = data.commas.filter(c => c === true).length;
+            foundCommas = 0;
+
+            // Construir el ticket visualmente
+            data.parts.forEach((word, index) => {
+                const wordSpan = document.createElement('span');
+                wordSpan.innerText = word;
+                ticketContent.appendChild(wordSpan);
+
+                // Si no es la última palabra, poner un hueco
+                if (index < data.parts.length - 1) {
+                    const needsComma = data.commas[index];
+                    
+                    const slot = document.createElement('div');
+                    slot.className = 'comma-slot';
+                    slot.onclick = () => handleSlotClick(slot, needsComma);
+                    
+                    ticketContent.appendChild(slot);
+                }
+            });
+        }
+
+        function handleSlotClick(slot, needsComma) {
+            if (isProcessing || slot.classList.contains('solved')) return;
+
+            if (needsComma) {
+                // Acierto
+                slot.classList.add('solved');
+                slot.className = 'text-neo-pink font-black text-4xl md:text-6xl -mt-2 mx-1 pop-in';
+                slot.innerText = ',';
+                
+                foundCommas++;
+                
+                if (foundCommas === requiredCommas) {
+                    isProcessing = true;
+                    // Nivel completado
+                    stampEl.classList.remove('hidden');
+                    
+                    // Animar la salida del ticket y cargar el siguiente
+                    setTimeout(() => {
+                        machineEl.classList.add('translate-y-full', 'opacity-0');
+                        currentTicketIndex++;
+                        updateStars();
+                        setTimeout(loadTicket, 400); // Esperar que baje para resetear
+                    }, 1500);
+                }
+
+            } else {
+                // Error (Puso coma antes de la Y)
+                isProcessing = true;
+                slot.classList.add('shake-error', 'bg-neo-pink', 'border-neo-pink');
+                
+                showFeedback("¡NO! Recuerda la regla de la 'Y'.");
+
+                setTimeout(() => {
+                    slot.classList.remove('shake-error', 'bg-neo-pink', 'border-neo-pink');
+                    isProcessing = false;
+                }, 1200);
+            }
+        }
+
+        function showFeedback(text) {
+            feedbackEl.innerText = text;
+            feedbackEl.classList.remove('opacity-0');
+            feedbackEl.classList.add('pop-in');
+            
+            setTimeout(() => {
+                feedbackEl.classList.remove('pop-in');
+                feedbackEl.classList.add('opacity-0');
+            }, 2000);
+        }
+
+        // Inicializar pantalla 1
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('screen-1').classList.add('screen-enter');
+        });
+
+    </script>
+</body>
+</html>
+```

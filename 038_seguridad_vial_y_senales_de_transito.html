@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educación Vial Nica</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+    <style>
+        :root {
+            --primary-color: #E65100; /* Naranja Vial */
+            --secondary-color: #FFD600; /* Amarillo Señal */
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            /* Fondo Azul Profundo (Estilo Pro que te gustó) */
+            background: linear-gradient(135deg, #01579B 0%, #4FC3F7 100%);
+            min-height: 100vh;
+            padding-bottom: 50px;
+        }
+
+        /* TÍTULOS */
+        h1 {
+            color: #fff;
+            text-shadow: 0 4px 0 rgba(0,0,0,0.2);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .lead { color: #E1F5FE; font-weight: 600; }
+
+        /* --- NAVEGACIÓN --- */
+        .nav-pills {
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 50px;
+            padding: 5px;
+            display: inline-flex;
+            flex-wrap: nowrap;
+            gap: 5px;
+        }
+
+        .nav-pills .nav-link {
+            background-color: rgba(255,255,255,0.3);
+            color: #fff;
+            font-size: 1.1rem;
+            margin: 0;
+            border-radius: 50px;
+            padding: 10px 20px;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            white-space: nowrap;
+        }
+        .nav-pills .nav-link.active {
+            background-color: #fff;
+            color: #0277BD;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-weight: bold;
+        }
+        .nav-pills .nav-link:hover:not(.active) {
+            background-color: rgba(255,255,255,0.5);
+        }
+
+        /* --- TARJETAS DE ESTUDIO (Glassmorphism) --- */
+        .signal-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            overflow: hidden;
+            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        /* Borde inferior de color según tipo de señal (rojo/amarillo/azul) */
+        .signal-card::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 5px;
+            background: #ccc;
+        }
+        .signal-card.roja::after { background: #D32F2F; }
+        .signal-card.amarilla::after { background: #FBC02D; }
+        .signal-card.azul::after { background: #0288D1; }
+
+        .signal-card:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 20px 30px rgba(0,0,0,0.2);
+            background: white;
+        }
+
+        .card-icon {
+            font-size: 4.5rem;
+            margin-bottom: 10px;
+            transition: transform 0.3s;
+            /* Filtro de sombra para que parezca señal real */
+            filter: drop-shadow(2px 4px 2px rgba(0,0,0,0.2));
+        }
+        .signal-card:hover .card-icon {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        .card-title {
+            color: #37474F;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        /* --- JUEGO DE MEMORIA COMPACTO --- */
+        .memory-scene {
+            perspective: 1000px;
+            aspect-ratio: 1 / 1;
+            cursor: pointer;
+            max-width: 100px; /* Tamaño optimizado para PC */
+            margin: 0 auto;
+        }
+        
+        .memory-card {
+            width: 100%; height: 100%;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        }
+
+        .memory-card.flipped, .memory-card.matched {
+            transform: rotateY(180deg);
+        }
+
+        .memory-face {
+            position: absolute; width: 100%; height: 100%;
+            backface-visibility: hidden;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            border-radius: 12px;
+            font-weight: bold;
+            border: 3px solid white;
+        }
+
+        .memory-front {
+            background: linear-gradient(135deg, #FFB74D 0%, #FF9800 100%); /* Naranja reverso */
+            color: white;
+            font-size: 2rem;
+            text-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        }
+
+        .memory-back {
+            background: white;
+            transform: rotateY(180deg);
+            color: #333;
+            padding: 5px;
+        }
+        
+        .mem-icon { font-size: 2.5rem; line-height: 1; }
+        .mem-text { font-size: 0.7rem; font-weight: bold; text-transform: uppercase; line-height: 1.1; }
+
+        @media (max-width: 576px) {
+            .card-icon { font-size: 3rem; }
+            h1 { font-size: 2rem; }
+            .memory-scene { max-width: 75px; }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container py-4">
+    
+    <div class="text-center mb-4 animate__animated animate__fadeInDown">
+        <h1 class="mb-2">🚦 Señales de Tránsito Nicas</h1>
+        <p class="lead">¡Conoce las reglas para andar seguro!</p>
+        
+        <ul class="nav nav-pills justify-content-center mt-3" id="pills-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="pills-study-tab" data-bs-toggle="pill" data-bs-target="#pills-study" type="button">
+                    📖 Estudiar
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-game-tab" data-bs-toggle="pill" data-bs-target="#pills-game" type="button" onclick="initGame()">
+                    🎮 Jugar Memoria
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="tab-content" id="pills-tabContent">
+        
+        <div class="tab-pane fade show active" id="pills-study" role="tabpanel">
+            <div class="container-fluid bg-white bg-opacity-10 p-4 rounded-4 shadow-lg border border-white border-opacity-25">
+                <h4 class="text-center text-white mb-4">Haz clic en una señal para saber qué significa 👇</h4>
+                
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3" id="gallery-container">
+                    </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="pills-game" role="tabpanel">
+            <div class="container bg-white bg-opacity-90 p-4 rounded-4 shadow-lg border border-white text-center" style="max-width: 800px;">
+                <div class="d-flex justify-content-between align-items-center mb-3 text-dark px-3">
+                    <h3 class="m-0 text-primary fw-bold">Encuentra las parejas</h3>
+                    <div class="badge bg-warning text-dark fs-5 shadow">Aciertos: <span id="matches-count">0</span>/10</div>
+                </div>
+
+                <div class="row row-cols-4 row-cols-md-5 g-2 justify-content-center" id="game-grid">
+                    </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // --- DATOS DE SEÑALES (NICARAGUA) ---
+    // color: define el borde inferior de la tarjeta (roja, amarilla, azul)
+    const signalData = [
+        { 
+            id: 'alto', name: 'ALTO', icon: '🛑', color: 'roja',
+            desc: '¡Detente totalmente! Mira a ambos lados antes de avanzar. Es la señal más importante.', 
+            place: 'Intersecciones' 
+        },
+        { 
+            id: 'semaforo', name: 'Semáforo', icon: '🚦', color: 'amarilla',
+            desc: 'Luces que controlan el paso. Rojo: Alto. Amarillo: Precaución. Verde: Avanza.', 
+            place: 'Cruces grandes' 
+        },
+        { 
+            id: 'escolar', name: 'Zona Escolar', icon: '🚸', color: 'amarilla',
+            desc: 'Baja la velocidad. Hay niños cruzando la calle cerca de una escuela.', 
+            place: 'Frente a Escuelas' 
+        },
+        { 
+            id: 'obras', name: 'Obras', icon: '🚧', color: 'amarilla',
+            desc: 'Hombres trabajando en la vía. Hay huecos o maquinaria, ten cuidado.', 
+            place: 'Calles en reparación' 
+        },
+        { 
+            id: 'no_pasar', name: 'No Pasar', icon: '⛔', color: 'roja',
+            desc: 'Acceso prohibido. Si entras por aquí puedes chocar de frente.', 
+            place: 'Calles de un solo sentido' 
+        },
+        { 
+            id: 'hospital', name: 'Hospital', icon: '🏥', color: 'azul',
+            desc: 'Zona de silencio. No toques el claxon porque hay enfermos descansando.', 
+            place: 'Cerca de Hospitales' 
+        },
+        { 
+            id: 'rotonda', name: 'Rotonda', icon: '🔄', color: 'amarilla',
+            desc: 'Circula en dirección de las flechas. Cede el paso a quien ya está adentro.', 
+            place: 'Rotondas' 
+        },
+        { 
+            id: 'ceda', name: 'Ceda el Paso', icon: '🔻', color: 'roja',
+            desc: 'Baja la velocidad y deja pasar a los otros vehículos. Si no viene nadie, avanza.', 
+            place: 'Entradas a vías' 
+        },
+        { 
+            id: 'peaton', name: 'Cruce Peatonal', icon: '🚶', color: 'amarilla',
+            desc: 'Preferencia para las personas. Los autos deben parar para dejarlas pasar.', 
+            place: 'Esquinas y Zebras' 
+        },
+        { 
+            id: 'no_bici', name: 'No Bicicletas', icon: '🚳', color: 'roja',
+            desc: 'Prohibido el paso de bicicletas por seguridad. Usen otra vía.', 
+            place: 'Autopistas rápidas' 
+        }
+    ];
+
+    // --- REPRODUCCIÓN DE AUDIO (Lectura automática) ---
+    function reproducirVoz(texto) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); // Detener anterior si existe
+            const utterance = new SpeechSynthesisUtterance(texto);
+            utterance.lang = 'es-ES'; 
+            utterance.rate = 1.0; 
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    // --- RENDERIZADO GALERÍA ---
+    const galleryContainer = document.getElementById('gallery-container');
+
+    signalData.forEach((item, index) => {
+        const col = document.createElement('div');
+        col.className = 'col animate__animated animate__fadeInUp';
+        col.style.animationDelay = `${index * 0.1}s`; 
+
+        col.innerHTML = `
+            <div class="card h-100 signal-card text-center p-3 ${item.color}" onclick="showPopup('${item.id}')">
+                <div class="card-icon">${item.icon}</div>
+                <div class="card-title">${item.name}</div>
+            </div>
+        `;
+        galleryContainer.appendChild(col);
+    });
+
+    // --- POPUP INFORMATIVO ---
+    function showPopup(id) {
+        const t = signalData.find(i => i.id === id);
+        
+        // Audio educativo
+        reproducirVoz(t.name + ". " + t.desc);
+
+        Swal.fire({
+            title: `<span style="color:#333; font-weight:800;">${t.name}</span>`,
+            html: `
+                <div style="font-size: 6rem; margin-bottom: 15px; animation: pulse 2s infinite;">${t.icon}</div>
+                <p style="font-size: 1.2rem; color:#555; line-height:1.4;">${t.desc}</p>
+                <div class="badge rounded-pill bg-secondary text-white fs-6 mt-2 p-2">📍 ${t.place}</div>
+            `,
+            background: '#fff url("https://www.transparenttextures.com/patterns/cubes.png")',
+            showConfirmButton: true,
+            confirmButtonText: '¡Entendido!',
+            confirmButtonColor: '#0277BD',
+            buttonsStyling: true,
+            customClass: { popup: 'rounded-4 shadow-lg border-0' },
+            showClass: { popup: 'animate__animated animate__zoomIn' },
+            hideClass: { popup: 'animate__animated animate__zoomOut' }
+        });
+    }
+
+    // --- JUEGO DE MEMORIA ---
+    let gameGrid = document.getElementById('game-grid');
+    let cards = [];
+    let hasFlippedCard = false;
+    let lockBoard = false;
+    let firstCard, secondCard;
+    let matches = 0;
+
+    function initGame() {
+        matches = 0;
+        document.getElementById('matches-count').innerText = matches;
+        gameGrid.innerHTML = '';
+        cards = [];
+
+        // Crear pares: Tarjeta A (Icono) y Tarjeta B (Nombre)
+        signalData.forEach(t => {
+            cards.push({ id: t.id, type: 'icon', content: t.icon, name: t.name });
+            cards.push({ id: t.id, type: 'text', content: t.name, name: t.name });
+        });
+
+        // Barajar
+        cards.sort(() => 0.5 - Math.random());
+
+        // Renderizar
+        cards.forEach(cardData => {
+            const scene = document.createElement('div');
+            scene.className = 'col memory-scene';
+            
+            let visualContent = cardData.type === 'icon' 
+                ? `<div class="mem-icon">${cardData.content}</div>`
+                : `<div class="mem-text">${cardData.content}</div>`;
+
+            scene.innerHTML = `
+                <div class="memory-card" data-id="${cardData.id}" data-name="${cardData.name}">
+                    <div class="memory-face memory-front">?</div>
+                    <div class="memory-face memory-back">${visualContent}</div>
+                </div>
+            `;
+            
+            scene.addEventListener('click', function() {
+                flipCard(this.querySelector('.memory-card'));
+            });
+            gameGrid.appendChild(scene);
+        });
+    }
+
+    function flipCard(card) {
+        if (lockBoard) return;
+        if (card === firstCard) return;
+
+        card.classList.add('flipped');
+
+        if (!hasFlippedCard) {
+            hasFlippedCard = true;
+            firstCard = card;
+            return;
+        }
+
+        secondCard = card;
+        checkForMatch();
+    }
+
+    function checkForMatch() {
+        let isMatch = firstCard.dataset.id === secondCard.dataset.id;
+        
+        if (isMatch) {
+            reproducirVoz("¡Correcto! " + firstCard.dataset.name);
+            disableCards();
+        } else {
+            unflipCards();
+        }
+    }
+
+    function disableCards() {
+        firstCard.classList.add('matched');
+        secondCard.classList.add('matched');
+        
+        const Toast = Swal.mixin({
+            toast: true, position: 'top-end', showConfirmButton: false, timer: 1000,
+            didOpen: (toast) => { toast.addEventListener('mouseenter', Swal.stopTimer); }
+        });
+        Toast.fire({ icon: 'success', title: '¡Bien hecho!' });
+
+        matches++;
+        document.getElementById('matches-count').innerText = matches;
+        resetBoard();
+
+        if(matches === signalData.length) {
+            triggerWin();
+        }
+    }
+
+    function unflipCards() {
+        lockBoard = true;
+        setTimeout(() => {
+            firstCard.classList.remove('flipped');
+            secondCard.classList.remove('flipped');
+            resetBoard();
+        }, 1000);
+    }
+
+    function resetBoard() {
+        [hasFlippedCard, lockBoard] = [false, false];
+        [firstCard, secondCard] = [null, null];
+    }
+
+    function triggerWin() {
+        reproducirVoz("¡Felicidades! Eres un experto en señales de tránsito");
+        
+        Swal.fire({
+            title: '¡EXCELENTE!',
+            text: 'Conoces todas las señales para andar seguro.',
+            icon: 'success',
+            confirmButtonText: 'Jugar de nuevo',
+            backdrop: `rgba(0,0,123,0.4)`
+        }).then(() => {
+            initGame();
+        });
+
+        // Confeti de celebración
+        var duration = 3000;
+        var end = Date.now() + duration;
+
+        (function frame() {
+            confetti({
+                particleCount: 5,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: ['#FFD600', '#FF3D00', '#FFFFFF'] // Colores de señales
+            });
+            confetti({
+                particleCount: 5,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 },
+                colors: ['#FFD600', '#FF3D00', '#FFFFFF']
+            });
+
+            if (Date.now() < end) {
+                requestAnimationFrame(frame);
+            }
+        }());
+    }
+</script>
+
+</body>
+</html>

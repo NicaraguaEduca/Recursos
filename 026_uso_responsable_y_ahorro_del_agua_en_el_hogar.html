@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Detective del Agua: Casa Grande</title>
+    
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,700,1,0" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+
+        :root {
+            --sky: #E1F5FE;
+            --grass: #66BB6A;
+            --house-bg: #FFF8E1;
+            --wall-color: #795548;
+            --primary: #0288D1;
+        }
+
+        body {
+            margin: 0; padding: 0; height: 100vh;
+            font-family: 'Fredoka', sans-serif;
+            background: var(--sky);
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; user-select: none;
+        }
+
+        #game-container {
+            width: 98%; max-width: 850px;
+            height: 95vh; max-height: 800px;
+            background: #fff; border-radius: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            display: flex; flex-direction: column;
+            overflow: hidden; position: relative; border: 6px solid #fff;
+        }
+
+        header {
+            padding: 15px; background: #FFF; z-index: 10;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 2px dashed #B3E5FC;
+        }
+        .score-box {
+            background: #E0F7FA; padding: 8px 20px; border-radius: 20px;
+            color: var(--primary); font-weight: bold; font-size: 1.2rem;
+        }
+        h1 { margin: 0; font-size: 1.5rem; color: #37474F; display: flex; align-items: center; gap: 10px; }
+
+        /* ESCENARIO PANORÁMICO */
+        #scene-area {
+            flex: 1; position: relative; 
+            /* Fondo de cielo y pasto general */
+            background: linear-gradient(to bottom, #4FC3F7 0%, var(--sky) 60%, var(--grass) 60%);
+            display: flex; justify-content: center; align-items: flex-end;
+            /* MEJORA 1: Padding inferior para subir la casa */
+            padding-bottom: 40px; 
+            overflow: hidden;
+        }
+        
+        svg { width: 100%; height: 100%; }
+        
+        .clickable { cursor: pointer; transition: transform 0.2s; }
+        .clickable:hover { transform: scale(1.05); filter: drop-shadow(0 0 5px gold); }
+        
+        .alert-circle { 
+            fill: #FF5252; opacity: 0.6; 
+            animation: pulse 1.5s infinite; 
+        }
+        @keyframes pulse { 0% { r: 15; opacity: 0.6; } 100% { r: 30; opacity: 0; } }
+
+        .water-flow { stroke-dasharray: 15; animation: flow 0.8s linear infinite; }
+        @keyframes flow { to { stroke-dashoffset: -30; } }
+
+        /* MEJORA 2: Animaciones de Nubes y Sol */
+        .cloud { opacity: 0.9; animation: moveCloud 35s linear infinite; }
+        .cloud-small { opacity: 0.7; animation: moveCloud 50s linear infinite reverse; }
+        
+        @keyframes moveCloud {
+            from { transform: translateX(-150px); }
+            to { transform: translateX(650px); }
+        }
+
+        .sun-glow { animation: sunPulse 4s infinite alternate; transform-origin: 500px 50px; }
+        @keyframes sunPulse { from { opacity: 0.6; transform: scale(1); } to { opacity: 0.9; transform: scale(1.1); } }
+
+        .hidden-svg { display: none; }
+
+        /* FEEDBACK */
+        #feedback-panel {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(200px);
+            width: 80%; background: white; padding: 20px; border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 4px solid var(--primary); z-index: 50;
+        }
+        #feedback-panel.visible { transform: translateX(-50%) translateY(0); }
+        .feedback-text { font-size: 1.2rem; color: #455A64; font-weight: 600; }
+
+        /* OVERLAYS */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95); z-index: 100;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; padding: 20px; transition: opacity 0.5s;
+        }
+        .hidden { opacity: 0; pointer-events: none; }
+        
+        .btn {
+            background: var(--primary); color: white; border: none; padding: 15px 40px;
+            font-size: 1.4rem; border-radius: 50px; cursor: pointer; margin-top: 30px;
+            font-family: 'Fredoka', sans-serif; font-weight: bold;
+            box-shadow: 0 6px 0 #01579B; transition: transform 0.1s;
+        }
+        .btn:active { transform: translateY(4px); box-shadow: none; }
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+<div id="game-container">
+    
+    <div id="intro-screen" class="overlay">
+        <div style="font-size: 5rem; margin-bottom: 10px; animation: bounce 2s infinite;">🏠</div>
+        <h1 style="color: var(--primary);">Detective del Agua</h1>
+        <p style="font-size: 1.3rem; color: #555; max-width: 500px;">
+            ¡Bienvenido a la casa! Hay <strong>4 problemas</strong> de agua.<br>
+            Busca dentro y fuera de la casa para arreglarlos.
+        </p>
+        <button class="btn" onclick="startGame()">Comenzar</button>
+    </div>
+
+    <header>
+        <h1><span class="material-symbols-rounded">water_drop</span> Misión: Ahorro</h1>
+        <div class="score-box">
+            <span id="score">0</span>/4
+        </div>
+    </header>
+
+    <div id="scene-area">
+        <svg viewBox="0 0 550 450" xmlns="http://www.w3.org/2000/svg">
+            
+            <g>
+                <circle cx="500" cy="50" r="40" fill="url(#sunGradient)" class="sun-glow" opacity="0.5"/>
+                <circle cx="500" cy="50" r="25" fill="#FFEB3B" />
+                <defs>
+                    <radialGradient id="sunGradient">
+                        <stop offset="0%" stop-color="#FFF59D"/>
+                        <stop offset="100%" stop-color="rgba(255, 235, 59, 0)"/>
+                    </radialGradient>
+                </defs>
+            </g>
+
+            <path class="cloud" d="M50,50 Q70,30 90,50 T130,50 Q150,70 130,80 T90,80 T50,50" fill="#FFFFFF" />
+            <path class="cloud-small" d="M300,30 Q320,10 340,30 T380,30 Q400,50 380,60 T340,60 T300,30" fill="#FFFFFF" transform="scale(0.8) translate(100, 20)" />
+
+
+            <rect x="380" y="280" width="170" height="170" fill="#81C784"/> 
+
+            <path d="M20,450 L20,150 L200,40 L380,150 L380,450 Z" fill="#FFF8E1" stroke="#5D4037" stroke-width="5"/>
+            <path d="M10,150 L200,30 L390,150" fill="none" stroke="#3E2723" stroke-width="8" stroke-linecap="round"/>
+            <line x1="20" y1="290" x2="380" y2="290" stroke="#5D4037" stroke-width="5"/>
+            <line x1="200" y1="290" x2="200" y2="450" stroke="#5D4037" stroke-width="5"/>
+
+            <g id="room-bath" transform="translate(40, 160)">
+                <rect x="10" y="10" width="50" height="50" fill="#B3E5FC" stroke="#8D6E63" stroke-width="3"/>
+                <path d="M10,90 Q10,120 40,120 L110,120 Q140,120 140,90 L140,80 L10,80 Z" fill="#E1F5FE" stroke="#0277BD" stroke-width="2"/>
+                
+                <g id="bath-bad" class="clickable" onclick="fixIssue('bath')">
+                    <path d="M130,40 L130,70" stroke="#9E9E9E" stroke-width="6"/> 
+                    <circle cx="130" cy="40" r="20" fill="#FF5252" opacity="0.4" class="alert-circle"/>
+                    <path class="water-flow" d="M130,70 L130,110" stroke="#29B6F6" stroke-width="5"/>
+                    <text x="120" y="30" font-size="25">🚰</text>
+                </g>
+                <g id="bath-good" class="hidden-svg">
+                    <path d="M130,40 L130,70" stroke="#9E9E9E" stroke-width="6"/>
+                    <text x="120" y="30" font-size="25">✨</text>
+                </g>
+            </g>
+
+            <g id="room-kitchen" transform="translate(30, 310)">
+                <rect x="0" y="60" width="140" height="80" fill="#D7CCC8"/> 
+                <rect x="40" y="60" width="60" height="20" fill="#BDBDBD"/> 
+                <g id="kitchen-bad" class="clickable" onclick="fixIssue('kitchen')">
+                    <circle cx="70" cy="30" r="25" fill="#FF5252" opacity="0.4" class="alert-circle"/>
+                    <path class="water-flow" d="M70,30 L70,70" stroke="#29B6F6" stroke-width="4"/>
+                    <text x="55" y="30" font-size="25">🍽️</text>
+                </g>
+                <g id="kitchen-good" class="hidden-svg">
+                    <rect x="50" y="55" width="40" height="25" rx="5" fill="#81D4FA" opacity="0.7"/> 
+                    <text x="55" y="30" font-size="25">🧼</text>
+                </g>
+            </g>
+
+            <g id="room-toilet" transform="translate(230, 310)">
+                <text x="30" y="110" font-size="50">🚽</text>
+                
+                <g id="toilet-bad" class="clickable" onclick="fixIssue('toilet')">
+                    <path d="M90,120 L90,20" stroke="#90A4AE" stroke-width="8"/> 
+                    <circle cx="90" cy="70" r="20" fill="#FF5252" opacity="0.4" class="alert-circle"/>
+                    <path class="water-flow" d="M90,70 L60,90 M90,70 L120,90" stroke="#29B6F6" stroke-width="3"/>
+                </g>
+                <g id="toilet-good" class="hidden-svg">
+                    <path d="M90,120 L90,20" stroke="#90A4AE" stroke-width="8"/>
+                    <rect x="80" y="60" width="20" height="20" fill="#FFB74D" rx="3" stroke="#E65100" stroke-width="2"/> 
+                </g>
+            </g>
+
+            <g id="room-garden" transform="translate(380, 250)">
+                <path d="M0,80 L20,80 L20,90" stroke="#5D4037" stroke-width="5" fill="none"/> 
+                
+                <g id="garden-bad" class="clickable" onclick="fixIssue('garden')">
+                    <path d="M20,90 Q30,150 60,160 T120,160" stroke="#43A047" stroke-width="5" fill="none"/>
+                    
+                    <ellipse cx="130" cy="165" rx="20" ry="5" fill="#29B6F6" opacity="0.5"/>
+                    <path class="water-flow" d="M120,160 L140,160" stroke="#29B6F6" stroke-width="4"/>
+                    
+                    <circle cx="120" cy="160" r="25" fill="#FF5252" opacity="0.4" class="alert-circle"/>
+                    <text x="90" y="150" font-size="30">🚿</text>
+                </g>
+                
+                <g id="garden-good" class="hidden-svg">
+                    <text x="80" y="160" font-size="40">🌻</text>
+                    <text x="120" y="140" font-size="30">💧</text> 
+                </g>
+            </g>
+
+        </svg>
+    </div>
+
+    <div id="feedback-panel">
+        <span class="feedback-text" id="feedback-msg">Mensaje aquí</span>
+    </div>
+
+    <div id="win-screen" class="overlay hidden">
+        <div style="font-size: 6rem; margin-bottom: 20px;">🌊</div>
+        <h1 style="color: #0277BD; font-size: 2.5rem;">¡Casa Protegida!</h1>
+        <p style="font-size: 1.4rem; color: #555;">Has cerrado todos los grifos y reparado las fugas.</p>
+        <button class="btn" onclick="location.reload()">Jugar otra vez</button>
+    </div>
+
+</div>
+
+<script>
+    /* LÓGICA DEL JUEGO */
+    let score = 0;
+    const totalIssues = 4;
+    const feedbackPanel = document.getElementById('feedback-panel');
+    const feedbackText = document.getElementById('feedback-msg');
+
+    const facts = {
+        bath: "¡Genial! Cerrar el grifo al cepillarte ahorra mucha agua. 🪥",
+        kitchen: "¡Muy bien! Usa un recipiente para lavar los platos, no el chorro. 🍽️",
+        toilet: "¡Reparado! Las fugas silenciosas gastan litros de agua al día. 🔧",
+        garden: "¡Excelente! La manguera gasta mucho. Mejor usa una regadera. 🌻"
+    };
+
+    function startGame() {
+        document.getElementById('intro-screen').classList.add('hidden');
+    }
+
+    function fixIssue(id) {
+        const badEl = document.getElementById(id + '-bad');
+        const goodEl = document.getElementById(id + '-good');
+
+        if(badEl.style.display === 'none') return;
+
+        // Animación de cambio
+        badEl.style.display = 'none';
+        goodEl.classList.remove('hidden-svg');
+        goodEl.style.display = 'block';
+        
+        // Fade in
+        goodEl.style.opacity = 0;
+        let op = 0;
+        let timer = setInterval(function () {
+            if (op >= 1) clearInterval(timer);
+            goodEl.style.opacity = op;
+            op += 0.1;
+        }, 30);
+
+        // Puntaje
+        score++;
+        document.getElementById('score').innerText = score;
+
+        // Feedback
+        showFeedback(facts[id]);
+
+        // Victoria
+        if (score === totalIssues) {
+            setTimeout(winGame, 2000);
+        }
+    }
+
+    function showFeedback(msg) {
+        feedbackText.innerText = msg;
+        feedbackPanel.classList.add('visible');
+        setTimeout(() => {
+            if (score < totalIssues) feedbackPanel.classList.remove('visible');
+        }, 3500);
+    }
+
+    function winGame() {
+        feedbackPanel.classList.remove('visible');
+        document.getElementById('win-screen').classList.remove('hidden');
+        fireConfetti();
+    }
+
+    function fireConfetti() {
+        var duration = 3000;
+        var end = Date.now() + duration;
+
+        (function frame() {
+            confetti({
+                particleCount: 7,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: ['#0288D1', '#4FC3F7', '#B3E5FC']
+            });
+            confetti({
+                particleCount: 7,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 },
+                colors: ['#81C784', '#66BB6A', '#FFFFFF']
+            });
+
+            if (Date.now() < end) {
+                requestAnimationFrame(frame);
+            }
+        }());
+    }
+    
+    // Animación CSS extra para el emoji
+    const style = document.createElement('style');
+    style.innerHTML = `@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }`;
+    document.head.appendChild(style);
+</script>
+
+</body>
+</html>

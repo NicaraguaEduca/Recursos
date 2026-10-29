@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traductor de Emojis - Edición Premium (Expandida)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+
+        :root {
+            --bg-body: #dfe6e9;
+            --bg-stage-top: #a9cce3;
+            --bg-stage-bot: #7fb3d5;
+            --emoji-yellow: #f1c40f;
+            --emoji-orange: #f39c12;
+            --emoji-stroke: #2d3436;
+            --text-dark: #2c3e50;
+            --btn-base: #ecf0f1;
+            --btn-shadow: #bdc3c7;
+            --accent-color: #3498db;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg-body);
+            background-image: radial-gradient(#b2bec3 1px, transparent 1px);
+            background-size: 20px 20px;
+            margin: 0; padding: 0;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh;
+            user-select: none;
+        }
+
+        .game-container {
+            width: 100%; 
+            max-width: 600px;
+            height: 95vh;
+            max-height: 900px;
+            background: white;
+            display: flex; flex-direction: column;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15), 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- ESCENARIO --- */
+        .stage {
+            flex: 1.2;
+            background: linear-gradient(180deg, var(--bg-stage-top) 0%, var(--bg-stage-bot) 100%);
+            position: relative;
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
+            border-bottom: 8px solid rgba(0,0,0,0.1);
+        }
+
+        .stage::before {
+            content: '';
+            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        /* --- PERSONAJE --- */
+        .emoji-wrapper {
+            width: 300px; height: 300px;
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.2));
+            z-index: 10;
+        }
+
+        .feature { display: none; }
+        
+        /* === ESTADOS Y ANIMACIONES === */
+        
+        /* 1. Impaciente */
+        .state-impatient .emoji-head { animation: tickTock 2s infinite ease-in-out; }
+        .state-impatient .eyes-rolling, .state-impatient .mouth-flat, .state-impatient .extra-anger { display: block; }
+
+        /* 2. Feliz */
+        .state-happy .emoji-head { animation: bounceJoy 0.8s infinite alternate ease-in-out; }
+        .state-happy .eyes-happy, .state-happy .mouth-big-smile, .state-happy .extra-sparkle { display: block; }
+
+        /* 3. Duda */
+        .state-doubt .emoji-head { animation: floatThink 3s infinite ease-in-out; }
+        .state-doubt .eyes-thinking, .state-doubt .mouth-hmm, .state-doubt .hand-chin { display: block; }
+
+        /* 4. Miedo */
+        .state-scared .emoji-head { animation: shakeScared 0.2s infinite; }
+        .state-scared .eyes-scared, .state-scared .mouth-scream, .state-scared .extra-sweat, .state-scared .hands-face { display: block; }
+
+        /* --- NUEVO: 5. Sueño --- */
+        .state-sleepy .emoji-head { animation: nodSleep 3s infinite ease-in-out; }
+        .state-sleepy .eyes-sleep, .state-sleepy .mouth-sleep, .state-sleepy .extra-zzz { display: block; }
+        .state-sleepy .extra-zzz { animation: floatZzz 2s infinite linear; }
+
+        /* --- NUEVO: 6. Enamorado --- */
+        .state-love .emoji-head { animation: heartbeat 1.5s infinite ease-in-out; }
+        .state-love .eyes-love, .state-love .mouth-smile { display: block; }
+
+
+        /* KEYFRAMES */
+        @keyframes tickTock { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+        @keyframes bounceJoy { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(-20px) scale(1.05); } }
+        @keyframes floatThink { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-10px) rotate(2deg); } }
+        @keyframes shakeScared { 
+            0% { transform: translate(2px, 1px) rotate(0deg); } 
+            10% { transform: translate(-1px, -2px) rotate(-1deg); } 
+            20% { transform: translate(-3px, 0px) rotate(1deg); } 
+            30% { transform: translate(0px, 2px) rotate(0deg); } 
+            40% { transform: translate(1px, -1px) rotate(1deg); } 
+            50% { transform: translate(-1px, 2px) rotate(-1deg); } 
+            60% { transform: translate(-3px, 1px) rotate(0deg); } 
+            70% { transform: translate(2px, 1px) rotate(-1deg); } 
+            80% { transform: translate(-1px, -1px) rotate(1deg); } 
+            90% { transform: translate(2px, 2px) rotate(0deg); } 
+            100% { transform: translate(1px, -2px) rotate(-1deg); } 
+        }
+        
+        /* Nuevos Keyframes */
+        @keyframes nodSleep { 0%, 100% { transform: rotate(5deg) translateY(5px); } 50% { transform: rotate(-5deg) translateY(0); } }
+        @keyframes floatZzz { 0% { opacity: 0; transform: translate(0, 0) scale(0.5); } 50% { opacity: 1; } 100% { opacity: 0; transform: translate(20px, -30px) scale(1.2); } }
+        @keyframes heartbeat { 0% { transform: scale(1); } 15% { transform: scale(1.1); } 30% { transform: scale(1); } 45% { transform: scale(1.1); } 60% { transform: scale(1); } }
+
+
+        /* --- CONTROLES --- */
+        .controls {
+            flex: 1;
+            background: #fff; padding: 25px 30px;
+            z-index: 20;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+
+        .question-box {
+            text-align: center; margin-bottom: 25px;
+            background: #f8f9fa;
+            padding: 15px; border-radius: 15px;
+            border-left: 5px solid var(--accent-color);
+        }
+        .q-title { color: #95a5a6; font-size: 0.85rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1.5px;}
+        .q-text { font-size: 1.5rem; color: var(--text-dark); margin-top: 5px; font-weight: 900; line-height: 1.2;}
+
+        .options-grid { display: grid; gap: 15px; }
+
+        .btn-option {
+            background: white; 
+            border: 2px solid #e0e0e0;
+            border-bottom: 6px solid #e0e0e0;
+            padding: 15px 20px; 
+            border-radius: 12px; 
+            font-size: 1.1rem;
+            text-align: center; 
+            cursor: pointer; 
+            color: var(--text-dark);
+            font-weight: 700; 
+            font-family: 'Nunito', sans-serif;
+            transition: all 0.1s ease;
+            position: relative;
+            outline: none;
+        }
+
+        .btn-option:hover { transform: translateY(-2px); border-bottom: 6px solid #dcdcdc; background: #fdfdfd; }
+        .btn-option:active { transform: translateY(4px); border-bottom: 2px solid #e0e0e0; background: #f0f0f0; }
+
+        .btn-option.correct { background: #2ecc71; color: white; border-color: #27ae60; border-bottom-color: #219150; animation: pulse 0.5s; }
+        .btn-option.wrong { background: #e74c3c; color: white; border-color: #c0392b; border-bottom-color: #96281b; animation: shake 0.4s; }
+
+        /* MODAL FINAL */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(44, 62, 80, 0.98);
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; text-align: center; color: white;
+            backdrop-filter: blur(5px);
+        }
+        .btn-restart {
+            margin-top: 30px; padding: 15px 50px; font-size: 1.3rem;
+            background: var(--emoji-yellow); border: none; border-radius: 50px; 
+            color: #2c3e50; font-weight: 900; cursor: pointer;
+            box-shadow: 0 6px 0 var(--emoji-orange);
+            transition: transform 0.1s;
+        }
+        .btn-restart:active { transform: translateY(6px); box-shadow: 0 0 0 var(--emoji-orange); }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    
+    <div class="stage">
+        <div class="emoji-wrapper" id="emoji-container">
+            <svg viewBox="0 0 200 200" width="100%" height="100%" style="overflow: visible;">
+                <defs>
+                    <radialGradient id="headGrad" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                        <stop offset="70%" style="stop-color:var(--emoji-yellow)" />
+                        <stop offset="100%" style="stop-color:var(--emoji-orange)" />
+                    </radialGradient>
+                </defs>
+
+                <g class="emoji-head">
+                    <circle cx="100" cy="100" r="90" fill="url(#headGrad)" stroke="var(--emoji-stroke)" stroke-width="4"/>
+
+                    <g class="feature eyes-rolling">
+                        <circle cx="65" cy="75" r="12" fill="white" stroke="var(--emoji-stroke)" stroke-width="2"/>
+                        <circle cx="65" cy="70" r="5" fill="var(--emoji-stroke)"/>
+                        <circle cx="135" cy="75" r="12" fill="white" stroke="var(--emoji-stroke)" stroke-width="2"/>
+                        <circle cx="135" cy="70" r="5" fill="var(--emoji-stroke)"/>
+                    </g>
+                    <g class="feature eyes-happy">
+                        <path d="M50,80 Q65,60 80,80" fill="none" stroke="var(--emoji-stroke)" stroke-width="5" stroke-linecap="round"/>
+                        <path d="M120,80 Q135,60 150,80" fill="none" stroke="var(--emoji-stroke)" stroke-width="5" stroke-linecap="round"/>
+                    </g>
+                    <g class="feature eyes-thinking">
+                        <path d="M50,65 Q65,50 80,65" fill="none" stroke="var(--emoji-stroke)" stroke-width="5" stroke-linecap="round"/>
+                        <path d="M120,70 L150,70" fill="none" stroke="var(--emoji-stroke)" stroke-width="5" stroke-linecap="round"/>
+                        <circle cx="65" cy="85" r="7" fill="var(--emoji-stroke)"/>
+                        <circle cx="135" cy="85" r="7" fill="var(--emoji-stroke)"/>
+                    </g>
+                    <g class="feature eyes-scared">
+                        <circle cx="65" cy="80" r="15" fill="white" stroke="var(--emoji-stroke)" stroke-width="3"/>
+                        <circle cx="65" cy="80" r="5" fill="var(--emoji-stroke)"/>
+                        <circle cx="135" cy="80" r="15" fill="white" stroke="var(--emoji-stroke)" stroke-width="3"/>
+                        <circle cx="135" cy="80" r="5" fill="var(--emoji-stroke)"/>
+                    </g>
+                    
+                    <g class="feature eyes-sleep">
+                        <path d="M55,80 L75,80 M125,80 L145,80" stroke="var(--emoji-stroke)" stroke-width="5" stroke-linecap="round" />
+                    </g>
+                    <g class="feature eyes-love" fill="#e74c3c" stroke="var(--emoji-stroke)" stroke-width="2">
+                        <path d="M65,65 c-5,-5 -15,-5 -20,0 c-5,5 -5,15 0,20 l20,20 l20,-20 c5,-5 5,-15 0,-20 c-5,-5 -15,-5 -20,0" transform="translate(-10, 0)"/>
+                        <path d="M135,65 c-5,-5 -15,-5 -20,0 c-5,5 -5,15 0,20 l20,20 l20,-20 c5,-5 5,-15 0,-20 c-5,-5 -15,-5 -20,0" transform="translate(-10, 0)"/>
+                    </g>
+
+
+                    <path class="feature mouth-flat" d="M70,130 L130,130" stroke="var(--emoji-stroke)" stroke-width="5" stroke-linecap="round"/>
+                    <path class="feature mouth-big-smile" d="M60,120 Q100,160 140,120" fill="none" stroke="var(--emoji-stroke)" stroke-width="5" stroke-linecap="round"/>
+                    <path class="feature mouth-hmm" d="M80,135 Q100,125 120,135" fill="none" stroke="var(--emoji-stroke)" stroke-width="5" stroke-linecap="round"/>
+                    <ellipse class="feature mouth-scream" cx="100" cy="140" rx="20" ry="30" fill="var(--emoji-stroke)"/>
+                    
+                    <circle class="feature mouth-sleep" cx="100" cy="135" r="8" fill="var(--emoji-stroke)"/>
+                    <path class="feature mouth-smile" d="M80,130 Q100,145 120,130" fill="none" stroke="var(--emoji-stroke)" stroke-width="5" stroke-linecap="round"/>
+
+
+                    <circle class="feature hand-chin" cx="120" cy="160" r="25" fill="var(--emoji-yellow)" stroke="var(--emoji-stroke)" stroke-width="3"/>
+                    <g class="feature hands-face">
+                        <circle cx="40" cy="150" r="25" fill="var(--emoji-yellow)" stroke="var(--emoji-stroke)" stroke-width="3"/>
+                        <circle cx="160" cy="150" r="25" fill="var(--emoji-yellow)" stroke="var(--emoji-stroke)" stroke-width="3"/>
+                    </g>
+                    <path class="feature extra-sweat" d="M160,50 Q170,80 150,90 Q140,80 150,50 Z" fill="#3498db" />
+                    <g class="feature extra-sparkle" fill="#f1c40f">
+                        <polygon points="100,10 110,30 130,30 115,50 120,70 100,55 80,70 85,50 70,30 90,30"/>
+                    </g>
+                    <path class="feature extra-anger" d="M150,40 L170,60 M170,40 L150,60" stroke="#c0392b" stroke-width="5" stroke-linecap="round"/>
+
+                    <g class="feature extra-zzz" stroke="#2c3e50" stroke-width="4" fill="none" stroke-linecap="round">
+                        <path d="M160,50 L180,50 L160,70 L180,70" transform="scale(0.8)"/>
+                    </g>
+
+                </g>
+            </svg>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="question-box">
+            <div class="q-title">¿Qué dice el gesto?</div>
+            <div class="q-text" id="instruction">...</div>
+        </div>
+        
+        <div class="options-grid" id="options-container"></div>
+    </div>
+
+    <div class="overlay" id="end-screen">
+        <div style="font-size: 6rem;">🌟🤓🎉</div>
+        <h1>¡Experto en Gestos!</h1>
+        <p style="font-size: 1.2rem; margin-top: 20px;">Has identificado todas las emociones correctamente.</p>
+        <button class="btn-restart" onclick="location.reload()">Jugar Otra Vez</button>
+    </div>
+
+</div>
+
+<script>
+    // Definición de niveles (6 niveles ahora)
+    const levels = [
+        {
+            stateClass: "state-impatient",
+            question: "Esta cara nos dice que siente:",
+            options: ["Mucha hambre", "Impaciencia / Aburrimiento", "Sorpresa"],
+            correct: 1
+        },
+        {
+            stateClass: "state-happy", 
+            question: "¿Qué emoción expresa?",
+            options: ["Alegría / Felicidad", "Sueño", "Está saludando"],
+            correct: 0
+        },
+        {
+            stateClass: "state-doubt", 
+            question: "¿Qué está haciendo?",
+            options: ["Tiene dolor de cabeza", "Está dudando / Pensando", "Está triste"],
+            correct: 1
+        },
+        {
+            stateClass: "state-scared", 
+            question: "¡Cuidado! Parece que siente:",
+            options: ["Mucho calor", "Miedo / Susto", "Risa incontrolable"],
+            correct: 1
+        },
+        // --- NUEVOS NIVELES ---
+        {
+            stateClass: "state-sleepy",
+            question: "¿Qué le pasa al personaje?",
+            options: ["Está muy cansado / Tiene sueño", "Está aburrido de esperar", "Está meditando"],
+            correct: 0
+        },
+        {
+            stateClass: "state-love",
+            question: "¡Mira sus ojos! ¿Qué siente?",
+            options: ["Le duele la vista", "Está mareado", "Amor / Está enamorado"],
+            correct: 2
+        }
+    ];
+
+    let currentLvl = 0;
+    const emojiContainer = document.getElementById('emoji-container');
+    const optsContainer = document.getElementById('options-container');
+    const instructionEl = document.getElementById('instruction');
+
+    function loadLevel() {
+        if (currentLvl >= levels.length) {
+            document.getElementById('end-screen').style.display = 'flex';
+            return;
+        }
+
+        const data = levels[currentLvl];
+
+        // 1. Limpiar clases anteriores
+        emojiContainer.className = 'emoji-wrapper'; 
+
+        // 2. Aplicar nueva clase de estado
+        setTimeout(() => {
+            emojiContainer.classList.add(data.stateClass);
+        }, 50);
+
+        instructionEl.innerText = data.question;
+        instructionEl.style.color = "var(--text-dark)";
+        
+        // 3. Generar Botones
+        optsContainer.innerHTML = '';
+        data.options.forEach((text, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-option';
+            btn.innerText = text;
+            btn.onclick = () => checkAnswer(btn, index, data.correct);
+            optsContainer.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(btn, index, correctIndex) {
+        const allBtns = document.querySelectorAll('.btn-option');
+        allBtns.forEach(b => b.onclick = null); 
+
+        if (index === correctIndex) {
+            btn.classList.add('correct');
+            instructionEl.innerText = "¡Correcto! Muy bien.";
+            instructionEl.style.color = "#27ae60";
+        } else {
+            btn.classList.add('wrong');
+            allBtns[correctIndex].classList.add('correct'); 
+            instructionEl.innerText = "¡Oh no! Era la otra opción.";
+            instructionEl.style.color = "#c0392b";
+        }
+
+        setTimeout(() => {
+            currentLvl++;
+            loadLevel();
+        }, 2000); 
+    }
+
+    // Iniciar
+    loadLevel();
+
+</script>
+</body>
+</html>

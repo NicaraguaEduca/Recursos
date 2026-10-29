@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Agenda de Prioridades: Equilibrio y Deberes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #f8fafc;
+            background-image: 
+                linear-gradient(90deg, transparent 79px, #abced4 79px, #abced4 81px, transparent 81px),
+                linear-gradient(#e2e8f0 .1em, transparent .1em);
+            background-size: 100% 1.2em;
+            height: 100vh;
+            overflow: hidden;
+            color: #334155;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: manipulation;
+        }
+
+        .pedagogy-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 2px solid #e2e8f0;
+            border-left: 12px solid #3b82f6;
+        }
+
+        .planner-card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+
+        /* Espiral de cuaderno interactivo */
+        .planner-card::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #ef4444;
+            opacity: 0.3;
+        }
+
+        .task-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .task-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-selected {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+            transform: scale(1.05) !important;
+            z-index: 10;
+        }
+
+        .slot-zone {
+            border: 2px dashed #cbd5e1;
+            transition: all 0.3s;
+        }
+
+        .slot-zone.highlight {
+            background-color: #eff6ff;
+            border-color: #3b82f6;
+            transform: scale(1.02);
+        }
+
+        .slot-zone.drag-over {
+            background-color: #dbeafe;
+            border-color: #2563eb;
+        }
+
+        /* Barras animadas */
+        .meter-bar { transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        .modal-error {
+            animation: slide-up 0.3s ease-out forwards;
+        }
+
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Ocultar scrollbar visualmente pero permitir scroll */
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body x-data="agendaApp()">
+
+    <main class="w-full max-w-4xl p-4 md:p-8 relative h-full flex flex-col justify-center z-10 mx-auto">
+        
+        <div x-show="estado === 'ficha'" class="pedagogy-card p-8 md:p-12 mx-auto max-w-3xl" x-transition.opacity>
+            <div class="flex items-center gap-4 mb-8 border-b-2 border-slate-100 pb-6">
+                <span class="text-5xl drop-shadow-md">📘</span>
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800 tracking-tight">Ficha del Recurso</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                <div class="bg-blue-50 p-5 rounded-2xl border border-blue-100">
+                    <span class="block text-sm font-bold text-blue-600 uppercase tracking-widest mb-2">Asignatura</span>
+                    <span class="text-xl font-bold text-slate-700">Valores / Ética</span>
+                </div>
+                
+                <div class="bg-purple-50 p-5 rounded-2xl border border-purple-100">
+                    <span class="block text-sm font-bold text-purple-600 uppercase tracking-widest mb-2">Eje Temático</span>
+                    <span class="text-xl font-bold text-slate-700">Deberes Escolares</span>
+                </div>
+
+                <div class="bg-green-50 p-5 rounded-2xl border border-green-100 md:col-span-2">
+                    <span class="block text-sm font-bold text-green-600 uppercase tracking-widest mb-2">Objetivo de Aprendizaje</span>
+                    <p class="text-lg font-medium text-slate-700 leading-relaxed">
+                        Practicar la responsabilidad personal organizando una agenda diaria que priorice los deberes sin descuidar el ocio saludable, comprendiendo la importancia del equilibrio.
+                    </p>
+                </div>
+            </div>
+
+            <button @click="estado = 'instrucciones'" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-5 rounded-xl text-xl transition-all shadow-xl hover:shadow-blue-500/40 hover:-translate-y-1">
+                Entendido, continuar →
+            </button>
+        </div>
+
+        <div x-show="estado === 'instrucciones'" class="planner-card p-8 md:p-12 text-center max-w-2xl mx-auto" style="display: none;" x-transition.opacity>
+            <div class="text-7xl mb-6">⏱️</div>
+            <h1 class="text-4xl font-bold text-slate-800 mb-4">Mi Agenda Maestra</h1>
+            <p class="text-lg text-slate-500 mb-8 font-medium">Tienes una tarde libre. Debes elegir 4 actividades y ordenarlas estratégicamente.</p>
+            
+            <div class="bg-slate-50 p-6 rounded-2xl mb-8 text-left border border-slate-200 shadow-inner">
+                <p class="font-bold text-slate-700 text-lg mb-3">Reglas del Equilibrio:</p>
+                <ul class="list-disc pl-6 space-y-2 text-slate-600 text-lg">
+                    <li>Las responsabilidades van primero.</li>
+                    <li>No puedes jugar todo el tiempo <span class="text-sm">(pierdes responsabilidad)</span>.</li>
+                    <li>No puedes estudiar sin parar <span class="text-sm">(pierdes energía)</span>.</li>
+                    <li>Usa <b>Arrastrar y Soltar</b> (PC) o <b>Toca para Colocar</b> (Móvil).</li>
+                </ul>
+            </div>
+
+            <button @click="iniciarJuego()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-5 rounded-xl text-xl transition-all shadow-xl hover:-translate-y-1">
+                ¡Armar mi Agenda!
+            </button>
+        </div>
+
+        <div x-show="estado === 'jugando'" class="flex flex-col md:flex-row gap-6 w-full h-full max-h-[800px] py-2" style="display: none;" x-transition.opacity>
+            
+            <div class="flex-1 flex flex-col gap-4 min-h-0">
+                
+                <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 shrink-0">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-bold uppercase text-blue-600 tracking-wider">Responsabilidad 🧠</span>
+                        <span class="text-sm font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-lg" x-text="`${puntosResponsabilidad}/100`"></span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-3 md:h-4 rounded-full mb-4 overflow-hidden shadow-inner">
+                        <div class="h-full bg-gradient-to-r from-blue-400 to-blue-600 meter-bar" :style="`width: ${Math.min(100, Math.max(0, puntosResponsabilidad))}%`"></div>
+                    </div>
+
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-bold uppercase text-yellow-500 tracking-wider">Energía / Ocio ⚡</span>
+                        <span class="text-sm font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-lg" x-text="`${puntosEnergia}/100`"></span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-3 md:h-4 rounded-full overflow-hidden shadow-inner">
+                        <div class="h-full bg-gradient-to-r from-yellow-300 to-yellow-500 meter-bar" :style="`width: ${Math.min(100, Math.max(0, puntosEnergia))}%`"></div>
+                    </div>
+                </div>
+
+                <div class="planner-card p-5 md:p-8 flex-1 overflow-y-auto hide-scroll flex flex-col">
+                    <h3 class="text-center font-bold text-slate-400 uppercase tracking-widest text-sm mb-6 bg-white z-10">Tarde del Martes</h3>
+                    
+                    <div class="space-y-4 md:space-y-6 flex-1">
+                        <template x-for="(slot, index) in agenda" :key="index">
+                            <div class="flex items-stretch h-20 md:h-24">
+                                <div class="w-20 md:w-24 flex flex-col justify-center items-end pr-4 border-r-2 border-slate-200">
+                                    <span class="text-base md:text-lg font-bold text-slate-700" x-text="horarios[index]"></span>
+                                </div>
+                                <div class="flex-1 ml-4 rounded-2xl slot-zone flex items-center p-3 relative"
+                                     :class="{ 
+                                        'highlight shadow-md': tareaSeleccionada && !slot, 
+                                        'border-solid bg-slate-50': slot 
+                                     }"
+                                     @click="colocarTarea(index)"
+                                     @dragover.prevent="$el.classList.add('drag-over')"
+                                     @dragleave="$el.classList.remove('drag-over')"
+                                     @drop="dropTask($event, index, $el)">
+                                    
+                                    <div x-show="!slot" class="w-full text-center text-sm md:text-base text-slate-400 font-medium">
+                                        <span x-show="!tareaSeleccionada">Arrastra o toca una tarea</span>
+                                        <span x-show="tareaSeleccionada" class="text-blue-500 font-bold animate-pulse">¡Toca aquí para colocarla!</span>
+                                    </div>
+
+                                    <div x-show="slot" class="w-full h-full bg-white rounded-xl shadow-md border border-slate-200 flex items-center px-4 md:px-6 cursor-pointer hover:bg-red-50 hover:border-red-200 transition-colors group"
+                                         @click.stop="quitarTarea(index)">
+                                        <span class="text-3xl md:text-4xl mr-4 md:mr-6 transition-transform group-hover:scale-110" x-text="slot?.icono"></span>
+                                        <div class="flex-1">
+                                            <span class="block text-base md:text-xl font-bold text-slate-700" x-text="slot?.nombre"></span>
+                                            <span class="block text-xs md:text-sm font-bold" 
+                                                  :class="slot?.tipo === 'deber' ? 'text-blue-500' : 'text-yellow-500'" 
+                                                  x-text="slot?.tipo === 'deber' ? 'RESPONSABILIDAD' : 'OCIO / DESCANSO'"></span>
+                                        </div>
+                                        <span class="text-slate-300 text-3xl font-light group-hover:text-red-500 transition-colors">&times;</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <button x-show="agendaCompleta" @click="evaluarAgenda()" 
+                            class="w-full mt-6 bg-green-500 hover:bg-green-400 text-white font-bold py-4 md:py-5 rounded-xl shadow-lg shadow-green-500/40 transition-all animate-pulse text-xl">
+                        Evaluar mi Agenda ✓
+                    </button>
+                </div>
+            </div>
+
+            <div class="w-full md:w-80 lg:w-96 bg-slate-800 rounded-3xl p-5 md:p-6 shadow-2xl flex flex-col shrink-0">
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="text-sm font-bold text-slate-300 uppercase tracking-widest">Tareas Disponibles</h4>
+                    <span class="bg-slate-700 text-slate-300 text-xs font-bold px-2 py-1 rounded-md" x-text="bancoTareas.length"></span>
+                </div>
+                
+                <div class="flex md:grid flex-row md:grid-cols-2 gap-3 md:gap-4 overflow-x-auto md:overflow-y-auto pb-4 md:pb-0 hide-scroll snap-x">
+                    <template x-for="tarea in bancoTareas" :key="tarea.id">
+                        <div class="task-card snap-center shrink-0 w-32 md:w-full h-32 md:h-36 rounded-2xl p-3 flex flex-col items-center justify-center text-center relative"
+                             :class="{ 'task-selected': tareaSeleccionada?.id === tarea.id }"
+                             @click="seleccionarTarea(tarea)"
+                             draggable="true"
+                             @dragstart="dragStart($event, tarea)">
+                            
+                            <span class="text-4xl md:text-5xl mb-2 drop-shadow-sm transition-transform hover:scale-110" x-text="tarea.icono"></span>
+                            <span class="text-xs md:text-sm font-bold text-slate-700 leading-tight" x-text="tarea.nombre"></span>
+                            
+                            <div class="absolute top-2 right-2 w-3 h-3 md:w-4 md:h-4 rounded-full shadow-sm" 
+                                 :class="tarea.tipo === 'deber' ? 'bg-blue-500' : 'bg-yellow-400'"></div>
+                        </div>
+                    </template>
+                    <div x-show="bancoTareas.length === 0" class="col-span-2 w-full h-full flex items-center justify-center text-slate-500 text-center p-4">
+                        <p class="font-medium">No hay más tareas.<br>Evalúa tu agenda.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div x-show="mostrarFeedback" class="absolute inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" style="display: none;">
+                <div class="bg-white p-8 rounded-3xl shadow-2xl border-4 border-white max-w-sm w-full modal-error text-center" @click.outside="mostrarFeedback = false">
+                    <div class="text-7xl mb-4" x-text="feedbackIcono"></div>
+                    <h3 class="text-2xl font-bold text-slate-800 mb-3" x-text="feedbackTitulo"></h3>
+                    <p class="text-slate-600 text-base mb-8 leading-relaxed" x-text="feedbackMensaje"></p>
+                    <button @click="mostrarFeedback = false" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-4 rounded-xl transition-colors text-lg">
+                        Corregir Agenda
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div x-show="estado === 'fin'" class="planner-card p-8 md:p-12 text-center max-w-2xl mx-auto" style="display: none;" x-transition.opacity.duration.800ms>
+            <div class="text-8xl mb-6 drop-shadow-lg">🏆</div>
+            <h2 class="text-4xl md:text-5xl font-black text-green-500 mb-4">¡Agenda Perfecta!</h2>
+            <p class="text-lg md:text-xl text-slate-600 mb-8 font-medium">Has demostrado una excelente autogestión. Cumpliste con tus deberes escolares y te aseguraste de tener tiempo para descansar.</p>
+            
+            <div class="bg-slate-50 p-6 md:p-8 rounded-2xl mb-10 border border-slate-200 text-left shadow-inner">
+                <span class="block text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 text-center">Resumen de tu tarde</span>
+                <ul class="space-y-4 text-base md:text-lg text-slate-700 font-bold">
+                    <template x-for="(item, i) in agenda" :key="i">
+                        <li class="flex items-center gap-4 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                            <span class="text-blue-500 w-20 text-right" x-text="horarios[i]"></span>
+                            <span class="text-2xl" x-text="item.icono"></span>
+                            <span x-text="item.nombre"></span>
+                        </li>
+                    </template>
+                </ul>
+            </div>
+
+            <button @click="reiniciar()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-5 rounded-xl text-xl transition-all shadow-xl hover:-translate-y-1">
+                Organizar Nuevo Día
+            </button>
+        </div>
+
+    </main>
+
+    <script>
+        function agendaApp() {
+            return {
+                estado: 'ficha', // ficha, instrucciones, jugando, fin
+                horarios: ['3:00 PM', '4:30 PM', '6:00 PM', '7:30 PM'],
+                
+                tareasIniciales: [
+                    { id: 1, tipo: 'deber', nombre: 'Tarea de Mate', icono: '📐', resp: 30, energia: -15 },
+                    { id: 2, tipo: 'deber', nombre: 'Limpiar Cuarto', icono: '🧹', resp: 20, energia: -10 },
+                    { id: 3, tipo: 'deber', nombre: 'Estudiar Examen', icono: '📖', resp: 30, energia: -20 },
+                    { id: 4, tipo: 'ocio', nombre: 'Videojuegos', icono: '🎮', resp: -10, energia: 40 },
+                    { id: 5, tipo: 'ocio', nombre: 'Ver Película', icono: '🍿', resp: -5, energia: 30 },
+                    { id: 6, tipo: 'deber', nombre: 'Hacer Mochila', icono: '🎒', resp: 15, energia: -5 },
+                    { id: 7, tipo: 'ocio', nombre: 'Dormir Siesta', icono: '😴', resp: -10, energia: 50 }
+                ],
+                
+                bancoTareas: [],
+                agenda: [null, null, null, null],
+                tareaSeleccionada: null,
+                tareaArrastrada: null,
+
+                puntosResponsabilidad: 20, 
+                puntosEnergia: 50, 
+
+                mostrarFeedback: false,
+                feedbackTitulo: '',
+                feedbackMensaje: '',
+                feedbackIcono: '',
+
+                get agendaCompleta() { return this.agenda.every(item => item !== null); },
+
+                iniciarJuego() {
+                    this.bancoTareas = JSON.parse(JSON.stringify(this.tareasIniciales));
+                    this.agenda = [null, null, null, null];
+                    this.tareaSeleccionada = null;
+                    this.actualizarBarras();
+                    this.estado = 'jugando';
+                },
+
+                seleccionarTarea(tarea) {
+                    if (this.tareaSeleccionada && this.tareaSeleccionada.id === tarea.id) {
+                        this.tareaSeleccionada = null;
+                    } else {
+                        this.tareaSeleccionada = tarea;
+                    }
+                },
+
+                colocarTarea(indexSlot) {
+                    if (this.tareaSeleccionada && !this.agenda[indexSlot]) {
+                        this.agenda[indexSlot] = this.tareaSeleccionada;
+                        this.bancoTareas = this.bancoTareas.filter(t => t.id !== this.tareaSeleccionada.id);
+                        this.tareaSeleccionada = null;
+                        this.actualizarBarras();
+                    }
+                },
+
+                quitarTarea(indexSlot) {
+                    const tarea = this.agenda[indexSlot];
+                    if (tarea) {
+                        this.bancoTareas.push(tarea); 
+                        this.agenda[indexSlot] = null; 
+                        this.tareaSeleccionada = null;
+                        this.actualizarBarras();
+                    }
+                },
+
+                dragStart(e, tarea) {
+                    this.tareaArrastrada = tarea;
+                    e.dataTransfer.effectAllowed = 'move';
+                    this.tareaSeleccionada = null;
+                },
+
+                dropTask(e, indexSlot, el) {
+                    el.classList.remove('drag-over');
+                    if (this.tareaArrastrada && !this.agenda[indexSlot]) {
+                        this.agenda[indexSlot] = this.tareaArrastrada;
+                        this.bancoTareas = this.bancoTareas.filter(t => t.id !== this.tareaArrastrada.id);
+                        this.tareaArrastrada = null;
+                        this.actualizarBarras();
+                    }
+                },
+
+                actualizarBarras() {
+                    let resp = 20; let ener = 50; 
+                    this.agenda.forEach(tarea => {
+                        if (tarea) { resp += tarea.resp; ener += tarea.energia; }
+                    });
+                    this.puntosResponsabilidad = resp;
+                    this.puntosEnergia = ener;
+                },
+
+                evaluarAgenda() {
+                    let deberes = 0; let ocio = 0;
+                    this.agenda.forEach(t => {
+                        if (t.tipo === 'deber') deberes++;
+                        if (t.tipo === 'ocio') ocio++;
+                    });
+
+                    if (deberes < 2) {
+                        this.lanzarError("⚠️ Demasiado Descanso", "Has elegido casi puro ocio. Recuerda que la prioridad es cumplir con los deberes escolares para estar tranquilo.", "🎮");
+                        return;
+                    }
+                    if (ocio === 0) {
+                        this.lanzarError(" خ Agotamiento Inminente", "Hacer 4 deberes seguidos te dejará sin energía (Mira tu barra). Cambia una tarea por algo de descanso.", "🔋");
+                        return;
+                    }
+                    if (this.agenda[0].tipo === 'ocio' && this.agenda[1].tipo === 'ocio') {
+                        this.lanzarError("⏰ Procrastinación", "Dejaste todas las responsabilidades para la noche. Es mejor hacer las tareas temprano para descansar sin estrés.", "😬");
+                        return;
+                    }
+
+                    this.estado = 'fin';
+                    this.lanzarConfeti();
+                },
+
+                lanzarError(titulo, mensaje, icono) {
+                    this.feedbackTitulo = titulo;
+                    this.feedbackMensaje = mensaje;
+                    this.feedbackIcono = icono;
+                    this.mostrarFeedback = true;
+                },
+
+                lanzarConfeti() {
+                    let duration = 3 * 1000; let end = Date.now() + duration;
+                    (function frame() {
+                        confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#3b82f6', '#10b981'] });
+                        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#3b82f6', '#10b981'] });
+                        if (Date.now() < end) requestAnimationFrame(frame);
+                    }());
+                },
+
+                reiniciar() { this.estado = 'instrucciones'; }
+            }
+        }
+    </script>
+</body>
+</html>

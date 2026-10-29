@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECO 2.0 | Puzzle de Identidades</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&display=swap');
+        
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: #0f172a; 
+            color: #f8fafc; 
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 2rem;
+        }
+
+        .mural-slot {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .mural-slot.filled {
+            border: none;
+            background: transparent;
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.1);
+        }
+
+        .piece {
+            cursor: grab;
+            transition: all 0.3s ease;
+            touch-action: none;
+            position: relative;
+        }
+
+        .piece:hover {
+            border-color: #6366f1;
+            transform: translateY(-5px);
+        }
+
+        .piece:active { cursor: grabbing; transform: scale(1.1) rotate(5deg); }
+
+        /* Efecto de resplandor para el mensaje activo */
+        .wisdom-card {
+            border-left: 6px solid #6366f1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wisdom-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.1), transparent);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        #bg-canvas { position: fixed; inset: 0; z-index: -1; }
+
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="app" v-cloak class="min-h-screen flex flex-col items-center p-4 md:p-8 relative">
+    <canvas id="bg-canvas"></canvas>
+
+    <header class="w-full max-w-6xl flex justify-between items-center mb-8 animate__animated animate__fadeIn">
+        <div>
+            <span class="bg-indigo-600 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-tighter">Misión 02</span>
+            <h1 class="text-3xl md:text-5xl font-black italic tracking-tighter">PUZZLE DE <span class="text-indigo-400 font-light">IDENTIDADES</span></h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="hidden md:block text-right">
+                <p class="text-[10px] font-bold text-slate-400 uppercase">Integración Cultural</p>
+                <div class="h-1.5 w-32 bg-slate-800 rounded-full mt-1">
+                    <div class="h-full bg-indigo-500 rounded-full transition-all duration-1000" :style="{ width: progress + '%' }"></div>
+                </div>
+            </div>
+            <div class="text-3xl font-black text-indigo-400">{{ progress }}%</div>
+        </div>
+    </header>
+
+    <main class="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <div class="lg:col-span-8 glass-panel p-6 md:p-8">
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div v-for="(slot, index) in slots" :key="index"
+                     :id="'slot-' + index"
+                     class="mural-slot h-48 md:h-56 rounded-[2.5rem] flex items-center justify-center relative overflow-hidden"
+                     :class="{ 'filled': slot.completed }"
+                     @dragover.prevent
+                     @drop="handleDrop(index)">
+                    
+                    <transition name="zoom">
+                        <div v-if="slot.completed" 
+                             class="w-full h-full flex flex-col items-center justify-center text-center p-5 animate__animated animate__zoomIn"
+                             :style="{ background: `radial-gradient(circle, ${slot.color}44 0%, transparent 70%)`, border: '3px solid ' + slot.color }">
+                            <div class="text-6xl mb-3 filter drop-shadow-md">{{ slot.emoji }}</div>
+                            <h4 class="font-black uppercase text-sm tracking-[0.2em]" :style="{ color: slot.color }">{{ slot.title }}</h4>
+                        </div>
+                        <div v-else class="text-white/5 text-6xl font-black select-none">0{{ index + 1 }}</div>
+                    </transition>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-4 space-y-6">
+            <div class="glass-panel p-6 border border-white/5">
+                <h3 class="font-black uppercase text-[10px] mb-6 text-indigo-300 tracking-[0.3em] flex items-center gap-2">
+                    <span class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
+                    Piezas de Identidad
+                </h3>
+                <div class="flex flex-wrap gap-4 justify-center">
+                    <div v-for="piece in availablePieces" :key="piece.id"
+                         class="piece glass-panel w-24 h-24 md:w-28 md:h-28 flex flex-col items-center justify-center border-2 border-white/5"
+                         draggable="true"
+                         @dragstart="handleDragStart(piece)">
+                        <div class="text-4xl mb-2 drop-shadow-sm">{{ piece.emoji }}</div>
+                        <span class="text-[10px] font-black uppercase tracking-tighter text-slate-400">{{ piece.title }}</span>
+                    </div>
+                </div>
+                <div v-if="availablePieces.length === 0" class="text-center py-8">
+                    <p class="text-indigo-400 font-bold animate__animated animate__pulse animate__infinite italic">¡Mural Sincronizado!</p>
+                </div>
+            </div>
+
+            <transition name="fade" mode="out-in">
+                <div v-if="lastMessage" :key="lastMessage" 
+                     class="wisdom-card glass-panel p-8 animate__animated animate__fadeInRight shadow-2xl"
+                     :style="{ borderLeftColor: lastActiveColor }">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="text-[10px] font-black text-white px-2 py-0.5 rounded" :style="{ backgroundColor: lastActiveColor }">REVELACIÓN</span>
+                        <span class="h-[1px] flex-grow bg-white/10"></span>
+                    </div>
+                    <p class="text-xl md:text-2xl leading-tight font-black mb-2 tracking-tighter">
+                        {{ lastTitle }}
+                    </p>
+                    <p class="text-slate-300 text-lg leading-snug font-medium italic">
+                        "{{ lastMessage }}"
+                    </p>
+                </div>
+            </transition>
+        </div>
+    </main>
+
+    <div v-if="isGameFinished" class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-950/95 backdrop-blur-3xl">
+        <div class="glass-panel max-w-2xl w-full p-12 text-center animate__animated animate__zoomInUp border-indigo-500/30">
+            <div class="text-9xl mb-6">🤝</div>
+            <h2 class="text-5xl md:text-7xl font-black mb-6 tracking-tighter italic">COEXISTENCIA</h2>
+            <p class="text-slate-300 text-xl md:text-2xl mb-10 leading-relaxed font-light">
+                Has completado el <span class="text-indigo-400 font-bold text-3xl block mt-2">Mural de las Identidades</span>
+                Cada pieza encajada es un prejuicio vencido.
+            </p>
+            <button @click="resetGame" class="bg-white text-indigo-950 font-black py-5 px-14 rounded-3xl transition-all hover:scale-110 active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.2)]">
+                REINICIAR CONSTRUCCIÓN
+            </button>
+        </div>
+    </div>
+
+    <footer class="mt-auto w-full max-w-6xl flex items-center gap-4 py-8 border-t border-white/5">
+        <div class="w-14 h-14 bg-indigo-600 rounded-[1.5rem] flex items-center justify-center text-3xl shadow-xl shadow-indigo-500/20 animate__animated animate__bounceIn">🤖</div>
+        <div class="flex-grow">
+            <span class="text-indigo-400 text-[10px] block font-black uppercase tracking-widest mb-1">Protocolo de Respeto Activo</span>
+            <p class="text-sm md:text-base font-bold text-slate-200">
+                {{ helperText }}
+            </p>
+        </div>
+    </footer>
+</div>
+
+<script>
+const { createApp, ref, computed, onMounted } = Vue;
+
+createApp({
+    setup() {
+        const lastTitle = ref("");
+        const lastActiveColor = ref("#6366f1");
+
+        const slots = ref([
+            { id: 1, title: "Tradición", emoji: "🪔", color: "#fbbf24", completed: false, info: "Las tradiciones son raíces que nos nutren, sin importar de dónde vengan." },
+            { id: 2, title: "Lenguaje", emoji: "🗣️", color: "#60a5fa", completed: false, info: "Cada lengua es una forma distinta de ver y sentir el mundo." },
+            { id: 3, title: "Etnia", emoji: "🌍", color: "#f87171", completed: false, info: "La diversidad física es el lienzo colorido de nuestra especie." },
+            { id: 4, title: "Creencias", emoji: "🛐", color: "#a78bfa", completed: false, info: "El respeto a la fe ajena es la base de la paz social." },
+            { id: 5, title: "Género", emoji: "🌈", color: "#34d399", completed: false, info: "La identidad es un derecho humano fundamental que debemos honrar." },
+            { id: 6, title: "Saberes", emoji: "📜", color: "#fb7185", completed: false, info: "El conocimiento ancestral complementa la visión del futuro." }
+        ]);
+
+        const draggedPiece = ref(null);
+        const lastMessage = ref("");
+        const progress = computed(() => Math.round((slots.value.filter(s => s.completed).length / slots.value.length) * 100));
+        const availablePieces = computed(() => slots.value.filter(s => !s.completed));
+        const isGameFinished = computed(() => slots.value.every(s => s.completed));
+
+        const helperText = computed(() => {
+            if (isGameFinished.value) return "El mural está completo. El respeto a la diversidad es nuestra mayor obra.";
+            return "Arrastra y encaja las piezas para revelar los fundamentos de una sociedad diversa.";
+        });
+
+        const playNote = (freq) => {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.frequency.setValueAtTime(freq, ctx.currentTime);
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.6);
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start(); osc.stop(ctx.currentTime + 0.6);
+        };
+
+        const handleDragStart = (piece) => {
+            draggedPiece.value = piece;
+            // Sonido sutil al levantar la pieza
+            playNote(200);
+        };
+
+        const handleDrop = (index) => {
+            const slot = slots.value[index];
+            if (draggedPiece.value && slot.id === draggedPiece.value.id) {
+                slot.completed = true;
+                lastMessage.value = slot.info;
+                lastTitle.value = `EL VALOR DE: ${slot.title.toUpperCase()}`;
+                lastActiveColor.value = slot.color;
+                
+                // Efecto de sonido armónico
+                playNote(400 + (index * 50));
+                setTimeout(() => playNote(600 + (index * 50)), 100);
+
+                // Confeti localizado en el slot
+                const rect = document.getElementById('slot-' + index).getBoundingClientRect();
+                confetti({
+                    particleCount: 40,
+                    spread: 60,
+                    origin: { 
+                        x: (rect.left + rect.width / 2) / window.innerWidth, 
+                        y: (rect.top + rect.height / 2) / window.innerHeight 
+                    },
+                    colors: [slot.color, '#ffffff']
+                });
+                
+                if (progress.value === 100) {
+                    setTimeout(() => {
+                        confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
+                        playNote(523.25); // Do
+                        setTimeout(() => playNote(659.25), 150); // Mi
+                        setTimeout(() => playNote(783.99), 300); // Sol
+                    }, 500);
+                }
+            } else {
+                // Sonido de error
+                playNote(100);
+                gsap.to('#slot-' + index, { x: 10, repeat: 3, yoyo: true, duration: 0.05 });
+            }
+            draggedPiece.value = null;
+        };
+
+        const resetGame = () => {
+            slots.value.forEach(s => s.completed = false);
+            lastMessage.value = "";
+            lastTitle.value = "";
+        };
+
+        onMounted(() => {
+            const canvas = document.getElementById('bg-canvas');
+            const ctx = canvas.getContext('2d');
+            const res = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+            window.addEventListener('resize', res); res();
+            let p = Array.from({length: 30}, () => ({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*3, v: Math.random()*0.2 }));
+            function draw() {
+                ctx.clearRect(0,0,canvas.width, canvas.height);
+                ctx.fillStyle = "rgba(99, 102, 241, 0.15)";
+                p.forEach(i => { i.y -= i.v; if(i.y < 0) i.y = canvas.height; ctx.beginPath(); ctx.arc(i.x, i.y, i.r, 0, Math.PI*2); ctx.fill(); });
+                requestAnimationFrame(draw);
+            }
+            draw();
+        });
+
+        return { slots, handleDragStart, handleDrop, progress, availablePieces, lastMessage, lastTitle, lastActiveColor, helperText, isGameFinished, resetGame };
+    }
+}).mount('#app');
+</script>
+</body>
+</html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Máquina de Historias - Arrastre Universal con Confeti</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        
+        :root {
+            --primary: #FF6B6B;
+            --secondary: #4ECDC4;
+            --accent: #FFE66D;
+            --background: #F7FFF7;
+            --text: #2C3E50;
+            --success: #88D49E;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background-color: var(--background);
+            background-image: radial-gradient(var(--secondary) 2px, transparent 2px);
+            background-size: 30px 30px;
+            color: var(--text);
+            text-align: center;
+            padding: 10px;
+            margin: 0;
+            overflow-x: hidden;
+            touch-action: none; 
+            user-select: none; 
+            -webkit-user-select: none;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-juego {
+            background-color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+            border: 3px solid var(--primary);
+            flex-shrink: 0;
+            z-index: 10; /* Para que quede sobre el confeti si este sube mucho */
+        }
+
+        h1 { margin: 0; color: var(--primary); font-size: clamp(1.2rem, 4vw, 2rem); }
+        .instrucciones { font-size: clamp(0.8rem, 2.5vw, 1.1rem); font-weight: bold; color: #555; margin: 5px 0;}
+        
+        .area-juego {
+            display: flex;
+            flex-direction: row; 
+            gap: 10px;
+            flex-grow: 1;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        .zonas-container, .bloques-container {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto; 
+            padding: 5px;
+        }
+
+        .ficha {
+            background-color: white;
+            border: 3px solid #E0E0E0;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: grab;
+            font-size: clamp(0.85rem, 2.5vw, 1.1rem);
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 4px 0 #E0E0E0;
+            touch-action: none; 
+            position: relative;
+            line-height: 1.3;
+        }
+        .ficha:active { cursor: grabbing; }
+
+        .zona {
+            background-color: white;
+            border: 3px dashed #B0BEC5;
+            border-radius: 12px;
+            min-height: 100px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .zona h3 { 
+            margin: 0 0 5px 0; 
+            color: white; 
+            padding: 3px 10px;
+            border-radius: 8px;
+            font-size: clamp(0.8rem, 2.5vw, 1.1rem);
+            pointer-events: none;
+        }
+
+        #zona-inicio h3 { background-color: #3498DB; }
+        #zona-nudo h3 { background-color: #E67E22; }
+        #zona-desenlace h3 { background-color: #9B59B6; }
+
+        .zona.correct { background-color: #D5F5E3; border-color: var(--success); border-style: solid; justify-content: flex-start;}
+        .zona.correct .ficha { box-shadow: none; border-color: transparent; padding: 5px; cursor: default; }
+
+        .controles {
+            margin-top: 10px;
+            flex-shrink: 0;
+            padding-bottom: 10px;
+            z-index: 10;
+        }
+
+        #mensaje { font-size: clamp(1rem, 3vw, 1.5rem); font-weight: bold; color: var(--primary); min-height: 30px; margin-bottom: 5px; }
+
+        button {
+            font-family: 'Comic Sans MS', sans-serif;
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #5EAE77;
+            display: none;
+            width: 100%;
+            max-width: 250px;
+            margin: 0 auto;
+        }
+        button:active { transform: translateY(4px); box-shadow: 0 0 0 #5EAE77; }
+
+        .ficha-fantasma {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.9;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transform: scale(1.05);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="header-juego">
+        <h1>📖 Máquina de Historias</h1>
+        <p class="instrucciones">Arrastra los fragmentos de la derecha a las cajas de la izquierda.</p>
+    </div>
+    
+    <div class="area-juego">
+        <div class="zonas-container">
+            <div class="zona" id="zona-inicio" data-accept="inicio">
+                <h3>1. Inicio 🌱</h3>
+            </div>
+            <div class="zona" id="zona-nudo" data-accept="nudo">
+                <h3>2. Nudo ⚡</h3>
+            </div>
+            <div class="zona" id="zona-desenlace" data-accept="desenlace">
+                <h3>3. Desenlace 🎉</h3>
+            </div>
+        </div>
+
+        <div class="bloques-container" id="fichas-container">
+            </div>
+    </div>
+
+    <div class="controles">
+        <div id="mensaje"></div>
+        <button id="btn-siguiente" onclick="siguienteNivel()">Siguiente Historia ➡️</button>
+    </div>
+
+    <script>
+        const historias = [
+            {
+                inicio: "Había una vez un pequeño explorador que vivía en un valle rodeado de montañas mágicas. 🏔️",
+                nudo: "De repente, un enorme dragón apareció y bloqueó el único puente que conectaba con la aldea. 🐉",
+                desenlace: "Finalmente, lograron convencer al dragón de compartir el puente, y todos vivieron en paz. 🤝"
+            },
+            {
+                inicio: "Una mañana soleada, la cerdita Rosita decidió salir a buscar el tesoro perdido de la granja. 🐷",
+                nudo: "Al llegar al granero oscuro, descubrió que las gallinas traviesas habían escondido el mapa entre la paja. 🐔",
+                desenlace: "Con ayuda del perro pastor, encontraron el mapa y compartieron un cofre lleno de ricas manzanas. 🍎"
+            },
+            {
+                inicio: "En una galaxia muy lejana, un robot llamado Tuerca soñaba con volar por las estrellas. 🤖",
+                nudo: "Un día, una lluvia de meteoritos averió su nave espacial justo un minuto antes del despegue. ☄️",
+                desenlace: "Tuerca usó sus herramientas para reparar la nave, le añadió alas de luz y voló feliz por el universo. ✨"
+            }
+        ];
+
+        let nivelActual = 0;
+        let aciertos = 0;
+
+        const contenedorFichas = document.getElementById('fichas-container');
+        const zonas = document.querySelectorAll('.zona');
+        const mensaje = document.getElementById('mensaje');
+        const btnSiguiente = document.getElementById('btn-siguiente');
+
+        function desordenarArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function cargarNivel() {
+            aciertos = 0;
+            mensaje.textContent = "Nivel " + (nivelActual + 1) + " de " + historias.length;
+            btnSiguiente.style.display = "none";
+            
+            zonas.forEach(zona => {
+                zona.classList.remove('correct');
+                const h3 = zona.querySelector('h3');
+                zona.innerHTML = '';
+                zona.appendChild(h3);
+            });
+
+            const datosNivel = historias[nivelActual];
+            let arrayFichas = [
+                { tipo: 'inicio', texto: datosNivel.inicio },
+                { tipo: 'nudo', texto: datosNivel.nudo },
+                { tipo: 'desenlace', texto: datosNivel.desenlace }
+            ];
+
+            arrayFichas = desordenarArray(arrayFichas);
+            contenedorFichas.innerHTML = '';
+
+            arrayFichas.forEach((ficha, index) => {
+                const divFicha = document.createElement('div');
+                divFicha.classList.add('ficha');
+                divFicha.setAttribute('data-target', ficha.tipo);
+                divFicha.textContent = ficha.texto;
+                
+                divFicha.addEventListener('pointerdown', iniciarArrastre);
+                
+                contenedorFichas.appendChild(divFicha);
+            });
+        }
+
+        let elementoArrastrado = null;
+        let fantasma = null;
+
+        function iniciarArrastre(e) {
+            if (e.target.parentElement.classList.contains('correct')) return;
+            
+            e.preventDefault();
+            elementoArrastrado = e.target;
+            
+            fantasma = elementoArrastrado.cloneNode(true);
+            fantasma.classList.add('ficha-fantasma');
+            fantasma.style.width = elementoArrastrado.offsetWidth + 'px';
+            document.body.appendChild(fantasma);
+            
+            elementoArrastrado.style.opacity = '0.3';
+
+            moverFantasma(e.clientX, e.clientY);
+
+            document.addEventListener('pointermove', duranteArrastre);
+            document.addEventListener('pointerup', soltarArrastre);
+        }
+
+        function duranteArrastre(e) {
+            e.preventDefault();
+            moverFantasma(e.clientX, e.clientY);
+        }
+
+        function moverFantasma(x, y) {
+            fantasma.style.left = (x - fantasma.offsetWidth / 2) + 'px';
+            fantasma.style.top = (y - fantasma.offsetHeight / 2) + 'px';
+        }
+
+        // --- FUNCIÓN DE CONFETI ESPECTACULAR ---
+        function celebrarGranFinal() {
+            var duration = 3 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            function randomInRange(min, max) {
+              return Math.random() * (max - min) + min;
+            }
+
+            var interval = setInterval(function() {
+              var timeLeft = animationEnd - Date.now();
+
+              if (timeLeft <= 0) {
+                return clearInterval(interval);
+              }
+
+              var particleCount = 50 * (timeLeft / duration);
+              confetti({
+                ...defaults, particleCount,
+                origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+              });
+              confetti({
+                ...defaults, particleCount,
+                origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+              });
+            }, 250);
+        }
+
+        function soltarArrastre(e) {
+            document.removeEventListener('pointermove', duranteArrastre);
+            document.removeEventListener('pointerup', soltarArrastre);
+
+            if (!fantasma) return;
+
+            const elementoDebajo = document.elementFromPoint(e.clientX, e.clientY);
+            const zonaDestino = elementoDebajo ? elementoDebajo.closest('.zona') : null;
+
+            fantasma.remove();
+            fantasma = null;
+            elementoArrastrado.style.opacity = '1';
+
+            if (zonaDestino && !zonaDestino.classList.contains('correct')) {
+                if (elementoArrastrado.getAttribute('data-target') === zonaDestino.getAttribute('data-accept')) {
+                    zonaDestino.appendChild(elementoArrastrado);
+                    zonaDestino.classList.add('correct');
+                    elementoArrastrado.style.cursor = 'default';
+                    aciertos++;
+
+                    if (aciertos === 3) {
+                        if (nivelActual < historias.length - 1) {
+                            mensaje.textContent = "¡Excelente! 🌟";
+                            btnSiguiente.style.display = "block";
+                        } else {
+                            mensaje.textContent = "¡Felicidades! Completaste todo. 🎉🏆";
+                            celebrarGranFinal(); // Se dispara la función del confeti
+                        }
+                    }
+                } else {
+                    const colorPrevio = zonaDestino.style.backgroundColor;
+                    zonaDestino.style.backgroundColor = '#FFBDBD';
+                    setTimeout(() => zonaDestino.style.backgroundColor = colorPrevio, 500);
+                }
+            }
+            elementoArrastrado = null;
+        }
+
+        cargarNivel();
+
+        function siguienteNivel() {
+            nivelActual++;
+            cargarNivel();
+        }
+    </script>
+</body>
+</html>
