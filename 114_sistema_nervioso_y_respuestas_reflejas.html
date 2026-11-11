@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Reflejos de Superhéroe!: El Sistema Nervioso</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0f172a;
+            color: white;
+            overflow: hidden;
+            margin: 0;
+            height: 100vh;
+        }
+
+        h1, h2, .kids-font { font-family: 'Fredoka', sans-serif; }
+
+        /* Escenario */
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 450px;
+            background: linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%);
+            overflow: hidden;
+            border-bottom: 12px solid #4ade80;
+            cursor: pointer;
+        }
+
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.8;
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            from { transform: translateX(110vw); }
+            to { transform: translateX(-20vw); }
+        }
+
+        /* Personaje */
+        #avatar-container {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 220px;
+            height: 280px;
+            z-index: 10;
+        }
+
+        #threat {
+            position: absolute;
+            top: 120px;
+            left: -60px;
+            width: 50px;
+            height: 50px;
+            z-index: 100;
+        }
+
+        /* ESTADOS DE ANIMACIÓN */
+        
+        /* Ojos cerrados */
+        .blink-closed { height: 4px !important; transform: translateY(12px) !important; }
+        
+        /* Brazos en guardia: Rotan desde el hombro y se cruzan un poco */
+        .defend-arm-l { 
+            transform: translate(25px, -110px) rotate(45deg) !important; 
+        }
+        .defend-arm-r { 
+            transform: translate(-25px, -110px) rotate(-45deg) !important; 
+        }
+
+        /* Líneas de impulso nervioso */
+        .impulse-line {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            transition: stroke-dashoffset 0.8s ease-in-out;
+        }
+        .active-impulse { stroke-dashoffset: 0 !important; }
+
+        .overlay {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        @keyframes wing {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(0.1); }
+        }
+        .wings { animation: wing 0.05s infinite; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(-50%); }
+            20% { transform: translateX(-51%) rotate(-1deg); }
+            40% { transform: translateX(-49%) rotate(1deg); }
+            60% { transform: translateX(-50.5%) rotate(-0.5deg); }
+            80% { transform: translateX(-49.5%) rotate(0.5deg); }
+        }
+        .shaking { animation: shake 0.15s linear; }
+    </style>
+</head>
+<body class="flex flex-col">
+
+    <header class="p-4 bg-white text-slate-800 flex justify-between items-center shadow-lg z-[100]">
+        <div>
+            <h1 class="text-2xl font-bold text-blue-600">¡Escudo Automático! ⚡</h1>
+            <p class="text-slate-500 text-sm font-medium">¡Mira cómo te protege tu cuerpo!</p>
+        </div>
+        <div class="bg-blue-100 px-4 py-2 rounded-full border-2 border-blue-200">
+            <span class="text-blue-700 font-bold text-sm kids-font uppercase">Sistema Nervioso</span>
+        </div>
+    </header>
+
+    <main class="flex-1 relative">
+        <div id="game-container" onclick="handleReaction()">
+            <div class="cloud w-32 h-12 top-10" style="animation-delay: 0s;"></div>
+            <div class="cloud w-48 h-16 top-24" style="animation-delay: -5s;"></div>
+
+            <div id="instruction" class="absolute top-10 w-full text-center z-30">
+                <p class="text-xl kids-font bg-white text-blue-600 inline-block px-8 py-3 rounded-full shadow-xl border-4 border-blue-400 animate-bounce">
+                    ¡TOCA AL VER AL BICHITO! 🐝
+                </p>
+            </div>
+
+            <div id="avatar-container">
+                <svg viewBox="0 0 200 250" width="100%" height="100%">
+                    <!-- Torso -->
+                    <rect x="70" y="190" width="60" height="60" rx="15" fill="#ff6b6b" />
+                    
+                    <!-- Cabeza -->
+                    <circle cx="100" cy="115" r="75" fill="#ffd3b6" />
+                    <path d="M25,115 Q25,35 100,35 Q175,35 175,115 L160,95 Q100,65 40,95 Z" fill="#4b2e2a" />
+                    
+                    <!-- Ojos -->
+                    <g id="eye-group-l" transform="translate(65, 110)">
+                        <rect id="eye-l" width="24" height="28" rx="12" fill="white" style="transition: all 0.1s ease-out;" />
+                        <circle id="pupil-l" cx="12" cy="14" r="6" fill="#333" />
+                    </g>
+                    <g id="eye-group-r" transform="translate(110, 110)">
+                        <rect id="eye-r" width="24" height="28" rx="12" fill="white" style="transition: all 0.1s ease-out;" />
+                        <circle id="pupil-r" cx="12" cy="14" r="6" fill="#333" />
+                    </g>
+                    
+                    <!-- Boca -->
+                    <path id="mouth" d="M85,160 Q100,175 115,160" stroke="#4b2e2a" stroke-width="3" fill="none" stroke-linecap="round" />
+
+                    <!-- BRAZOS (En capa superior para cubrir la cara) -->
+                    <g id="arms-layer">
+                        <!-- Brazo Izquierdo -->
+                        <rect id="arm-l" x="30" y="195" width="28" height="75" rx="14" fill="#ffd3b6" stroke="#e0ac89" stroke-width="2" 
+                              style="transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); transform-origin: center 200px;" />
+                        <!-- Brazo Derecho -->
+                        <rect id="arm-r" x="142" y="195" width="28" height="75" rx="14" fill="#ffd3b6" stroke="#e0ac89" stroke-width="2" 
+                              style="transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); transform-origin: center 200px;" />
+                    </g>
+                </svg>
+            </div>
+
+            <!-- Abejorro -->
+            <div id="threat">
+                <svg viewBox="0 0 50 50">
+                    <ellipse cx="25" cy="30" rx="18" ry="12" fill="#f1c40f" />
+                    <path d="M15,20 Q25,18 35,20" stroke="black" stroke-width="3" fill="none" />
+                    <path d="M12,30 Q25,28 38,30" stroke="black" stroke-width="3" fill="none" />
+                    <ellipse class="wings" cx="18" cy="18" rx="10" ry="5" fill="white" opacity="0.8" />
+                    <ellipse class="wings" cx="32" cy="18" rx="10" ry="5" fill="white" opacity="0.8" />
+                    <circle cx="38" cy="30" r="3" fill="black" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Panel educativo -->
+        <div id="bio-panel" class="absolute inset-0 overlay flex items-center justify-center hidden z-[200] p-4">
+            <div class="bg-white border-8 border-yellow-400 rounded-[40px] p-8 max-w-4xl w-full shadow-2xl text-slate-800">
+                <div class="flex flex-col md:flex-row gap-8 items-center">
+                    <div class="relative w-full md:w-1/2 bg-blue-50 rounded-3xl p-6 border-4 border-blue-100">
+                        <h3 class="kids-font text-center text-blue-500 mb-4 font-bold uppercase">Viaje del mensaje ⚡</h3>
+                        <svg viewBox="0 0 400 200" class="w-full">
+                            <path id="path1" d="M50,100 C100,20 150,20 200,100" stroke="#cbd5e1" stroke-width="6" fill="none" class="impulse-line"/>
+                            <path id="path2" d="M200,100 C250,180 300,180 350,100" stroke="#cbd5e1" stroke-width="6" fill="none" class="impulse-line"/>
+                            <circle cx="50" cy="100" r="15" fill="#ff6b6b" />
+                            <circle cx="200" cy="100" r="25" fill="#f1c40f" />
+                            <circle cx="350" cy="100" r="15" fill="#4ade80" />
+                            <text x="50" y="135" text-anchor="middle" font-weight="bold" font-size="12">VEO 👀</text>
+                            <text x="200" y="145" text-anchor="middle" font-weight="bold" font-size="12">MÉDULA 🧠</text>
+                            <text x="350" y="135" text-anchor="middle" font-weight="bold" font-size="12">ESCUDO 🛡️</text>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-3xl font-bold mb-4 text-slate-900 kids-font">¡Reflejo Completado!</h2>
+                        <div id="step-story" class="space-y-4 text-lg"></div>
+                        <button onclick="resetThreat()" class="mt-8 w-full py-4 bg-green-500 hover:bg-green-400 text-white font-black text-xl rounded-2xl shadow-lg transition-transform hover:scale-105 active:scale-95 kids-font uppercase">
+                            ¡OTRA VEZ!
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="p-4 bg-slate-900 flex justify-around border-t-4 border-yellow-400">
+        <div class="text-center"><p class="text-[10px] text-yellow-400 font-bold uppercase">Ojos</p><p class="text-xs text-white">Sienten</p></div>
+        <div class="text-center"><p class="text-[10px] text-blue-400 font-bold uppercase">Nervios</p><p class="text-xs text-white">Llevan</p></div>
+        <div class="text-center"><p class="text-[10px] text-purple-400 font-bold uppercase">Médula</p><p class="text-xs text-white">Ordena</p></div>
+        <div class="text-center"><p class="text-[10px] text-green-400 font-bold uppercase">Músculo</p><p class="text-xs text-white">Protege</p></div>
+    </footer>
+
+    <script>
+        let gameActive = true;
+        let threatX = -60;
+        let speed = 4.5;
+        
+        const threat = document.getElementById('threat');
+        const avatar = document.getElementById('avatar-container');
+        const armL = document.getElementById('arm-l');
+        const armR = document.getElementById('arm-r');
+        const eyeL = document.getElementById('eye-l');
+        const eyeR = document.getElementById('eye-r');
+        const pupilL = document.getElementById('pupil-l');
+        const pupilR = document.getElementById('pupil-r');
+        const mouth = document.getElementById('mouth');
+        const bioPanel = document.getElementById('bio-panel');
+        const stepStory = document.getElementById('step-story');
+
+        function moveThreat() {
+            if (!gameActive) return;
+
+            threatX += speed;
+            const threatY = 115 + Math.sin(threatX * 0.04) * 35;
+            threat.style.left = threatX + 'px';
+            threat.style.top = threatY + 'px';
+
+            const triggerLimit = window.innerWidth / 2 - 45;
+            
+            // Efecto de parpadeo por miedo
+            if (threatX > triggerLimit - 150) {
+                const intensity = (threatX - (triggerLimit - 150)) / 150;
+                const newHeight = 28 - (24 * intensity);
+                eyeL.style.height = `${newHeight}px`;
+                eyeR.style.height = `${newHeight}px`;
+            }
+
+            if (threatX > triggerLimit) {
+                triggerReflex(false);
+            } else {
+                requestAnimationFrame(moveThreat);
+            }
+        }
+
+        function handleReaction() {
+            if (!gameActive) return;
+            triggerReflex(true);
+        }
+
+        function triggerReflex(isManual) {
+            gameActive = false;
+            
+            // Animación de defensa - Brazos suben y se cruzan delante de la cara
+            armL.classList.add('defend-arm-l');
+            armR.classList.add('defend-arm-r');
+            
+            // Cerrar ojos de golpe
+            eyeL.classList.add('blink-closed');
+            eyeR.classList.add('blink-closed');
+            pupilL.style.opacity = "0";
+            pupilR.style.opacity = "0";
+            
+            // Boca de sorpresa (círculo)
+            mouth.setAttribute('d', 'M92,170 A8,8 0 1,0 108,170 A8,8 0 1,0 92,170'); 
+            
+            // Sacudida
+            avatar.classList.add('shaking');
+
+            setTimeout(() => {
+                showSimpleBio(isManual);
+            }, 500);
+        }
+
+        function showSimpleBio(isManual) {
+            bioPanel.classList.remove('hidden');
+            
+            const messages = [
+                { i: "👁️", t: "¡Ojos Alerta!", d: "Vieron algo peligroso y mandaron un rayo de aviso." },
+                { i: "⚡", t: "Médula Rápida:", d: "Recibió el aviso y gritó: '¡Brazos, protejan la cara!'" },
+                { i: "🛡️", t: "¡Acción!", d: "Tus músculos se movieron sin que tuvieras que pensarlo." }
+            ];
+
+            stepStory.innerHTML = isManual ? 
+                `<p class="text-green-600 font-bold text-xl mb-4 text-center">¡Qué rapidez! Tus nervios son veloces.</p>` : 
+                `<p class="text-blue-600 font-bold text-xl mb-4 text-center">¡Tu médula te salvó! Reaccionó por ti.</p>`;
+
+            messages.forEach((msg, idx) => {
+                setTimeout(() => {
+                    const d = document.createElement('div');
+                    d.className = "flex items-center gap-4 bg-slate-50 p-3 rounded-2xl border-2 border-slate-100 animate-bounce-short";
+                    d.innerHTML = `<span class="text-3xl">${msg.i}</span><div><p class="font-bold text-sm">${msg.t}</p><p class="text-xs text-slate-500">${msg.d}</p></div>`;
+                    stepStory.appendChild(d);
+                    
+                    const path = document.getElementById(`path${idx < 2 ? idx+1 : 2}`);
+                    if(path) {
+                        path.classList.add('active-impulse');
+                        path.style.stroke = "#f1c40f";
+                    }
+                }, idx * 700);
+            });
+        }
+
+        function resetThreat() {
+            gameActive = true;
+            threatX = -60;
+            speed = 4.5 + Math.random() * 2;
+            
+            bioPanel.classList.add('hidden');
+            armL.classList.remove('defend-arm-l');
+            armR.classList.remove('defend-arm-r');
+            eyeL.classList.remove('blink-closed');
+            eyeR.classList.remove('blink-closed');
+            eyeL.style.height = "28px";
+            eyeR.style.height = "28px";
+            pupilL.style.opacity = "1";
+            pupilR.style.opacity = "1";
+            mouth.setAttribute('d', 'M85,160 Q100,175 115,160');
+            stepStory.innerHTML = '';
+            avatar.classList.remove('shaking');
+            
+            document.querySelectorAll('.impulse-line').forEach(p => {
+                p.classList.remove('active-impulse');
+                p.style.stroke = "#cbd5e1";
+            });
+
+            requestAnimationFrame(moveThreat);
+        }
+
+        window.onload = () => requestAnimationFrame(moveThreat);
+    </script>
+</body>
+</html>

@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2º Primaria | El Tablero - Laberinto de Escaques</title>
+    <!-- Tipografía Fredoka para un look infantil, amigable y muy legible -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS para diseño fluido y premium -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --chess-wood: #8B4F30;
+            --chess-wood-light: #C28E6B;
+            --chess-dark: #78350F;
+            --chess-light: #FEEFDD;
+            --chess-accent: #D97706;
+            --primary-blue: #3B82F6;
+            --accent-pink: #EC4899;
+            --happy-green: #4ADE80;
+        }
+
+        * {
+            font-family: 'Fredoka', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: #FFFDF5;
+            background-image: radial-gradient(#F5E0B3 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            color: #1F2937;
+        }
+
+        /* Animación de entrada de diapositivas */
+        .slide-content {
+            animation: bounceSlideIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
+        }
+
+        @keyframes bounceSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Bordes y estilos del tablero de ajedrez */
+        .board-container {
+            border: 10px solid var(--chess-wood);
+            border-radius: 24px;
+            box-shadow: 0 15px 25px -5px rgba(139, 79, 48, 0.4), 
+                        inset 0 4px 10px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            background-color: var(--chess-wood);
+        }
+
+        .cell-light {
+            background-color: var(--chess-light);
+            color: #451A03;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .cell-dark {
+            background-color: var(--chess-accent);
+            color: #FFFDF5;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        /* Resaltado de camino correcto */
+        .cell-correct {
+            background-color: var(--happy-green) !important;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.2);
+        }
+
+        /* Estilo de botones gigantes infantiles */
+        .kid-btn {
+            box-shadow: 0 6px 0px rgba(0, 0, 0, 0.15);
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+
+        .kid-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Animación para objetos flotantes */
+        .floating-element {
+            animation: floating 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes floating {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-8px); }
+        }
+
+        /* Animación de error suave (sacudida) */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+
+        .shake-effect {
+            animation: shake 0.4s ease;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
+
+    <!-- Pantalla de Bienvenida Pedagógica -->
+    <div id="welcomeScreen" class="fixed inset-0 bg-[#FFFDF5] z-50 flex items-center justify-center p-4">
+        <div class="bg-white border-8 border-amber-800 rounded-[36px] max-w-2xl w-full p-6 md:p-10 text-center shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-6 -left-6 text-7xl opacity-10">♟️</div>
+            <div class="absolute -bottom-6 -right-6 text-7xl opacity-10">👑</div>
+            <div class="absolute top-1/2 -right-8 text-6xl opacity-10">♗</div>
+
+            <span class="bg-amber-700 text-white px-6 py-2 rounded-full font-bold text-sm uppercase tracking-wider mb-4 inline-block">
+                🎒 2º de Primaria
+            </span>
+            
+            <h1 class="text-4xl md:text-5xl font-bold text-amber-900 mb-4 leading-tight">
+                El Laberinto <br>
+                <span class="text-amber-600">de Escaques</span>
+            </h1>
+
+            <div class="bg-amber-50 border-3 border-dashed border-amber-600 rounded-3xl p-6 text-left space-y-4 my-6">
+                <p class="text-amber-950 text-base md:text-lg">
+                    <strong>🧠 Contenido:</strong> Ajedrez Inicial - El Tablero.
+                </p>
+                <p class="text-amber-950 text-base md:text-lg">
+                    <strong>🎯 Habilidad Clave:</strong> Reconocimiento de escaques y caminos diagonales del tablero.
+                </p>
+                <p class="text-amber-900 text-sm md:text-base border-t border-amber-200 pt-3">
+                    <strong>💡 Objetivo Educativo:</strong> Aprender de manera lúdica y visual que el tablero de ajedrez está formado por casillas claras y oscuras (escaques) que se alternan, y entender cómo el Alfil se desplaza siguiendo diagonales de un solo color.
+                </p>
+            </div>
+
+            <button onclick="startPresentation()" class="kid-btn bg-amber-700 hover:bg-amber-800 text-white font-bold text-2xl py-4 px-12 rounded-full transform transition-all active:scale-95 inline-flex items-center gap-3">
+                <span>¡Entrar al Tablero! ♟️🚀</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Cabecera Pedagógica -->
+    <header class="w-full max-w-5xl mx-auto bg-white border-3 border-amber-700 rounded-2xl px-6 py-3 flex flex-col sm:flex-row justify-between items-center gap-3 shadow-md">
+        <div class="flex items-center gap-3">
+            <span class="bg-amber-700 text-white px-4 py-1.5 rounded-full font-bold text-xs uppercase tracking-wider">
+                2º de Primaria
+            </span>
+            <div class="text-gray-800 font-bold text-base">
+                Tema: <span class="text-amber-700">Ajedrez Inicial - El Tablero</span>
+            </div>
+        </div>
+        <div class="text-amber-800 text-sm font-bold uppercase tracking-wider">
+            Reconocimiento de Entorno Lúdico
+        </div>
+    </header>
+
+    <!-- Contenedor Principal de la Presentación -->
+    <main class="w-full max-w-5xl mx-auto flex-1 flex flex-col justify-center my-4 md:my-6">
+        <div class="bg-white border-3 border-amber-200 rounded-[32px] p-6 md:p-8 shadow-xl flex-1 flex flex-col justify-between min-h-[520px]">
+            
+            <!-- Diapositiva 1: Introducción a los Escaques -->
+            <div id="slide-1" class="slide-content flex flex-col lg:flex-row items-center gap-8 h-full flex-1">
+                <div class="flex-1 space-y-6">
+                    <span class="text-amber-700 text-sm font-bold uppercase tracking-widest block">¡Hola, Pequeño Campeón! 🏰♟️</span>
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 leading-tight">
+                        ¿Qué es un <span class="text-amber-700">escaque</span>?
+                    </h2>
+                    <p class="text-gray-600 text-lg md:text-xl leading-relaxed">
+                        El tablero de ajedrez no es un cuadrado común, ¡es un reino mágico! Está dividido en <strong>64 casillas de colores</strong> llamadas <strong>escaques</strong>.
+                    </p>
+                    <p class="text-gray-600 text-base md:text-lg leading-relaxed">
+                        Los escaques siempre se turnan como un patrón de ajedrez: una casilla **clara** (blanca) y una **oscura** (negra o marrón) para que las piezas no se confundan de camino.
+                    </p>
+                    <div class="bg-amber-50 border-l-4 border-amber-600 p-4 rounded-r-2xl">
+                        <p class="text-amber-950 text-sm md:text-base font-bold">
+                            👉 Toca cualquier casilla del tablero interactivo para cambiar su color y ver cómo se alternan. ¡Inténtalo!
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex-1 flex flex-col justify-center items-center w-full">
+                    <div class="board-container p-3 bg-amber-950 w-64 h-64 md:w-72 md:h-72 grid grid-cols-4 grid-rows-4 gap-0 mb-4">
+                        <!-- Pequeño tablero interactivo para experimentar -->
+                        <div class="cell-light flex items-center justify-center font-bold text-3xl cursor-pointer" onclick="toggleCellColor(this)">⬜</div>
+                        <div class="cell-dark flex items-center justify-center font-bold text-3xl cursor-pointer" onclick="toggleCellColor(this)">⬛</div>
+                        <div class="cell-light flex items-center justify-center font-bold text-3xl cursor-pointer" onclick="toggleCellColor(this)">⬜</div>
+                        <div class="cell-dark flex items-center justify-center font-bold text-3xl cursor-pointer" onclick="toggleCellColor(this)">⬛</div>
+
+                        <div class="cell-dark flex items-center justify-center font-bold text-3xl cursor-pointer" onclick="toggleCellColor(this)">⬛</div>
+                        <div class="cell-light flex items-center justify-center font-bold text-3xl cursor-pointer" onclick="toggleCellColor(this)">⬜</div>
+                        <div class="cell-dark flex items-center justify-center font-bold text-3xl cursor-pointer" onclick="toggleCellColor(this)">⬛</div>
+                        <div class="cell-light flex items-center justify-center font-bold text-3xl cursor-pointer" onclick="toggleCellColor(this)">⬜</div>
+
+                        <div class="cell-light flex items-center justify-center font-bold text-3xl cursor-pointer" onclick="toggleCellColor(this)">⬜</div>
+                        <div class="cell-dark flex items-center justify-center font-bold text-3xl cursor-pointer" onclick="toggleCellColor(this)">⬛</div>
+                        <div class="cell-light flex items-center justify-center font-bold text-3xl cursor-pointer" onclick="toggleCellColor(this)">⬜</div>
+                        <div class="cell-dark flex items-center justify-center font-bold text-3xl cursor-pointer" onclick="toggleCellColor(this)">⬛</div>
+
+                        <div class="cell-dark flex items-center justify-center font-bold text-3xl cursor-pointer" onclick="toggleCellColor(this)">⬛</div>
+                        <div class="cell-light flex items-center justify-center font-bold text-3xl cursor-pointer" onclick="toggleCellColor(this)">⬜</div>
+                        <div class="cell-dark flex items-center justify-center font-bold text-3xl cursor-pointer" onclick="toggleCellColor(this)">⬛</div>
+                        <div class="cell-light flex items-center justify-center font-bold text-3xl cursor-pointer" onclick="toggleCellColor(this)">⬜</div>
+                    </div>
+                    <span class="text-xs text-gray-400 italic">¡Cada cuadrito es un castillo mágico llamado escaque!</span>
+                </div>
+            </div>
+
+            <!-- Diapositiva 2: La regla de la esquina derecha -->
+            <div id="slide-2" class="slide-content hidden flex flex-col lg:flex-row items-center gap-8 h-full flex-1">
+                <div class="flex-1 space-y-5">
+                    <span class="text-amber-700 text-sm font-bold uppercase tracking-widest block">¡Regla de Oro obligatoria! 💡</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 leading-tight">
+                        ¿Cómo colocamos el <span class="text-amber-700">tablero</span> en la mesa?
+                    </h2>
+                    <p class="text-gray-600 text-base md:text-lg leading-relaxed">
+                        Para empezar a jugar ajedrez, todos los campeones deben revisar una regla obligatoria:
+                    </p>
+                    <div class="bg-amber-100 p-4 rounded-2xl border-2 border-amber-500 font-bold text-amber-950 text-center text-lg md:text-xl">
+                        "¡Casilla blanca a la derecha!" ⬜➡️
+                    </div>
+                    <p class="text-gray-600 text-base md:text-lg leading-relaxed">
+                        Significa que la esquina de la derecha más cercana de cada jugador **debe ser de color claro (blanca)**. Si es oscura, ¡el tablero está al revés!
+                    </p>
+                </div>
+                
+                <div class="flex-1 w-full bg-amber-50 rounded-3xl p-6 border-2 border-amber-200 flex flex-col justify-between items-center gap-4 min-h-[280px]">
+                    <span id="s2-badge" class="bg-red-100 text-red-700 font-bold text-sm px-4 py-1.5 rounded-full uppercase">
+                        ¡Este tablero está AL REVÉS! ❌
+                    </span>
+
+                    <!-- Gráfico visual de la esquina inferior del tablero -->
+                    <div class="flex justify-center items-center">
+                        <div class="grid grid-cols-4 border-6 border-amber-800 rounded-2xl overflow-hidden w-72 h-18 bg-amber-950 relative">
+                            <div class="cell-light flex items-center justify-center font-bold text-base">A1</div>
+                            <div class="cell-dark flex items-center justify-center font-bold text-base">B1</div>
+                            <div class="cell-light flex items-center justify-center font-bold text-base">C1</div>
+                            <div id="s2-corner-box" class="cell-dark flex items-center justify-center font-bold text-base transition-all duration-500">
+                                <span id="s2-corner-label">D1 (Mala) ⬛</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="fixBoardPosition()" class="kid-btn bg-amber-700 hover:bg-amber-800 text-white font-bold py-3 px-8 rounded-full text-base flex items-center gap-2">
+                        <span>🔄 Acomodar Tablero Correctamente</span>
+                    </button>
+                    
+                    <p id="s2-helper-text" class="text-gray-500 text-sm text-center italic">
+                        La esquina derecha debe ser de color clara (blanca). ¡Presiona el botón para arreglarlo!
+                    </p>
+                </div>
+            </div>
+
+            <!-- Diapositiva 3: Las Diagonales y el Alfil -->
+            <div id="slide-3" class="slide-content hidden flex flex-col lg:flex-row items-center gap-8 h-full flex-1">
+                <div class="flex-1 space-y-5">
+                    <span class="text-amber-700 text-sm font-bold uppercase tracking-widest block">Caminos Cruzados 🗺️</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 leading-tight">
+                        Las <span class="text-amber-700">diagonales</span> del tablero
+                    </h2>
+                    <p class="text-gray-600 text-base md:text-lg leading-relaxed">
+                        Si miras con atención, los escaques del mismo color se tocan por las esquinas creando **líneas inclinadas (diagonales)**.
+                    </p>
+                    <p class="text-gray-600 text-base md:text-lg leading-relaxed">
+                        ¡Este es el camino exclusivo del **Alfil ♗**! Si un Alfil empieza la partida en un escaque oscuro, ¡toda la vida se moverá solo en escaques oscuros!
+                    </p>
+                    <button onclick="revealSlide3DiagonalAnimation()" class="kid-btn bg-amber-700 hover:bg-amber-800 text-white font-bold py-3 px-8 rounded-full text-base flex items-center gap-2 w-fit">
+                        <span>♗ Ver Desplazamiento del Alfil</span>
+                    </button>
+                </div>
+                
+                <div class="flex-1 w-full bg-amber-50 rounded-3xl p-6 border-2 border-amber-200 flex flex-col justify-center items-center gap-4">
+                    <!-- Tablero 4x4 para ilustrar la diagonal -->
+                    <div class="board-container p-2 bg-amber-950 w-56 h-56 grid grid-cols-4 grid-rows-4 gap-0 relative">
+                        <div class="cell-light flex items-center justify-center" id="s3-0-0"></div>
+                        <div class="cell-dark flex items-center justify-center" id="s3-0-1"></div>
+                        <div class="cell-light flex items-center justify-center" id="s3-0-2"></div>
+                        <div class="cell-dark flex items-center justify-center" id="s3-0-3"></div>
+
+                        <div class="cell-dark flex items-center justify-center" id="s3-1-0"></div>
+                        <div class="cell-light flex items-center justify-center" id="s3-1-1"></div>
+                        <div class="cell-dark flex items-center justify-center" id="s3-1-2"></div>
+                        <div class="cell-light flex items-center justify-center" id="s3-1-3"></div>
+
+                        <div class="cell-light flex items-center justify-center" id="s3-2-0"></div>
+                        <div class="cell-dark flex items-center justify-center" id="s3-2-1"></div>
+                        <div class="cell-light flex items-center justify-center" id="s3-2-2"></div>
+                        <div class="cell-dark flex items-center justify-center" id="s3-2-3"></div>
+
+                        <div class="cell-dark flex items-center justify-center" id="s3-3-0"></div>
+                        <div class="cell-light flex items-center justify-center" id="s3-3-1"></div>
+                        <div class="cell-dark flex items-center justify-center" id="s3-3-2"></div>
+                        <div class="cell-light flex items-center justify-center" id="s3-3-3"></div>
+                    </div>
+                    <p id="s3-helper" class="text-gray-500 text-sm text-center italic">
+                        Haz clic en el botón para que el Alfil use su diagonal de escaques oscuros.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Diapositiva 4: El Laberinto de Escaques Interactivos -->
+            <div id="slide-4" class="slide-content hidden flex flex-col h-full flex-1 justify-between">
+                <div class="space-y-2 mb-4">
+                    <span class="text-amber-700 text-sm font-bold uppercase tracking-widest block">Taller Práctico ♟️🧪</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Cruza el Laberinto de Escaques</h2>
+                    <p class="text-gray-600 text-sm md:text-base">
+                        Ayuda a nuestro Alfil ♗ a llegar al trofeo 🏆. Recuerda la regla más importante de todas: **¡solo puede pisar casillas claras (blancas)!** Haz clic en los casilleros en diagonal uno a uno.
+                    </p>
+                </div>
+
+                <!-- Entorno del laberinto -->
+                <div class="w-full flex flex-col lg:flex-row gap-6 items-stretch justify-center flex-1 min-h-[250px] mb-4">
+                    
+                    <!-- Lado izquierdo: Laberinto -->
+                    <div class="flex-1 bg-amber-50 rounded-3xl p-4 border-2 border-amber-600 flex flex-col justify-between items-center relative">
+                        <div class="flex justify-between w-full items-center mb-2">
+                            <span class="bg-amber-800 text-white font-bold text-xs px-4 py-1.5 rounded-full uppercase tracking-wider">
+                                Camino de Escaques Claros ⬜
+                            </span>
+                            <button onclick="resetMaze()" class="text-amber-900 hover:text-amber-950 font-bold text-sm underline flex items-center gap-1">
+                                Reiniciar Laberinto 🔄
+                            </button>
+                        </div>
+
+                        <!-- Tablero de 5x5 gigante -->
+                        <div class="board-container p-2 bg-amber-950 w-64 h-64 md:w-72 md:h-72 grid grid-cols-5 grid-rows-5 gap-0 relative my-auto">
+                            <!-- Fila 0 -->
+                            <div class="cell-light flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-0-0" onclick="handleCellClick(0,0)"></div>
+                            <div class="cell-dark flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-0-1" onclick="handleCellClick(0,1)"></div>
+                            <div class="cell-light flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-0-2" onclick="handleCellClick(0,2)"></div>
+                            <div class="cell-dark flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-0-3" onclick="handleCellClick(0,3)"></div>
+                            <div class="cell-light flex items-center justify-center font-bold text-3xl cursor-pointer" id="c-0-4" onclick="handleCellClick(0,4)">🏆</div>
+
+                            <!-- Fila 1 -->
+                            <div class="cell-dark flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-1-0" onclick="handleCellClick(1,0)"></div>
+                            <div class="cell-light flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-1-1" onclick="handleCellClick(1,1)"></div>
+                            <div class="cell-dark flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-1-2" onclick="handleCellClick(1,2)"></div>
+                            <div class="cell-light flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-1-3" onclick="handleCellClick(1,3)"></div>
+                            <div class="cell-dark flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-1-4" onclick="handleCellClick(1,4)"></div>
+
+                            <!-- Fila 2 -->
+                            <div class="cell-light flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-2-0" onclick="handleCellClick(2,0)"></div>
+                            <div class="cell-dark flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-2-1" onclick="handleCellClick(2,1)"></div>
+                            <div class="cell-light flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-2-2" onclick="handleCellClick(2,2)"></div>
+                            <div class="cell-dark flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-2-3" onclick="handleCellClick(2,3)"></div>
+                            <div class="cell-light flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-2-4" onclick="handleCellClick(2,4)"></div>
+
+                            <!-- Fila 3 -->
+                            <div class="cell-dark flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-3-0" onclick="handleCellClick(3,0)"></div>
+                            <div class="cell-light flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-3-1" onclick="handleCellClick(3,1)"></div>
+                            <div class="cell-dark flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-3-2" onclick="handleCellClick(3,2)"></div>
+                            <div class="cell-light flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-3-3" onclick="handleCellClick(3,3)"></div>
+                            <div class="cell-dark flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-3-4" onclick="handleCellClick(3,4)"></div>
+
+                            <!-- Fila 4 -->
+                            <div class="cell-light flex items-center justify-center font-bold text-3xl cursor-pointer" id="c-4-0" onclick="handleCellClick(4,0)">♗</div>
+                            <div class="cell-dark flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-4-1" onclick="handleCellClick(4,1)"></div>
+                            <div class="cell-light flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-4-2" onclick="handleCellClick(4,2)"></div>
+                            <div class="cell-dark flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-4-3" onclick="handleCellClick(4,3)"></div>
+                            <div class="cell-light flex items-center justify-center font-bold text-2xl cursor-pointer" id="c-4-4" onclick="handleCellClick(4,4)"></div>
+                        </div>
+                    </div>
+
+                    <!-- Lado derecho: Instrucciones explicadas -->
+                    <div class="w-full lg:w-[280px] bg-white border-2 border-amber-600 rounded-3xl p-4 flex flex-col justify-between items-center text-center">
+                        <div>
+                            <span class="text-6xl block floating-element">👑👴</span>
+                            <h4 class="text-amber-900 font-bold text-lg mt-2">El Rey Sabio</h4>
+                        </div>
+                        
+                        <!-- Caja de diálogo dinámico del tutor -->
+                        <div class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-200 flex-1 flex items-center justify-center my-4 w-full">
+                            <p id="king-speech-text" class="text-amber-950 font-semibold text-sm md:text-base leading-relaxed">
+                                ¡Hola! El Alfil empieza en la esquina izquierda (casilla clara). Pulsa el siguiente paso correcto en diagonal hacia la derecha para avanzar.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diapositiva 5: Conclusión y Actividades Táctiles Divertidas -->
+            <div id="slide-5" class="slide-content hidden flex flex-col lg:flex-row items-center gap-8 h-full flex-1">
+                <div class="flex-1 space-y-4">
+                    <span class="text-amber-700 text-sm font-bold uppercase tracking-widest block">¡Excelente Viaje! 🏆🎓</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 leading-tight">
+                        ¡Ya eres todo un <br>
+                        <span class="text-amber-700">experto del tablero!</span>
+                    </h2>
+                    <p class="text-gray-600 text-base md:text-lg leading-relaxed">
+                        Has aprendido que el tablero está hecho de escaques, que la esquina de la derecha debe ser de color clara y que los alfiles siguen diagonales de un solo color.
+                    </p>
+                </div>
+                
+                <div class="flex-1 w-full bg-amber-50 rounded-3xl p-5 border-2 border-amber-600 flex flex-col justify-center space-y-4 shadow-inner">
+                    <h3 class="text-lg font-bold text-amber-950 text-center">🧠 Retos rápidos de escaques:</h3>
+                    
+                    <!-- Actividad 1 -->
+                    <div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-2">
+                        <p class="text-xs md:text-sm font-bold text-gray-700">
+                            1. Al acomodar el tablero frente a ti, ¿de qué color debe ser la casilla del extremo derecho?
+                        </p>
+                        <div class="grid grid-cols-2 gap-3" id="q1-choices">
+                            <button onclick="checkVisualAnswer(1, 'oscuro', false, this)" class="kid-btn bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold py-2 rounded-xl text-xs">
+                                ⬛ Oscuro
+                            </button>
+                            <button onclick="checkVisualAnswer(1, 'claro', true, this)" class="kid-btn bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold py-2 rounded-xl text-xs">
+                                ⬜ Claro (Blanco)
+                            </button>
+                        </div>
+                        <p id="feedback-q1" class="text-xs font-bold text-center h-4"></p>
+                    </div>
+
+                    <!-- Actividad 2 -->
+                    <div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-2">
+                        <p class="text-xs md:text-sm font-bold text-gray-700">
+                            2. Si un Alfil de casillas blancas viaja, ¿podrá pisar un escaque negro?
+                        </p>
+                        <div class="grid grid-cols-2 gap-3" id="q2-choices">
+                            <button onclick="checkVisualAnswer(2, 'si', false, this)" class="kid-btn bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold py-2 rounded-xl text-xs">
+                                Sí 🤩
+                            </button>
+                            <button onclick="checkVisualAnswer(2, 'no', true, this)" class="kid-btn bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold py-2 rounded-xl text-xs">
+                                No, nunca ❌
+                            </button>
+                        </div>
+                        <p id="feedback-q2" class="text-xs font-bold text-center h-4"></p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Controles de Navegación de la Presentación -->
+    <footer class="w-full max-w-5xl mx-auto bg-white border-3 border-amber-700 rounded-2xl p-4 flex justify-between items-center shadow-md">
+        <button id="btn-prev" onclick="changeSlide(-1)" class="kid-btn bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold py-3 px-6 rounded-2xl text-base disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+            Anterior
+        </button>
+
+        <div class="text-gray-600 font-bold text-sm md:text-base">
+            Sección <span id="current-slide-num" class="text-amber-700">1</span> de 5
+        </div>
+
+        <button id="btn-next" onclick="changeSlide(1)" class="kid-btn bg-amber-700 hover:bg-amber-800 text-white font-bold py-3 px-6 rounded-2xl text-base">
+            Siguiente
+        </button>
+    </footer>
+
+    <script>
+        // --- Estado General de la Presentación ---
+        let currentSlide = 1;
+        const totalSlides = 5;
+
+        // --- Sintetizador de Sonido (Web Audio API) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'magic') {
+                // Tono de arpegio feliz
+                const now = audioCtx.currentTime;
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+                osc.frequency.setValueAtTime(1046.50, now + 0.24); // C6
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            } else if (type === 'error') {
+                // Tono de alerta suave
+                const now = audioCtx.currentTime;
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'click') {
+                // Tono de botón normal
+                const now = audioCtx.currentTime;
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, now);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                osc.start(now);
+                osc.stop(now + 0.12);
+            }
+        }
+
+        // --- STREAMING_CHUNK: Managing slide transitions... -->
+        // --- Navegación entre Diapositivas ---
+        function startPresentation() {
+            playSound('magic');
+            const welcome = document.getElementById('welcomeScreen');
+            welcome.style.opacity = '0';
+            welcome.style.pointerEvents = 'none';
+            setTimeout(() => {
+                welcome.style.display = 'none';
+            }, 500);
+        }
+
+        function changeSlide(direction) {
+            playSound('click');
+
+            // Caso especial: Reiniciar el juego si está en el final
+            if (currentSlide === totalSlides && direction === 1) {
+                document.getElementById(`slide-${currentSlide}`).classList.add('hidden');
+                currentSlide = 1;
+                document.getElementById(`slide-${currentSlide}`).classList.remove('hidden');
+                updateFooter();
+                return;
+            }
+
+            // Ocultar actual
+            document.getElementById(`slide-${currentSlide}`).classList.add('hidden');
+            // Mover índice
+            currentSlide += direction;
+            // Mostrar nueva
+            document.getElementById(`slide-${currentSlide}`).classList.remove('hidden');
+
+            updateFooter();
+
+            // Desencadenar estados iniciales de diapositiva
+            if (currentSlide === 2) {
+                resetSlide2();
+            } else if (currentSlide === 3) {
+                resetSlide3();
+            } else if (currentSlide === 4) {
+                resetMaze();
+            } else if (currentSlide === 5) {
+                resetSlide5();
+            }
+        }
+
+        function updateFooter() {
+            document.getElementById('current-slide-num').textContent = currentSlide;
+            document.getElementById('btn-prev').disabled = (currentSlide === 1);
+            
+            const btnNext = document.getElementById('btn-next');
+            if (currentSlide === totalSlides) {
+                btnNext.textContent = 'Volver a comenzar 🔄';
+            } else {
+                btnNext.textContent = 'Siguiente';
+            }
+        }
+
+        // --- STREAMING_CHUNK: Implementing interactive widgets... -->
+        // --- Lógica Diapositiva 1 (Casillas Interactivas) ---
+        function toggleCellColor(cell) {
+            playSound('click');
+            if (cell.classList.contains('cell-light')) {
+                cell.classList.remove('cell-light');
+                cell.classList.add('cell-dark');
+                cell.textContent = '⬛';
+            } else {
+                cell.classList.remove('cell-dark');
+                cell.classList.add('cell-light');
+                cell.textContent = '⬜';
+            }
+        }
+
+        // --- Lógica Diapositiva 2 (La Regla de la Esquina) ---
+        function resetSlide2() {
+            const box = document.getElementById('s2-corner-box');
+            box.className = "cell-dark flex items-center justify-center font-bold text-base transition-all duration-500";
+            document.getElementById('s2-corner-label').textContent = "D1 (Mala) ⬛";
+            
+            const badge = document.getElementById('s2-badge');
+            badge.className = "bg-red-100 text-red-700 font-bold text-sm px-4 py-1.5 rounded-full uppercase";
+            badge.textContent = "¡Este tablero está AL REVÉS! ❌";
+
+            document.getElementById('s2-helper-text').innerHTML = "La esquina derecha debe ser de color clara (blanca). ¡Presiona el botón para arreglarlo!";
+        }
+
+        function fixBoardPosition() {
+            playSound('magic');
+            const box = document.getElementById('s2-corner-box');
+            box.className = "cell-light flex items-center justify-center font-bold text-base transition-all duration-500 text-green-700";
+            document.getElementById('s2-corner-label').textContent = "D1 (Blanca) ⬜";
+
+            const badge = document.getElementById('s2-badge');
+            badge.className = "bg-green-100 text-green-700 font-bold text-sm px-4 py-1.5 rounded-full uppercase";
+            badge.textContent = "¡Ubicación Perfecta! ⬜✅";
+
+            document.getElementById('s2-helper-text').innerHTML = "<strong>¡Excelente!</strong> Ahora que la esquina inferior derecha es clara (blanca), el tablero está listo para jugar de forma profesional.";
+        }
+
+        // --- Lógica Diapositiva 3 (Desplazamiento del Alfil) ---
+        function resetSlide3() {
+            for (let r = 0; r < 4; r++) {
+                for (let c = 0; c < 4; c++) {
+                    const el = document.getElementById(`s3-${r}-${c}`);
+                    el.classList.remove('cell-correct');
+                    el.textContent = '';
+                }
+            }
+            document.getElementById('s3-helper').textContent = "Haz clic en el botón para que el Alfil use su diagonal de escaques oscuros.";
+        }
+
+        function revealSlide3DiagonalAnimation() {
+            playSound('magic');
+            resetSlide3();
+
+            // Camino diagonal de casillas oscuras: (3,0) -> (2,1) -> (1,2) -> (0,3)
+            const diagonal = [
+                { r: 3, c: 0 },
+                { r: 2, c: 1 },
+                { r: 1, c: 2 },
+                { r: 0, c: 3 }
+            ];
+
+            diagonal.forEach((cell, idx) => {
+                // Retardo progresivo para dar efecto de movimiento
+                setTimeout(() => {
+                    const el = document.getElementById(`s3-${cell.r}-${cell.c}`);
+                    el.classList.add('cell-correct');
+                    if (idx === diagonal.length - 1) {
+                        el.textContent = '♗'; // El alfil termina aquí
+                    } else {
+                        el.textContent = '🌟'; // Estrellas de camino
+                    }
+                }, idx * 300);
+            });
+
+            document.getElementById('s3-helper').innerHTML = "<strong>¡Fabuloso!</strong> El Alfil se deslizó perfectamente cruzando de esquina a esquina usando únicamente escaques oscuros.";
+        }
+
+        // --- STREAMING_CHUNK: Validating maze logic... -->
+        // --- Lógica Diapositiva 4 (Laberinto) ---
+        // El camino de claros diagonal es: (4,0) -> (3,1) -> (2,2) -> (1,3) -> (0,4)
+        const mazeSteps = [
+            { r: 4, c: 0 },
+            { r: 3, c: 1 },
+            { r: 2, c: 2 },
+            { r: 1, c: 3 },
+            { r: 0, c: 4 }
+        ];
+
+        let currentMazeIndex = 0;
+
+        function resetMaze() {
+            currentMazeIndex = 0;
+
+            // Restablecer todas las celdas de la cuadrícula
+            for (let r = 0; r < 5; r++) {
+                for (let c = 0; c < 5; c++) {
+                    const el = document.getElementById(`c-${r}-${c}`);
+                    el.classList.remove('cell-correct');
+                    el.textContent = '';
+                    
+                    if (r === 0 && c === 4) {
+                        el.textContent = '🏆';
+                    }
+                    if (r === 4 && c === 0) {
+                        el.textContent = '♗';
+                        el.classList.add('cell-correct');
+                    }
+                }
+            }
+
+            document.getElementById('king-speech-text').textContent = "¡Hola! El Alfil empieza en la esquina izquierda (casilla clara). Pulsa el siguiente paso correcto en diagonal hacia la derecha para avanzar.";
+        }
+
+        function handleCellClick(r, c) {
+            const nextIndex = currentMazeIndex + 1;
+            
+            if (nextIndex >= mazeSteps.length) {
+                // Ya ha terminado
+                return;
+            }
+
+            const targetStep = mazeSteps[nextIndex];
+
+            if (r === targetStep.r && c === targetStep.c) {
+                // Acierto
+                playSound('magic');
+                
+                // Borrar Alfil de la posición anterior
+                const prevStep = mazeSteps[currentMazeIndex];
+                document.getElementById(`c-${prevStep.r}-${prevStep.c}`).textContent = '';
+
+                // Mover Alfil a la nueva celda
+                currentMazeIndex = nextIndex;
+                const newCell = document.getElementById(`c-${r}-${c}`);
+                newCell.classList.add('cell-correct');
+
+                if (currentMazeIndex === mazeSteps.length - 1) {
+                    newCell.textContent = '♗🏆';
+                    document.getElementById('king-speech-text').innerHTML = "<strong>¡Felicidades, ganaste el trofeo! 🏆🌟</strong> Conectaste una diagonal perfecta de escaques claros.";
+                } else {
+                    newCell.textContent = '♗';
+                    document.getElementById('king-speech-text').innerHTML = "<strong>¡Magnífico salto! ⭐</strong> El Alfil sigue en el camino claro. ¡Sigue avanzando!";
+                }
+            } else {
+                // Error
+                playSound('error');
+                const clickedCell = document.getElementById(`c-${r}-${c}`);
+                clickedCell.classList.add('shake-effect');
+                setTimeout(() => clickedCell.classList.remove('shake-effect'), 500);
+
+                // Determinar tipo de error para retroalimentación explicativa
+                const isDarkSquare = (r + c) % 2 !== 0;
+
+                if (isDarkSquare) {
+                    document.getElementById('king-speech-text').innerHTML = "<strong>¡Cuidado! ⬛</strong> Ese es un escaque oscuro. Recuerda que nuestro Alfil viaja únicamente por casillas claras.";
+                } else {
+                    document.getElementById('king-speech-text').innerHTML = "<strong>¡Casi!</strong> Ese escaque es claro, pero no está en la diagonal de movimiento del Alfil. ¡Busca el cuadro vecino de la esquina!";
+                }
+            }
+        }
+
+        // --- STREAMING_CHUNK: Verifying final quiz answers... -->
+        // --- Lógica Diapositiva 5 (Actividades de Evaluación de 2º de Primaria) ---
+        function resetSlide5() {
+            // Restablecer estilos de los botones en las preguntas
+            document.querySelectorAll('#q1-choices button').forEach(btn => {
+                btn.className = "kid-btn bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold py-2 rounded-xl text-xs";
+            });
+            document.querySelectorAll('#q2-choices button').forEach(btn => {
+                btn.className = "kid-btn bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold py-2 rounded-xl text-xs";
+            });
+            document.getElementById('feedback-q1').textContent = '';
+            document.getElementById('feedback-q2').textContent = '';
+        }
+
+        function checkVisualAnswer(questionNum, answerKey, isCorrect, clickedButton) {
+            const feedbackElement = document.getElementById(`feedback-q${questionNum}`);
+            const choicesContainer = document.getElementById(`q${questionNum}-choices`);
+            
+            // Limpiar selección de los otros botones en esta pregunta
+            choicesContainer.querySelectorAll('button').forEach(btn => {
+                btn.className = "kid-btn bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold py-2 rounded-xl text-xs opacity-60";
+            });
+
+            if (isCorrect) {
+                playSound('magic');
+                clickedButton.className = "kid-btn bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs opacity-100 scale-105";
+                feedbackElement.className = "text-xs font-bold text-center text-green-600 mt-1";
+                feedbackElement.textContent = "¡Excelente! Comprensión perfecta. 🌟";
+            } else {
+                playSound('error');
+                clickedButton.className = "kid-btn bg-red-500 text-white font-bold py-2 rounded-xl text-xs opacity-100 scale-105";
+                feedbackElement.className = "text-xs font-bold text-center text-red-500 mt-1";
+                feedbackElement.textContent = "Inténtalo otra vez. ¡Observa bien! ❌";
+            }
+        }
+    </script>
+</body>
+</html>

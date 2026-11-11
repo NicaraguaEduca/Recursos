@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Orquesta de la Escuela - Sonidos del Entorno</title>
+    
+    <!-- Fuentes Google: Fredoka One (Toon) y Quicksand (Lectura clara) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@600;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA DE TAILWIND PARA WORDPRESS -->
+    <script>
+        window.tailwind = {
+            config: {
+                important: '#recurso-wp-orquesta',
+                corePlugins: { preflight: false },
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            toon: ['"Fredoka One"', 'cursive'],
+                            body: ['Quicksand', 'sans-serif'],
+                        },
+                        colors: {
+                            school: {
+                                dark: '#1e1b4b',      /* Azul medianoche */
+                                desk: '#854d0e',      /* Madera pupitres */
+                                paper: '#fef08a',     /* Amarillo pizarrón */
+                                soundStrong: '#ef4444',/* Rojo sonidos fuertes */
+                                soundSoft: '#0ea5e9',  /* Celeste sonidos suaves */
+                                green: '#10b981',     /* Aciertos */
+                                yellow: '#facc15'     /* Destellos */
+                            }
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* =========================================================
+           MICRO-RESET LOCAL
+           ========================================================= */
+        #recurso-wp-orquesta * { box-sizing: border-box; border-width: 0; border-style: solid; border-color: currentColor; line-height: normal; }
+        #recurso-wp-orquesta h1, #recurso-wp-orquesta h2, #recurso-wp-orquesta h3, #recurso-wp-orquesta p, #recurso-wp-orquesta span { margin: 0; padding: 0; }
+        #recurso-wp-orquesta button { background-color: transparent; cursor: pointer; padding: 0; font-family: inherit; }
+
+        /* =========================================================
+           ESTILOS GENERALES Y CONFIGURACIÓN PANTALLA COMPLETA
+           ========================================================= */
+        #recurso-wp-orquesta {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #6d28d9; /* Violeta escolar */
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(254, 240, 138, 0.15) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(14, 165, 233, 0.15) 0%, transparent 20%);
+            color: #1e1b4b;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Paneles y Botones Infantiles */
+        #recurso-wp-orquesta .toon-panel {
+            background-color: #ffffff;
+            border: 6px solid #1e1b4b;
+            border-radius: 2rem;
+            box-shadow: 8px 8px 0px #1e1b4b;
+            position: relative;
+        }
+
+        #recurso-wp-orquesta .toon-btn {
+            border: 4px solid #1e1b4b;
+            border-radius: 1rem;
+            box-shadow: 4px 4px 0px #1e1b4b;
+            transition: all 0.1s ease-out;
+            font-family: 'Fredoka One', cursive;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        #recurso-wp-orquesta .toon-btn:hover:not(:disabled) {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #1e1b4b;
+        }
+        #recurso-wp-orquesta .toon-btn:active:not(:disabled) {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px #1e1b4b;
+        }
+        #recurso-wp-orquesta .toon-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: 4px 4px 0px #1e1b4b !important;
+        }
+
+        /* =========================================================
+           ELEMENTOS DE SONIDO (Instrumentos / Objetos)
+           ========================================================= */
+        .sound-object-btn {
+            background: #ffffff;
+            border: 4px solid #1e1b4b;
+            border-radius: 1.5rem;
+            box-shadow: 4px 4px 0px #1e1b4b;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            cursor: pointer;
+            width: clamp(90px, 20vw, 130px);
+            height: clamp(90px, 20vw, 130px);
+        }
+        .sound-object-btn:hover:not(.solved) {
+            transform: scale(1.05) translateY(-3px);
+            box-shadow: 6px 8px 0px #1e1b4b;
+            border-color: #facc15; /* Brillo dorado */
+        }
+        .sound-object-btn:active:not(.solved) {
+            transform: translateY(4px);
+            box-shadow: 0px 0px 0px #1e1b4b;
+        }
+
+        /* Objeto seleccionado actualmente */
+        .sound-object-btn.selected {
+            background-color: #fef08a; /* Resaltado amarillo */
+            border-color: #fbbf24;
+            transform: scale(1.1) translateY(-5px);
+            box-shadow: 0 0 15px #fbbf24;
+            z-index: 30;
+        }
+
+        /* Objeto classified con éxito */
+        .sound-object-btn.solved {
+            opacity: 0;
+            transform: scale(0) rotate(180deg) !important;
+            pointer-events: none;
+            transition: all 0.5s ease-in;
+        }
+
+        /* Zonas de Clasificación (Contenedor receptor) */
+        .drop-zone {
+            border: 4px solid #1e1b4b;
+            border-radius: 2rem;
+            box-shadow: 4px 4px 0px #1e1b4b;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+            cursor: pointer;
+        }
+        .drop-zone:hover {
+            transform: scale(1.03) translateY(-3px);
+            box-shadow: 6px 8px 0px #1e1b4b;
+        }
+        .drop-zone:active {
+            transform: translateY(2px);
+            box-shadow: 2px 2px 0px #1e1b4b;
+        }
+
+        /* Animación de vibración sonora */
+        @keyframes soundVibrate {
+            0%, 100% { transform: scale(1.1) rotate(0deg); }
+            20% { transform: scale(1.1) rotate(-8deg); }
+            40% { transform: scale(1.1) rotate(8deg); }
+            60% { transform: scale(1.1) rotate(-8deg); }
+            80% { transform: scale(1.1) rotate(8deg); }
+        }
+        .sound-vibrating {
+            animation: soundVibrate 0.4s ease-in-out;
+            pointer-events: none;
+            border-color: #fbbf24 !important;
+            box-shadow: 0 0 25px #facc15 !important;
+        }
+
+        /* Partículas de Notas Musicales */
+        .note-particle {
+            position: absolute;
+            font-size: 2rem;
+            color: #facc15;
+            pointer-events: none;
+            animation: noteFly 1s ease-out forwards;
+            z-index: 100;
+        }
+        @keyframes noteFly {
+            0% { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-80px) scale(1.3) rotate(45deg); opacity: 0; }
+        }
+
+        /* Pantallas SPA */
+        #recurso-wp-orquesta .screen {
+            display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; position: absolute; top: 0; left: 0; overflow-y: auto; overflow-x: hidden; z-index: 10;
+        }
+        #recurso-wp-orquesta .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-orquesta .screen.active {
+            display: flex;
+            animation: bounceInUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+        }
+        @keyframes bounceInUp {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Temblor en caso de error */
+        .shake { animation: shakeAnim 0.5s ease-in-out; }
+        @keyframes shakeAnim {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            50% { transform: translateX(6px); }
+            75% { transform: translateX(-6px); }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-orquesta">
+
+        <!-- ==============================================
+             PANTALLA 1: PORTADA
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="toon-panel p-8 md:p-14 max-w-3xl w-full mx-4 flex flex-col items-center transform -rotate-1 relative overflow-hidden">
+                <!-- Decoración -->
+                <div class="absolute -top-4 -left-4 text-6xl opacity-30 transform -rotate-45">🔔</div>
+                <div class="absolute -bottom-4 -right-4 text-6xl opacity-30 transform rotate-135">🥁</div>
+
+                <div class="flex gap-4 mb-4">
+                    <span class="text-[4rem] md:text-[6rem] animate-bounce">🎶</span>
+                    <span class="text-[4rem] md:text-[6rem] animate-bounce" style="animation-delay: 0.15s">🏫</span>
+                    <span class="text-[4rem] md:text-[6rem] animate-bounce" style="animation-delay: 0.3s">🎺</span>
+                </div>
+                
+                <h2 class="text-xs md:text-sm text-white font-body font-black mb-4 uppercase bg-school-dark inline-block px-6 py-2 border-4 border-school-dark rounded-full rotate-2">
+                    Desarrollo Sensorial - 1er Grado
+                </h2>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-toon text-school-dark leading-none uppercase drop-shadow-md mb-6">
+                    Orquesta de <br><span class="text-school-soft">la Escuela</span>
+                </h1>
+                <p class="text-lg md:text-2xl text-gray-700 font-bold mb-10 px-2 leading-relaxed">
+                    ¡El aula está llena de sonidos interesantes! Escucha atentamente cada objeto y ayúdanos a clasificarlos en sonidos <strong>fuertes</strong> y <strong>suaves</strong>.
+                </p>
+                <button onclick="window.openInstructions()" class="toon-btn bg-school-yellow text-school-dark text-xl md:text-3xl px-12 py-5 w-full md:w-auto">
+                    ¿CÓMO ESCUCHAR? 📜
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: MANUAL DE AUDICIÓN (INSTRUCCIONES)
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center">
+            <div class="toon-panel p-6 md:p-10 max-w-5xl w-full text-center my-auto">
+                <h2 class="text-3xl md:text-5xl font-toon text-school-dark mb-6 uppercase border-b-4 border-dashed border-gray-300 pb-2">
+                    Tipos de Sonidos
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 mb-8 text-left">
+                    
+                    <!-- SONIDOS FUERTES -->
+                    <div class="bg-red-50 p-6 rounded-3xl border-4 border-black shadow-[6px_6px_0_#ef4444] transform hover:-translate-y-2 transition-transform">
+                        <div class="flex items-center gap-4 mb-4">
+                            <span class="text-5xl">🔊</span>
+                            <h3 class="font-toon text-2xl md:text-3xl text-school-soundStrong uppercase">Fuertes</h3>
+                        </div>
+                        <p class="text-base md:text-lg text-gray-800 font-bold leading-snug">
+                            Suenan con mucha energía. Hacen vibrar el aire y se escuchan desde muy lejos en la escuela. ¡Como la campana del recreo!
+                        </p>
+                    </div>
+
+                    <!-- SONIDOS SUAVES -->
+                    <div class="bg-sky-50 p-6 rounded-3xl border-4 border-black shadow-[6px_6px_0_#0ea5e9] transform hover:-translate-y-2 transition-transform">
+                        <div class="flex items-center gap-4 mb-4">
+                            <span class="text-5xl">🤫</span>
+                            <h3 class="font-toon text-2xl md:text-3xl text-school-soft uppercase">Suaves</h3>
+                        </div>
+                        <p class="text-base md:text-lg text-gray-800 font-bold leading-snug">
+                            Suenan con poquita energía. Necesitamos estar muy cerquita y en silencio para escucharlos. ¡Como el lápiz sobre el papel!
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="window.playBeep(); window.showScreen('screen-start')" class="toon-btn bg-gray-200 text-black font-toon px-8 py-4 text-xl">
+                        ⬅ VOLVER
+                    </button>
+                    <button onclick="window.startGame()" class="toon-btn bg-school-green text-white font-toon text-xl md:text-2xl px-12 py-4">
+                        ¡A ENTRAR AL AULA! 🎒
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: EL JUEGO (Mesa de Sonidos)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start p-0 bg-transparent">
+            
+            <!-- HUD Superior -->
+            <div class="w-full bg-white border-b-4 border-school-dark p-2 md:p-3 flex justify-between items-center z-30 shrink-0 shadow-lg">
+                <div class="flex items-center gap-2 px-2 md:px-4">
+                    <span class="text-2xl md:text-3xl">⭐</span>
+                    <div class="flex flex-col">
+                        <span class="text-[9px] md:text-[10px] text-gray-500 font-black uppercase tracking-widest leading-none mb-1">Clasificados</span>
+                        <span class="font-toon text-xl md:text-2xl text-school-dark leading-none"><span id="score">0</span><span class="text-gray-400 text-sm">/6</span></span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 pr-2">
+                    <button onclick="window.exitGame()" class="toon-btn bg-school-red text-white p-1 md:p-2 ml-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Área de Clasificación Central -->
+            <div class="w-full flex-grow flex flex-col items-center justify-around p-3 md:p-6 overflow-hidden relative">
+                
+                <!-- Pizarra de Instrucciones Dinámica (Alto contraste) -->
+                <div class="bg-school-dark text-white border-4 border-white px-6 py-2 rounded-full shadow-lg z-20 transform -rotate-1">
+                    <p id="game-status-text" class="text-center font-toon text-xs md:text-xl text-school-yellow tracking-wider">
+                        1. Toca un objeto para escuchar su sonido 👂
+                    </p>
+                </div>
+
+                <!-- LA MESA DE OBJETOS ESCOLARES (Inventario interactivo) -->
+                <div id="objects-shelf" class="flex flex-wrap justify-center gap-3 md:gap-5 w-full max-w-4xl z-20 py-2">
+                    <!-- Las 6 tarjetas se inyectan por JS desordenadas -->
+                </div>
+
+                <!-- Las Zonas de Clasificación (Fuertes vs Suaves) -->
+                <div class="grid grid-cols-2 gap-4 md:gap-8 w-full max-w-4xl z-20 shrink-0">
+                    
+                    <!-- Caja Fuertes -->
+                    <button id="btn-zone-fuerte" onclick="window.classifySelected('fuerte')" class="drop-zone bg-red-100 border-school-soundStrong text-school-soundStrong py-4 md:py-6 flex flex-col items-center justify-center gap-1 md:gap-2">
+                        <span class="text-4xl md:text-6xl">🔊</span>
+                        <span class="font-toon text-xs md:text-2xl uppercase">FUERTES</span>
+                        <span class="font-body text-[9px] md:text-xs font-black text-red-600">Mucha Energía</span>
+                    </button>
+
+                    <!-- Caja Suaves -->
+                    <button id="btn-zone-suave" onclick="window.classifySelected('suave')" class="drop-zone bg-sky-100 border-school-soft text-school-soft py-4 md:py-6 flex flex-col items-center justify-center gap-1 md:gap-2">
+                        <span class="text-4xl md:text-6xl">🤫</span>
+                        <span class="font-toon text-xs md:text-2xl uppercase">SUAVES</span>
+                        <span class="font-body text-[9px] md:text-xs font-black text-sky-600">Poca Energía</span>
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             MODAL DE FEEDBACK (Retroalimentación pedagógica)
+             ============================================== -->
+        <div id="feedback-modal" class="hidden absolute inset-0 z-[60] flex-col items-center justify-center bg-black/80 p-4 text-center backdrop-blur-sm">
+            <div id="feedback-card" class="toon-panel p-6 md:p-8 max-w-lg w-full text-center border-t-8">
+                <div id="feedback-icon" class="text-[4rem] md:text-[5rem] mb-2 drop-shadow-md">✨</div>
+                <h3 id="feedback-title" class="font-toon text-2xl md:text-4xl text-black mb-3 uppercase">Título</h3>
+                <div class="bg-gray-100 p-4 rounded-xl border-4 border-dashed border-gray-300 mb-6">
+                    <p id="feedback-reason" class="text-base md:text-lg font-bold text-gray-700 leading-relaxed"></p>
+                </div>
+                <button onclick="window.closeFeedback()" class="toon-btn bg-school-yellow text-school-dark font-toon text-lg md:text-xl px-8 py-3 w-full">
+                    Siguiente Sonido ➡
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (Victoria)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex flex-col items-center justify-center p-6 text-center bg-school-dark bg-[radial-gradient(circle_at_center,rgba(110,40,217,0.4)_0%,rgba(0,0,0,0.9)_100%)]">
+            <div id="result-card" class="toon-panel p-6 md:p-10 max-w-2xl w-full text-center z-10 border-t-[10px] border-t-school-yellow">
+                <div class="text-[5rem] md:text-[6rem] mb-4 drop-shadow-md animate-bounce">👑🏫🎉</div>
+                <h2 class="font-toon text-4xl md:text-6xl text-school-dark mb-4 uppercase">¡Súper Director!</h2>
+                <p id="result-msg" class="text-base md:text-xl text-gray-800 mb-8 font-bold leading-relaxed max-w-lg mx-auto">
+                    ¡Impresionante! Has clasificado todos los sonidos del aula a la perfección. Tus oídos están listos para dirigir la gran orquesta escolar.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button onclick="window.exitGame()" class="toon-btn bg-gray-200 text-black font-toon px-6 py-3 text-lg">
+                        VOLVER AL INICIO
+                    </button>
+                    <button onclick="window.startGame()" class="toon-btn bg-school-yellow text-school-dark font-toon text-xl md:text-2xl px-8 py-3">
+                        JUGAR OTRA VEZ 🔄
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO CON SINTETIZACIÓN E INTERACTIVIDAD
+         ============================================== -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- 1. SINTETIZADOR DE AUDIO GLOBAL (Web Audio API) ---
+            let audioCtx = null;
+            function initAudio() {
+                try {
+                    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                } catch (e) {}
+            }
+            document.body.addEventListener('click', initAudio, { once: true });
+            document.body.addEventListener('touchstart', initAudio, { once: true });
+
+            function playTone(freq, duration, type, vol) {
+                try {
+                    initAudio();
+                    if (audioCtx && audioCtx.state !== 'suspended') {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = type;
+                        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + duration);
+                    }
+                } catch (e) {}
+            }
+
+            // Exponer tonos del sistema
+            window.playBeep = function() { playTone(600, 0.1, "sine", 0.05); } 
+            function playSuccess() { 
+                playTone(523.25, 0.1, "sine", 0.05); 
+                setTimeout(() => playTone(659.25, 0.1, "sine", 0.05), 100); 
+                setTimeout(() => playTone(783.99, 0.2, "sine", 0.05), 200); 
+            }
+            function playError() { playTone(180, 0.4, "sawtooth", 0.08); }
+
+            // --- 2. MOTOR SINTETIZADOR DE SONIDOS DEL ENTORNO ---
+            function playEnvSound(id) {
+                initAudio();
+                if (!audioCtx || audioCtx.state === 'suspended') return;
+
+                const now = audioCtx.currentTime;
+
+                switch(id) {
+                    case "campana": // Sonido metálico, agudo, FUERTE (Campana de latón)
+                        for(let i=0; i<3; i++) {
+                            const delay = i * 0.15;
+                            const osc = audioCtx.createOscillator();
+                            const gain = audioCtx.createGain();
+                            osc.type = "sine";
+                            osc.frequency.setValueAtTime(880 - (i*50), now + delay); // Agudo descendente
+                            gain.gain.setValueAtTime(0.18, now + delay); // FUERTE
+                            gain.gain.exponentialRampToValueAtTime(0.00001, now + delay + 0.8);
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+                            osc.start(now + delay);
+                            osc.stop(now + delay + 0.8);
+                        }
+                        break;
+
+                    case "lapiz": // Raspar sutil siseante, SUAVE (Lápiz escribiendo)
+                        // Ruido sutil mediante onda triangular a alta frecuencia modulada
+                        for(let i=0; i<5; i++) {
+                            const delay = i * 0.1;
+                            const osc = audioCtx.createOscillator();
+                            const gain = audioCtx.createGain();
+                            osc.type = "triangle";
+                            osc.frequency.setValueAtTime(1500 + Math.random()*200, now + delay);
+                            gain.gain.setValueAtTime(0.015, now + delay); // SUAVE
+                            gain.gain.exponentialRampToValueAtTime(0.00001, now + delay + 0.08);
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+                            osc.start(now + delay);
+                            osc.stop(now + delay + 0.08);
+                        }
+                        break;
+
+                    case "tambor": // Golpe seco, grave, resonante, FUERTE (Tambor de juguete)
+                        const oscT = audioCtx.createOscillator();
+                        const gainT = audioCtx.createGain();
+                        oscT.type = "triangle";
+                        oscT.frequency.setValueAtTime(120, now);
+                        oscT.frequency.exponentialRampToValueAtTime(40, now + 0.3); // Caída grave
+                        gainT.gain.setValueAtTime(0.3, now); // FUERTE
+                        gainT.gain.exponentialRampToValueAtTime(0.00001, now + 0.3);
+                        oscT.connect(gainT);
+                        gainT.connect(audioCtx.destination);
+                        oscT.start(now);
+                        oscT.stop(now + 0.3);
+                        break;
+
+                    case "libro": // Sonido de soplido sordo, SUAVE (Hojas de libro cerrándose)
+                        const oscL = audioCtx.createOscillator();
+                        const gainL = audioCtx.createGain();
+                        oscL.type = "triangle";
+                        oscL.frequency.setValueAtTime(180, now);
+                        oscL.frequency.exponentialRampToValueAtTime(80, now + 0.25);
+                        gainL.gain.setValueAtTime(0.04, now); // SUAVE
+                        gainL.gain.exponentialRampToValueAtTime(0.00001, now + 0.25);
+                        oscL.connect(gainL);
+                        gainL.connect(audioCtx.destination);
+                        oscL.start(now);
+                        oscL.stop(now + 0.25);
+                        break;
+
+                    case "silbato": // Pitido penetrante modulado, FUERTE (Silbato de gimnasia)
+                        const oscS = audioCtx.createOscillator();
+                        const gainS = audioCtx.createGain();
+                        oscS.type = "sine";
+                        oscS.frequency.setValueAtTime(1100, now);
+                        // Modulación de trino rápida
+                        for(let t=0; t<0.4; t+=0.02) {
+                            oscS.frequency.setValueAtTime(1100 + (t%0.04 < 0.02 ? 50 : -50), now + t);
+                        }
+                        gainS.gain.setValueAtTime(0.15, now); // FUERTE
+                        gainS.gain.exponentialRampToValueAtTime(0.00001, now + 0.45);
+                        oscS.connect(gainS);
+                        gainS.connect(audioCtx.destination);
+                        oscS.start(now);
+                        oscS.stop(now + 0.45);
+                        break;
+
+                    case "tacho": // Golpe metálico corto tipo campana vacía, SUAVE (Basurero de lata)
+                        const oscB = audioCtx.createOscillator();
+                        const gainB = audioCtx.createGain();
+                        oscB.type = "sine";
+                        oscB.frequency.setValueAtTime(320, now);
+                        gainB.gain.setValueAtTime(0.035, now); // SUAVE (un 'clink' corto)
+                        gainB.gain.exponentialRampToValueAtTime(0.00001, now + 0.4);
+                        oscB.connect(gainB);
+                        gainB.connect(audioCtx.destination);
+                        oscB.start(now);
+                        oscB.stop(now + 0.4);
+                        break;
+                }
+            }
+
+            // --- 3. DIBUJOS VECTORIALES SVGs ---
+            function getObjectSVG(id) {
+                switch(id) {
+                    case "campana":
+                        return `
+                        <svg viewBox="0 0 100 100" class="w-16 h-16 md:w-20 md:h-20 overflow-visible">
+                            <!-- Campana Dorada -->
+                            <path d="M 50,15 C 32,15 32,55 20,65 L 80,65 C 68,55 68,15 50,15 Z" fill="#fbbf24" stroke="#78350f" stroke-width="3"/>
+                            <!-- Agarradera -->
+                            <rect x="45" y="5" width="10" height="12" rx="4" fill="#78350f" stroke="#451a03" stroke-width="2"/>
+                            <!-- Badajo móvil abajo -->
+                            <circle cx="50" cy="72" r="7" fill="#78350f" stroke="#451a03" stroke-width="2"/>
+                        </svg>
+                        `;
+                    case "lapiz":
+                        return `
+                        <svg viewBox="0 0 100 100" class="w-16 h-16 md:w-20 md:h-20 overflow-visible">
+                            <g transform="rotate(45 50 50)">
+                                <!-- Cuerpo lápiz amarillo -->
+                                <rect x="35" y="10" width="30" height="60" fill="#facc15" stroke="#78350f" stroke-width="3"/>
+                                <!-- Goma de borrar -->
+                                <rect x="35" y="70" width="30" height="15" fill="#f43f5e" stroke="#78350f" stroke-width="3" rx="2"/>
+                                <rect x="35" y="67" width="30" height="5" fill="#94a3b8"/>
+                                <!-- Punta de madera -->
+                                <polygon points="35,10 65,10 50,-10" fill="#fed7aa" stroke="#78350f" stroke-width="3"/>
+                                <!-- Grafito punta -->
+                                <polygon points="45,0 55,0 50,-10" fill="#1e293b"/>
+                            </g>
+                        </svg>
+                        `;
+                    case "tambor":
+                        return `
+                        <svg viewBox="0 0 100 100" class="w-16 h-16 md:w-20 md:h-20 overflow-visible">
+                            <!-- Cuerpo tambor rojo -->
+                            <rect x="15" y="35" width="70" height="40" rx="4" fill="#ef4444" stroke="#7f1d1d" stroke-width="4"/>
+                            <!-- Parche blanco superior -->
+                            <ellipse cx="50" cy="35" rx="35" ry="12" fill="#f8fafc" stroke="#7f1d1d" stroke-width="4"/>
+                            <!-- Rayas decorativas del cuerpo -->
+                            <path d="M18,37 L30,73 M35,37 L45,73 M50,37 L60,73 M65,37 L75,73" stroke="#fde047" stroke-width="3"/>
+                            <!-- Baquetas cruzadas -->
+                            <line x1="20" y1="20" x2="80" y2="80" stroke="#ca8a04" stroke-width="3" stroke-linecap="round"/>
+                            <circle cx="80" cy="80" r="5" fill="#ca8a04"/>
+                        </svg>
+                        `;
+                    case "libro":
+                        return `
+                        <svg viewBox="0 0 100 100" class="w-16 h-16 md:w-20 md:h-20 overflow-visible">
+                            <!-- Lomo Libro morado cerrado -->
+                            <rect x="20" y="15" width="60" height="70" rx="8" fill="#8b5cf6" stroke="#4c1d95" stroke-width="4"/>
+                            <!-- Hojas blancas asomando -->
+                            <rect x="26" y="20" width="54" height="60" fill="#ffffff"/>
+                            <!-- Líneas de hojas -->
+                            <line x1="32" y1="35" x2="74" y2="35" stroke="#cbd5e1" stroke-width="2"/>
+                            <line x1="32" y1="50" x2="74" y2="50" stroke="#cbd5e1" stroke-width="2"/>
+                            <line x1="32" y1="65" x2="74" y2="65" stroke="#cbd5e1" stroke-width="2"/>
+                            <!-- Detalle portada estrella -->
+                            <polygon points="50,35 53,42 61,42 55,47 57,55 50,50 43,55 45,47 39,42 47,42" fill="#facc15"/>
+                        </svg>
+                        `;
+                    case "silbato":
+                        return `
+                        <svg viewBox="0 0 100 100" class="w-16 h-16 md:w-20 md:h-20 overflow-visible">
+                            <!-- Boquilla izq -->
+                            <rect x="15" y="40" width="30" height="16" fill="#94a3b8" stroke="#1e293b" stroke-width="3" transform="rotate(-15 15 40)"/>
+                            <!-- Cuerpo principal redondo silbato metálico -->
+                            <circle cx="60" cy="50" r="22" fill="#cbd5e1" stroke="#1e293b" stroke-width="4"/>
+                            <!-- Orificio salida de aire arriba -->
+                            <rect x="42" y="32" width="12" height="8" rx="2" fill="#1e293b"/>
+                            <!-- Anillo para colgar atrás -->
+                            <circle cx="82" cy="50" r="6" fill="none" stroke="#1e293b" stroke-width="3"/>
+                        </svg>
+                        `;
+                    case "tacho":
+                        return `
+                        <svg viewBox="0 0 100 100" class="w-16 h-16 md:w-20 md:h-20 overflow-visible">
+                            <!-- Cuerpo bote metalizado -->
+                            <path d="M30,30 L70,30 L64,85 Q50,92 36,85 Z" fill="#94a3b8" stroke="#334155" stroke-width="4" stroke-linejoin="round"/>
+                            <!-- Tapa -->
+                            <ellipse cx="50" cy="28" rx="22" ry="6" fill="#64748b" stroke="#334155" stroke-width="3"/>
+                            <!-- Asa superior -->
+                            <path d="M42,24 Q50,14 58,24" fill="none" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
+                            <!-- Rayas verticales textura acanalada -->
+                            <line x1="42" y1="34" x2="44" y2="82" stroke="#475569" stroke-width="2"/>
+                            <line x1="50" y1="34" x2="50" y2="84" stroke="#475569" stroke-width="2"/>
+                            <line x1="58" y1="34" x2="56" y2="82" stroke="#475569" stroke-width="2"/>
+                        </svg>
+                        `;
+                }
+            }
+
+            // --- 4. BASE DE DATOS DE SONIDOS ---
+            const environmentSounds = [
+                {
+                    id: "campana",
+                    name: "La Campana",
+                    type: "fuerte",
+                    desc: "La campana de entrada suena muy fuerte en todo el patio.",
+                    explanation: "¡Sonido Fuerte! El metal vibra con mucha energía para que todos la escuchen al entrar."
+                },
+                {
+                    id: "lapiz",
+                    name: "El Lápiz",
+                    type: "suave",
+                    desc: "El lápiz raspa el papel con mucha delicadeza al escribir.",
+                    explanation: "¡Sonido Suave! El roce del grafito genera una vibración pequeña que solo se escucha en silencio."
+                },
+                {
+                    id: "tambor",
+                    name: "El Tambor",
+                    type: "fuerte",
+                    desc: "El tambor de la banda de música retumba con fuerza en las gradas.",
+                    explanation: "¡Sonido Fuerte! El golpe en el parche empuja gran cantidad de aire creando un sonido potente."
+                },
+                {
+                    id: "libro",
+                    name: "El Libro",
+                    type: "suave",
+                    desc: "Las hojas del libro se cierran con un suspiro delicado.",
+                    explanation: "¡Sonido Suave! El aire escapa entre las hojas de papel creando un sonido sutil."
+                },
+                {
+                    id: "silbato",
+                    name: "El Silbato",
+                    type: "fuerte",
+                    desc: "El silbato del profe de educación física pita fuerte para reunir al grupo.",
+                    explanation: "¡Sonido Fuerte! El aire pasa a gran presión por un pequeño orificio creando un pitido agudo."
+                },
+                {
+                    id: "tacho",
+                    name: "El Tacho",
+                    type: "suave",
+                    desc: "Un papel cae y hace un pequeño 'clic' metálico en el bote de basura.",
+                    explanation: "¡Sonido Suave! Al ser un objeto liviano, el golpe no tiene suficiente fuerza para resonar."
+                }
+            ];
+
+            let score = 0;
+            let currentLevel = 0;
+            let gameQueue = [];
+            let selectedSound = null; // Guarda el elemento {id, btn, data}
+            let isProcessing = false;
+
+            // --- FUNCIÓN MEZCLADORA (Fisher-Yates) ---
+            function shuffleArray(array) {
+                let arr = [...array];
+                for (let i = arr.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+                return arr;
+            }
+
+            // --- NAVEGACIÓN ---
+            window.showScreen = function(id) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+            }
+
+            window.openInstructions = function() {
+                window.playBeep();
+                window.showScreen('screen-theory');
+            }
+
+            // --- FLUJO DEL JUEGO ---
+            window.startGame = function() {
+                score = 0;
+                currentLevel = 0;
+                isProcessing = false;
+                selectedSound = null;
+
+                // Restablecer el estado de completados para reiniciar todo limpio
+                environmentSounds.forEach(s => s.solved = false);
+
+                document.getElementById('screen-result').classList.add('hidden');
+                document.getElementById('screen-result').classList.remove('flex');
+
+                updateUI();
+                window.showScreen('screen-game');
+                loadRounds();
+            }
+
+            function updateUI() {
+                document.getElementById('score').innerText = score;
+            }
+
+            function loadRounds() {
+                if (score >= 6) {
+                    endGame();
+                    return;
+                }
+
+                isProcessing = false;
+                selectedSound = null;
+
+                document.getElementById('game-status-text').innerText = "1. Toca un objeto para escuchar su sonido 👂";
+                
+                // Desbloqueamos zonas visualmente
+                document.getElementById('btn-zone-fuerte').disabled = false;
+                document.getElementById('btn-zone-suave').disabled = false;
+
+                // Cargar estantería de objetos no resueltos aún
+                const shelf = document.getElementById('objects-shelf');
+                shelf.innerHTML = '';
+
+                // Mezclar objetos que queden pendientes de clasificar
+                const remaining = environmentSounds.filter(s => s.solved !== true);
+                const shuffled = shuffleArray(remaining);
+
+                shuffled.forEach((item, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'sound-object-btn animate__animated animate__zoomIn';
+                    btn.style.animationDelay = `${index * 0.05}s`;
+                    btn.id = `obj-${item.id}`;
+
+                    btn.innerHTML = `
+                        <div class="flex-grow flex items-center justify-center p-1">
+                            ${getObjectSVG(item.id)}
+                        </div>
+                        <span class="font-body font-black text-xs md:text-sm text-gray-800 uppercase tracking-widest mt-2 block w-full text-center truncate">${item.name}</span>
+                    `;
+
+                    btn.onclick = (e) => selectObject(item, btn, e);
+                    shelf.appendChild(btn);
+                });
+            }
+
+            function selectObject(itemData, btnElement, e) {
+                if (isProcessing) return;
+
+                // Reproducir el sonido característico del objeto
+                playEnvSound(itemData.id);
+                createMusicalNotes(e.clientX, e.clientY);
+
+                // Quitar selección anterior
+                document.querySelectorAll('.sound-object-btn').forEach(b => b.classList.remove('selected', 'sound-vibrating'));
+                
+                // Vibrar e iluminar el actual
+                btnElement.classList.add('selected', 'sound-vibrating');
+                setTimeout(() => btnElement.classList.remove('sound-vibrating'), 400); // Quitar vibración tras sonar
+
+                selectedSound = { data: itemData, btn: btnElement };
+
+                document.getElementById('game-status-text').innerText = `2. ¿El sonido de "${itemData.name}" es FUERTE o SUAVE?`;
+            }
+
+            window.classifySelected = function(chosenType) {
+                if (isProcessing) return;
+
+                if (!selectedSound) {
+                    // No hay objeto seleccionado
+                    playError();
+                    const statusText = document.getElementById('game-status-text');
+                    statusText.classList.add('shake');
+                    setTimeout(() => statusText.classList.remove('shake'), 500);
+                    return;
+                }
+
+                isProcessing = true;
+                const data = selectedSound.data;
+                const isCorrect = chosenType === data.type;
+
+                // Bloqueamos clics
+                document.getElementById('btn-zone-fuerte').disabled = true;
+                document.getElementById('btn-zone-suave').disabled = true;
+
+                if (isCorrect) {
+                    // ACIERTO
+                    playSuccess();
+                    score++;
+                    updateUI();
+
+                    // Sellar como resuelto
+                    data.solved = true;
+                    selectedSound.btn.classList.remove('selected');
+                    selectedSound.btn.classList.add('solved');
+
+                    setTimeout(() => {
+                        showFeedback(true, "¡Buen Oído! 👂🌟", data.explanation);
+                    }, 600);
+
+                } else {
+                    // ERROR
+                    playError();
+                    selectedSound.btn.classList.add('shake');
+                    setTimeout(() => selectedSound.btn.classList.remove('shake'), 500);
+
+                    setTimeout(() => {
+                        showFeedback(false, "¡Ajusta tus Oídos! 🤫🔊", `¡Incorrecto! El sonido de ${data.name} no es de ese tipo. <br><br> ${data.explanation}`);
+                    }, 600);
+                }
+            }
+
+            function createMusicalNotes(x, y) {
+                const container = document.getElementById('recurso-wp-orquesta');
+                const rect = container.getBoundingClientRect();
+                const localX = x - rect.left;
+                const localY = y - rect.top;
+
+                const notes = ['🎵', '🎶', '♩', '♫'];
+                for (let i = 0; i < 3; i++) {
+                    const note = document.createElement('div');
+                    note.className = 'note-particle'; // Corrección de clase CSS para reproducir la animación
+                    note.innerText = notes[Math.floor(Math.random() * notes.length)];
+                    note.style.left = `${localX + (Math.random() * 40 - 20) - 10}px`;
+                    note.style.top = `${localY + (Math.random() * 40 - 20) - 15}px`;
+                    note.style.animationDelay = `${i * 0.1}s`;
+                    container.appendChild(note);
+                    setTimeout(() => note.remove(), 2000);
+                }
+            }
+
+            function showFeedback(isSuccess, titleText, reasonText) {
+                const modal = document.getElementById('feedback-modal');
+                const card = document.getElementById('feedback-card');
+                const icon = document.getElementById('feedback-icon');
+                const title = document.getElementById('feedback-title');
+                const reason = document.getElementById('feedback-reason');
+
+                card.classList.remove('border-school-green', 'border-school-red', 'animate__bounceIn');
+                void card.offsetWidth; // Reflow
+
+                if (isSuccess) {
+                    icon.innerText = "🌟🥁";
+                    title.innerText = titleText;
+                    title.className = "font-toon text-2xl md:text-4xl text-school-green mb-3 uppercase";
+                    card.classList.add('border-school-green');
+                } else {
+                    icon.innerText = "❌🤫";
+                    title.innerText = titleText;
+                    title.className = "font-toon text-2xl md:text-4xl text-school-red mb-3 uppercase";
+                    card.classList.add('border-school-red');
+                }
+
+                reason.innerHTML = reasonText;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                card.classList.add('animate__bounceIn');
+            }
+
+            window.closeFeedback = function() {
+                document.getElementById('feedback-modal').classList.add('hidden');
+                document.getElementById('feedback-modal').classList.remove('flex');
+                
+                // Restablecer estados de objetos del banco de datos
+                loadRounds();
+            }
+
+            function endGame() {
+                // Toca una melodía de orquesta feliz de fondo al terminar con éxito
+                playSuccess();
+                setTimeout(() => playTone(659.25, 0.15, "sine", 0.05), 400);
+                setTimeout(() => playTone(783.99, 0.15, "sine", 0.05), 600);
+                setTimeout(() => playTone(1046.50, 0.4, "sine", 0.05), 800); // Do alto final
+
+                const res = document.getElementById('screen-result');
+                res.classList.remove('hidden');
+                res.classList.add('flex');
+            }
+
+            window.exitGame = function() {
+                // Eliminado confirm() nativo para evitar fallas en iframes.
+                // Resetear el estado de completados para reiniciar todo limpio y volver a portada
+                environmentSounds.forEach(s => s.solved = false);
+                currentLevel = 0;
+                isProcessing = false;
+                window.showScreen('screen-start');
+            }
+
+        });
+    </script>
+</body>
+</html>

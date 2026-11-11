@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Escudo contra Virus | Prevención 2º Primaria</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none; /* Evita seleccionar texto, más limpio para niños */
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #c0e9ff 0%, #9ad4f5 100%);
+            font-family: 'Comic Neue', 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', 'Patrick Hand', cursive, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        /* Contenedor principal tipo "tableta mágica" */
+        .game-container {
+            max-width: 1100px;
+            width: 100%;
+            background: #fffef7;
+            border-radius: 80px 80px 80px 40px;
+            box-shadow: 0 25px 40px rgba(0, 0, 0, 0.3), inset 0 1px 4px rgba(255,255,200,0.8);
+            overflow: hidden;
+            transition: all 0.2s ease;
+            border: 5px solid #ffdd99;
+        }
+
+        /* Pantalla de inicio / intro */
+        .intro-screen, .game-screen {
+            padding: 1.8rem 2rem 2.5rem;
+            transition: 0.3s;
+        }
+
+        .intro-screen {
+            background: radial-gradient(circle at 10% 30%, #fff2cf, #ffeedd);
+            text-align: center;
+        }
+
+        .game-screen {
+            background: #fef7e0;
+            display: none;
+        }
+
+        .title-badge {
+            background-color: #ffaa44;
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2d3e50;
+            box-shadow: 0 5px 0 #b4621a;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 3.2rem;
+            color: #2a6f8f;
+            text-shadow: 4px 4px 0 #ffcd94;
+            margin: 15px 0;
+            letter-spacing: 2px;
+        }
+
+        .grade {
+            background: #ffb882;
+            display: inline-block;
+            padding: 8px 25px;
+            border-radius: 40px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e2f;
+            margin: 10px;
+        }
+
+        .objective-card {
+            background: #e5f6ff;
+            border-radius: 50px;
+            padding: 20px;
+            margin: 25px 0;
+            border-left: 15px solid #3bc0fc;
+            text-align: left;
+            box-shadow: 0 8px 12px rgba(0,0,0,0.1);
+        }
+
+        .objective-card p {
+            font-size: 1.3rem;
+            line-height: 1.4;
+            color: #1f4e6e;
+        }
+
+        .start-btn {
+            background: #f3a683;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            padding: 15px 35px;
+            border: none;
+            border-radius: 60px;
+            font-family: inherit;
+            box-shadow: 0 8px 0 #aa6f4a;
+            cursor: pointer;
+            transition: 0.07s linear;
+            margin-top: 20px;
+        }
+
+        .start-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #aa6f4a;
+        }
+
+        /* Pantalla de juego */
+        .virus-area {
+            background: #ffefe0;
+            border-radius: 70px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: inset 0 0 0 3px white, 0 12px 18px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .virus-animation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .virus-character {
+            font-size: 6rem;
+            filter: drop-shadow(6px 8px 0 rgba(0,0,0,0.2));
+            animation: bounceVirus 1.4s infinite ease;
+            display: inline-block;
+            transition: 0.2s;
+        }
+
+        @keyframes bounceVirus {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+        }
+
+        .message {
+            background: #fff3c9;
+            border-radius: 50px;
+            padding: 15px 20px;
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #b64926;
+            margin: 15px 0;
+            border: 2px dashed #f5bc70;
+        }
+
+        .habits {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .habit-card {
+            background: #fff0d4;
+            border-radius: 48px;
+            width: 200px;
+            padding: 20px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 4px solid #ffe0b5;
+            box-shadow: 0 10px 0 #cb9e6b;
+        }
+
+        .habit-card:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #cb9e6b;
+        }
+
+        .habit-emoji {
+            font-size: 4rem;
+            display: block;
+        }
+
+        .habit-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            background: #ffd966;
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 60px;
+            margin-top: 10px;
+        }
+
+        .correct-feedback, .wrong-feedback {
+            font-size: 1.4rem;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 50px;
+            text-align: center;
+        }
+
+        .correct-feedback {
+            background: #b5e6b5;
+            color: #1d6320;
+        }
+
+        .wrong-feedback {
+            background: #ffc2b3;
+            color: #a1301a;
+        }
+
+        .next-btn {
+            background: #48c774;
+            color: white;
+            font-size: 1.5rem;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 5px 0 #2d6a4f;
+            transition: 0.07s linear;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        .next-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #2d6a4f;
+        }
+
+        .score-area {
+            background: #e0f0fa;
+            border-radius: 60px;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+        }
+
+        .score {
+            background: gold;
+            padding: 6px 20px;
+            border-radius: 40px;
+            color: #2b3b3f;
+        }
+
+        .win-message {
+            text-align: center;
+            background: #fdffbc;
+            padding: 15px;
+            border-radius: 50px;
+            font-size: 1.5rem;
+        }
+
+        button {
+            background: none;
+            border: none;
+        }
+
+        footer {
+            font-size: 0.8rem;
+            text-align: center;
+            margin-top: 20px;
+            color: #8b6b3e;
+        }
+
+        @media (max-width: 650px) {
+            .habit-card { width: 150px; }
+            .virus-character { font-size: 4rem; }
+            h1 { font-size: 2.2rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container" id="gameApp">
+    <!-- PANTALLA INICIAL -->
+    <div id="introPanel" class="intro-screen">
+        <div class="title-badge">✨ Ciencias Naturales ✨</div>
+        <h1>🛡️ ESCUDO contra VIRUS 🦠</h1>
+        <div class="grade">📚 2º Grado - Primaria</div>
+        <div class="objective-card">
+            <p>🎯 <strong>Objetivo del recurso:</strong><br>
+            Aprender hábitos de prevención para detener virus y enfermedades comunes. <br>
+            🤧 ➕ 🧼 ➡️ ¡Construye tu escudo protector! <br>
+            <span style="font-size:1rem;">💡 Toma decisiones saludables mientras un virus travieso intenta acercarse.</span></p>
+        </div>
+        <button class="start-btn" id="startGameBtn">🚀 ¡Comenzar a proteger! 🚀</button>
+        <footer>🎧 ¡Activa el sonido para divertirte más! (consejo)</footer>
+    </div>
+
+    <!-- PANTALLA DE JUEGO PRINCIPAL -->
+    <div id="gamePanel" class="game-screen">
+        <div class="score-area">
+            <span>🛡️ Escudo activo</span>
+            <span class="score" id="scoreDisplay">0 / 5</span>
+        </div>
+        <div class="virus-area">
+            <div class="virus-animation">
+                <span class="virus-character" id="virusEmoji">🦠</span>
+                <span style="font-size:2rem;">😷💨</span>
+            </div>
+            <div id="dynamicMessage" class="message">🤔 ¿Qué hábito ayuda a detener el virus? ¡Elige sabiamente!</div>
+        </div>
+        
+        <div id="habitsContainer" class="habits">
+            <!-- Las opciones se generan dinámicamente por JS -->
+        </div>
+
+        <div id="feedbackArea" class="correct-feedback" style="display: none;"></div>
+        <div id="nextButtonContainer" style="text-align: center; margin-top: 15px;"></div>
+        <footer>🌟 ¡Cada acierto suma y el virus se debilita! 🌟</footer>
+    </div>
+</div>
+
+<script>
+    // -------------------- RECURSO EDUCATIVO: "Escudo contra Virus" --------------------
+    // Contenido: Prevención de enfermedades comunes (2º Primaria)
+    // Decisiones preventivas: Seleccionar el hábito correcto para detener un virus animado
+    
+    // SONIDOS (Web Audio - tonos simples y divertidos, compatible con navegadores)
+    // Creamos contexto de audio al primer clic del usuario (por políticas de autoplay)
+    let audioCtx = null;
+    let soundEnabled = false;
+    
+    function initAudio() {
+        if (audioCtx) return;
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            // pequeño beep de bienvenida pero sin molestar; mejor lo activamos con interacción
+        } catch(e) { console.log("Web Audio no soportado"); }
+    }
+    
+    function playSound(type) {
+        if (!audioCtx || !soundEnabled) return;
+        // reanudar si está suspendido
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'sine';
+        let frequency = 880;
+        let duration = 0.25;
+        if (type === 'correct') {
+            frequency = 987.77; // Si bemol
+            duration = 0.3;
+            // melodía rápida ascendente: dos pitidos
+            const now = audioCtx.currentTime;
+            osc.frequency.setValueAtTime(880, now);
+            osc.frequency.exponentialRampToValueAtTime(1174.66, now+0.15);
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now+duration);
+            osc.start();
+            osc.stop(now+duration);
+            // segundo pitido
+            const osc2 = audioCtx.createOscillator();
+            const gain2 = audioCtx.createGain();
+            osc2.connect(gain2);
+            gain2.connect(audioCtx.destination);
+            osc2.frequency.value = 1046.5;
+            gain2.gain.setValueAtTime(0.25, now+0.2);
+            gain2.gain.exponentialRampToValueAtTime(0.0001, now+0.45);
+            osc2.start(now+0.2);
+            osc2.stop(now+0.45);
+            return;
+        } else if (type === 'wrong') {
+            frequency = 440;
+            duration = 0.4;
+            const now = audioCtx.currentTime;
+            osc.frequency.setValueAtTime(440, now);
+            osc.frequency.exponentialRampToValueAtTime(293.66, now+0.25);
+            gain.gain.setValueAtTime(0.25, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now+duration);
+            osc.start();
+            osc.stop(now+duration);
+            return;
+        } else if (type === 'win') {
+            // melodía de victoria
+            const now = audioCtx.currentTime;
+            const notes = [523.25, 659.25, 783.99, 1046.5];
+            notes.forEach((freq, idx) => {
+                const oscN = audioCtx.createOscillator();
+                const gainN = audioCtx.createGain();
+                oscN.connect(gainN);
+                gainN.connect(audioCtx.destination);
+                oscN.frequency.value = freq;
+                gainN.gain.setValueAtTime(0.2, now + idx*0.12);
+                gainN.gain.exponentialRampToValueAtTime(0.0001, now + idx*0.12 + 0.3);
+                oscN.start(now + idx*0.12);
+                oscN.stop(now + idx*0.12 + 0.3);
+            });
+            return;
+        }
+        osc.frequency.value = frequency;
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+    
+    // Habilitar sonido con primer toque global
+    function enableSoundOnInteraction() {
+        if (audioCtx === null) {
+            initAudio();
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        soundEnabled = true;
+        // pequeña respuesta sonora "inicio"
+        if (audioCtx) playSound('correct');
+    }
+    
+    // Configuración preguntas: Hábitos de prevención contra enfermedades comunes (toma decisiones preventivas)
+    const scenarios = [
+        {
+            virusMsg: "🤧 ¡ACHÍS! Un virus volador se acerca por el aire. ¿Qué haces para proteger a todos?",
+            correctHabit: { emoji: "🤲💨", text: "Taparme al toser o estornudar con el codo" },
+            options: [
+                { emoji: "🤲💨", text: "Taparme al toser o estornudar con el codo", correct: true },
+                { emoji: "✋🤚", text: "Saludar de mano a todos", correct: false },
+                { emoji: "😤💨", text: "Toser sin cubrirme", correct: false }
+            ]
+        },
+        {
+            virusMsg: "🦠 El virus se quedó pegado en tus manos después de jugar. ¿Mejor acción?",
+            correctHabit: { emoji: "🧼🫧", text: "Lavarme las manos con agua y jabón" },
+            options: [
+                { emoji: "🧼🫧", text: "Lavarme las manos con agua y jabón", correct: true },
+                { emoji: "👖🧥", text: "Limpiarme en la ropa", correct: false },
+                { emoji: "🚰💧", text: "Solo enjuagar sin jabón", correct: false }
+            ]
+        },
+        {
+            virusMsg: "😷 Tu amigo tiene gripe y está cerca. ¿Qué hábito de prevención ayuda?",
+            correctHabit: { emoji: "😷👍", text: "Usar tapabocas y mantener distancia" },
+            options: [
+                { emoji: "😷👍", text: "Usar tapabocas y mantener distancia", correct: true },
+                { emoji: "🤗👥", text: "Abrazarlo para animarlo", correct: false },
+                { emoji: "🍎🍏", text: "Compartir su vaso", correct: false }
+            ]
+        },
+        {
+            virusMsg: "🌬️ Después de estornudar, tus manos tienen gérmenes. ¿Qué haces a continuación?",
+            correctHabit: { emoji: "🧴🧽", text: "Usar gel antibacterial o lavarme" },
+            options: [
+                { emoji: "🧴🧽", text: "Usar gel antibacterial o lavarme", correct: true },
+                { emoji: "🍪🍩", text: "Comer algo rápido", correct: false },
+                { emoji: "👃🏼👆", text: "Tocarme la cara sin lavar", correct: false }
+            ]
+        },
+        {
+            virusMsg: "🦠💨 El virus está en la habitación cerrada, ¿qué hábito reduce el contagio?",
+            correctHabit: { emoji: "🪟🌬️", text: "Ventilar abriendo ventanas" },
+            options: [
+                { emoji: "🪟🌬️", text: "Ventilar abriendo ventanas", correct: true },
+                { emoji: "❄️🔥", text: "Prender calefacción fuerte", correct: false },
+                { emoji: "🚪🔒", text: "Quedarme sin salir ni ventilar", correct: false }
+            ]
+        }
+    ];
+    
+    let currentIndex = 0;
+    let score = 0;
+    let waitingNext = false;      // después de responder, esperar a que presione siguiente
+    let currentQuestionObj = null;
+    let selectedOptionIndex = null;
+    
+    // Elementos DOM
+    const introPanel = document.getElementById('introPanel');
+    const gamePanel = document.getElementById('gamePanel');
+    const startBtn = document.getElementById('startGameBtn');
+    const dynamicMessage = document.getElementById('dynamicMessage');
+    const habitsContainer = document.getElementById('habitsContainer');
+    const feedbackArea = document.getElementById('feedbackArea');
+    const nextButtonContainer = document.getElementById('nextButtonContainer');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const virusEmojiSpan = document.getElementById('virusEmoji');
+    
+    // Mostrar escena actual
+    function loadScenario(index) {
+        waitingNext = false;
+        selectedOptionIndex = null;
+        // Limpiar feedback y botón next
+        feedbackArea.style.display = 'none';
+        feedbackArea.innerHTML = '';
+        nextButtonContainer.innerHTML = '';
+        if (index >= scenarios.length) {
+            // Juego completado!
+            showWinScreen();
+            return;
+        }
+        const scenario = scenarios[index];
+        currentQuestionObj = scenario;
+        dynamicMessage.innerHTML = `⚠️ ${scenario.virusMsg} ⚠️`;
+        // generar opciones
+        habitsContainer.innerHTML = '';
+        scenario.options.forEach((opt, idx) => {
+            const card = document.createElement('div');
+            card.className = 'habit-card';
+            card.setAttribute('data-opt-index', idx);
+            card.innerHTML = `
+                <span class="habit-emoji">${opt.emoji}</span>
+                <span class="habit-text">${opt.text}</span>
+            `;
+            card.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (waitingNext) {
+                    // efecto pequeño
+                    playSound('wrong'); 
+                    feedbackArea.style.display = 'block';
+                    feedbackArea.className = 'wrong-feedback';
+                    feedbackArea.innerHTML = '🤚 ¡Espera! Ya respondiste. Presiona "Siguiente" para continuar. 🤚';
+                    setTimeout(() => {
+                        if(feedbackArea.style.display === 'block') feedbackArea.style.display = 'none';
+                    }, 1200);
+                    return;
+                }
+                handleAnswer(opt.correct, idx);
+            });
+            habitsContainer.appendChild(card);
+        });
+        // animación virus latido
+        virusEmojiSpan.style.animation = 'bounceVirus 1s infinite ease';
+        // reset color de mensaje
+        dynamicMessage.className = 'message';
+    }
+    
+    function handleAnswer(isCorrect, optIndex) {
+        if (waitingNext) return;
+        waitingNext = true;
+        selectedOptionIndex = optIndex;
+        const scenario = scenarios[currentIndex];
+        const selectedText = scenario.options[optIndex].text;
+        
+        if (isCorrect) {
+            // acierto
+            if (soundEnabled) playSound('correct');
+            score++;
+            scoreDisplay.innerText = `${score} / ${scenarios.length}`;
+            feedbackArea.style.display = 'block';
+            feedbackArea.className = 'correct-feedback';
+            feedbackArea.innerHTML = `✅ ¡CORRECTO! ${selectedText} ✅  +1 punto al escudo 🛡️`;
+            // Animación de virus "dañado"
+            virusEmojiSpan.style.animation = 'none';
+            virusEmojiSpan.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                virusEmojiSpan.style.animation = 'bounceVirus 1.4s infinite ease';
+                virusEmojiSpan.style.transform = 'scale(1)';
+            }, 200);
+            // Cambia temporalmente emoji a virus con curita
+            virusEmojiSpan.innerHTML = '😷🦠💥';
+            setTimeout(() => { virusEmojiSpan.innerHTML = '🦠'; }, 600);
+        } else {
+            if (soundEnabled) playSound('wrong');
+            feedbackArea.style.display = 'block';
+            feedbackArea.className = 'wrong-feedback';
+            feedbackArea.innerHTML = `❌ ¡Ups! ${selectedText} no detiene al virus. El hábito correcto era: ${scenario.correctHabit.emoji} ${scenario.correctHabit.text}. ¡Inténtalo mejor la próxima! ❌`;
+            // virus se ríe
+            virusEmojiSpan.style.animation = 'bounceVirus 0.2s infinite';
+            setTimeout(() => {
+                virusEmojiSpan.style.animation = 'bounceVirus 1.4s infinite ease';
+            }, 500);
+        }
+        
+        // Botón siguiente
+        nextButtonContainer.innerHTML = `<button class="next-btn" id="nextBtn">➡️ Siguiente hábito ⬅️</button>`;
+        const nextBtn = document.getElementById('nextBtn');
+        nextBtn.addEventListener('click', () => {
+            if (!waitingNext) return;
+            currentIndex++;
+            if (currentIndex < scenarios.length) {
+                loadScenario(currentIndex);
+            } else {
+                // final del juego, mostrar resultado final
+                showWinScreen();
+            }
+        });
+        
+        // deshabilitar estilo opciones (visual pero sin perder color)
+        const allCards = document.querySelectorAll('.habit-card');
+        allCards.forEach(card => {
+            card.style.opacity = '0.7';
+            card.style.pointerEvents = 'none';
+        });
+    }
+    
+    function showWinScreen() {
+        // Ganaste todo el juego
+        const total = scenarios.length;
+        const perfect = (score === total);
+        dynamicMessage.innerHTML = perfect ? "🏆 ¡FELICIDADES! Construiste un escudo TOTAL contra los virus 🏆" : `🛡️ Escudo completado: ${score} de ${total} hábitos correctos. ¡Sigue practicando! 🌟`;
+        habitsContainer.innerHTML = `<div class="win-message">🎉✨ Has aprendido a protegerte de enfermedades comunes. ✨🎉<br> 💪 ¡Eres un superhéroe de la prevención! 🦸‍♀️🦸‍♂️</div>`;
+        feedbackArea.style.display = 'none';
+        nextButtonContainer.innerHTML = `<button class="next-btn" id="restartGameBtn">🔄 Jugar de nuevo 🔄</button>`;
+        const restartBtn = document.getElementById('restartGameBtn');
+        restartBtn.addEventListener('click', () => {
+            resetGame();
+        });
+        virusEmojiSpan.innerHTML = '🛡️😊🛡️';
+        virusEmojiSpan.style.animation = 'none';
+        if (soundEnabled) playSound('win');
+    }
+    
+    function resetGame() {
+        currentIndex = 0;
+        score = 0;
+        waitingNext = false;
+        scoreDisplay.innerText = `0 / ${scenarios.length}`;
+        loadScenario(0);
+        // limpiar estilos bloqueo
+        const allCards = document.querySelectorAll('.habit-card');
+        if(allCards.length) allCards.forEach(c => {
+            c.style.opacity = '1';
+            c.style.pointerEvents = 'auto';
+        });
+        virusEmojiSpan.innerHTML = '🦠';
+        virusEmojiSpan.style.animation = 'bounceVirus 1.4s infinite ease';
+        feedbackArea.style.display = 'none';
+        nextButtonContainer.innerHTML = '';
+    }
+    
+    // Iniciar juego desde intro
+    function startGame() {
+        // habilitamos sonido por primera interacción
+        enableSoundOnInteraction();
+        introPanel.style.display = 'none';
+        gamePanel.style.display = 'block';
+        resetGame(); // carga primera pregunta
+    }
+    
+    // Eventos
+    startBtn.addEventListener('click', startGame);
+    // Al hacer click en cualquier parte del body se puede activar sonido (para evitar restricciones)
+    document.body.addEventListener('click', function firstEnable() {
+        if (!soundEnabled) {
+            enableSoundOnInteraction();
+        }
+        // Removemos después de activar
+    }, { once: true });
+    
+    // También si tocan la pantalla de inicio activamos sonido antes de empezar
+    // Si ya tienen sonido, bien.
+    // preparación previa
+    initAudio(); // crea contexto pero suspendido
+    
+    // pequeño preload
+    console.log("Recurso: Escudo contra Virus | 2º grado | Prevención enfermedades comunes");
+</script>
+</body>
+</html>

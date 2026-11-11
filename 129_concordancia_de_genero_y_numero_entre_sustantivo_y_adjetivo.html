@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rompecabezas de Frases - Concordancia</title>
+    
+    <!-- Fuentes Google: Outfit (Pesos 500 y 900) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS (CDN para asegurar archivo único) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuración de Tailwind y animaciones personalizadas -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        pastel: {
+                            pink: '#EF476F',
+                            yellow: '#FFD166',
+                            green: '#06D6A0',
+                            blue: '#118AB2',
+                            dark: '#073B4C',
+                            light: '#F8FAFC'
+                        }
+                    },
+                    boxShadow: {
+                        'mega': '0 35px 60px -15px rgba(0, 0, 0, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Animaciones Personalizadas */
+        .float-slow {
+            animation: float 6s ease-in-out infinite;
+        }
+        .float-fast {
+            animation: float 4s ease-in-out infinite reverse;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-30px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .pop-in {
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.5); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .shake-error {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
+        /* Utilidades tipográficas fluidas adaptadas a móviles */
+        .hero-title {
+            font-size: clamp(2.5rem, 10vw, 8rem);
+            line-height: 1;
+        }
+        .section-title {
+            font-size: clamp(2rem, 8vw, 6rem);
+            line-height: 1.1;
+        }
+        .hero-text {
+            font-size: clamp(1.2rem, 4vw, 2.5rem);
+            line-height: 1.3;
+        }
+
+        /* Ocultar scrollbar en el overlay del juego para limpieza visual */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-pastel-light text-pastel-dark antialiased overflow-x-hidden selection:bg-pastel-pink selection:text-white w-full max-w-[100vw]">
+
+    <!-- SECCIÓN 1: HERO (100vh) -->
+    <section class="relative w-full min-h-screen bg-pastel-yellow flex flex-col items-center justify-center p-6 md:p-12 lg:p-24 overflow-hidden">
+        <!-- Elementos decorativos de fondo -->
+        <div class="absolute top-4 left-4 text-5xl md:top-10 md:left-10 md:text-8xl opacity-50 float-slow">🧩</div>
+        <div class="absolute bottom-10 right-10 text-6xl md:bottom-20 md:right-20 md:text-9xl opacity-50 float-fast">✨</div>
+        
+        <div class="relative z-10 text-center w-full max-w-none flex flex-col items-center">
+            <span class="bg-pastel-dark text-pastel-yellow px-4 py-2 md:px-8 md:py-4 rounded-[2rem] text-sm md:text-2xl lg:text-4xl font-black tracking-widest uppercase mb-4 md:mb-8 shadow-mega transform -rotate-2">
+                Gramática - 5to Grado
+            </span>
+            <h1 class="font-black text-pastel-dark hero-title mb-4 md:mb-8 drop-shadow-md px-2">
+                Concordancia
+                <br>
+                <span class="text-pastel-pink">Perfecta</span>
+            </h1>
+            <p class="font-medium text-pastel-dark hero-text max-w-6xl px-4">
+                El arte de hacer que el <strong>Sustantivo</strong> y el <strong>Adjetivo</strong> sean los mejores amigos.
+            </p>
+        </div>
+
+        <!-- Indicador de Scroll -->
+        <div class="absolute bottom-4 md:bottom-10 animate-bounce text-4xl md:text-6xl text-pastel-dark">
+            👇
+        </div>
+    </section>
+
+    <!-- SECCIÓN 2: EXPLICACIÓN (100vh) -->
+    <section class="w-full min-h-screen bg-pastel-pink text-white flex flex-col items-center justify-center p-6 md:p-12 lg:p-24">
+        <h2 class="font-black section-title mb-8 md:mb-16 text-center text-pastel-yellow drop-shadow-lg px-2">
+            ¿El Secreto? <br> Compartir todo.
+        </h2>
+        
+        <!-- Cuadrícula de tarjetas gigantes en lugar de viñetas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 w-full px-2 md:px-4 max-w-7xl">
+            <!-- Tarjeta Género -->
+            <div class="bg-white text-pastel-pink p-8 md:p-12 lg:p-20 rounded-[2rem] md:rounded-[4rem] shadow-mega transform transition duration-500 hover:scale-105 hover:-rotate-1">
+                <div class="text-6xl md:text-8xl lg:text-[10rem] mb-4 md:mb-8 text-center">🎭</div>
+                <h3 class="font-black text-3xl md:text-5xl lg:text-7xl mb-4 md:mb-8 text-center">Género</h3>
+                <p class="font-medium text-xl md:text-3xl lg:text-4xl text-center leading-tight">
+                    ¿Es <strong>Femenino</strong> (La niña) o <strong>Masculino</strong> (El niño)? ¡Deben ser iguales!
+                </p>
+            </div>
+            
+            <!-- Tarjeta Número -->
+            <div class="bg-pastel-dark text-pastel-green p-8 md:p-12 lg:p-20 rounded-[2rem] md:rounded-[4rem] shadow-mega transform transition duration-500 hover:scale-105 hover:rotate-1">
+                <div class="text-6xl md:text-8xl lg:text-[10rem] mb-4 md:mb-8 text-center">🔢</div>
+                <h3 class="font-black text-3xl md:text-5xl lg:text-7xl mb-4 md:mb-8 text-center text-white">Número</h3>
+                <p class="font-medium text-xl md:text-3xl lg:text-4xl text-center leading-tight text-white">
+                    ¿Es <strong>Uno solo</strong> (Singular) o son <strong>Varios</strong> (Plural)? ¡Deben coincidir!
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN 3: EJEMPLOS VISUALES (100vh) -->
+    <section class="w-full min-h-screen bg-pastel-green text-pastel-dark flex flex-col items-center justify-center p-6 md:p-12 lg:p-24 overflow-hidden">
+        <h2 class="font-black section-title mb-10 md:mb-20 text-center text-pastel-dark px-2">
+            Piezas que <span class="text-white bg-pastel-blue px-4 py-1 md:px-6 md:py-2 rounded-[2rem] inline-block transform rotate-3">encajan</span>
+        </h2>
+
+        <div class="flex flex-col gap-8 md:gap-16 w-full max-w-7xl">
+            
+            <!-- Ejemplo 1 -->
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 w-full">
+                <div class="bg-white p-6 md:p-10 lg:p-16 rounded-[2rem] md:rounded-[3rem] shadow-xl text-center w-full md:flex-1 transition hover:scale-105">
+                    <span class="block text-sm md:text-xl lg:text-3xl text-gray-400 font-bold mb-2 md:mb-4">Sustantivo (Masc / Sing)</span>
+                    <span class="font-black text-3xl md:text-5xl lg:text-8xl text-pastel-blue break-words">El gato 🐱</span>
+                </div>
+                <div class="text-4xl md:text-6xl lg:text-8xl text-white font-black">+</div>
+                <div class="bg-pastel-dark p-6 md:p-10 lg:p-16 rounded-[2rem] md:rounded-[3rem] shadow-xl text-center w-full md:flex-1 transition hover:scale-105">
+                    <span class="block text-sm md:text-xl lg:text-3xl text-pastel-yellow font-bold mb-2 md:mb-4">Adjetivo (Masc / Sing)</span>
+                    <span class="font-black text-3xl md:text-5xl lg:text-8xl text-white break-words">negro 🐈‍⬛</span>
+                </div>
+            </div>
+
+            <!-- Ejemplo 2 -->
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 w-full">
+                <div class="bg-white p-6 md:p-10 lg:p-16 rounded-[2rem] md:rounded-[3rem] shadow-xl text-center w-full md:flex-1 transition hover:scale-105">
+                    <span class="block text-sm md:text-xl lg:text-3xl text-gray-400 font-bold mb-2 md:mb-4">Sustantivo (Fem / Plural)</span>
+                    <span class="font-black text-3xl md:text-5xl lg:text-8xl text-pastel-pink break-words">Las flores 🌸</span>
+                </div>
+                <div class="text-4xl md:text-6xl lg:text-8xl text-white font-black">+</div>
+                <div class="bg-pastel-yellow p-6 md:p-10 lg:p-16 rounded-[2rem] md:rounded-[3rem] shadow-xl text-center w-full md:flex-1 transition hover:scale-105">
+                    <span class="block text-sm md:text-xl lg:text-3xl text-pastel-dark font-bold mb-2 md:mb-4">Adjetivo (Fem / Plural)</span>
+                    <span class="font-black text-3xl md:text-5xl lg:text-8xl text-pastel-dark break-words">bonitas ✨</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- SECCIÓN 4: CALL TO ACTION (100vh) -->
+    <section class="w-full min-h-screen bg-pastel-blue flex flex-col items-center justify-center p-6 md:p-12 lg:p-24 relative overflow-hidden">
+        <!-- Elementos flotantes -->
+        <div class="absolute top-10 left-4 md:top-20 md:left-20 text-6xl md:text-9xl float-fast opacity-50 md:opacity-100">🎮</div>
+        <div class="absolute bottom-10 right-4 md:bottom-20 md:right-20 text-6xl md:text-9xl float-slow opacity-50 md:opacity-100">🚀</div>
+
+        <h2 class="font-black hero-title text-white text-center mb-10 md:mb-16 drop-shadow-lg z-10 px-2">
+            ¡Es tu turno!
+        </h2>
+        
+        <!-- Botón Gigante -->
+        <button onclick="startGame()" class="z-10 group relative bg-pastel-yellow text-pastel-dark font-black text-2xl md:text-4xl lg:text-6xl px-8 py-6 md:px-16 md:py-12 rounded-[2rem] md:rounded-[4rem] shadow-mega transition-all duration-300 hover:scale-110 hover:-translate-y-2 md:hover:-translate-y-4 hover:shadow-[0_50px_70px_-15px_rgba(0,0,0,0.4)] max-w-[90vw]">
+            <span class="absolute inset-0 w-full h-full rounded-[2rem] md:rounded-[4rem] border-4 md:border-8 border-white opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"></span>
+            <span class="whitespace-nowrap">Jugar Rompecabezas 🧩</span>
+        </button>
+    </section>
+
+    <!-- OVERLAY DEL JUEGO INTERACTIVO (Pantalla Completa Oculta) -->
+    <div id="game-overlay" class="fixed inset-0 bg-pastel-dark z-50 hidden flex-col w-full h-full no-scrollbar overflow-y-auto">
+        
+        <!-- Header del Juego -->
+        <div class="w-full p-4 md:p-8 flex justify-between items-center bg-white/10 backdrop-blur-md sticky top-0 z-20">
+            <h2 class="text-white font-black text-xl md:text-3xl lg:text-5xl truncate pr-4">Rompecabezas de Frases</h2>
+            <button onclick="closeGame()" class="text-white text-xl md:text-3xl lg:text-5xl hover:text-pastel-pink transition-colors font-black bg-white/20 w-12 h-12 md:w-20 md:h-20 rounded-full flex items-center justify-center shrink-0">X</button>
+        </div>
+
+        <!-- Área de Juego -->
+        <div class="flex-grow flex flex-col items-center justify-start md:justify-center p-4 md:p-8 lg:p-20 relative">
+            
+            <p class="text-pastel-yellow font-bold text-lg md:text-3xl lg:text-5xl mb-6 md:mb-12 text-center px-2">
+                Selecciona un Sustantivo y luego el Adjetivo que encaje.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-16 w-full max-w-[1600px]">
+                
+                <!-- Columna Sustantivos -->
+                <div class="flex flex-col gap-3 md:gap-6" id="nouns-container">
+                    <!-- Generado por JS -->
+                </div>
+
+                <!-- Columna Adjetivos -->
+                <div class="flex flex-col gap-3 md:gap-6" id="adjectives-container">
+                    <!-- Generado por JS -->
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Modal de Feedback (Acierto/Error) -->
+        <div id="feedback-modal" class="absolute inset-0 pointer-events-none flex items-center justify-center z-50 hidden px-4">
+            <div id="feedback-content" class="bg-white rounded-[2rem] md:rounded-[4rem] p-8 md:p-16 shadow-mega flex flex-col items-center text-center transform scale-0 transition-transform duration-300 w-full max-w-2xl">
+                <div id="feedback-icon" class="text-[5rem] md:text-[10rem] mb-4 md:mb-6">✅</div>
+                <h3 id="feedback-title" class="font-black text-4xl md:text-6xl text-pastel-dark mb-2 md:mb-4">¡Excelente!</h3>
+                <p id="feedback-message" class="text-xl md:text-4xl text-gray-600 font-medium">Concordancia perfecta.</p>
+            </div>
+        </div>
+
+        <!-- Pantalla de Victoria -->
+        <div id="victory-screen" class="absolute inset-0 bg-pastel-green z-50 hidden flex-col items-center justify-center p-6 md:p-12 overflow-y-auto">
+            <div class="text-[8rem] md:text-[15rem] animate-bounce mb-4 md:mb-8">🏆</div>
+            <h2 class="font-black text-white hero-title text-center mb-4 md:mb-8">¡Completado!</h2>
+            <p class="text-pastel-dark font-medium text-2xl md:text-4xl lg:text-6xl text-center mb-10 md:mb-16 px-2">Eres un maestro de la concordancia.</p>
+            <button onclick="closeGame()" class="bg-white text-pastel-green font-black text-xl md:text-4xl lg:text-5xl px-8 py-4 md:px-12 md:py-8 rounded-[2rem] md:rounded-[3rem] shadow-xl hover:scale-110 transition-transform max-w-full">
+                Volver a la clase
+            </button>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT DEL JUEGO -->
+    <script>
+        // Datos del juego
+        const puzzleData = [
+            { id: 1, noun: "Los niños", adj: "felices", gender: "m", number: "p" },
+            { id: 2, noun: "La casa", adj: "antigua", gender: "f", number: "s" },
+            { id: 3, noun: "El libro", adj: "pesado", gender: "m", number: "s" },
+            { id: 4, noun: "Las manzanas", adj: "rojas", gender: "f", number: "p" }
+        ];
+
+        let selectedNoun = null;
+        let selectedAdj = null;
+        let matchedPairs = 0;
+
+        // Elementos del DOM
+        const gameOverlay = document.getElementById('game-overlay');
+        const nounsContainer = document.getElementById('nouns-container');
+        const adjectivesContainer = document.getElementById('adjectives-container');
+        const feedbackModal = document.getElementById('feedback-modal');
+        const feedbackContent = document.getElementById('feedback-content');
+        const victoryScreen = document.getElementById('victory-screen');
+
+        // Funciones de UI
+        function startGame() {
+            gameOverlay.classList.remove('hidden');
+            gameOverlay.classList.add('flex');
+            document.body.style.overflow = 'hidden'; // Prevenir scroll del body
+            initGame();
+        }
+
+        function closeGame() {
+            gameOverlay.classList.add('hidden');
+            gameOverlay.classList.remove('flex');
+            document.body.style.overflow = 'auto'; // Restaurar scroll
+            victoryScreen.classList.add('hidden');
+            victoryScreen.classList.remove('flex');
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initGame() {
+            nounsContainer.innerHTML = '';
+            adjectivesContainer.innerHTML = '';
+            selectedNoun = null;
+            selectedAdj = null;
+            matchedPairs = 0;
+
+            // Separar y mezclar
+            let nouns = puzzleData.map(d => ({...d, type: 'noun'}));
+            let adjectives = puzzleData.map(d => ({...d, type: 'adj'}));
+            
+            nouns = shuffleArray(nouns);
+            adjectives = shuffleArray(adjectives);
+
+            // Renderizar Sustantivos
+            nouns.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-left bg-white text-pastel-dark font-black text-xl md:text-4xl lg:text-5xl p-4 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-lg transition-all duration-300 hover:scale-[1.02] border-4 md:border-8 border-transparent break-words';
+                btn.innerText = item.noun;
+                btn.dataset.id = item.id;
+                btn.dataset.gender = item.gender;
+                btn.dataset.number = item.number;
+                btn.onclick = () => handleSelection(btn, 'noun');
+                nounsContainer.appendChild(btn);
+            });
+
+            // Renderizar Adjetivos
+            adjectives.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-right bg-pastel-pink text-white font-black text-xl md:text-4xl lg:text-5xl p-4 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-lg transition-all duration-300 hover:scale-[1.02] border-4 md:border-8 border-transparent break-words';
+                btn.innerText = item.adj;
+                btn.dataset.id = item.id;
+                btn.dataset.gender = item.gender;
+                btn.dataset.number = item.number;
+                btn.onclick = () => handleSelection(btn, 'adj');
+                adjectivesContainer.appendChild(btn);
+            });
+        }
+
+        function handleSelection(btn, type) {
+            if (btn.classList.contains('opacity-0')) return; // Ya resuelto
+
+            // Reset visual de la columna
+            const container = type === 'noun' ? nounsContainer : adjectivesContainer;
+            Array.from(container.children).forEach(child => {
+                child.classList.remove('border-pastel-yellow', 'scale-[1.05]');
+                child.classList.add('border-transparent');
+            });
+
+            // Aplicar estilo de seleccionado
+            btn.classList.remove('border-transparent');
+            btn.classList.add('border-pastel-yellow', 'scale-[1.05]');
+
+            // Guardar selección
+            if (type === 'noun') selectedNoun = btn;
+            if (type === 'adj') selectedAdj = btn;
+
+            // Comprobar coincidencia si ambos están seleccionados
+            if (selectedNoun && selectedAdj) {
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            const nGender = selectedNoun.dataset.gender;
+            const nNumber = selectedNoun.dataset.number;
+            const aGender = selectedAdj.dataset.gender;
+            const aNumber = selectedAdj.dataset.number;
+
+            const isMatch = (nGender === aGender) && (nNumber === aNumber);
+
+            if (isMatch) {
+                showFeedback(true);
+                // Ocultar botones acertados
+                selectedNoun.classList.add('opacity-0', 'pointer-events-none');
+                selectedAdj.classList.add('opacity-0', 'pointer-events-none');
+                matchedPairs++;
+                
+                if (matchedPairs === puzzleData.length) {
+                    setTimeout(() => {
+                        victoryScreen.classList.remove('hidden');
+                        victoryScreen.classList.add('flex', 'pop-in');
+                    }, 1500);
+                }
+            } else {
+                showFeedback(false);
+                // Animación de error
+                selectedNoun.classList.add('shake-error', 'border-red-500');
+                selectedAdj.classList.add('shake-error', 'border-red-500');
+                
+                setTimeout(() => {
+                    selectedNoun.classList.remove('shake-error', 'border-red-500', 'border-pastel-yellow', 'scale-[1.05]');
+                    selectedAdj.classList.remove('shake-error', 'border-red-500', 'border-pastel-yellow', 'scale-[1.05]');
+                    selectedNoun.classList.add('border-transparent');
+                    selectedAdj.classList.add('border-transparent');
+                }, 800);
+            }
+
+            // Resetear selecciones
+            selectedNoun = null;
+            selectedAdj = null;
+        }
+
+        function showFeedback(isSuccess) {
+            feedbackModal.classList.remove('hidden');
+            
+            if (isSuccess) {
+                document.getElementById('feedback-icon').innerText = '✅';
+                document.getElementById('feedback-title').innerText = '¡Perfecto!';
+                document.getElementById('feedback-title').className = 'font-black text-4xl md:text-6xl text-pastel-green mb-2 md:mb-4';
+                document.getElementById('feedback-message').innerText = 'El género y número coinciden.';
+            } else {
+                document.getElementById('feedback-icon').innerText = '❌';
+                document.getElementById('feedback-title').innerText = '¡Ups!';
+                document.getElementById('feedback-title').className = 'font-black text-4xl md:text-6xl text-pastel-pink mb-2 md:mb-4';
+                document.getElementById('feedback-message').innerText = 'Las piezas no encajan. Revisa el género o número.';
+            }
+
+            feedbackContent.classList.remove('scale-0');
+            feedbackContent.classList.add('scale-100');
+
+            setTimeout(() => {
+                feedbackContent.classList.remove('scale-100');
+                feedbackContent.classList.add('scale-0');
+                setTimeout(() => {
+                    feedbackModal.classList.add('hidden');
+                }, 300);
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
+```

@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cineasta Escolar - Secuencia de Hechos</title>
+    
+    <!-- Fuentes Google: Bangers (Cómic/Película) y Quicksand (Lectura amigable) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Quicksand:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA PARA WORDPRESS -->
+    <script>
+        window.tailwind = {
+            config: {
+                important: '#recurso-wp-cineasta',
+                corePlugins: { preflight: false },
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            cinema: ['Bangers', 'cursive'],
+                            body: ['Quicksand', 'sans-serif'],
+                        },
+                        colors: {
+                            cinema: {
+                                dark: '#020617',      /* Negro espacio profundo */
+                                panel: '#0f172a',     /* Gris azulado oscuro */
+                                gold: '#eab308',      /* Amarillo Óscar/Estrella */
+                                goldLight: '#fef08a', /* Amarillo luz */
+                                red: '#ef4444',       /* Rojo claqueta/alerta */
+                                cyan: '#06b6d4',      /* Azul proyector */
+                                green: '#10b981'      /* Verde éxito */
+                            }
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* =========================================================
+           MICRO-RESET LOCAL
+           ========================================================= */
+        #recurso-wp-cineasta * { box-sizing: border-box; border-width: 0; border-style: solid; border-color: currentColor; line-height: normal; }
+        #recurso-wp-cineasta h1, #recurso-wp-cineasta h2, #recurso-wp-cineasta h3, #recurso-wp-cineasta p, #recurso-wp-cineasta span, #recurso-wp-cineasta div { margin: 0; padding: 0; }
+        #recurso-wp-cineasta button { background-color: transparent; cursor: pointer; padding: 0; font-family: inherit; }
+
+        /* =========================================================
+           ESTILOS GENERALES (Pantalla Completa Centrada)
+           ========================================================= */
+        #recurso-wp-cineasta {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #020617; 
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(234, 179, 8, 0.08) 0%, transparent 30%),
+                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.08) 0%, transparent 30%);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            margin: 0 auto;
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Paneles Estilo Claqueta/Director */
+        #recurso-wp-cineasta .director-panel {
+            background-color: #0f172a;
+            border: 4px solid #eab308;
+            border-radius: 2rem;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.7), inset 0 0 20px rgba(234, 179, 8, 0.1);
+        }
+
+        #recurso-wp-cineasta .director-btn {
+            background: linear-gradient(to bottom, #eab308, #ca8a04);
+            border: 4px solid #000;
+            color: #000000;
+            border-radius: 1.25rem;
+            box-shadow: 0 6px 0px #000;
+            transition: all 0.1s ease-out;
+            font-family: 'Bangers', cursive;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+        #recurso-wp-cineasta .director-btn:hover:not(:disabled) {
+            transform: translate(-2px, -2px);
+            box-shadow: 0 8px 0px #000;
+            filter: brightness(1.1);
+        }
+        #recurso-wp-cineasta .director-btn:active:not(:disabled) {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px #000;
+        }
+        #recurso-wp-cineasta .director-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: 0 6px 0px #000 !important;
+        }
+
+        /* Tira de Película (Film Strip) */
+        .film-strip-card {
+            background-color: #ffffff;
+            border: 4px solid #000000;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.5);
+            width: clamp(100px, 20vw, 150px);
+            height: clamp(120px, 25vh, 190px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+        }
+
+        /* Perforaciones del rollo de película */
+        .film-strip-card::before, .film-strip-card::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 10px;
+            left: 0;
+            background-image: repeating-linear-gradient(90deg, #000 0px, #000 8px, transparent 8px, transparent 16px);
+            background-size: 16px 10px;
+        }
+        .film-strip-card::before { top: 4px; }
+        .film-strip-card::after { bottom: 4px; }
+
+        .film-strip-card:hover:not(.locked) {
+            transform: scale(1.08) rotate(2deg);
+            border-color: #eab308;
+            box-shadow: 0 0 15px #eab308;
+        }
+        .film-strip-card.selected {
+            border-color: #06b6d4;
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 0 20px #06b6d4;
+        }
+        .film-strip-card.locked {
+            opacity: 0.2;
+            cursor: default;
+            transform: none !important;
+            box-shadow: none;
+        }
+
+        /* Slots del Guión (Timeline) */
+        .timeline-slot {
+            background-color: rgba(15, 23, 42, 0.9);
+            border: 3px dashed #eab308;
+            border-radius: 16px;
+            min-height: 130px;
+            transition: all 0.3s;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .timeline-slot:hover:not(.filled) {
+            background-color: rgba(234, 179, 8, 0.1);
+            border-style: solid;
+        }
+        .timeline-slot.filled {
+            border-style: solid;
+            border-color: #10b981;
+            background-color: transparent;
+        }
+
+        /* Sala de Cine / Proyector */
+        #theater-projection {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background-color: #020617;
+            z-index: 100;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+        /* Haz de luz de proyector */
+        .projector-beam {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(ellipse at 50% 0%, rgba(6, 182, 212, 0.3) 0%, rgba(6, 182, 212, 0.05) 50%, transparent 80%);
+            pointer-events: none;
+            z-index: 1;
+            animation: flicker 0.15s infinite alternate;
+        }
+        @keyframes flicker {
+            0% { opacity: 0.9; }
+            100% { opacity: 1; }
+        }
+
+        /* Fotograma proyectado gigante */
+        .projector-screen {
+            background-color: #ffffff;
+            border: 8px solid #334155;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8), 0 0 50px rgba(6, 182, 212, 0.3);
+            border-radius: 12px;
+            z-index: 10;
+            width: clamp(240px, 50vw, 420px);
+            height: clamp(160px, 35vh, 280px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Claqueta de Cine Animada */
+        .clapperboard-arm {
+            transform-origin: left bottom;
+            transition: transform 0.3s cubic-bezier(0.6, -0.28, 0.735, 0.045);
+        }
+        .clapperboard-arm.snap {
+            animation: snapAnim 0.3s ease-out forwards;
+        }
+        @keyframes snapAnim {
+            0% { transform: rotate(-30deg); }
+            50% { transform: rotate(0deg); }
+            70% { transform: rotate(-5deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        .shake-error { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+
+        /* Estilos SPA de Visibilidad con centrado absoluto */
+        #recurso-wp-cineasta .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            position: absolute;
+            top: 0; left: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 10;
+        }
+        #recurso-wp-cineasta .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-cineasta .screen.active {
+            display: flex;
+            animation: bounceInUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+        }
+        @keyframes bounceInUp {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-cineasta">
+
+        <!-- Decoración del fondo -->
+        <div class="absolute top-10 left-10 text-[6rem] opacity-5 pointer-events-none rotate-12">🎬</div>
+        <div class="absolute bottom-10 right-10 text-[8rem] opacity-5 pointer-events-none -rotate-12">🍿</div>
+
+        <!-- ==============================================
+             PANTALLA 1: PORTADA (Centrada)
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="director-panel p-8 md:p-14 max-w-3xl w-full mx-4 flex flex-col items-center transform -rotate-1">
+                <div class="text-[5rem] md:text-[8rem] mb-2 animate__animated animate__pulse animate__infinite leading-none">🎬🍿</div>
+                
+                <h2 class="text-xs md:text-sm text-black font-body font-black mb-4 uppercase bg-cinema-gold inline-block px-6 py-2 border-4 border-black rounded-full rotate-2">
+                    Comprensión Oral - 2do Grado
+                </h2>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-cinema text-white leading-none uppercase tracking-wider drop-shadow-lg mb-6">
+                    Cineasta <br><span class="text-cinema-gold">Escolar</span>
+                </h1>
+                <p class="text-base md:text-xl text-gray-300 font-bold mb-8 px-2 leading-relaxed">
+                    ¡Luces, cámara, acción! 📽️ Lee atentamente la historia del director de cine y ordena los fotogramas de la película para ver la animación final.
+                </p>
+                <button onclick="window.openTheory()" class="director-btn text-xl md:text-3xl px-12 py-5 w-full md:w-auto">
+                    ¿CÓMO FILMAR? 📜
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: INSTRUCCIONES (Centrada)
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center">
+            <div class="director-panel p-6 md:p-10 max-w-4xl w-full text-center my-auto">
+                <h2 class="text-3xl md:text-5xl font-cinema text-cinema-gold mb-6 uppercase border-b-2 border-cinema-gold/30 pb-4">
+                    Instrucciones del Director
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-left">
+                    <!-- Paso 1 -->
+                    <div class="bg-slate-900 p-5 rounded-2xl border-2 border-cinema-gold">
+                        <span class="text-3xl">📖</span>
+                        <h3 class="font-cinema text-xl text-cinema-gold uppercase mt-2">1. Lee el Guion</h3>
+                        <p class="text-xs md:text-sm text-gray-300 font-bold mt-1 leading-snug">Abre el guion y lee la anécdota de la historia con mucha atención.</p>
+                    </div>
+                    <!-- Paso 2 -->
+                    <div class="bg-slate-900 p-5 rounded-2xl border-2 border-cinema-gold">
+                        <span class="text-3xl">🧩</span>
+                        <h3 class="font-cinema text-xl text-cinema-gold uppercase mt-2">2. Ordena</h3>
+                        <p class="text-xs md:text-sm text-gray-300 font-bold mt-1 leading-snug">Une las escenas del rollo de película en el orden correcto: Inicio, Nudo y Final.</p>
+                    </div>
+                    <!-- Paso 3 -->
+                    <div class="bg-slate-900 p-5 rounded-2xl border-2 border-cinema-gold">
+                        <span class="text-3xl">📽️</span>
+                        <h3 class="font-cinema text-xl text-cinema-gold uppercase mt-2">3. Proyecta</h3>
+                        <p class="text-xs md:text-sm text-gray-300 font-bold mt-1 leading-snug">¡Si el orden es correcto, verás la animación proyectada en la sala!</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="window.showScreen('screen-start')" class="border border-gray-600 text-gray-400 font-bold px-8 py-3 rounded-lg text-sm uppercase hover:bg-gray-800 transition tracking-widest font-cinema text-xl">
+                        ⬅ VOLVER
+                    </button>
+                    <button onclick="window.startGame()" class="director-btn text-xl md:text-2xl px-10 py-3">
+                        ¡A FILMAR! 🎬
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: EL JUEGO (Mesa de Montaje)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start p-0 bg-transparent">
+            
+            <!-- HUD Superior -->
+            <div class="w-full bg-slate-900 border-b-4 border-cinema-gold p-2 md:p-3 flex justify-between items-center z-30 shrink-0 shadow-lg">
+                <div class="flex items-center gap-2 px-2 md:px-4">
+                    <span class="text-2xl md:text-3xl">🎞️</span>
+                    <div class="flex flex-col">
+                        <span class="text-[9px] md:text-[10px] text-gray-400 font-black uppercase tracking-widest leading-none mb-1">Películas Grabadas</span>
+                        <span class="font-cinema text-xl md:text-2xl text-cinema-gold leading-none"><span id="score-display">0</span><span class="text-gray-400 text-sm">/6</span></span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <!-- Botón Leer del Director -->
+                    <button onclick="window.readAnecdote()" class="bg-cinema-cyan border-2 border-white text-white p-2 rounded-xl flex items-center gap-2 font-cinema text-sm md:text-lg hover:scale-105 active:scale-95 shadow-md">
+                        📖 LEER GUION (HISTORIA)
+                    </button>
+                </div>
+
+                <button onclick="window.exitGame()" class="director-btn bg-cinema-red text-white p-1 md:p-2 ml-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Dashboard de Edición -->
+            <div class="w-full flex-grow flex flex-col items-center justify-around p-3 md:p-4 overflow-y-auto">
+                
+                <!-- Pistas e Instrucciones del Set -->
+                <div class="bg-black/80 border-2 border-cinema-gold text-center py-2 px-6 rounded-full shadow-lg z-20">
+                    <p class="text-white font-bold text-xs md:text-lg flex items-center justify-center gap-2">
+                        <span>💡</span> Lee la historia y organiza las tiras en el orden correcto de los hechos.
+                    </p>
+                </div>
+
+                <!-- LA MESA DE MONTAJE (Paso 1, 2, 3) -->
+                <div class="w-full max-w-4xl grid grid-cols-3 gap-4 z-20 mt-4">
+                    <!-- Slot 1 -->
+                    <div id="slot-0" class="timeline-slot flex flex-col justify-start" onclick="window.handleSlotClick(0)">
+                        <span class="font-cinema text-xs md:text-lg text-cinema-gold uppercase mt-2">1. INICIO</span>
+                        <div class="slot-content flex-grow flex items-center justify-center py-2"></div>
+                    </div>
+                    <!-- Slot 2 -->
+                    <div id="slot-1" class="timeline-slot flex flex-col justify-start" onclick="window.handleSlotClick(1)">
+                        <span class="font-cinema text-xs md:text-lg text-cinema-gold uppercase mt-2">2. NUDO</span>
+                        <div class="slot-content flex-grow flex items-center justify-center py-2"></div>
+                    </div>
+                    <!-- Slot 3 -->
+                    <div id="slot-2" class="timeline-slot flex flex-col justify-start" onclick="window.handleSlotClick(2)">
+                        <span class="font-cinema text-xs md:text-lg text-cinema-gold uppercase mt-2">3. FINAL</span>
+                        <div class="slot-content flex-grow flex items-center justify-center py-2"></div>
+                    </div>
+                </div>
+
+                <!-- ROLLOS DE PELÍCULA DISPONIBLES (Inventario desordenado) -->
+                <div class="w-full max-w-4xl bg-slate-900/60 p-4 rounded-3xl border-2 border-gray-700 mt-6 shrink-0 relative flex flex-col items-center">
+                    <span class="absolute -top-3 bg-black text-cinema-gold font-cinema text-xs md:text-sm px-4 py-0.5 rounded border border-cinema-gold uppercase tracking-widest">Fotogramas sueltos</span>
+                    <div id="film-inventory" class="flex justify-center gap-4 md:gap-8 w-full py-4 overflow-x-auto">
+                        <!-- Las 3 escenas se inyectan por JS desordenadas -->
+                    </div>
+                </div>
+
+                <!-- Botón de Proyección -->
+                <div class="w-full max-w-lg mt-4 z-20 shrink-0">
+                    <button id="btn-project" disabled onclick="window.projectMovie()" class="director-btn bg-cinema-green text-white w-full py-4 text-xl md:text-3xl flex items-center justify-center gap-3">
+                        🎬 PROYECTAR PELÍCULA
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA DE PROYECCIÓN (SALA DE CINE)
+             ============================================== -->
+        <div id="theater-projection">
+            <div class="projector-beam"></div>
+            
+            <div class="z-10 flex flex-col items-center">
+                <!-- Pantalla Gigante del Cine -->
+                <div class="projector-screen" id="projection-screen">
+                    <!-- SVG animado de la escena actual se inyecta aquí -->
+                </div>
+
+                <!-- Barra de claqueta de cine superior -->
+                <div class="mt-8 flex flex-col items-center bg-black/80 border-2 border-cinema-gold p-4 rounded-2xl max-w-xl shadow-lg relative z-20 text-center">
+                    <span class="font-cinema text-cinema-gold text-lg uppercase tracking-wider mb-2">PROYECTANDO HISTORIA... 🎞️</span>
+                    <p id="projection-narration" class="text-white font-bold text-base md:text-xl leading-relaxed italic px-2"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             MODAL DE FEEDBACK (Corte / Error)
+             ============================================== -->
+        <div id="feedback-modal" class="hidden absolute inset-0 z-[110] flex-col items-center justify-center bg-black/95 p-4 text-center backdrop-blur-sm">
+            <div id="feedback-card" class="director-panel p-6 md:p-10 max-w-xl w-full text-center border-t-8 border-t-cinema-red">
+                <div id="feedback-icon" class="text-[5rem] mb-2 drop-shadow-md">🎬❌</div>
+                <h3 id="feedback-title" class="font-cinema text-3xl md:text-5xl text-cinema-red mb-4 uppercase tracking-widest">¡Corte! ¡Toma Falsa!</h3>
+                <div class="bg-black/50 p-4 rounded-xl border border-gray-700 mb-6">
+                    <p id="feedback-reason" class="text-sm md:text-lg font-bold text-gray-200 leading-relaxed"></p>
+                </div>
+                <button id="modal-action-btn" onclick="window.closeFeedback()" class="director-btn text-lg md:text-2xl px-10 py-3 w-full">
+                    REPETIR TOMA 🔄
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (Victoria)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex flex-col items-center justify-center p-6 text-center bg-cinema-dark bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.3)_0%,rgba(0,0,0,0.8)_100%)]">
+            <div id="result-card" class="director-panel p-8 md:p-12 max-w-2xl w-full text-center z-10 border-t-[10px] border-t-cinema-gold">
+                <div id="result-icon" class="text-[5rem] md:text-[6rem] mb-4 drop-shadow-md">🏆🎬⭐</div>
+                <h2 id="result-title" class="font-cinema text-4xl md:text-6xl text-cinema-gold mb-4 uppercase tracking-widest">¡Director Estrella!</h2>
+                <p id="result-msg" class="text-base md:text-xl text-gray-300 mb-8 font-bold leading-relaxed">
+                    Has demostrado una lógica secuencial impecable. Ordenaste todos los fotogramas del rodaje de forma perfecta. ¡Tu película ha sido un éxito en taquilla!
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="window.exitGame()" class="border border-gray-600 text-gray-400 font-bold px-8 py-3 rounded-lg text-sm uppercase hover:bg-gray-800 transition tracking-widest font-cinema text-xl">
+                        SALIR DEL ESTUDIO
+                    </button>
+                    <button onclick="window.startGame()" class="director-btn text-xl md:text-2xl px-10 py-3">
+                        NUEVA PRODUCCIÓN 🔄
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO (100% ESTRATEGIAS EN ALCANCE GLOBAL)
+         ============================================== -->
+    <script>
+        // --- 1. DEFINICIÓN DE VARIABLES DE ESTADO GLOBALES ---
+        let score = 0;
+        let currentLevel = 0;
+        let isProcessing = false;
+        let gameQueue = [];
+        let currentMovie = null;
+        let playerSequence = [null, null, null]; // IDs asignados a slots 0, 1, 2
+        let selectedSceneId = null;
+        let selectedElement = null;
+
+        // --- 2. BASE DE DATOS DE PELÍCULAS ---
+        const moviesDatabase = [
+            {
+                id: 1,
+                title: "El pastel de la abuela 👵🍰",
+                narration: "Primero, la abuelita mezcló con cuidado todos los ingredientes en un tazón de color azul. Segundo, metió el molde al horno caliente y la casa se llenó de un olor delicioso. Al final, el perrito Toby saltó sobre la mesa y se comió todo el pastel de un solo bocado.",
+                scenes: [
+                    { step: 1, id: "pastel_mezclar", text: "Mezclamos la masa.", voice: "Primero, la abuelita mezcló los ingredientes en un tazón." },
+                    { step: 2, id: "pastel_hornear", text: "Horneamos el pastel.", voice: "Segundo, metió el pastel al horno caliente." },
+                    { step: 3, id: "pastel_perro", text: "¡El perro se lo come!", voice: "Al final, el perrito Toby se comió el pastel por accidente." }
+                ],
+                blooperHint: "¡Corte! Recuerda que no podemos comer pastel sin haberlo horneado primero, y no podemos hornearlo sin haber mezclado la masa antes."
+            },
+            {
+                id: 2,
+                title: "El rescate de pelusa 🐱🌳",
+                narration: "Al principio, el travieso gatito Pelusa se subió a la rama más alta de un árbol y no podía bajar. Después, un valiente bombero colocó una gran escalera metálica para alcanzarlo. Finalmente, el gatito durmió feliz y ronroneando a salvo en los brazos de su dueño.",
+                scenes: [
+                    { step: 1, id: "gato_arbol", text: "Gatito en el árbol.", voice: "Primero, el gatito Pelusa se subió muy alto a un árbol." },
+                    { step: 2, id: "gato_bombero", text: "Llega el bombero.", voice: "Después, el bombero colocó una gran escalera para salvarlo." },
+                    { step: 3, id: "gato_salvado", text: "¡A salvo y feliz!", voice: "Finalmente, el gatito durmió feliz en los brazos de su dueño." }
+                ],
+                blooperHint: "¡Corte! El bombero no puede rescatar al gato si este no se ha subido al árbol primero, y el gato no puede estar feliz en brazos antes del rescate."
+            },
+            {
+                id: 3,
+                title: "La planta mágica 🪴🌻",
+                narration: "En el primer paso, un niño sembró una semilla muy pequeñita en una maceta con tierra. En el segundo paso, la regó con agua limpia todos los días. En el último paso, creció una hermosa flor dorada que brillaba en la oscuridad.",
+                scenes: [
+                    { step: 1, id: "planta_sembrar", text: "Sembramos la semilla.", voice: "Primero, sembramos una semilla muy pequeña en la tierra." },
+                    { step: 2, id: "planta_regar", text: "La regamos con agua.", voice: "Segundo, regamos la tierra con agua todos los días." },
+                    { step: 3, id: "planta_flor", text: "¡Crece una gran flor!", voice: "Al final, creció una hermosa flor dorada y mágica." }
+                ],
+                blooperHint: "¡Corte! Una flor hermosa no puede crecer de la nada; primero hay que plantar la pequeña semilla y regarla con mucha agua."
+            },
+            {
+                id: 4,
+                title: "La carrera del caracol 🐌🏆",
+                narration: "Al principio, el caracolito dormía muy tranquilo bajo una hoja fresca del jardín sin importarle las carreras. Después, decidió entrenar duro todos los días usando pesas y sudando mucho. Al final, corrió tan rápido que ganó la copa dorada de la gran carrera anual.",
+                scenes: [
+                    { step: 1, id: "caracol_dormir", text: "Dormir bajo la hoja.", voice: "Al principio, el caracolito dormía tranquilo bajo la hoja." },
+                    { step: 2, id: "caracol_entrenar", text: "Entrenar duro.", voice: "Después, decidió entrenar duro todos los días para ser fuerte." },
+                    { step: 3, id: "caracol_ganar", text: "¡Ganar la carrera!", voice: "Al final, corrió veloz y ganó la copa dorada de la carrera." }
+                ],
+                blooperHint: "¡Corte! El caracolito no puede ganar la copa si antes no ha entrenado duro, y no puede comenzar a entrenar si ya está ganando la carrera."
+            },
+            {
+                id: 5,
+                title: "El vuelo del globo 🎈 de aire",
+                narration: "Primero, un niño sopló con mucha fuerza para inflar un hermoso globo de color rojo. Segundo, el viento sopló y el globo se soltó volando muy alto por encima de las nubes del cielo. Al final, un travieso pájaro lo tocó con su pico afilado y el globo estalló haciendo un fuerte sonido.",
+                scenes: [
+                    { step: 1, id: "globo_inflar", text: "Inflar el globo.", voice: "Primero, el niño infló con fuerza el globo de color rojo." },
+                    { step: 2, id: "globo_volar", text: "Volar por las nubes.", voice: "Segundo, el globo se soltó y voló alto por el cielo." },
+                    { step: 3, id: "globo_pinchar", text: "¡El globo explota!", voice: "Al final, un pájaro lo tocó con su pico y el globo estalló." }
+                ],
+                blooperHint: "¡Corte! El globo no puede volar por el cielo si no lo hemos inflado primero, y el pájaro no puede explotarlo si no está flotando en el aire."
+            },
+            {
+                id: 6,
+                title: "El castillo de arena 🏰 en la playa",
+                narration: "Al inicio del día, un niño llenó su balde de plástico con mucha arena húmeda de la playa. Después, construyó un hermoso castillo con torres altas y una banderita en la punta. Al atardecer, una ola gigante del mar llegó a la orilla y destruyó todo el castillo de un solo golpe.",
+                scenes: [
+                    { step: 1, id: "arena_balde", text: "Llenar el balde.", voice: "Al inicio, el niño llenó su balde con arena húmeda de la playa." },
+                    { step: 2, id: "arena_castillo", text: "Hacer el castillo.", voice: "Después, construyó un hermoso castillo con torres altas." },
+                    { step: 3, id: "arena_ola", text: "¡La ola lo borra!", voice: "Al final, una ola gigante del mar destruyó todo el castillo." }
+                ],
+                blooperHint: "¡Corte! No podemos tener un hermoso castillo construido sin haber recolectado la arena húmeda en el balde antes, y la ola no puede borrar un castillo que aún no existe."
+            }
+        ];
+
+        // --- 3. DIBUJOS VECTORIALES SVGs DE LAS ESCENAS ---
+        function getSceneSVG(id) {
+            switch(id) {
+                case "pastel_mezclar":
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <rect x="0" y="80" width="100" height="20" fill="#78350f" stroke="#000" stroke-width="2"/>
+                        <path d="M20,45 L80,45 C80,75 20,75 20,45 Z" fill="#3b82f6" stroke="#000" stroke-width="3" stroke-linejoin="round"/>
+                        <rect x="45" y="15" width="8" height="40" rx="3" fill="#94a3b8" stroke="#000" stroke-width="2" transform="rotate(25 49 35)"/>
+                        <ellipse cx="48" cy="25" rx="12" ry="12" fill="none" stroke="#000" stroke-width="2" transform="rotate(25 49 35)"/>
+                        <circle cx="28" cy="38" r="4" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+                        <circle cx="72" cy="40" r="3" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+                        <circle cx="50" cy="35" r="3" fill="#facc15" stroke="#ca8a04" stroke-width="1.5"/>
+                    </svg>
+                    `;
+                case "pastel_hornear":
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <rect x="15" y="20" width="70" height="70" rx="6" fill="#475569" stroke="#000" stroke-width="3"/>
+                        <rect x="25" y="30" width="50" height="40" rx="3" fill="#1e293b" stroke="#000" stroke-width="2"/>
+                        <rect x="35" y="55" width="30" height="12" rx="4" fill="#eab308" stroke="#000" stroke-width="2"/>
+                        <ellipse cx="50" cy="55" rx="15" ry="5" fill="#fde047"/>
+                        <path d="M 40,25 Q 45,15 40,5" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M 50,25 Q 55,15 50,5" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M 60,25 Q 65,15 60,5" fill="none" stroke="#f43f5e" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    `;
+                case "pastel_perro":
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <rect x="0" y="85" width="100" height="15" fill="#78350f" stroke="#000" stroke-width="2"/>
+                        <ellipse cx="50" cy="84" rx="25" ry="6" fill="#cbd5e1" stroke="#000" stroke-width="2"/>
+                        <circle cx="42" cy="84" r="1.5" fill="#d97706"/>
+                        <circle cx="55" cy="83" r="2" fill="#d97706"/>
+                        <circle cx="48" cy="85" r="1" fill="#d97706"/>
+                        <rect x="15" y="50" width="40" height="40" rx="15" fill="#f59e0b" stroke="#000" stroke-width="3"/>
+                        <circle cx="45" cy="40" r="22" fill="#f59e0b" stroke="#000" stroke-width="3"/>
+                        <circle cx="55" cy="45" r="10" fill="#fef3c7" stroke="#000" stroke-width="2"/>
+                        <circle cx="58" cy="42" r="4" fill="#000"/>
+                        <path d="M52,48 Q60,56 50,52 Z" fill="#ec4899" stroke="#be185d" stroke-width="2"/>
+                        <path d="M28,30 Q15,40 32,48" fill="#d97706" stroke="#000" stroke-width="2" stroke-linejoin="round"/>
+                        <circle cx="42" cy="32" r="4" fill="#000"/>
+                        <circle cx="44" cy="30" r="1" fill="#fff"/>
+                    </svg>
+                    `;
+                case "gato_arbol":
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <rect x="40" y="50" width="20" height="50" fill="#78350f" stroke="#000" stroke-width="3"/>
+                        <circle cx="50" cy="45" r="35" fill="#22c55e" stroke="#15803d" stroke-width="4"/>
+                        <circle cx="25" cy="35" r="20" fill="#16a34a" stroke="#15803d" stroke-width="2"/>
+                        <circle cx="75" cy="35" r="20" fill="#16a34a" stroke="#15803d" stroke-width="2"/>
+                        <g transform="translate(10, 10)">
+                            <ellipse cx="40" cy="40" rx="14" ry="10" fill="#f97316" stroke="#000" stroke-width="2"/>
+                            <circle cx="30" cy="30" r="10" fill="#f97316" stroke="#000" stroke-width="2"/>
+                            <polygon points="22,25 24,14 30,22" fill="#d97706" stroke="#000" stroke-width="2"/>
+                            <polygon points="32,22 38,14 38,25" fill="#d97706" stroke="#000" stroke-width="2"/>
+                            <circle cx="27" cy="28" r="3.5" fill="#fff" stroke="#000" stroke-width="1"/>
+                            <circle cx="33" cy="28" r="3.5" fill="#fff" stroke="#000" stroke-width="1"/>
+                            <circle cx="27" cy="28" r="1" fill="#000"/>
+                            <circle cx="33" cy="28" r="1" fill="#000"/>
+                            <path d="M52,38 Q58,20 52,15" fill="none" stroke="#d97706" stroke-width="3" stroke-linecap="round"/>
+                        </g>
+                    </svg>
+                    `;
+                case "gato_bombero":
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <rect x="0" y="0" width="25" height="100" fill="#78350f" stroke="#000" stroke-width="3"/>
+                        <line x1="75" y1="95" x2="35" y2="15" stroke="#94a3b8" stroke-width="6" stroke-linecap="round"/>
+                        <line x1="85" y1="91" x2="45" y2="11" stroke="#94a3b8" stroke-width="6" stroke-linecap="round"/>
+                        <line x1="72" y1="80" x2="82" y2="76" stroke="#475569" stroke-width="4"/>
+                        <line x1="64" y1="64" x2="74" y2="60" stroke="#475569" stroke-width="4"/>
+                        <line x1="56" y1="48" x2="66" y2="44" stroke="#475569" stroke-width="4"/>
+                        <line x1="48" y1="32" x2="58" y2="28" stroke="#475569" stroke-width="4"/>
+                        <g transform="translate(10, 10)">
+                            <path d="M 40,40 Q 52,15 65,40 L 70,44 L 35,44 Z" fill="#ef4444" stroke="#000" stroke-width="2"/>
+                            <rect x="48" y="25" width="8" height="10" fill="#facc15"/>
+                            <circle cx="52" cy="50" r="8" fill="#fbcfe8" stroke="#000" stroke-width="1.5"/>
+                            <path d="M 40,58 L 65,58 L 60,90 L 45,90 Z" fill="#1e293b" stroke="#000" stroke-width="2"/>
+                            <rect x="42" y="75" width="20" height="6" fill="#eab308"/>
+                        </g>
+                    </svg>
+                    `;
+                case "gato_salvado":
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <rect x="0" y="0" width="100" height="100" fill="#ffedd5" rx="8"/>
+                        <rect x="25" y="60" width="50" height="40" rx="15" fill="#3b82f6" stroke="#000" stroke-width="3"/>
+                        <circle cx="50" cy="42" r="22" fill="#fbcfe8" stroke="#000" stroke-width="3"/>
+                        <path d="M28,35 Q50,12 72,35 Q50,25 28,35" fill="#78350f" stroke="#000" stroke-width="2"/>
+                        <path d="M40,42 Q44,38 48,42" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M52,42 Q56,38 60,42" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M44,52 Q50,62 56,52 Z" fill="#ef4444" stroke="#000" stroke-width="2"/>
+                        <g transform="translate(28, 48)">
+                            <circle cx="15" cy="15" r="10" fill="#f97316" stroke="#000" stroke-width="2"/>
+                            <polygon points="7,10 5,2 14,8" fill="#d97706" stroke="#000" stroke-width="1.5"/>
+                            <polygon points="16,8 25,2 23,10" fill="#d97706" stroke="#000" stroke-width="1.5"/>
+                            <path d="M9,15 Q11,18 13,15" fill="none" stroke="#000" stroke-width="1.5"/>
+                            <path d="M17,15 Q19,18 21,15" fill="none" stroke="#000" stroke-width="1.5"/>
+                            <path d="M13,20 L17,20" stroke="#000" stroke-width="1.5"/>
+                            <text x="32" y="10" font-size="12" fill="#db2777">♪</text>
+                            <text x="38" y="22" font-size="10" fill="#db2777">♫</text>
+                        </g>
+                    </svg>
+                    `;
+                case "planta_sembrar":
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <rect x="25" y="55" width="50" height="35" rx="5" fill="#f97316" stroke="#000" stroke-width="3"/>
+                        <ellipse cx="50" cy="55" rx="25" ry="8" fill="#78350f" stroke="#000" stroke-width="3"/>
+                        <g transform="translate(20, 10)">
+                            <rect x="0" y="10" width="20" height="25" fill="#3b82f6" stroke="#000" stroke-width="2"/>
+                            <circle cx="28" cy="22" r="10" fill="#fbcfe8" stroke="#000" stroke-width="2"/>
+                            <rect x="32" y="15" width="10" height="6" rx="3" fill="#fbcfe8" stroke="#000" stroke-width="1.5"/>
+                            <rect x="34" y="22" width="8" height="6" rx="3" fill="#fbcfe8" stroke="#000" stroke-width="1.5"/>
+                        </g>
+                        <ellipse cx="50" cy="38" r="4" fill="#000" class="animate-bounce"/>
+                        <line x1="50" y1="20" x2="50" y2="30" stroke="#94a3b8" stroke-width="2" stroke-dasharray="3 3"/>
+                    </svg>
+                    `;
+                case "planta_regar":
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <rect x="25" y="60" width="50" height="30" rx="5" fill="#f97316" stroke="#000" stroke-width="3"/>
+                        <ellipse cx="50" cy="60" rx="25" ry="6" fill="#78350f" stroke="#000" stroke-width="3"/>
+                        <path d="M 50,60 Q 48,45 42,42 Q 48,42 50,60" fill="#22c55e" stroke="#15803d" stroke-width="1.5"/>
+                        <path d="M 50,60 Q 52,45 58,42 Q 52,42 50,60" fill="#22c55e" stroke="#15803d" stroke-width="1.5"/>
+                        <g transform="translate(10, 10)">
+                            <rect x="5" y="15" width="30" height="20" rx="5" fill="#3b82f6" stroke="#000" stroke-width="2"/>
+                            <path d="M 32,25 L 50,15 L 52,19 L 34,29 Z" fill="#93c5fd" stroke="#000" stroke-width="2"/>
+                            <circle cx="52" cy="17" r="4" fill="#475569"/>
+                        </g>
+                        <circle cx="64" cy="35" r="2.5" fill="#0ea5e9"/>
+                        <circle cx="58" cy="45" r="2.5" fill="#0ea5e9"/>
+                        <circle cx="68" cy="48" r="2" fill="#0ea5e9"/>
+                    </svg>
+                    `;
+                case "planta_flor":
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <rect x="30" y="70" width="40" height="25" rx="4" fill="#f97316" stroke="#000" stroke-width="3"/>
+                        <ellipse cx="50" cy="70" rx="20" ry="5" fill="#78350f" stroke="#000" stroke-width="3"/>
+                        <path d="M 50,70 L 50,35" stroke="#16a34a" stroke-width="4" stroke-linecap="round" fill="none"/>
+                        <circle cx="50" cy="18" r="10" fill="#facc15" stroke="#ca8a04" stroke-width="1.5"/>
+                        <circle cx="50" cy="52" r="10" fill="#facc15" stroke="#ca8a04" stroke-width="1.5"/>
+                        <circle cx="33" cy="35" r="10" fill="#facc15" stroke="#ca8a04" stroke-width="1.5"/>
+                        <circle cx="67" cy="35" r="10" fill="#facc15" stroke="#ca8a04" stroke-width="1.5"/>
+                        <circle cx="38" cy="23" r="10" fill="#facc15" stroke="#ca8a04" stroke-width="1.5"/>
+                        <circle cx="62" cy="23" r="10" fill="#facc15" stroke="#ca8a04" stroke-width="1.5"/>
+                        <circle cx="38" cy="47" r="10" fill="#facc15" stroke="#ca8a04" stroke-width="1.5"/>
+                        <circle cx="62" cy="47" r="10" fill="#facc15" stroke="#ca8a04" stroke-width="1.5"/>
+                        <circle cx="50" cy="35" r="14" fill="#78350f" stroke="#000" stroke-width="2"/>
+                        <text x="18" y="25" font-size="12" fill="#facc15" class="animate-pulse">★</text>
+                        <text x="82" y="30" font-size="10" fill="#facc15" class="animate-pulse">★</text>
+                        <text x="25" y="60" font-size="14" fill="#facc15" class="animate-pulse">★</text>
+                    </svg>
+                    `;
+                case "caracol_dormir":
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <rect x="0" y="80" width="100" height="20" fill="#1e293b" />
+                        <circle cx="50" cy="65" r="22" fill="#fcd34d" stroke="#000" stroke-width="3"/>
+                        <path d="M50,65 Q65,65 50,50" fill="none" stroke="#ca8a04" stroke-width="3"/>
+                        <text x="75" y="35" font-family="Bangers" font-size="16" fill="#fbbf24" class="animate-pulse">Z</text>
+                        <text x="82" y="25" font-family="Bangers" font-size="12" fill="#fbbf24" class="animate-pulse">z</text>
+                    </svg>
+                    `;
+                case "caracol_entrenar":
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <rect x="15" y="55" width="40" height="15" rx="7" fill="#f59e0b" stroke="#000" stroke-width="3" transform="rotate(-10 35 62)"/>
+                        <circle cx="65" cy="55" r="20" fill="#fbbf24" stroke="#000" stroke-width="3"/>
+                        <path d="M65,55 Q75,55 65,45" fill="none" stroke="#d97706" stroke-width="2"/>
+                        <rect x="18" y="51" width="15" height="4" fill="#ef4444" transform="rotate(-10 35 62)"/>
+                        <path d="M 40,40 Q43,45 40,48 Q37,45 40,40" fill="#38bdf8"/>
+                    </svg>
+                    `;
+                case "caracol_ganar":
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <rect x="75" y="20" width="15" height="60" fill="#fff" stroke="#000" stroke-width="2"/>
+                        <rect x="75" y="20" width="7" height="10" fill="#000"/>
+                        <rect x="82" y="30" width="8" height="10" fill="#000"/>
+                        <rect x="75" y="40" width="7" height="10" fill="#000"/>
+                        <rect x="82" y="50" width="8" height="10" fill="#000"/>
+                        <rect x="25" y="60" width="40" height="15" rx="7" fill="#f59e0b" stroke="#000" stroke-width="3"/>
+                        <circle cx="45" cy="55" r="18" fill="#fbbf24" stroke="#000" stroke-width="3"/>
+                        <polygon points="35,32 40,22 45,28 50,22 55,32" fill="#fbbf24" stroke="#000" stroke-width="2"/>
+                    </svg>
+                    `;
+                case "globo_inflar":
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <circle cx="35" cy="60" r="16" fill="#fbcfe8" stroke="#000" stroke-width="2.5"/>
+                        <path d="M 25,60 Q 35,50 45,60" fill="none" stroke="#78350f" stroke-width="3"/>
+                        <ellipse cx="70" cy="45" rx="20" ry="24" fill="#ef4444" stroke="#b91c1c" stroke-width="3"/>
+                        <path d="M66,68 L74,68 L70,74 Z" fill="#ef4444" stroke="#b91c1c" stroke-width="2"/>
+                    </svg>
+                    `;
+                case "globo_volar":
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <circle cx="20" cy="30" r="15" fill="#f1f5f9" opacity="0.6"/>
+                        <circle cx="85" cy="40" r="18" fill="#f1f5f9" opacity="0.6"/>
+                        <ellipse cx="50" cy="40" rx="16" ry="20" fill="#ef4444" stroke="#b91c1c" stroke-width="3"/>
+                        <path d="M47,59 L53,59 L50,64 Z" fill="#ef4444" stroke="#b91c1c" stroke-width="2"/>
+                        <line x1="50" y1="64" x2="50" y2="75" stroke="#94a3b8" stroke-width="2"/>
+                        <path d="M50,75 Q55,85 45,95" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    `;
+                case "globo_pinchar":
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <circle cx="30" cy="50" r="12" fill="#38bdf8" stroke="#0284c7" stroke-width="2"/>
+                        <polygon points="40,48 55,50 40,54" fill="#facc15" stroke="#ca8a04" stroke-width="2"/>
+                        <path d="M 25,40 Q 30,20 20,15" fill="none" stroke="#0284c7" stroke-width="3"/>
+                        <g stroke="#ef4444" stroke-width="3" stroke-linecap="round">
+                            <line x1="60" y1="50" x2="50" y2="40"/>
+                            <line x1="75" y1="35" x2="85" y2="25"/>
+                            <line x1="80" y1="60" x2="90" y2="70"/>
+                            <line x1="65" y1="65" x2="60" y2="75"/>
+                            <text x="58" y="55" font-family="Bangers" font-size="20" fill="#facc15">POP!</text>
+                        </g>
+                    </svg>
+                    `;
+                case "arena_balde":
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <path d="M10,85 Q50,70 90,85 Z" fill="#fef08a" stroke="#ca8a04" stroke-width="2"/>
+                        <rect x="35" y="45" width="30" height="35" rx="4" fill="#3b82f6" stroke="#1d4ed8" stroke-width="3" transform="rotate(45 50 62)"/>
+                        <path d="M28,42 Q45,35 52,52" fill="none" stroke="#1d4ed8" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                    `;
+                case "arena_castillo":
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <rect x="25" y="50" width="50" height="35" fill="#fef08a" stroke="#ca8a04" stroke-width="3"/>
+                        <rect x="25" y="40" width="10" height="10" fill="#fef08a" stroke="#ca8a04" stroke-width="3"/>
+                        <rect x="45" y="40" width="10" height="10" fill="#fef08a" stroke="#ca8a04" stroke-width="3"/>
+                        <rect x="65" y="40" width="10" height="10" fill="#fef08a" stroke="#ca8a04" stroke-width="3"/>
+                        <path d="M42,85 L42,65 A8,8 0 0 1 58,65 L58,85 Z" fill="#ca8a04" stroke="#000" stroke-width="2"/>
+                        <line x1="50" y1="40" x2="50" y2="15" stroke="#78350f" stroke-width="2"/>
+                        <polygon points="50,15 65,20 50,25" fill="#ef4444"/>
+                    </svg>
+                    `;
+                case "arena_ola":
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <path d="M 0,90 Q 30,30 65,40 T 100,20 L 100,100 L 0,100 Z" fill="#60a5fa" stroke="#1d4ed8" stroke-width="3"/>
+                        <path d="M 10,75 Q 35,25 60,35" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+                        <circle cx="80" cy="65" r="4" fill="#fef08a" opacity="0.8"/>
+                        <text x="15" y="45" font-family="Bangers" font-size="14" fill="#fff" class="animate-pulse">SPLASH!</text>
+                    </svg>
+                    `;
+            }
+        }
+
+        // --- 4. GESTIÓN DE NAVEGACIÓN Y COMPORTAMIENTO (Scope Global en window) ---
+        window.showScreen = function(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const target = document.getElementById(screenId);
+            if (target) target.classList.add('active');
+        };
+
+        window.readAnecdote = function() {
+            if (currentMovie) {
+                const modal = document.getElementById('feedback-modal');
+                document.getElementById('feedback-icon').innerText = "📖";
+                document.getElementById('feedback-title').innerText = "El Guion de la Historia";
+                document.getElementById('feedback-title').className = "font-cinema text-3xl md:text-5xl text-cinema-gold mb-4 uppercase tracking-widest";
+                document.getElementById('feedback-reason').innerText = currentMovie.narration;
+                
+                const btn = document.getElementById('modal-action-btn');
+                btn.innerText = "¡ENTENDIDO!";
+                btn.onclick = () => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                };
+                
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        };
+
+        window.openTheory = function() {
+            window.showScreen('screen-theory');
+        };
+
+        window.startGame = function() {
+            score = 0;
+            currentLevel = 0;
+            isProcessing = false;
+            
+            gameQueue = shuffleArray([...moviesDatabase]);
+            
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('flex');
+            
+            updateUI();
+            window.showScreen('screen-game');
+            loadLevel();
+        };
+
+        window.handleSlotClick = function(slotIndex) {
+            if (isProcessing) return;
+
+            const slot = document.getElementById(`slot-${slotIndex}`);
+            const currentSlottedId = playerSequence[slotIndex];
+
+            if (currentSlottedId) {
+                // RETIRAR TARJETA DEL SLOT
+                playerSequence[slotIndex] = null;
+                
+                slot.classList.remove('filled');
+                slot.querySelector('.slot-content').innerHTML = `
+                    <div class="text-gray-600 text-3xl font-cinema">?</div>
+                `;
+
+                // Desbloquear en inventario
+                const invCard = document.getElementById(`card-${currentSlottedId}`);
+                if (invCard) invCard.classList.remove('locked');
+
+                updateProjectButton();
+            } 
+            else if (selectedSceneId) {
+                // ASIGNAR TARJETA AL SLOT
+                playerSequence[slotIndex] = selectedSceneId;
+
+                slot.classList.add('filled');
+                
+                // Colocar clon visual de la película
+                slot.querySelector('.slot-content').innerHTML = `
+                    <div class="w-20 h-20 md:w-24 md:h-24 p-1 bg-white border-2 border-black rounded-lg overflow-hidden pop-in shadow-md">
+                        ${getSceneSVG(selectedSceneId)}
+                    </div>
+                `;
+
+                // Bloquear la tarjeta en el inventario
+                selectedElement.classList.remove('selected');
+                selectedElement.classList.add('locked');
+
+                selectedSceneId = null;
+                selectedElement = null;
+
+                updateProjectButton();
+            }
+        };
+
+        window.projectMovie = function() {
+            if (isProcessing) return;
+            isProcessing = true;
+
+            // Validar orden de los Pasos
+            let isCorrect = true;
+            for (let i = 0; i < 3; i++) {
+                const sceneIdInSlot = playerSequence[i];
+                const sceneObj = currentMovie.scenes.find(s => s.id === sceneIdInSlot);
+                if (sceneObj.step !== (i + 1)) {
+                    isCorrect = false;
+                }
+            }
+
+            if (isCorrect) {
+                // ÉXITO! Lanzar simulación
+                triggerTheaterProjection();
+            } else {
+                // ERROR (Toma falsa)
+                const container = document.getElementById('recurso-wp-cineasta');
+                container.classList.add('shake-error');
+                setTimeout(() => container.classList.remove('shake-error'), 500);
+
+                setTimeout(() => {
+                    showFeedback(false, "¡Corte! ¡Toma Falsa!", currentMovie.blooperHint);
+                }, 500);
+            }
+        };
+
+        window.closeFeedback = function() {
+            const modal = document.getElementById('feedback-modal');
+            const action = modal.dataset.action;
+
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            
+            if (action === "next") {
+                currentLevel++;
+                loadLevel();
+            } else {
+                isProcessing = false;
+                
+                // Limpiar tablero de montaje
+                for(let i=0; i<3; i++) {
+                    playerSequence[i] = null;
+                    const slot = document.getElementById(`slot-${i}`);
+                    slot.classList.remove('filled');
+                    slot.querySelector('.slot-content').innerHTML = `
+                        <div class="text-gray-600 text-3xl font-cinema">?</div>
+                    `;
+                }
+                
+                document.querySelectorAll('.film-strip-card').forEach(b => {
+                    b.classList.remove('locked', 'selected');
+                });
+
+                updateProjectButton();
+            }
+        };
+
+        window.exitGame = function() {
+            if (confirm("¿Seguro que deseas salir del set de grabación? Perderás tu progreso.")) {
+                currentLevel = 0;
+                isProcessing = false;
+                window.showScreen('screen-start');
+            }
+        };
+
+        // --- 5. LÓGICA DE SOPORTE INTERNA ---
+        function selectFilmCard(sceneId, element) {
+            if (isProcessing || element.classList.contains('locked')) return;
+
+            // Quitar selección anterior
+            if (selectedElement) {
+                selectedElement.classList.remove('selected');
+            }
+
+            if (selectedSceneId === sceneId) {
+                selectedSceneId = null;
+                selectedElement = null;
+            } else {
+                selectedSceneId = sceneId;
+                selectedElement = element;
+                selectedElement.classList.add('selected');
+                
+                // Auto-ubicar en el primer slot libre
+                const firstFreeSlot = playerSequence.indexOf(null);
+                if (firstFreeSlot > -1) {
+                    window.handleSlotClick(firstFreeSlot);
+                }
+            }
+        }
+
+        function updateProjectButton() {
+            const btn = document.getElementById('btn-project');
+            const isTimelineFilled = !playerSequence.includes(null);
+
+            if (isTimelineFilled) {
+                btn.disabled = false;
+                btn.classList.add('animate__pulse', 'animate__infinite');
+            } else {
+                btn.disabled = true;
+                btn.classList.remove('animate__pulse', 'animate__infinite');
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('score-display').innerText = score;
+        }
+
+        function loadLevel() {
+            if (currentLevel >= gameQueue.length) {
+                setTimeout(() => endGame(), 600);
+                return;
+            }
+
+            currentMovie = gameQueue[currentLevel];
+            isProcessing = false;
+            playerSequence = [null, null, null];
+
+            // Limpiar Slots
+            for(let i=0; i<3; i++) {
+                const slot = document.getElementById(`slot-${i}`);
+                slot.classList.remove('filled');
+                slot.querySelector('.slot-content').innerHTML = `
+                    <div class="text-gray-600 text-3xl font-cinema">?</div>
+                `;
+            }
+
+            // Cargar inventario
+            const inventoryContainer = document.getElementById('film-inventory');
+            inventoryContainer.innerHTML = '';
+
+            const shuffledScenes = shuffleArray([...currentMovie.scenes]);
+
+            shuffledScenes.forEach((scene, index) => {
+                const card = document.createElement('div');
+                card.className = 'film-strip-card animate__animated animate__fadeInUp';
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.id = `card-${scene.id}`;
+                
+                card.innerHTML = `
+                    <div class="w-full h-3/4 flex items-center justify-center p-1 bg-white border-2 border-black rounded-lg overflow-hidden">
+                        ${getSceneSVG(scene.id)}
+                    </div>
+                    <span class="font-body font-black text-[10px] md:text-xs text-gray-800 uppercase tracking-widest text-center mt-2 block w-full truncate">${scene.text}</span>
+                `;
+                
+                card.onclick = () => selectFilmCard(scene.id, card);
+                inventoryContainer.appendChild(card);
+            });
+
+            // Mostrar guion inmediatamente
+            setTimeout(() => {
+                window.readAnecdote();
+            }, 800);
+
+            updateProjectButton();
+        }
+
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        async function triggerTheaterProjection() {
+            const theater = document.getElementById('theater-projection');
+            const screen = document.getElementById('projection-screen');
+            const narration = document.getElementById('projection-narration');
+
+            theater.style.display = 'flex';
+            
+            // Ejecución paso a paso secuencial
+            for (let i = 0; i < 3; i++) {
+                const stepScene = currentMovie.scenes.find(s => s.step === (i + 1));
+                const sceneId = stepScene.id;
+                
+                // Asegurar lectura robusta con fallback en caso de propiedades omitidas
+                const textNarrated = stepScene.voice || stepScene.text || "Siguiente paso de la historia.";
+
+                // Cambiar proyector
+                screen.innerHTML = `
+                    <div class="w-full h-full p-4 flex items-center justify-center animate__animated animate__zoomIn">
+                        ${getSceneSVG(sceneId)}
+                    </div>
+                `;
+
+                // Mostrar texto del paso
+                narration.innerText = textNarrated;
+
+                // Esperar 3.5 segundos para dar tiempo a leer
+                await new Promise(r => setTimeout(r, 3500));
+            }
+
+            // Finalizar Proyección y mostrar Modal Éxito
+            theater.style.display = 'none';
+            score++;
+            updateUI();
+
+            setTimeout(() => {
+                showFeedback(true, "¡Excelente Rodaje! 🌟", `La secuencia lógica de <strong>${currentMovie.title}</strong> ha sido grabada de forma perfecta.`);
+            }, 400);
+        }
+
+        function showFeedback(isSuccess, titleText, reasonText) {
+            const modal = document.getElementById('feedback-modal');
+            const card = document.getElementById('feedback-card');
+            const icon = document.getElementById('feedback-icon');
+            const title = document.getElementById('feedback-title');
+            const reason = document.getElementById('feedback-reason');
+
+            card.classList.remove('animate__bounceIn', 'border-t-cinema-green', 'border-t-cinema-red');
+            void card.offsetWidth; // Reflow
+
+            if (isSuccess) {
+                icon.innerText = "🎬🏆";
+                title.innerText = titleText;
+                title.className = "font-cinema text-3xl md:text-5xl text-cinema-green mb-4 uppercase tracking-widest";
+                card.classList.add('border-t-cinema-green');
+                modal.dataset.action = "next";
+            } else {
+                icon.innerText = "🎬❌";
+                title.innerText = titleText;
+                title.className = "font-cinema text-3xl md:text-5xl text-cinema-red mb-4 uppercase tracking-widest";
+                card.classList.add('border-t-cinema-red');
+                modal.dataset.action = "retry";
+            }
+
+            reason.innerHTML = isSuccess ? reasonText : titleText; // Se usa el texto del error si falla
+            
+            const btn = document.getElementById('modal-action-btn');
+            btn.innerText = isSuccess ? "SIGUIENTE ESCENA ➡" : "REPETIR TOMA 🔄";
+            btn.onclick = () => window.closeFeedback();
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            card.classList.add('animate__bounceIn');
+        }
+
+        function endGame() {
+            const screenResult = document.getElementById('screen-result');
+            screenResult.classList.remove('hidden');
+            screenResult.classList.add('flex');
+        }
+    </script>
+</body>
+</html>

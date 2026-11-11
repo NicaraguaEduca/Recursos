@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sinergia: El Salto del Equipo 🛶</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Public+Sans:wght@400;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { 
+            --sky: #87CEEB; 
+            --sand: #F3E5AB;
+            --water: #0077BE;
+            --comic-border: 4px solid #000;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #1a1a1a; overflow: hidden; height: 100vh; display: flex; flex-direction: column; font-family: 'Public Sans', sans-serif; }
+
+        .panel-principal { 
+            flex: 1; position: relative; overflow: hidden; 
+            background: var(--sky); border: 8px solid #000; margin: 15px;
+            box-shadow: 15px 15px 0px #000;
+        }
+
+        /* Efecto de temblor cuando se hace un gran esfuerzo */
+        .camara-temblando { animation: camaraShake 0.1s infinite; }
+        @keyframes camaraShake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            50% { transform: translate(-1px, -1px) rotate(-0.5deg); }
+            100% { transform: translate(1px, -1px) rotate(0deg); }
+        }
+
+        .textura-puntos {
+            position: absolute; inset: 0; opacity: 0.15; pointer-events: none;
+            background-image: radial-gradient(#000 1.5px, transparent 1.5px);
+            background-size: 12px 12px;
+        }
+
+        /* --- AMBIENTE ANIMADO --- */
+        .nube { position: absolute; background: #fff; border: 3px solid #000; border-radius: 50px; z-index: 10; animation: flotar linear infinite; }
+        .nube::before { content: ''; position: absolute; background: #fff; border: 3px solid #000; border-radius: 50%; width: 50px; height: 50px; top: -25px; left: 15px; border-bottom: none; }
+        .nube::after { content: ''; position: absolute; background: #fff; border: 3px solid #000; border-radius: 50%; width: 40px; height: 40px; top: -15px; right: 10px; border-bottom: none; }
+        .nube-blanca { position: absolute; inset: 2px; background: #fff; border-radius: 50px; z-index: 2; }
+        
+        @keyframes flotar { from { transform: translateX(100vw); } to { transform: translateX(-200px); } }
+
+        .suelo { 
+            position: absolute; bottom: 0; width: 100%; height: 35%; 
+            background: var(--sand); border-top: var(--comic-border); z-index: 20;
+        }
+        
+        .mar {
+            position: absolute; bottom: 0; right: 0; width: 25%; height: 35%;
+            background: var(--water); border-left: var(--comic-border); z-index: 22;
+        }
+
+        /* --- BOCADILLOS --- */
+        .bocadillo {
+            position: absolute; background: #fff; border: 3px solid #000;
+            padding: 12px 18px; border-radius: 15px; font-weight: 900;
+            font-size: 0.85rem; z-index: 100; max-width: 180px; line-height: 1.2;
+            box-shadow: 6px 6px 0px rgba(0,0,0,1);
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+        .bocadillo::after {
+            content: ''; position: absolute; bottom: -12px; left: 20px;
+            border-width: 12px 12px 0 0; border-style: solid;
+            border-color: #000 transparent transparent transparent;
+        }
+
+        /* --- PERSONAJES --- */
+        .personaje-wrapper { position: absolute; transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 30; }
+        .svg-hero { width: 90px; height: 120px; filter: drop-shadow(5px 5px 0px #000); position: relative; }
+        
+        .bote-svg { position: absolute; width: 250px; height: 100px; transition: left 0.1s linear; z-index: 25; filter: drop-shadow(8px 8px 0px rgba(0,0,0,0.4)); }
+        
+        /* Efecto Flotar del bote al ganar */
+        .barco-flotando { animation: flotarBarco 2s ease-in-out infinite alternate; }
+        @keyframes flotarBarco { 0% { transform: translateY(0px) rotate(0deg); } 100% { transform: translateY(-8px) rotate(-3deg); } }
+
+        /* Esfuerzo */
+        .inclinado-empuje { transform: rotate(20deg) translateY(5px); }
+
+        /* Efectos de Partículas (Cómic) */
+        .gotas-sudor { position: absolute; top: 10px; right: 20px; font-size: 1.5rem; opacity: 0; transition: 0.1s; z-index: 40; }
+        .inclinado-empuje .gotas-sudor { animation: sudar 0.5s infinite; }
+        @keyframes sudar { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-15px) scale(1.2); opacity: 0; } }
+
+        .polvo-pie { position: absolute; bottom: 0; left: -10px; font-size: 1.5rem; opacity: 0; z-index: 20; filter: grayscale(1) brightness(2); }
+        .inclinado-empuje .polvo-pie { animation: humo 0.4s infinite; }
+        @keyframes humo { 0% { transform: translateX(0) scale(0.5); opacity: 1; } 100% { transform: translateX(-20px) scale(1.5); opacity: 0; } }
+
+        .onomatopeya {
+            position: absolute; font-family: 'Bangers', cursive; font-size: 3rem;
+            color: #ffde00; text-shadow: 4px 4px 0px #e60000;
+            z-index: 110; pointer-events: none;
+        }
+
+        /* --- UI --- */
+        .comic-footer { 
+            background: #ffde00; border-top: 8px solid #000; padding: 20px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .btn-comic {
+            background: #e60000; color: #fff; border: 5px solid #000;
+            padding: 12px 40px; font-family: 'Bangers', cursive; font-size: 1.8rem;
+            cursor: pointer; box-shadow: 6px 6px 0px #000; transition: 0.1s;
+        }
+        .btn-comic:active { transform: translate(3px, 3px); box-shadow: 0px 0px 0px #000; }
+        .btn-comic:disabled { background: #777; box-shadow: 3px 3px 0px #000; cursor: not-allowed; }
+
+        .narrador {
+            background: #000; color: #fff; padding: 8px 25px; font-weight: 900;
+            transform: skew(-15deg); border: 3px solid #ffde00;
+            box-shadow: 5px 5px 0 rgba(0,0,0,0.3);
+        }
+
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body x-data="comicGame()">
+
+    <!-- PORTADA DEL CÓMIC (PANTALLA DE INICIO) -->
+    <template x-if="fase === 'inicio'">
+        <div style="position:fixed; inset:0; background:var(--sky); z-index:1000; display:flex; align-items:center; justify-content:center; padding: 20px;">
+            <div class="textura-puntos"></div>
+            <div style="background:#fff; border:10px solid #000; padding:40px; text-align: left; max-width: 600px; box-shadow: 15px 15px 0 #0077BE; position: relative; transform: rotate(-1deg);">
+                <h1 style="font-family: 'Bangers'; font-size: 3.5rem; color: #0077BE; margin-bottom: 15px; line-height: 1.1;">EL BOTE DE LA SINERGIA 🛶</h1>
+                
+                <div style="border: 4px solid #000; padding: 15px; margin-bottom: 20px; font-family: 'Public Sans', sans-serif; background: #ffde00;">
+                    <p style="margin-bottom: 8px;"><b>🎯 Objetivo:</b> Experimentar cómo la unión de esfuerzos individuales (sinergia) logra resultados que una persona sola no puede alcanzar.</p>
+                    <p style="margin-bottom: 8px;"><b>📖 Contenido:</b> Trabajo Colaborativo e Interdependencia.</p>
+                    <p><b>🎓 Grado Dirigido:</b> 4to a 6to de Primaria.</p>
+                </div>
+
+                <p style="font-weight: 900; font-size: 1.1rem; margin-bottom: 25px; text-align: center;">
+                    Luis está atascado. ¡Reúne al equipo y ayúdalo a llegar al mar!
+                </p>
+                
+                <div style="text-align: center;">
+                    <button @click="fase = 'jugando'" class="btn-comic" style="background: #e60000; color: #fff;">¡ABRIR CÓMIC!</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <div class="panel-principal" :class="empujando && todosListos && !ganado ? 'camara-temblando' : ''">
+        <div class="textura-puntos"></div>
+        
+        <!-- Nubes animadas en el fondo -->
+        <div class="nube" style="width: 100px; height: 30px; top: 10%; animation-duration: 25s; left: 100vw;"><div class="nube-blanca"></div></div>
+        <div class="nube" style="width: 150px; height: 40px; top: 25%; animation-duration: 40s; animation-delay: -10s; left: 100vw;"><div class="nube-blanca"></div></div>
+        
+        <!-- Títulos de Capítulos Dinámicos -->
+        <div class="narrador" style="position:absolute; top:25px; left:25px; z-index:150;" 
+             x-text="todosListos ? 'CAPÍTULO 2: ¡MANOS A LA OBRA!' : 'CAPÍTULO 1: ¡AYUDA!'">
+        </div>
+
+        <div class="suelo"></div>
+        <div class="mar"></div>
+
+        <!-- El Bote (Agregamos animación al ganar) -->
+        <div class="bote-svg" :class="ganado && 'barco-flotando'" :style="'left:' + (35 + pos) + '%; bottom: 30%'">
+            <svg viewBox="0 0 250 100">
+                <path d="M20 30 L230 30 L200 85 L50 85 Z" fill="#5D2E0A" />
+                <path d="M25 35 L225 35 L195 80 L55 80 Z" fill="#8B4513" stroke="#000" stroke-width="4"/>
+                <text x="85" y="60" font-family="Bangers" font-size="22" fill="#F3E5AB" stroke="#000" stroke-width="0.5">RESILIENCIA</text>
+            </svg>
+        </div>
+
+        <!-- LUIS -->
+        <div class="personaje-wrapper" 
+             :style="equipo.juan ? `left: ${pos + 29}%; bottom: 33%` : `left: ${pos + 42}%; bottom: 36%` ">
+            
+            <div class="bocadillo" style="top: -130px; left: 0px; width: 220px;" x-show="!equipo.juan">
+                ¡Desde aquí adentro veo que el río está lejos! ¡Ayuda!
+            </div>
+            
+            <div class="svg-hero" :class="empujando && 'inclinado-empuje'">
+                <div class="gotas-sudor">💦</div>
+                <div class="polvo-pie">💨</div>
+                <svg viewBox="0 0 100 130">
+                    <path d="M35 105 L30 125 M65 105 L70 125" stroke="#000" stroke-width="7" stroke-linecap="round" x-show="equipo.juan"/>
+                    <rect x="30" y="65" width="40" height="40" rx="8" fill="#3b82f6" stroke="#000" stroke-width="4"/>
+                    <circle cx="50" cy="35" r="24" fill="#FFDBAC" stroke="#000" stroke-width="4"/>
+                    <!-- Cara esfuerzo -->
+                    <path d="M40 32 L45 35 M60 32 L55 35" stroke="#000" stroke-width="2" x-show="empujando"/>
+                    <path d="M30 25 Q50 5 70 25" fill="#4B2C20" stroke="#000" stroke-width="2"/>
+                    <path d="M65 85 L95 75" stroke="#000" stroke-width="8" stroke-linecap="round" x-show="empujando"/>
+                    <path d="M35 75 L15 65" stroke="#000" stroke-width="8" stroke-linecap="round" x-show="!equipo.juan"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- JUAN -->
+        <div class="personaje-wrapper" @click="unir('juan')" :style="equipo.juan ? `left: ${pos + 24}%; bottom: 33%` : 'left: 8%; bottom: 5%'">
+            <div class="bocadillo" style="top: -110px; left: 10px;" x-show="!equipo.juan">
+                ¡Luis, cuenta conmigo! ¡Voy a bajar contigo a empujar!
+            </div>
+            <div class="svg-hero" :class="empujando && 'inclinado-empuje'">
+                <div class="gotas-sudor">💦</div>
+                <div class="polvo-pie" style="animation-delay: 0.1s;">💨</div>
+                <svg viewBox="0 0 100 130">
+                    <path d="M35 105 L30 125 M65 105 L70 125" stroke="#000" stroke-width="7" stroke-linecap="round"/>
+                    <rect x="30" y="65" width="40" height="40" rx="8" fill="#ef4444" stroke="#000" stroke-width="4"/>
+                    <circle cx="50" cy="35" r="24" fill="#FFDBAC" stroke="#000" stroke-width="4"/>
+                    <path d="M40 32 L45 35 M60 32 L55 35" stroke="#000" stroke-width="2" x-show="empujando"/>
+                    <path d="M30 20 L70 20" stroke="#000" stroke-width="10" stroke-linecap="round"/>
+                    <path d="M65 85 L95 75" stroke="#000" stroke-width="8" stroke-linecap="round" x-show="empujando"/>
+                    <path d="M30 85 L10 80" stroke="#000" stroke-width="4" stroke-linecap="round" x-show="!empujando"/>
+                    <circle cx="10" cy="80" r="5" fill="#FFDBAC" stroke="#000" stroke-width="2" x-show="!empujando"/>
+                </svg>
+            </div>
+            <div class="narrador" style="font-size: 0.7rem; margin-top: 5px;" x-show="!equipo.juan">LLAMAR A JUAN</div>
+        </div>
+
+        <!-- ANA -->
+        <div class="personaje-wrapper" @click="unir('ana')" :style="equipo.ana ? `left: ${pos + 19}%; bottom: 33%` : 'left: 55%; bottom: 10%'">
+            <div class="bocadillo" style="top: -120px; right: 0px;" x-show="equipo.juan && !equipo.ana">
+                ¡Oigan! ¡Si me uno yo, el bote llegará al mar rápido!
+            </div>
+            <div class="svg-hero" :class="empujando && 'inclinado-empuje'">
+                <div class="gotas-sudor">💦</div>
+                <div class="polvo-pie" style="animation-delay: 0.2s;">💨</div>
+                <svg viewBox="0 0 100 130">
+                    <path d="M35 105 L30 125 M65 105 L70 125" stroke="#000" stroke-width="7" stroke-linecap="round"/>
+                    <path d="M25 25 Q15 50 25 80 M75 25 Q85 50 75 80" stroke="#4B2C20" stroke-width="14" stroke-linecap="round" fill="none"/>
+                    <rect x="30" y="65" width="40" height="40" rx="8" fill="#a855f7" stroke="#000" stroke-width="4"/>
+                    <circle cx="50" cy="35" r="24" fill="#FFDBAC" stroke="#000" stroke-width="4"/>
+                    <path d="M40 32 L45 35 M60 32 L55 35" stroke="#000" stroke-width="2" x-show="empujando"/>
+                    <path d="M65 85 L95 75" stroke="#000" stroke-width="8" stroke-linecap="round" x-show="empujando"/>
+                </svg>
+            </div>
+            <div class="narrador" style="font-size: 0.7rem; margin-top: 5px;" x-show="!equipo.ana && equipo.juan">PEDIR AYUDA A ANA</div>
+        </div>
+
+        <!-- Onomatopeyas y Efectos dinámicos -->
+        <div class="onomatopeya" style="top:35%; left:45%;" x-show="empujando && todosListos && !ganado" x-cloak>¡FUERZA!</div>
+        <div class="onomatopeya" style="top:40%; left:25%; font-size: 2rem;" x-show="empujando && todosListos && !ganado" x-cloak>¡GRRR!</div>
+        
+        <div class="onomatopeya" style="top:30%; left:60%; color:#fff; text-shadow: 4px 4px 0px #0077BE;" x-show="ganado" x-cloak>¡SPLASH! 💦</div>
+    </div>
+
+    <footer class="comic-footer">
+        <div style="flex: 1; padding-right: 20px;">
+            <p style="font-weight: 900; font-size: 1.1rem; color: #000;" x-text="guia"></p>
+        </div>
+        
+        <button class="btn-comic" 
+            @mousedown="empujando = true" @mouseup="empujando = false"
+            @touchstart.prevent="empujando = true" @touchend.prevent="empujando = false"
+            :disabled="!todosListos">
+            ¡EMPUJAR!
+        </button>
+    </footer>
+
+    <!-- FINAL MEJORADO -->
+    <template x-if="ganado">
+        <div style="position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:2000; display:flex; align-items:center; justify-content:center; padding: 20px;">
+            <div style="background:#fff; border:10px solid #000; padding:40px; text-align: center; max-width: 650px; box-shadow: 15px 15px 0 #ef4444; position: relative;">
+                <h1 style="font-family: 'Bangers'; font-size: 4rem; color: #e60000; line-height: 1;">¡LO LOGRARON!</h1>
+                
+                <div style="background: #f3f4f6; border: 3px dashed #000; margin: 25px 0; padding: 20px;">
+                    <p style="font-weight: 900; margin-bottom: 15px; font-size: 1.25rem; line-height: 1.4;">
+                        Luis entendió que para mover el bote de la <span style="color:#8B4513">"Resiliencia"</span>, no podía hacerlo solo desde arriba. Bajó a la arena y trabajó hombro con hombro con sus amigos.
+                    </p>
+                    <p style="font-family: 'Bangers'; font-size: 2.2rem; color: #0077BE; transform: rotate(-1deg); margin-top: 10px;">
+                        ¡EN LA UNIÓN ESTÁ LA FUERZA!
+                    </p>
+                </div>
+
+                <p style="font-weight: 400; font-size: 1rem; color: #666; font-style: italic; margin-bottom: 25px;">
+                    Cuando compartimos el peso del problema, la solución llega volando.
+                </p>
+
+                <button @click="location.reload()" class="btn-comic">REINICIAR HISTORIA</button>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        function comicGame() {
+            return {
+                fase: 'inicio',
+                pos: 0,
+                equipo: { juan: false, ana: false },
+                empujando: false,
+                ganado: false,
+                guia: "Luis está solo dentro del barco. Haz clic en Juan para invitarlo.",
+                
+                get todosListos() {
+                    return this.equipo.juan && this.equipo.ana;
+                },
+
+                unir(nombre) {
+                    if (this.equipo[nombre]) return;
+                    
+                    if (nombre === 'juan') {
+                        this.equipo.juan = true;
+                        this.guia = "¡Luis bajó a la arena! Ahora llama a Ana.";
+                    } else if (nombre === 'ana' && this.equipo.juan) {
+                        this.equipo.ana = true;
+                        this.guia = "¡EQUIPO EN POSICIÓN! Mantén presionado EMPUJAR.";
+                    }
+                },
+
+                init() {
+                    setInterval(() => {
+                        if (this.fase !== 'jugando') return;
+                        
+                        if (this.empujando && this.todosListos && !this.ganado) {
+                            this.pos += 1.0;
+                            if (this.pos >= 45) {
+                                this.ganado = true;
+                                this.empujando = false;
+                                confetti({ 
+                                    particleCount: 200, 
+                                    spread: 90,
+                                    origin: { y: 0.6 }
+                                });
+                            }
+                        }
+                    }, 50);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

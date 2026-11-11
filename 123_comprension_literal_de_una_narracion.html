@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trivia contra Reloj - Academia de Escritores</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Bangers&display=swap');
+
+        :root {
+            --primary: #4f46e5;
+            --secondary: #f59e0b;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --bg-dark: #1e1b4b;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-dark);
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .font-game { font-family: 'Bangers', system-ui; letter-spacing: 2px; }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+        }
+
+        .map-node {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 10;
+        }
+
+        .node-active { background: var(--secondary); transform: scale(1.2); box-shadow: 0 0 20px var(--secondary); }
+        .node-passed { background: var(--accent); }
+        .node-pending { background: #4b5563; }
+
+        .btn-option {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid transparent;
+        }
+        .btn-option:hover { transform: translateY(-3px); background: rgba(79, 70, 229, 0.3); border-color: var(--primary); }
+        .btn-option:active { transform: scale(0.95); }
+
+        .timer-bar {
+            height: 8px;
+            background: var(--danger);
+            transition: width 0.1s linear;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- Pantalla de Inicio -->
+    <div id="screen-start" class="fixed inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-gradient-to-br from-indigo-900 via-purple-900 to-black">
+        <h1 class="text-6xl md:text-8xl font-game text-yellow-400 mb-4 animate__animated animate__bounceIn">TRIVIA CONTRA RELOJ</h1>
+        <p class="text-xl md:text-2xl text-indigo-200 mb-8 max-w-2xl animate__animated animate__fadeIn animate__delay-1s">
+            ¡El Pergamino Sagrado ha sido robado! Solo un experto en <b>Lectura Literal</b> puede recuperarlo. Responde rápido para avanzar.
+        </p>
+        <button onclick="startGame()" class="bg-yellow-500 hover:bg-yellow-400 text-indigo-900 font-bold py-4 px-12 rounded-full text-2xl shadow-2xl transition transform hover:scale-110 active:scale-95 animate__animated animate__pulse animate__infinite">
+            ¡EMPEZAR DESAFÍO!
+        </button>
+    </div>
+
+    <!-- Pantalla de Juego -->
+    <div id="screen-game" class="hidden h-full flex flex-col p-4 md:p-8 relative">
+        
+        <!-- Header Info -->
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center gap-4">
+                <div class="glass-panel px-4 py-2 flex flex-col">
+                    <span class="text-xs text-indigo-300 uppercase font-bold">Puntuación</span>
+                    <span id="score" class="text-2xl font-game text-white">0</span>
+                </div>
+                <div class="glass-panel px-4 py-2 flex flex-col">
+                    <span class="text-xs text-indigo-300 uppercase font-bold">Vidas</span>
+                    <div id="lives" class="flex gap-1 text-red-500 text-xl">❤️❤️❤️</div>
+                </div>
+            </div>
+            
+            <div class="flex-grow mx-8">
+                <div class="w-full bg-gray-800 rounded-full overflow-hidden border border-gray-700 h-4">
+                    <div id="timer-bar" class="timer-bar w-full"></div>
+                </div>
+            </div>
+
+            <button onclick="exitGame()" class="text-gray-400 hover:text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- El Mapa Visual -->
+        <div class="glass-panel p-4 mb-6 relative h-24 flex items-center justify-around overflow-hidden">
+            <div class="absolute w-4/5 h-1 bg-white/10 top-1/2 -translate-y-1/2"></div>
+            <div id="map-nodes" class="w-full flex justify-around items-center">
+                <!-- Nodos generados por JS -->
+            </div>
+        </div>
+
+        <!-- Contenido Principal: Lectura y Preguntas -->
+        <div class="flex-grow flex flex-col md:flex-row gap-6 overflow-hidden">
+            <!-- Columna Texto -->
+            <div class="w-full md:w-5/12 glass-panel p-6 overflow-y-auto animate__animated animate__fadeInLeft">
+                <h2 class="text-2xl font-bold text-yellow-400 mb-4 border-b border-white/20 pb-2 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    El Artefacto de Leonardo
+                </h2>
+                <div id="reading-text" class="text-xl leading-relaxed text-indigo-50 bg-indigo-900/30 p-4 rounded-xl border border-white/5">
+                    Leonardo era un niño que vivía en una pequeña aldea rodeada de montañas azules. Un martes por la mañana, decidió construir un artefacto para alcanzar las manzanas más altas de su huerto. Utilizó tres cañas de bambú de dos metros cada una, una cuerda roja de lana y un pequeño cesto de mimbre que le había regalado su abuela Sofía el verano pasado.
+                </div>
+            </div>
+
+            <!-- Columna Trivia -->
+            <div id="trivia-container" class="w-full md:w-7/12 flex flex-col gap-4 justify-center animate__animated animate__fadeInRight">
+                <div class="glass-panel p-6 border-l-4 border-yellow-500 bg-indigo-800/40">
+                    <p id="question-text" class="text-2xl md:text-3xl font-bold leading-tight">¿Qué día de la semana decidió Leonardo construir su artefacto?</p>
+                </div>
+                <div id="options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Opciones generadas por JS -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Pantalla de Resultado -->
+    <div id="screen-result" class="hidden fixed inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-black/90 backdrop-blur-md">
+        <div id="result-card" class="glass-panel p-10 max-w-lg w-full animate__animated animate__zoomIn">
+            <h2 id="result-title" class="text-5xl font-game text-yellow-400 mb-4">¡VICTORIA!</h2>
+            <p id="result-msg" class="text-xl mb-8">Has recuperado el pergamino y demostrado que no se te escapa ningún detalle.</p>
+            <div class="flex flex-col gap-4">
+                <div class="text-3xl font-bold">Puntos: <span id="final-score" class="text-accent">0</span></div>
+                <button onclick="restartGame()" class="bg-indigo-600 hover:bg-indigo-500 py-3 px-8 rounded-full font-bold text-xl transition transform hover:scale-105">Jugar de nuevo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay de Feedback -->
+    <div id="feedback-overlay" class="pointer-events-none fixed inset-0 z-[60] flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div id="feedback-text" class="text-8xl font-game drop-shadow-2xl"></div>
+    </div>
+
+    <script>
+        // Preguntas reformuladas para el texto corto
+        const questions = [
+            {
+                q: "¿En qué lugar vivía el niño Leonardo?",
+                options: ["En una gran ciudad blanca", "En una aldea rodeada de montañas azules", "En una casa cerca de la playa", "En un bosque de pinos verdes"],
+                correct: 1
+            },
+            {
+                q: "¿Qué día decidió construir su invento?",
+                options: ["Un martes por la mañana", "Un miércoles por la tarde", "Un lunes muy temprano", "Un domingo de verano"],
+                correct: 0
+            },
+            {
+                q: "¿Para qué servía el artefacto que quería hacer?",
+                options: ["Para regar las flores", "Para limpiar el huerto", "Para alcanzar las manzanas más altas", "Para recoger piedras del camino"],
+                correct: 2
+            },
+            {
+                q: "¿Qué material utilizó para la estructura?",
+                options: ["Ramas de pino secas", "Tubos de metal brillante", "Tres cañas de bambú", "Varas de madera de roble"],
+                correct: 2
+            },
+            {
+                q: "¿De qué color era la cuerda de lana?",
+                options: ["Color café", "Color rojo", "Color amarillo", "Color azul"],
+                correct: 1
+            },
+            {
+                q: "¿Cuándo le regaló su abuela el cesto de mimbre?",
+                options: ["En su último cumpleaños", "El invierno pasado", "El verano pasado", "Hace dos semanas"],
+                correct: 2
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let lives = 3;
+        let timer;
+        let timeLeft = 100;
+        let isGameActive = false;
+
+        const screenStart = document.getElementById('screen-start');
+        const screenGame = document.getElementById('screen-game');
+        const screenResult = document.getElementById('screen-result');
+        const timerBar = document.getElementById('timer-bar');
+        const mapNodes = document.getElementById('map-nodes');
+
+        function initMap() {
+            mapNodes.innerHTML = '';
+            for (let i = 0; i < questions.length; i++) {
+                const node = document.createElement('div');
+                node.className = `map-node node-pending`;
+                node.id = `node-${i}`;
+                node.innerHTML = i + 1;
+                mapNodes.appendChild(node);
+            }
+            updateMap();
+        }
+
+        function updateMap() {
+            for (let i = 0; i < questions.length; i++) {
+                const node = document.getElementById(`node-${i}`);
+                if (i < currentQuestion) {
+                    node.className = 'map-node node-passed font-bold';
+                    node.innerHTML = '✓';
+                } else if (i === currentQuestion) {
+                    node.className = 'map-node node-active font-game text-xl';
+                    node.innerHTML = i + 1;
+                } else {
+                    node.className = 'map-node node-pending';
+                    node.innerHTML = i + 1;
+                }
+            }
+        }
+
+        function startGame() {
+            screenStart.classList.add('animate__fadeOut');
+            setTimeout(() => {
+                screenStart.classList.add('hidden');
+                screenGame.classList.remove('hidden');
+                isGameActive = true;
+                currentQuestion = 0;
+                score = 0;
+                lives = 3;
+                updateLives();
+                document.getElementById('score').innerText = score;
+                initMap();
+                loadQuestion();
+            }, 500);
+        }
+
+        function loadQuestion() {
+            if (currentQuestion >= questions.length) {
+                endGame(true);
+                return;
+            }
+
+            const qData = questions[currentQuestion];
+            document.getElementById('question-text').innerText = qData.q;
+            const optionsGrid = document.getElementById('options-grid');
+            optionsGrid.innerHTML = '';
+
+            qData.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-option glass-panel p-5 text-left text-lg md:text-xl font-medium animate__animated animate__fadeInUp';
+                btn.style.animationDelay = `${index * 0.1}s`;
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(index);
+                optionsGrid.appendChild(btn);
+            });
+
+            resetTimer();
+            updateMap();
+        }
+
+        function resetTimer() {
+            clearInterval(timer);
+            timeLeft = 100;
+            timerBar.style.width = '100%';
+            timerBar.style.backgroundColor = '#10b981';
+
+            timer = setInterval(() => {
+                if (!isGameActive) return;
+                timeLeft -= 0.6; // Un poco más rápido para el reto "contra reloj"
+                timerBar.style.width = `${timeLeft}%`;
+
+                if (timeLeft < 30) timerBar.style.backgroundColor = '#ef4444';
+                else if (timeLeft < 60) timerBar.style.backgroundColor = '#f59e0b';
+
+                if (timeLeft <= 0) {
+                    handleWrongAnswer("¡TIEMPO AGOTADO!");
+                }
+            }, 100);
+        }
+
+        function checkAnswer(index) {
+            const correct = questions[currentQuestion].correct;
+            if (index === correct) {
+                handleCorrectAnswer();
+            } else {
+                handleWrongAnswer("¡INCORRECTO!");
+            }
+        }
+
+        function handleCorrectAnswer() {
+            score += Math.round(timeLeft * 10);
+            document.getElementById('score').innerText = score;
+            showFeedback("¡EXCELENTE!", "text-green-400");
+            currentQuestion++;
+            
+            const container = document.getElementById('trivia-container');
+            container.classList.remove('animate__fadeInRight');
+            container.classList.add('animate__fadeOutLeft');
+            
+            setTimeout(() => {
+                container.classList.remove('animate__fadeOutLeft');
+                container.classList.add('animate__fadeInRight');
+                loadQuestion();
+            }, 400);
+        }
+
+        function handleWrongAnswer(msg) {
+            lives--;
+            updateLives();
+            showFeedback(msg, "text-red-500");
+            
+            if (lives <= 0) {
+                endGame(false);
+            } else {
+                screenGame.classList.add('animate__animated', 'animate__shakeX');
+                setTimeout(() => screenGame.classList.remove('animate__shakeX'), 500);
+                resetTimer();
+            }
+        }
+
+        function updateLives() {
+            let hearts = "";
+            for(let i=0; i<3; i++) {
+                hearts += i < lives ? "❤️" : "🖤";
+            }
+            document.getElementById('lives').innerHTML = hearts;
+        }
+
+        function showFeedback(text, colorClass) {
+            const overlay = document.getElementById('feedback-overlay');
+            const fText = document.getElementById('feedback-text');
+            fText.innerText = text;
+            fText.className = `text-8xl font-game ${colorClass} animate__animated animate__zoomInUp`;
+            overlay.classList.remove('opacity-0');
+            
+            setTimeout(() => {
+                overlay.classList.add('opacity-0');
+                fText.classList.remove('animate__zoomInUp');
+            }, 800);
+        }
+
+        function endGame(victory) {
+            isGameActive = false;
+            clearInterval(timer);
+            
+            screenResult.classList.remove('hidden');
+            const title = document.getElementById('result-title');
+            const msg = document.getElementById('result-msg');
+            
+            if (victory) {
+                title.innerText = "¡MISIÓN CUMPLIDA!";
+                title.className = "text-5xl font-game text-yellow-400 mb-4";
+                msg.innerText = "Has recuperado el Pergamino Sagrado. ¡Tu rapidez y atención son admirables!";
+            } else {
+                title.innerText = "¡Sigue practicando!";
+                title.className = "text-5xl font-game text-red-500 mb-4";
+                msg.innerText = "El pergamino sigue perdido. ¡Vuelve a leer con atención y sé más rápido!";
+            }
+            
+            document.getElementById('final-score').innerText = score;
+        }
+
+        function restartGame() {
+            screenResult.classList.add('hidden');
+            startGame();
+        }
+
+        function exitGame() {
+            if(confirm("¿Seguro que quieres salir?")) {
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>|    

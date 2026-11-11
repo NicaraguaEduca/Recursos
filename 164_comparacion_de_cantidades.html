@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1º Primaria | Balanza de Cantidades</title>
+    <!-- Tipografía infantil Fredoka -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #FF78F0;
+            --secondary: #38E54D;
+            --warning: #FFD93D;
+            --info: #9CFF2E;
+            --purple: #810CA8;
+            --sky: #E8F9FD;
+            --wood: #824C1D;
+            --wood-light: #B07A4A;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Fredoka', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: #DFEEF2;
+            background-image: 
+                radial-gradient(#C6E4EB 2px, transparent 2px),
+                radial-gradient(#C6E4EB 2px, transparent 2px);
+            background-size: 32px 32px;
+            background-position: 0 0, 16px 16px;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- PANTALLA DE BIENVENIDA --- */
+        .welcome-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #E8F9FD;
+            background-image: 
+                radial-gradient(var(--warning) 1.5px, transparent 1.5px),
+                radial-gradient(var(--primary) 1.5px, transparent 1.5px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: all 0.5s ease;
+        }
+
+        .welcome-card {
+            background: white;
+            border: 6px solid var(--primary);
+            border-radius: 30px;
+            padding: 35px;
+            max-width: 650px;
+            width: 100%;
+            box-shadow: 0 20px 0px rgba(255, 120, 240, 0.15);
+            text-align: center;
+            animation: bounceIn 0.8s ease;
+        }
+
+        .welcome-badge {
+            background-color: var(--purple);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: inline-block;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .welcome-title {
+            color: #2D3748;
+            font-size: 2.6rem;
+            margin: 0 0 15px 0;
+            text-shadow: 3px 3px 0px var(--warning);
+            line-height: 1.2;
+        }
+
+        .welcome-info {
+            background: #F7FAFC;
+            border: 2px dashed #CBD5E0;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .welcome-info-item {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            color: #4A5568;
+        }
+
+        .welcome-info-item strong {
+            color: #2D3748;
+        }
+
+        .welcome-info-item span {
+            color: var(--purple);
+            font-weight: 600;
+        }
+
+        .btn-start {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            padding: 15px 45px;
+            background: var(--secondary);
+            color: white;
+            border: 4px solid #2dbd3e;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 0px #249932;
+            transition: all 0.1s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 0px #249932;
+        }
+
+        .btn-start:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0px #249932;
+        }
+
+        /* --- CABECERA PEDAGÓGICA --- */
+        .academic-header {
+            background: white;
+            border: 3px solid var(--purple);
+            border-radius: 20px;
+            padding: 10px 25px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 0px rgba(129, 12, 168, 0.1);
+            margin-bottom: 20px;
+            max-width: 800px;
+            width: 100%;
+            animation: bounceIn 0.8s ease;
+        }
+
+        .academic-badge-top {
+            background-color: var(--purple);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+        }
+
+        .academic-content {
+            font-size: 1.05rem;
+            color: #4A5568;
+            font-weight: 600;
+        }
+
+        .academic-content span {
+            color: var(--purple);
+            font-weight: 700;
+        }
+
+        /* --- ZONA DE JUEGO --- */
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            color: #2D3748;
+            font-size: 2.3rem;
+            margin: 0 0 8px 0;
+            text-shadow: 2px 2px 0px var(--warning);
+        }
+
+        .instruccion-box {
+            background: white;
+            padding: 10px 25px;
+            border-radius: 50px;
+            box-shadow: 0 6px 0px rgba(0,0,0,0.05);
+            border: 3px solid var(--primary);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .instruccion-text {
+            color: #333;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .game-board {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 850px;
+            position: relative;
+        }
+
+        /* --- LA BALANZA (CSS ANIMADA) --- */
+        .balance-container {
+            position: relative;
+            width: 100%;
+            height: 340px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            margin-bottom: 30px;
+        }
+
+        /* Base de madera en el suelo */
+        .balance-base {
+            width: 180px;
+            height: 24px;
+            background: var(--wood);
+            border-radius: 12px 12px 4px 4px;
+            position: absolute;
+            bottom: 0;
+            box-shadow: 0 6px 0px rgba(0,0,0,0.15);
+            z-index: 2;
+        }
+
+        /* Pilar vertical */
+        .balance-pillar {
+            width: 28px;
+            height: 200px;
+            background: linear-gradient(to right, var(--wood-light), var(--wood));
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 6px 6px 0 0;
+            z-index: 1;
+        }
+
+        /* Eje de rotación (Perno central) */
+        .balance-pivot {
+            width: 20px;
+            height: 20px;
+            background: #E2E8F0;
+            border: 4px solid #718096;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 200px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 5;
+        }
+
+        /* El astil/brazo oscilante */
+        .balance-beam-assembly {
+            position: absolute;
+            bottom: 200px; /* Pivota justo en el perno */
+            width: 480px;
+            height: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3;
+            transform-origin: center center;
+            transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+            transform: rotate(0deg); /* Controlado dinámicamente */
+        }
+
+        .balance-beam {
+            width: 100%;
+            height: 16px;
+            background: linear-gradient(to bottom, var(--wood-light), var(--wood));
+            border-radius: 8px;
+            position: relative;
+        }
+
+        /* Los platillos colgantes */
+        .pan {
+            position: absolute;
+            top: 8px;
+            width: 180px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform-origin: top center;
+            transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+            transform: rotate(0deg); /* Se contrarresta con JS para estar siempre vertical */
+        }
+
+        .pan-left {
+            left: -30px;
+        }
+
+        .pan-right {
+            right: -30px;
+        }
+
+        /* Cuerdas de la balanza */
+        .pan-strings {
+            width: 120px;
+            height: 80px;
+            border-left: 3px solid #718096;
+            border-right: 3px solid #718096;
+            position: relative;
+            transform: perspective(60px) rotateX(25deg);
+        }
+
+        /* El platillo propiamente */
+        .pan-plate {
+            width: 180px;
+            height: 20px;
+            background: radial-gradient(circle, #FFF5E4, #FFD384);
+            border: 4px solid #E69A24;
+            border-radius: 50% / 10px;
+            box-shadow: 0 8px 0px rgba(230, 154, 36, 0.3);
+            position: relative;
+            margin-top: -5px;
+            z-index: 4;
+            cursor: pointer;
+            transition: filter 0.2s ease, transform 0.2s ease;
+        }
+
+        .pan-plate:hover {
+            filter: brightness(1.05);
+        }
+
+        .pan-plate.active-target {
+            animation: pulse-border 1.5s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0px rgba(255, 120, 240, 0.8), 0 8px 0px rgba(230, 154, 36, 0.3); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 120, 240, 0), 0 8px 0px rgba(230, 154, 36, 0.3); }
+            100% { box-shadow: 0 0 0 0px rgba(255, 120, 240, 0), 0 8px 0px rgba(230, 154, 36, 0.3); }
+        }
+
+        /* Contenedor de elementos sobre el plato */
+        .pan-content {
+            position: absolute;
+            bottom: 12px;
+            width: 140px;
+            height: 90px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-content: flex-end;
+            gap: 4px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .pan-content .element-emoji {
+            font-size: 2.2rem;
+            filter: drop-shadow(1px 2px 1px rgba(0,0,0,0.15));
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+        }
+
+        /* --- SECCIÓN DE CONTROLES Y CANASTAS --- */
+        .baskets-container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-top: 10px;
+            gap: 40px;
+        }
+
+        .basket {
+            background: white;
+            border: 4px solid #E2E8F0;
+            border-radius: 24px;
+            padding: 15px 25px;
+            flex: 1;
+            text-align: center;
+            box-shadow: 0 8px 0px #CBD5E0;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .basket.placed {
+            opacity: 0.6;
+            transform: translateY(8px);
+            box-shadow: 0 2px 0px #CBD5E0;
+        }
+
+        .basket-title {
+            font-size: 1.15rem;
+            color: #718096;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .basket-items {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            min-height: 50px;
+        }
+
+        .basket-emoji {
+            font-size: 2.5rem;
+            filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.05));
+        }
+
+        /* --- BOTÓN DE PESAR / ACCIÓN --- */
+        .action-zone {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 80px;
+        }
+
+        .btn-action {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            padding: 12px 40px;
+            background: var(--warning);
+            color: #5D4000;
+            border: 4px solid #E2B900;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 0px #B59400;
+            transition: all 0.1s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-action:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0px #B59400;
+        }
+
+        /* Mensajes e Indicadores */
+        .speech-bubble {
+            background: white;
+            border: 4px solid var(--purple);
+            border-radius: 20px;
+            padding: 15px 25px;
+            position: relative;
+            text-align: center;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #2D3748;
+            box-shadow: 0 8px 0px rgba(129, 12, 168, 0.15);
+            max-width: 500px;
+            animation: bounceIn 0.5s ease;
+        }
+
+        /* --- PANTALLA DE ÉXITO FINAL --- */
+        .celebration {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.94);
+            z-index: 110;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .celebration-box {
+            text-align: center;
+            background: white;
+            padding: 45px 60px;
+            border-radius: 35px;
+            border: 6px solid var(--secondary);
+            box-shadow: 0 20px 0px rgba(0,0,0,0.08);
+            animation: popUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .celebration h2 {
+            font-size: 3.5rem;
+            color: #1A5235;
+            margin: 0 0 10px 0;
+            text-shadow: 2px 2px 0px var(--secondary);
+        }
+
+        .btn-restart {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            padding: 14px 40px;
+            background: var(--warning);
+            border: 4px solid #e6c21f;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 0px #ccac1b;
+            margin-top: 25px;
+            transition: all 0.1s ease;
+        }
+
+        .btn-restart:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0px #ccac1b;
+        }
+
+        /* --- INDICADOR DE NIVELES --- */
+        .level-dots {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .dot-indicator {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background-color: #CBD5E0;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .dot-indicator.active {
+            background-color: var(--primary);
+            transform: scale(1.25);
+        }
+
+        .dot-indicator.completed {
+            background-color: var(--secondary);
+        }
+
+        /* --- ANIMACIONES --- */
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.03); }
+            70% { transform: scale(0.97); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes popUp {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; } to { opacity: 1; }
+        }
+        @keyframes shake-side {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+        .shake {
+            animation: shake-side 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Pantalla Inicial de Presentación y Objetivos -->
+    <div class="welcome-overlay" id="welcomeScreen">
+        <div class="welcome-card">
+            <span class="welcome-badge">🎒 1º de Primaria</span>
+            <h1 class="welcome-title">La Balanza de Cantidades ⚖️✨</h1>
+            
+            <div class="welcome-info">
+                <div class="welcome-info-item">
+                    <strong>Contenido Académico:</strong> <span>Conjuntos y Comparación</span>
+                </div>
+                <div class="welcome-info-item">
+                    <strong>Habilidad Clave:</strong> Conceptos pre-numéricos visuales (Más / Menos / Igual).
+                </div>
+                <div class="welcome-info-item" style="border-top: 1px solid #E2E8F0; padding-top: 12px; margin-top: 12px;">
+                    <strong>🎯 Objetivo del Recurso:</strong> <br>
+                    Ayudar a los niños y niñas a comparar visualmente la cantidad de elementos de dos conjuntos a través de una balanza interactiva, descubriendo los conceptos de "más pesado", "menos pesado" e "iguales" antes de usar la numeración abstracta.
+                </div>
+            </div>
+
+            <button class="btn-start" onclick="startGame()">
+                ¡Empezar a Pesar! 🚀
+            </button>
+        </div>
+    </div>
+
+    <!-- Cabecera Pedagógica -->
+    <div class="academic-header">
+        <span class="academic-badge-top">1º de Primaria</span>
+        <div class="academic-content">Contenido: <span>Conjuntos - Comparación (Más/Menos)</span></div>
+    </div>
+
+    <header>
+        <h1>La Balanza de Cantidades ⚖️</h1>
+        <div class="instruccion-box">
+            <span class="instruccion-text" id="instruccionGeneral">Coloca los conjuntos en la balanza para comenzar.</span>
+        </div>
+    </header>
+
+    <div class="game-board">
+        <!-- Balanza Física Interactiva -->
+        <div class="balance-container">
+            <!-- Pivot central -->
+            <div class="balance-pivot"></div>
+            
+            <!-- Brazo móvil de la balanza -->
+            <div class="balance-beam-assembly" id="balanceAssembly">
+                <div class="balance-beam">
+                    <!-- Platillo Izquierdo -->
+                    <div class="pan pan-left" id="panLeftGroup">
+                        <div class="pan-strings"></div>
+                        <div class="pan-plate" id="plateLeft" onclick="verifyChoice('left')"></div>
+                        <div class="pan-content" id="panContentLeft"></div>
+                    </div>
+                    
+                    <!-- Platillo Derecho -->
+                    <div class="pan pan-right" id="panRightGroup">
+                        <div class="pan-strings"></div>
+                        <div class="pan-plate" id="plateRight" onclick="verifyChoice('right')"></div>
+                        <div class="pan-content" id="panContentRight"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Soporte central estático -->
+            <div class="balance-pillar"></div>
+            <div class="balance-base"></div>
+        </div>
+
+        <!-- Canastas de origen (Abajo) -->
+        <div class="baskets-container" id="basketsSection">
+            <div class="basket" id="basketLeft">
+                <div class="basket-title">Conjunto A</div>
+                <div class="basket-items" id="basketItemsLeft"></div>
+            </div>
+            <div class="basket" id="basketRight">
+                <div class="basket-title">Conjunto B</div>
+                <div class="basket-items" id="basketItemsRight"></div>
+            </div>
+        </div>
+
+        <!-- Botones y Respuestas -->
+        <div class="action-zone" id="actionZone">
+            <button class="btn-action" id="btnWeigh" onclick="weighSets()">
+                ¡Colocar en la Balanza! ⚖️🎈
+            </button>
+            <div class="speech-bubble" id="questionBubble" style="display: none;">
+                ¿Cuál plato tiene MÁS elementos?
+            </div>
+        </div>
+
+        <!-- Indicador de Niveles -->
+        <div class="level-dots" id="levelDots">
+            <div class="dot-indicator active"></div>
+            <div class="dot-indicator"></div>
+            <div class="dot-indicator"></div>
+            <div class="dot-indicator"></div>
+            <div class="dot-indicator"></div>
+        </div>
+    </div>
+
+    <!-- Pantalla de Éxito Final -->
+    <div class="celebration" id="celebrationScreen">
+        <div class="celebration-box">
+            <h2>¡Eres Genial! 🏆🎈</h2>
+            <p style="font-size: 1.6rem; color: #4A5568; margin: 0;">¡Has aprendido a comparar cantidades como un profesional de la lógica!</p>
+            <button class="btn-restart" onclick="restartGame()">¡Jugar otra vez!</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Sintetizador de Sonido (Web Audio API) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'success') {
+                // Melodía ascendente muy alegre
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.08); // E5
+                osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.16); // G5
+                osc.frequency.setValueAtTime(1046.50, audioCtx.currentTime + 0.24); // C6
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'error') {
+                // Sonido cómico de resorte o caída
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(110, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'weigh') {
+                // Sonido de balanceo o engranaje suave
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(300, audioCtx.currentTime + 0.4);
+                osc.frequency.linearRampToValueAtTime(200, audioCtx.currentTime + 0.8);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.8);
+            } else if (type === 'click') {
+                // Burbuja sutil
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(450, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.06);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.06);
+            }
+        }
+
+        // --- Definición de Niveles / Retos ---
+        // Sin usar números explícitamente en el juego, comparamos conjuntos visibles
+        const levels = [
+            {
+                emoji: "🍎",
+                leftQty: 5,
+                rightQty: 2,
+                questionType: "more", // "¿Cuál plato tiene MÁS?"
+                prompt: "Toca el plato que tiene MÁS manzanas 🍎"
+            },
+            {
+                emoji: "🍌",
+                leftQty: 3,
+                rightQty: 6,
+                questionType: "less", // "¿Cuál plato tiene MENOS?"
+                prompt: "Toca el plato que tiene MENOS plátanos 🍌"
+            },
+            {
+                emoji: "🐸",
+                leftQty: 4,
+                rightQty: 4,
+                questionType: "equal", // "¿Cuál plato tiene IGUAL?"
+                prompt: "¡Mira! ¿Las ranitas pesan IGUAL? Toca cualquier plato si hay la misma cantidad 🐸"
+            },
+            {
+                emoji: "⭐",
+                leftQty: 6,
+                rightQty: 3,
+                questionType: "more",
+                prompt: "Toca el plato que tiene MÁS estrellas ⭐"
+            },
+            {
+                emoji: "🍬",
+                leftQty: 2,
+                rightQty: 5,
+                questionType: "less",
+                prompt: "Toca el plato que tiene MENOS caramelos 🍬"
+            }
+        ];
+
+        let currentLevelIndex = 0;
+        let isWeighed = false;
+        let canAnswer = false;
+
+        function startGame() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            playSound('click');
+            
+            const welcome = document.getElementById('welcomeScreen');
+            welcome.style.opacity = '0';
+            welcome.style.pointerEvents = 'none';
+            setTimeout(() => {
+                welcome.style.display = 'none';
+            }, 500);
+
+            loadLevel();
+        }
+
+        // --- Carga del Nivel ---
+        function loadLevel() {
+            const level = levels[currentLevelIndex];
+            isWeighed = false;
+            canAnswer = false;
+
+            // Restablecer inclinación de la balanza
+            tiltScale(0);
+
+            // Actualizar indicadores visuales de nivel
+            const dots = document.querySelectorAll('.dot-indicator');
+            dots.forEach((dot, index) => {
+                dot.className = 'dot-indicator';
+                if (index === currentLevelIndex) dot.classList.add('active');
+                else if (index < currentLevelIndex) dot.classList.add('completed');
+            });
+
+            // Preparar instrucciones básicas
+            document.getElementById('instruccionGeneral').textContent = "Coloca los conjuntos en la balanza para comenzar.";
+            
+            // Vaciar platos de balanza
+            document.getElementById('panContentLeft').innerHTML = '';
+            document.getElementById('panContentRight').innerHTML = '';
+            document.getElementById('plateLeft').classList.remove('active-target');
+            document.getElementById('plateRight').classList.remove('active-target');
+
+            // Mostrar el botón de pesar y ocultar pregunta
+            document.getElementById('btnWeigh').style.display = 'flex';
+            document.getElementById('questionBubble').style.display = 'none';
+
+            // Habilitar canastas de origen
+            const basketLeft = document.getElementById('basketLeft');
+            const basketRight = document.getElementById('basketRight');
+            basketLeft.classList.remove('placed');
+            basketRight.classList.remove('placed');
+
+            // Rellenar las canastas inferiores
+            const basketItemsLeft = document.getElementById('basketItemsLeft');
+            const basketItemsRight = document.getElementById('basketItemsRight');
+            basketItemsLeft.innerHTML = '';
+            basketItemsRight.innerHTML = '';
+
+            for (let i = 0; i < level.leftQty; i++) {
+                const el = document.createElement('span');
+                el.className = 'basket-emoji';
+                el.textContent = level.emoji;
+                basketItemsLeft.appendChild(el);
+            }
+
+            for (let i = 0; i < level.rightQty; i++) {
+                const el = document.createElement('span');
+                el.className = 'basket-emoji';
+                el.textContent = level.emoji;
+                basketItemsRight.appendChild(el);
+            }
+        }
+
+        // --- Simulación Física de la Balanza ---
+        function weighSets() {
+            if (isWeighed) return;
+            playSound('weigh');
+
+            const level = levels[currentLevelIndex];
+            isWeighed = true;
+
+            // 1. Ocultar los elementos de las canastas inferiores simulando que suben
+            document.getElementById('basketLeft').classList.add('placed');
+            document.getElementById('basketRight').classList.add('placed');
+
+            // 2. Colocar los elementos en los platillos
+            const panLeft = document.getElementById('panContentLeft');
+            const panRight = document.getElementById('panContentRight');
+
+            for (let i = 0; i < level.leftQty; i++) {
+                const el = document.createElement('span');
+                el.className = 'element-emoji';
+                el.textContent = level.emoji;
+                // Pequeño retardo dinámico de aparición de elementos
+                el.style.animationDelay = `${i * 0.08}s`;
+                panLeft.appendChild(el);
+            }
+
+            for (let i = 0; i < level.rightQty; i++) {
+                const el = document.createElement('span');
+                el.className = 'element-emoji';
+                el.textContent = level.emoji;
+                el.style.animationDelay = `${i * 0.08}s`;
+                panRight.appendChild(el);
+            }
+
+            // 3. Inclinar la balanza dependiendo de las cantidades reales (Simulación física)
+            setTimeout(() => {
+                let angle = 0;
+                if (level.leftQty > level.rightQty) {
+                    angle = -15; // El izquierdo pesa más, baja (rotación antihoraria)
+                } else if (level.rightQty > level.leftQty) {
+                    angle = 15;  // El derecho pesa más, baja (rotación horaria)
+                } else {
+                    angle = 0;   // Equilibrados
+                }
+                tiltScale(angle);
+            }, 300);
+
+            // 4. Mostrar la pregunta del desafío pedagógico
+            setTimeout(() => {
+                document.getElementById('btnWeigh').style.display = 'none';
+                
+                const bubble = document.getElementById('questionBubble');
+                bubble.style.display = 'block';
+                bubble.textContent = level.prompt;
+
+                // Destacar platos para que el niño sepa que puede tocarlos
+                document.getElementById('plateLeft').classList.add('active-target');
+                document.getElementById('plateRight').classList.add('active-target');
+                
+                canAnswer = true;
+            }, 1200);
+        }
+
+        // Función auxiliar para inclinar los componentes correctamente
+        function tiltScale(degrees) {
+            const assembly = document.getElementById('balanceAssembly');
+            const panLeft = document.getElementById('panLeftGroup');
+            const panRight = document.getElementById('panRightGroup');
+
+            // Rotar el astil completo
+            assembly.style.transform = `rotate(${degrees}deg)`;
+            
+            // Contrarrestar la rotación en los platos colgantes para mantenerlos perfectamente verticales
+            panLeft.style.transform = `rotate(${-degrees}deg)`;
+            panRight.style.transform = `rotate(${-degrees}deg)`;
+        }
+
+        // --- Verificación y Lógica de Respuesta ---
+        function verifyChoice(side) {
+            if (!canAnswer) return;
+
+            const level = levels[currentLevelIndex];
+            let isCorrect = false;
+
+            if (level.questionType === 'more') {
+                if (level.leftQty > level.rightQty && side === 'left') isCorrect = true;
+                if (level.rightQty > level.leftQty && side === 'right') isCorrect = true;
+            } else if (level.questionType === 'less') {
+                if (level.leftQty < level.rightQty && side === 'left') isCorrect = true;
+                if (level.rightQty < level.leftQty && side === 'right') isCorrect = true;
+            } else if (level.questionType === 'equal') {
+                // Si la pregunta pide buscar el equilibrio (igualdad), cualquiera de los dos lados es válido al hacer clic
+                if (level.leftQty === level.rightQty) isCorrect = true;
+            }
+
+            if (isCorrect) {
+                // Éxito
+                playSound('success');
+                canAnswer = false;
+
+                // Mostrar retroalimentación de acierto temporal
+                document.getElementById('questionBubble').innerHTML = "¡Excelente! 🌟 ¡Lo hiciste de forma lógica!";
+                document.getElementById('questionBubble').style.borderColor = "var(--secondary)";
+
+                setTimeout(() => {
+                    nextLevel();
+                }, 1500);
+            } else {
+                // Fallo
+                playSound('error');
+                
+                // Sacudir la balanza o el plato seleccionado
+                const targetPlate = side === 'left' ? document.getElementById('plateLeft') : document.getElementById('plateRight');
+                targetPlate.classList.add('shake');
+                setTimeout(() => targetPlate.classList.remove('shake'), 500);
+
+                // Dar una pista amigable
+                document.getElementById('questionBubble').innerHTML = "¡Uy! Intentemos de nuevo. Observa bien cuál está más inclinado 🤔";
+                document.getElementById('questionBubble').style.borderColor = "var(--error)";
+                
+                setTimeout(() => {
+                    document.getElementById('questionBubble').textContent = level.prompt;
+                    document.getElementById('questionBubble').style.borderColor = "var(--purple)";
+                }, 2200);
+            }
+        }
+
+        // Avanzar al siguiente nivel o mostrar pantalla de victoria
+        function nextLevel() {
+            currentLevelIndex++;
+            if (currentLevelIndex < levels.length) {
+                loadLevel();
+            } else {
+                // Fin de juego
+                document.getElementById('celebrationScreen').style.display = 'flex';
+            }
+        }
+
+        function restartGame() {
+            playSound('click');
+            currentLevelIndex = 0;
+            document.getElementById('celebrationScreen').style.display = 'none';
+            loadLevel();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Copia el Diseño - Reconocimiento de Patrones</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Bloqueamos el scroll para una experiencia de App nativa impecable */
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #faf5ff; /* Lila súper suave y mágico */
+            background-image: 
+                radial-gradient(#eedeff 3px, transparent 3px),
+                radial-gradient(#eedeff 3px, transparent 3px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            height: 100dvh;
+            width: 100vw;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            touch-action: none;
+        }
+
+        /* --- MAQUETACIÓN FIJA ADAPTATIVA --- */
+        .game-layout {
+            display: grid;
+            grid-template-columns: 50% 50%;
+            grid-template-rows: auto 1fr;
+            gap: 0.5rem;
+            width: 100%;
+            height: 100%;
+            padding: 0.5rem;
+            box-sizing: border-box;
+        }
+
+        .header-section {
+            grid-column: 1 / 3;
+            grid-row: 1 / 2;
+        }
+
+        .area-modelo {
+            grid-column: 1 / 2;
+            grid-row: 2 / 3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 1.5rem;
+            border: 3px dashed #d8b4fe;
+            padding: 0.5rem;
+            box-shadow: inset 0 0 15px rgba(216, 180, 254, 0.15);
+        }
+
+        .area-tablero {
+            grid-column: 2 / 3;
+            grid-row: 2 / 3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 1.5rem;
+            border: 4px solid #c084fc;
+            padding: 0.5rem;
+            box-shadow: 0 10px 25px -5px rgba(192, 132, 252, 0.2);
+        }
+
+        /* En pantallas grandes reestructuramos para añadir la paleta al lado holgadamente */
+        @media (min-width: 1024px) {
+            .game-layout {
+                grid-template-columns: 35% 35% 30%;
+                grid-template-rows: auto 1fr;
+                gap: 1.5rem;
+                padding: 1.5rem;
+            }
+            .header-section {
+                grid-column: 1 / 4;
+            }
+            .area-modelo {
+                grid-column: 1 / 2;
+                grid-row: 2 / 3;
+                padding: 1.5rem;
+                border-radius: 2.5rem;
+            }
+            .area-tablero {
+                grid-column: 2 / 3;
+                grid-row: 2 / 3;
+                padding: 1.5rem;
+                border-radius: 2.5rem;
+                border-width: 6px;
+            }
+            .desktop-palette-wrapper {
+                grid-column: 3 / 4;
+                grid-row: 2 / 3;
+                display: flex !important;
+                flex-direction: column;
+                justify-content: space-between;
+                background: white;
+                border-radius: 2.5rem;
+                padding: 1.5rem;
+                border: 4px solid #e9d5ff;
+                box-shadow: 0 15px 20px -5px rgba(0,0,0,0.05);
+            }
+            .mobile-palette-bar {
+                display: none !important;
+            }
+        }
+
+        /* Cuadrículas 3x3 */
+        .grid-3x3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #faf5ff;
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 4px solid #e9d5ff;
+        }
+
+        .celda-grid {
+            border: 1px solid #f3e8ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background-color: #ffffff;
+            transition: background-color 0.2s;
+        }
+        .celda-grid:nth-child(even) { background-color: #faf5ff; }
+
+        /* Estilos de las piezas */
+        .pieza-figura {
+            width: 80%;
+            height: 80%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s;
+        }
+
+        .paleta-btn {
+            transition: transform 0.1s, box-shadow 0.1s;
+            border: 3px solid #f3e8ff;
+            cursor: grab;
+            touch-action: none; /* Crucial para evitar scroll del navegador al arrastrar */
+        }
+        .paleta-btn:active {
+            cursor: grabbing;
+        }
+
+        /* Clon arrastrable flotante que sigue el dedo o mouse */
+        .clon-arrastrable {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transform: scale(1.15);
+            filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.25));
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Animaciones infantiles */
+        @keyframes swing { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+        .swinging { animation: swing 3s ease-in-out infinite; transform-origin: center center; }
+        
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+        .floating { animation: float 3s ease-in-out infinite; }
+        
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+        .shake { animation: shake 0.4s ease-in-out; }
+        
+        @keyframes popIn { 0% { transform: scale(0.3); opacity: 0; } 80% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+        .pop-in { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        
+        @keyframes pulseOwl { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .pulse-owl { animation: pulseOwl 2.5s infinite ease-in-out; }
+
+        /* Partículas de celebración */
+        .particle { position: absolute; pointer-events: none; animation: flyUp 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards; z-index: 9999; }
+        @keyframes flyUp { 0% { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 1; } 100% { transform: translateY(-120px) scale(1.6) rotate(180deg); opacity: 0; } }
+
+        /* Bloqueador de scroll móvil */
+        .no-scroll { overflow: hidden !important; touch-action: none !important; }
+
+        /* Estados de hover al arrastrar */
+        .celda-correcta-hover {
+            background-color: #dcfce7 !important;
+            border: 3px solid #22c55e !important;
+        }
+        .celda-incorrecta-hover {
+            background-color: #fee2e2 !important;
+            border: 3px solid #ef4444 !important;
+        }
+    </style>
+</head>
+<body class="flex flex-col relative text-gray-800 select-none pb-24 md:pb-0">
+
+    <!-- ================= SVGs VECTORIALES DE FORMAS (Cero Emojis) ================= -->
+    <svg width="0" height="0" class="hidden">
+        <defs>
+            <!-- Forma 1: Círculo Rojo -->
+            <g id="fig-circulo">
+                <circle cx="50" cy="50" r="38" fill="#ef4444" stroke="#b91c1c" stroke-width="4"/>
+                <circle cx="38" cy="38" r="8" fill="#fca5a5" opacity="0.6"/>
+            </g>
+            <!-- Forma 2: Cuadrado Azul -->
+            <g id="fig-cuadrado">
+                <rect x="12" y="12" width="76" height="76" rx="12" fill="#3b82f6" stroke="#1d4ed8" stroke-width="4"/>
+                <rect x="22" y="22" width="20" height="20" rx="4" fill="#93c5fd" opacity="0.6"/>
+            </g>
+            <!-- Forma 3: Triángulo Verde -->
+            <g id="fig-triangulo">
+                <polygon points="50,12 12,85 88,85" fill="#22c55e" stroke="#15803d" stroke-width="4" stroke-linejoin="round"/>
+                <polygon points="50,30 30,75 70,75" fill="#86efac" opacity="0.5" stroke-linejoin="round"/>
+            </g>
+            <!-- Forma 4: Estrella Amarilla -->
+            <g id="fig-estrella">
+                <polygon points="50,8 63,38 95,38 70,58 79,90 50,72 21,90 30,58 5,38 37,38" fill="#eab308" stroke="#a16207" stroke-width="4" stroke-linejoin="round"/>
+                <polygon points="50,25 57,45 80,45 61,58 67,80 50,68 33,80 39,58 20,45 43,45" fill="#fde047" opacity="0.6" stroke-linejoin="round"/>
+            </g>
+        </defs>
+    </svg>
+
+    <!-- ================= PANTALLA DE INICIO ================= -->
+    <div id="pantalla-inicio" class="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-purple-50/95 backdrop-blur-sm transition-opacity duration-500">
+        <div class="bg-purple-600 text-white rounded-full px-6 py-2 mb-4 text-xl md:text-2xl font-black tracking-widest shadow-md border-4 border-purple-700">
+            PENSAMIENTO COMPUTACIONAL • 1º GRADO
+        </div>
+        
+        <h1 class="text-6xl md:text-8xl font-black mb-6 leading-normal flex flex-wrap items-center justify-center gap-4">
+            <span class="text-transparent bg-clip-text bg-gradient-to-b from-purple-600 to-indigo-800 py-1">Copia el Diseño</span>
+            <span class="pop-in inline-block" style="animation-delay: 0.2s;">🎨</span>
+        </h1>
+
+        <div class="max-w-2xl bg-white p-8 lg:p-10 rounded-[3rem] shadow-2xl border-8 border-purple-300 mb-8 transform transition-transform duration-300">
+            <h2 class="text-3xl md:text-4xl font-black text-purple-600 mb-4 flex items-center justify-center gap-3">
+                <span>🎯</span> Súper Patrones
+            </h2>
+            <p class="text-2xl md:text-3xl text-gray-700 leading-snug font-bold">
+                ¡Arrastra las piezas! Observa el dibujo de la izquierda y arrastra las figuras de colores para colocarlas exactamente igual en tu tablero.
+            </p>
+        </div>
+        <button onclick="iniciarJuego()" class="group relative inline-flex items-center justify-center px-12 lg:px-16 py-6 lg:py-8 text-3xl lg:text-4xl font-black text-white bg-green-500 rounded-full overflow-hidden shadow-[0_10px_0_#15803d] active:shadow-[0_0px_0_#15803d] active:translate-y-2 transition-all">
+            <span class="relative flex items-center gap-3">¡A JUGAR! <span class="text-4xl group-hover:animate-bounce">🚀</span></span>
+        </button>
+    </div>
+
+    <!-- ================= PANTALLA DEL JUEGO ================= -->
+    <div id="pantalla-juego" class="hidden flex-1 flex flex-col h-full w-full">
+        
+        <!-- Cabecera de Progreso -->
+        <div class="header-section w-full flex justify-between items-center bg-white/95 p-3 md:p-4 shadow-md border-b-4 border-purple-200 z-20 shrink-0 sticky top-0">
+            <div class="flex items-center gap-2 md:gap-3">
+                <span class="text-2xl md:text-3xl bg-purple-100 p-1.5 md:p-2 rounded-full shadow-inner">🎨</span>
+                <h2 class="text-xl md:text-2xl font-black text-purple-800 leading-none">Copia el Diseño</h2>
+            </div>
+            <div class="flex flex-col items-end">
+                <span class="text-[10px] md:text-xs font-black text-gray-400 uppercase tracking-wider">Diseños Copiados</span>
+                <span id="contador-progreso" class="bg-purple-100 px-4 py-1 rounded-full text-purple-700 font-black border-2 border-purple-200 text-sm md:text-lg shadow-sm">0 / 4 ⭐</span>
+            </div>
+        </div>
+
+        <!-- Área de Tableros (Layout principal) -->
+        <div class="flex-1 w-full p-2 md:p-6 overflow-hidden">
+            <div class="game-layout">
+                
+                <!-- ZONA 1: Modelo a Copiar (Izquierda) -->
+                <div class="area-modelo">
+                    <h3 class="text-sm md:text-xl font-black text-purple-900 mb-2 uppercase tracking-wide bg-purple-100/80 px-4 py-1.5 rounded-full border border-purple-200 text-center w-full">Mira el Diseño:</h3>
+                    
+                    <!-- Cuadrícula Modelo -->
+                    <div id="grid-modelo" class="grid-3x3 max-w-[200px] md:max-w-[280px]">
+                        <!-- Se dibuja estáticamente por JS -->
+                    </div>
+                </div>
+
+                <!-- ZONA 2: Tablero del Niño (Derecha) -->
+                <div class="area-tablero">
+                    <h3 class="text-sm md:text-xl font-black text-green-900 mb-2 uppercase tracking-wide bg-green-100/80 px-4 py-1.5 rounded-full border border-green-200 text-center w-full">¡Dibuja Aquí!</h3>
+                    
+                    <!-- Cuadrícula de Juego Interactiva -->
+                    <div id="grid-juego" class="grid-3x3 max-w-[200px] md:max-w-[280px] z-10">
+                        <!-- Las celdas se inyectan por JS -->
+                    </div>
+                </div>
+
+                <!-- WRAPPER EXCLUSIVO PARA DESKTOP -->
+                <div class="desktop-palette-wrapper hidden">
+                    <div class="text-left text-xs font-bold text-purple-950 bg-purple-50 p-3 rounded-2xl border border-purple-100 shadow-inner flex items-center gap-3 select-none">
+                        <span class="text-3xl pulse-owl">🦉</span>
+                        <span><b>Búho Pintor:</b> ¡Arrastra una de las formas de colores del panel y colócala en su cuadro correspondiente!</span>
+                    </div>
+
+                    <div class="flex-1 flex flex-col justify-center gap-3 my-4">
+                        <h4 class="text-center font-black text-purple-500 uppercase tracking-wider text-xs">Formas de colores:</h4>
+                        <!-- Paleta duplicada para escritorio -->
+                        <div class="grid grid-cols-2 gap-3" id="paleta-desktop">
+                            <!-- Inyectada por JS -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- PALETA DE HERRAMIENTAS MÓVIL (Anclada abajo) -->
+        <div class="mobile-palette-bar w-full bg-white border-t-4 border-purple-200 p-2.5 flex flex-col gap-2 shrink-0 z-20 lg:hidden shadow-[0_-8px_25px_rgba(0,0,0,0.05)]">
+            <div class="text-[11px] font-black text-purple-700/80 text-center flex items-center justify-center gap-1.5 leading-none select-none">
+                <span>🦉</span>
+                <span>¡Arrastra una de las figuras de abajo hacia tu tablero!</span>
+            </div>
+            
+            <div class="grid grid-cols-4 gap-2.5 h-16 w-full" id="paleta-mobile">
+                <!-- Se inyectan las 4 formas vectoriales gigantes por JS -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= PANEL DE RETROALIMENTACIÓN INFERIOR ================= -->
+    <div id="burbuja-pedagogica" class="fixed bottom-0 left-0 w-full bg-white border-t-8 border-purple-400 shadow-[0_-15px_40px_rgba(0,0,0,0.2)] z-[100] transform translate-y-full transition-transform duration-500 flex flex-col md:flex-row items-center justify-between p-4 md:px-8 md:py-6 rounded-t-3xl md:rounded-none">
+        <div class="flex items-center gap-4 w-full md:w-3/4 mb-4 md:mb-0">
+            <span id="burbuja-icono" class="text-5xl md:text-6xl pulse-owl shrink-0 select-none font-bold">🦉</span>
+            <div>
+                <h3 id="burbuja-titulo" class="text-2xl md:text-3xl font-black text-purple-600 mb-1 select-none leading-none">¡Oh no!</h3>
+                <p id="burbuja-mensaje" class="text-lg md:text-xl font-bold text-gray-700 leading-snug select-none">Mensaje...</p>
+            </div>
+        </div>
+        <div id="burbuja-boton-container" class="w-full md:w-auto shrink-0 flex justify-end"></div>
+    </div>
+
+    <!-- ================= PANTALLA FINAL ================= -->
+    <div id="pantalla-final" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-white/95 backdrop-blur-md transition-opacity duration-500 select-none overflow-hidden">
+        
+        <div class="flex gap-6 justify-center text-8xl md:text-9xl mb-8 floating">
+            <span>🎨</span>
+            <span>🏆</span>
+            <span>🌈</span>
+        </div>
+
+        <h1 class="text-5xl md:text-7xl font-black mb-6 leading-normal flex flex-col items-center justify-center gap-1">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-700 py-1">¡SÚPER COPIADOR!</span>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-700 py-1">DE PATRONES</span>
+        </h1>
+        <p class="text-2xl md:text-4xl text-gray-700 max-w-2xl mb-10 font-bold leading-relaxed">
+            ¡Completaste todos los diseños con muchísima atención al detalle! 🌟
+        </p>
+        
+        <button onclick="reiniciarJuego()" class="group relative inline-flex items-center justify-center px-12 lg:px-16 py-6 lg:py-8 text-3xl lg:text-4xl font-black text-white bg-blue-500 rounded-full overflow-hidden shadow-[0_10px_0_#1e3a8a] active:shadow-[0_0px_0_#1e3a8a] active:translate-y-2 transition-all">
+            <span class="relative flex items-center gap-3">Jugar otra vez <span class="text-4xl">🔄</span></span>
+        </button>
+    </div>
+
+    <!-- ================= LÓGICA DEL JUEGO ================= -->
+    <script>
+        // --- BASE DE DATOS DE PATRONES ---
+        const nivelesData = [
+            {
+                id: 1,
+                nombre: "Diseño Diagonal 📈",
+                modelo: [
+                    { x: 0, y: 0, forma: "circulo" },
+                    { x: 1, y: 1, forma: "circulo" },
+                    { x: 2, y: 2, forma: "circulo" }
+                ]
+            },
+            {
+                id: 2,
+                nombre: "Esquinas Fuertes 🔲",
+                modelo: [
+                    { x: 0, y: 0, forma: "cuadrado" },
+                    { x: 2, y: 0, forma: "cuadrado" },
+                    { x: 0, y: 2, forma: "cuadrado" },
+                    { x: 2, y: 2, forma: "cuadrado" }
+                ]
+            },
+            {
+                id: 3,
+                nombre: "El Gran Sol ☀️",
+                modelo: [
+                    { x: 1, y: 1, forma: "estrella" },
+                    { x: 1, y: 0, forma: "triangulo" },
+                    { x: 1, y: 2, forma: "triangulo" },
+                    { x: 0, y: 1, forma: "triangulo" },
+                    { x: 2, y: 1, forma: "triangulo" }
+                ]
+            },
+            {
+                id: 4,
+                nombre: "La Casita del Bosque 🏠",
+                modelo: [
+                    { x: 1, y: 0, forma: "triangulo" }, 
+                    { x: 0, y: 1, forma: "cuadrado" },  
+                    { x: 1, y: 1, forma: "cuadrado" },  
+                    { x: 2, y: 1, forma: "cuadrado" },  
+                    { x: 1, y: 2, forma: "estrella" }   
+                ]
+            }
+        ];
+
+        let nivelActual = 0;
+        let tableroUsuario = []; // Estado del tablero
+        let ejecutandoTransicion = false;
+        let callbackContinuar = null;
+
+        // Referencias DOM
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const pantallaJuego = document.getElementById('pantalla-juego');
+        const pantallaFinal = document.getElementById('pantalla-final');
+        const contadorProgreso = document.getElementById('contador-progreso');
+        const burbujaPedagogica = document.getElementById('burbuja-pedagogica');
+        
+        const gridModelo = document.getElementById('grid-modelo');
+        const gridJuego = document.getElementById('grid-juego');
+        const paletaMobile = document.getElementById('paleta-mobile');
+        const paletaDesktop = document.getElementById('paleta-desktop');
+
+        // Configuración de Dibujo Vectorial SVG (Sin Emojis)
+        const formasSVG = {
+            "circulo": '<svg viewBox="0 0 100 100" class="w-full h-full"><use href="#fig-circulo" /></svg>',
+            "cuadrado": '<svg viewBox="0 0 100 100" class="w-full h-full"><use href="#fig-cuadrado" /></svg>',
+            "triangulo": '<svg viewBox="0 0 100 100" class="w-full h-full"><use href="#fig-triangulo" /></svg>',
+            "estrella": '<svg viewBox="0 0 100 100" class="w-full h-full"><use href="#fig-estrella" /></svg>'
+        };
+
+        const paletaColores = {
+            "circulo": "bg-red-100 hover:bg-red-200 border-red-300",
+            "cuadrado": "bg-blue-100 hover:bg-blue-200 border-blue-300",
+            "triangulo": "bg-green-100 hover:bg-green-200 border-green-300",
+            "estrella": "bg-yellow-100 hover:bg-yellow-200 border-yellow-300"
+        };
+
+        // Variables de Arrastre (Drag and Drop nativo con Pointer Events)
+        let isDragging = false;
+        let tarjetaActiva = null;
+        let clonFlotante = null;
+        let lastTargetCelda = null;
+
+        // --- INICIALIZACIÓN ---
+
+        function iniciarJuego() {
+            pantallaInicio.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaInicio.classList.add('hidden');
+                pantallaInicio.classList.remove('opacity-0');
+                pantallaJuego.classList.remove('hidden');
+                
+                nivelActual = 0;
+                ejecutandoTransicion = false;
+                
+                construirPaletas();
+                cargarNivel();
+            }, 500);
+        }
+
+        function reiniciarJuego() {
+            pantallaFinal.classList.add('opacity-0');
+            setTimeout(() => window.location.reload(), 300);
+        }
+
+        // --- CONSTRUCCIÓN DE PALETAS ---
+
+        function construirPaletas() {
+            paletaMobile.innerHTML = '';
+            paletaDesktop.innerHTML = '';
+
+            const listaFormas = ["circulo", "cuadrado", "triangulo", "estrella"];
+
+            listaFormas.forEach(f => {
+                // Móvil
+                const btnM = document.createElement('div');
+                btnM.className = `paleta-btn ${paletaColores[f]} w-full h-full rounded-2xl flex items-center justify-center p-2 shadow-sm relative`;
+                btnM.dataset.forma = f;
+                btnM.innerHTML = formasSVG[f];
+                btnM.addEventListener('pointerdown', iniciarDrag);
+                paletaMobile.appendChild(btnM);
+
+                // Escritorio
+                const btnD = document.createElement('div');
+                btnD.className = `paleta-btn ${paletaColores[f]} aspect-square rounded-[1.5rem] flex items-center justify-center p-3 shadow-md relative`;
+                btnD.dataset.forma = f;
+                btnD.innerHTML = formasSVG[f];
+                btnD.addEventListener('pointerdown', iniciarDrag);
+                paletaDesktop.appendChild(btnD);
+            });
+        }
+
+        // --- MANEJO DEL ARRASTRE ---
+
+        function iniciarDrag(e) {
+            if (ejecutandoTransicion) return;
+
+            isDragging = true;
+            document.body.classList.add('no-scroll'); // Bloquear scroll en móvil
+            tarjetaActiva = e.currentTarget;
+            tarjetaActiva.setPointerCapture(e.pointerId);
+
+            const forma = tarjetaActiva.dataset.forma;
+
+            // Crear el clon flotante
+            clonFlotante = document.createElement('div');
+            clonFlotante.className = "clon-arrastrable";
+            clonFlotante.innerHTML = formasSVG[forma];
+            document.body.appendChild(clonFlotante);
+
+            // Posicionarlo inicialmente en la coordenada del puntero
+            actualizarPosicionClon(e.clientX, e.clientY);
+
+            tarjetaActiva.addEventListener('pointermove', arrastrarPieza);
+            tarjetaActiva.addEventListener('pointerup', soltarPieza);
+            tarjetaActiva.addEventListener('pointercancel', soltarPieza);
+        }
+
+        function arrastrarPieza(e) {
+            if (!isDragging || !clonFlotante) return;
+            e.preventDefault();
+
+            actualizarPosicionClon(e.clientX, e.clientY);
+
+            // Detección de colisión usando elementFromPoint
+            // Ocultamos temporalmente el clon para no leerlo a sí mismo
+            clonFlotante.style.display = 'none';
+            const elementoBajoPuntero = document.elementFromPoint(e.clientX, e.clientY);
+            clonFlotante.style.display = 'flex';
+
+            // Buscar si es una celda del grid de juego
+            const celdaValida = elementoBajoPuntero ? elementoBajoPuntero.closest('#grid-juego .celda-grid') : null;
+
+            limpiarHovers();
+
+            if (celdaValida && celdaValida.style.pointerEvents !== "none") {
+                lastTargetCelda = celdaValida;
+                
+                const x = parseInt(celdaValida.dataset.x);
+                const y = parseInt(celdaValida.dataset.y);
+                const nivel = nivelesData[nivelActual];
+                const piezaEsperada = nivel.modelo.find(p => p.x === x && p.y === y);
+                const formaArrastrada = tarjetaActiva.dataset.forma;
+
+                // Si es la pieza correcta de ese cuadro, pintar en verde, de lo contrario en rojo
+                if (piezaEsperada && piezaEsperada.forma === formaArrastrada) {
+                    celdaValida.classList.add('celda-correcta-hover');
+                } else {
+                    celdaValida.classList.add('celda-incorrecta-hover');
+                }
+            } else {
+                lastTargetCelda = null;
+            }
+        }
+
+        function soltarPieza(e) {
+            if (!isDragging) return;
+            isDragging = false;
+            document.body.classList.remove('no-scroll');
+
+            const tarjetaRef = tarjetaActiva;
+            tarjetaRef.releasePointerCapture(e.pointerId);
+
+            tarjetaRef.removeEventListener('pointermove', arrastrarPieza);
+            tarjetaRef.removeEventListener('pointerup', soltarPieza);
+            tarjetaRef.removeEventListener('pointercancel', soltarPieza);
+
+            // Remover el clon del DOM
+            if (clonFlotante) {
+                clonFlotante.remove();
+                clonFlotante = null;
+            }
+
+            limpiarHovers();
+
+            if (lastTargetCelda) {
+                const x = parseInt(lastTargetCelda.dataset.x);
+                const y = parseInt(lastTargetCelda.dataset.y);
+                const forma = tarjetaRef.dataset.forma;
+                const nivel = nivelesData[nivelActual];
+                const piezaEsperada = nivel.modelo.find(p => p.x === x && p.y === y);
+
+                if (piezaEsperada && piezaEsperada.forma === forma) {
+                    colocarPiezaCorrecta(lastTargetCelda, x, y, forma);
+                } else {
+                    errorDeColocacion(lastTargetCelda, x, y, forma);
+                }
+            }
+
+            tarjetaActiva = null;
+            lastTargetCelda = null;
+        }
+
+        function actualizarPosicionClon(x, y) {
+            if (!clonFlotante) return;
+            clonFlotante.style.left = `${x - 35}px`;
+            clonFlotante.style.top = `${y - 35}px`;
+        }
+
+        function limpiarHovers() {
+            document.querySelectorAll('#grid-juego .celda-grid').forEach(c => {
+                c.classList.remove('celda-correcta-hover', 'celda-incorrecta-hover');
+            });
+        }
+
+        // --- CARGAR NUEVO NIVEL ---
+
+        function cargarNivel() {
+            if (nivelActual >= nivelesData.length) {
+                finalizarJuego();
+                return;
+            }
+
+            ejecutandoTransicion = false;
+            ocultarBurbujaPedagogica();
+
+            const nivel = nivelesData[nivelActual];
+            contadorProgreso.innerText = `${nivelActual} / ${nivelesData.length} ⭐`;
+
+            // 1. Dibujar el Modelo Estático (Izquierda)
+            gridModelo.innerHTML = '';
+            for (let y = 0; y < 3; y++) {
+                for (let x = 0; x < 3; x++) {
+                    const celda = document.createElement('div');
+                    celda.className = "celda-grid";
+                    
+                    const pieza = nivel.modelo.find(p => p.x === x && p.y === y);
+                    if (pieza) {
+                        const divPieza = document.createElement('div');
+                        divPieza.className = "pieza-figura swinging";
+                        divPieza.innerHTML = formasSVG[pieza.forma];
+                        celda.appendChild(divPieza);
+                    }
+                    gridModelo.appendChild(celda);
+                }
+            }
+
+            // 2. Dibujar el Tablero de Juego (Derecha)
+            gridJuego.innerHTML = '';
+            tableroUsuario = [];
+
+            for (let y = 0; y < 3; y++) {
+                for (let x = 0; x < 3; x++) {
+                    const celda = document.createElement('div');
+                    celda.className = "celda-grid relative transition-all duration-300";
+                    celda.dataset.x = x;
+                    celda.dataset.y = y;
+                    gridJuego.appendChild(celda);
+                }
+            }
+        }
+
+        // --- PROCESAR PIEZA CORRECTA/INCORRECTA ---
+
+        function colocarPiezaCorrecta(celda, x, y, forma) {
+            tableroUsuario.push({ x, y, forma });
+
+            celda.innerHTML = '';
+            const divPieza = document.createElement('div');
+            divPieza.className = "pieza-figura pop-in";
+            divPieza.innerHTML = formasSVG[forma];
+            celda.appendChild(divPieza);
+
+            celda.classList.add('celda-correcta-hover');
+            setTimeout(() => celda.classList.remove('celda-correcta-hover'), 600);
+
+            celda.style.pointerEvents = "none"; // Desactivar interacción en celda resuelta
+
+            crearDestellos(celda.getBoundingClientRect());
+
+            comprobarProgresoNivel();
+        }
+
+        function errorDeColocacion(celda, x, y, forma) {
+            celda.classList.add('shake', 'bg-red-50');
+            setTimeout(() => {
+                celda.classList.remove('shake', 'bg-red-50');
+            }, 500);
+
+            const nivel = nivelesData[nivelActual];
+            const piezaEsperada = nivel.modelo.find(p => p.x === x && p.y === y);
+
+            let mensajeError = "En ese cuadrito no va ninguna pieza. ¡Observa con atención el dibujo de la izquierda!";
+            if (piezaEsperada) {
+                mensajeError = `¡Casi! En ese cuadrito va otra forma de color diferente. ¡Fíjate bien en el dibujo!`;
+            }
+
+            lanzarBurbujaPedagogica(false, "🎨", "¡Inténtalo de nuevo!", mensajeError, "border-purple-400 text-purple-700");
+        }
+
+        // --- COMPROBAR PATRÓN ---
+
+        function comprobarProgresoNivel() {
+            const nivel = nivelesData[nivelActual];
+
+            const completado = nivel.modelo.every(pModelo => {
+                return tableroUsuario.some(pUsuario => 
+                    pUsuario.x === pModelo.x && 
+                    pUsuario.y === pModelo.y && 
+                    pUsuario.forma === pModelo.forma
+                );
+            });
+
+            if (completado) {
+                ejecutandoTransicion = true;
+                
+                document.querySelectorAll('#grid-juego .pieza-figura').forEach(p => p.classList.add('swinging'));
+
+                const rectTablero = gridJuego.getBoundingClientRect();
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        crearDestellos(rectTablero);
+                    }, i * 200);
+                }
+
+                lanzarBurbujaPedagogica(
+                    true, 
+                    "🎉", 
+                    "¡Excelente!", 
+                    "¡Has replicado el patrón de manera impecable! Gran atención al detalle.", 
+                    "border-green-400 text-green-600"
+                );
+            }
+        }
+
+        // --- BURBUJA DE RETROALIMENTACIÓN INFERIOR ---
+
+        function lanzarBurbujaPedagogica(esExito, icono, titulo, mensaje, clasesColor) {
+            const colorBorde = clasesColor.split(' ')[0];
+            const colorTexto = clasesColor.split(' ')[1];
+
+            burbujaPedagogica.className = `fixed bottom-0 left-0 w-full bg-white border-t-8 ${colorBorde} shadow-[0_-15px_40px_rgba(0,0,0,0.2)] z-[100] transform translate-y-0 transition-transform duration-500 flex flex-col md:flex-row items-center justify-between p-4 md:px-8 md:py-6 rounded-t-3xl md:rounded-none`;
+            
+            document.getElementById('burbuja-icono').innerText = icono;
+            document.getElementById('burbuja-titulo').className = `text-2xl md:text-3xl font-black ${colorTexto} mb-0.5 select-none leading-none`;
+            document.getElementById('burbuja-titulo').innerText = titulo;
+            document.getElementById('burbuja-mensaje').innerHTML = mensaje;
+
+            const btnContainer = document.getElementById('burbuja-boton-container');
+
+            if (esExito) {
+                btnContainer.innerHTML = `
+                    <button onclick="siguienteNivel()" class="px-8 py-3.5 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-black text-xl rounded-full shadow-lg hover:from-purple-600 hover:to-indigo-700 active:scale-95 transition-all animate-bounce select-none w-full md:w-auto mt-3 md:mt-0">
+                        Siguiente ➡️
+                    </button>
+                `;
+            } else {
+                btnContainer.innerHTML = '';
+                setTimeout(() => { 
+                    if (!ejecutandoTransicion) ocultarBurbujaPedagogica(); 
+                }, 5500); 
+            }
+        }
+
+        function ocultarBurbujaPedagogica() {
+            burbujaPedagogica.classList.remove('translate-y-0');
+            burbujaPedagogica.classList.add('translate-y-full');
+        }
+
+        function siguienteNivel() {
+            ocultarBurbujaPedagogica();
+            nivelActual++;
+            cargarNivel();
+        }
+
+        // --- EFECTOS VISUALES GIGANTES ---
+
+        function crearDestellos(rect) {
+            const emojis = ['⭐', '✨', '💖', '🌈', '🎨'];
+            const container = document.body;
+
+            for (let i = 0; i < 15; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                const posX = rect.left + (rect.width / 2) + (Math.random() * 80 - 40);
+                const posY = rect.top + (rect.height / 2);
+                
+                p.style.left = `${posX}px`;
+                p.style.top = `${posY}px`;
+                p.style.fontSize = `${Math.random() * 20 + 25}px`; 
+                p.style.animationDelay = `${Math.random() * 0.2}s`;
+                
+                container.appendChild(p);
+                setTimeout(() => p.remove(), 1500);
+            }
+        }
+
+        function finalizarJuego() {
+            pantallaJuego.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaJuego.classList.add('hidden');
+                pantallaFinal.classList.remove('hidden');
+                setTimeout(() => pantallaFinal.classList.remove('opacity-0'), 50);
+                
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        const fakeRect = { left: window.innerWidth / 2 - 50, width: 100, top: window.innerHeight / 2 - 100, height: 100 };
+                        crearDestellos(fakeRect);
+                    }, i * 250);
+                }
+            }, 500);
+        }
+
+        // --- CARGA INICIAL ---
+        document.addEventListener('DOMContentLoaded', () => {
+            pantallaInicio.classList.remove('hidden');
+            setTimeout(() => pantallaInicio.classList.remove('opacity-0'), 50);
+        });
+
+    </script>
+</body>
+</html>

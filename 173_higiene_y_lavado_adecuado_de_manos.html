@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2º Primaria | Simulador de Jabón 🧼🖐️</title>
+    <!-- Tipografía infantil y amigable Fredoka -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Fredoka', 'sans-serif'],
+                    },
+                    colors: {
+                        water: '#E0F2FE',
+                        soap: '#38BDF8',
+                        germ: '#84CC16',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #F0F9FF;
+            background-image: radial-gradient(#BAE6FD 2px, transparent 2px);
+            background-size: 30px 30px;
+            user-select: none;
+            /* Se remueve touch-action de body para permitir el scroll natural de la página en pantallas pequeñas */
+        }
+        .gummy-shadow {
+            box-shadow: 0 8px 0px rgba(0, 0, 0, 0.08);
+        }
+        .gummy-shadow-blue {
+            box-shadow: 0 8px 0px #0284C7;
+        }
+        .gummy-shadow-cyan {
+            box-shadow: 0 8px 0px #0891B2;
+        }
+        
+        /* Animaciones de Gérmenes */
+        @keyframes wiggle {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(-10deg) scale(1.1); }
+            50% { transform: rotate(0deg) scale(1); }
+            75% { transform: rotate(10deg) scale(0.9); }
+            100% { transform: rotate(0deg) scale(1); }
+        }
+        .reveal-bounce {
+            animation: wiggle 2s infinite ease-in-out;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        /* Animaciones de Burbujas */
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.5); opacity: 1; }
+            100% { transform: translateY(-50px) scale(1.5); opacity: 0; }
+        }
+        .bubble {
+            position: absolute;
+            background: radial-gradient(circle at 30% 30%, #ffffff, #7DD3FC);
+            border: 1px solid #E0F2FE;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: floatUp 0.8s ease-out forwards;
+            box-shadow: inset -2px -2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* */
+        /* Simulador Container */
+        #hands-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 400 / 350; /* Bloquea la proporción para que sea 100% responsive sin deformar */
+            height: auto;
+            background-color: #BAE6FD; /* Agua azul clara */
+            border-radius: 40px;
+            overflow: hidden;
+            border: 8px solid #38BDF8;
+            cursor: pointer;
+            box-shadow: inset 0 8px 16px rgba(2, 132, 199, 0.2), 0 10px 25px rgba(0, 0, 0, 0.05);
+            touch-action: none; /* Bloquea gestos del navegador únicamente dentro del lienzo de juego */
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
+
+    <!-- -->
+    <!-- PANTALLA INICIAL (BIENVENIDA PEDAGÓGICA) -->
+    <div id="welcome-screen" class="fixed inset-0 bg-[#F0F9FF] z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white border-8 border-sky-400 rounded-3xl p-5 md:p-10 max-w-2xl w-full text-center gummy-shadow relative overflow-hidden my-auto max-h-[95vh] overflow-y-auto sm:overflow-visible">
+            <span class="bg-sky-500 text-white font-bold px-4 py-2 rounded-full text-xs sm:text-sm uppercase tracking-wider block w-max mx-auto mb-4">
+                🎒 Ciencias Naturales • 2º Primaria
+            </span>
+            <h1 class="text-2xl sm:text-3xl md:text-5xl font-extrabold text-sky-800 leading-tight mb-2" style="text-shadow: 3px 3px 0px #BAE6FD;">
+                El Simulador de Jabón 🧼🖐️
+            </h1>
+            <p class="text-base sm:text-xl text-sky-950 font-bold mb-4 sm:mb-6">Contenido: Salud e Higiene (Lavado de Manos)</p>
+            
+            <div class="bg-sky-50 border-3 border-dashed border-sky-300 rounded-2xl p-3 sm:p-4 text-left mb-4 sm:mb-6 space-y-2">
+                <p class="text-sky-900 font-bold text-sm sm:text-lg">🎯 Objetivo del Recurso:</p>
+                <p class="text-sky-800 text-xs sm:text-base leading-relaxed">
+                    Comprender la importancia del lavado de manos a través de una simulación interactiva, descubriendo que la fricción (frotar) y el jabón son necesarios para eliminar bacterias invisibles y prevenir enfermedades.
+                </p>
+            </div>
+
+            <button onclick="startPresentation()" class="bg-cyan-500 hover:bg-cyan-400 text-white font-bold text-lg sm:text-2xl px-6 py-3 sm:px-10 sm:py-5 rounded-full border-4 border-cyan-700 gummy-shadow-cyan transition transform active:translate-y-1">
+                ¡A lavarse las manos! 💧
+            </button>
+        </div>
+    </div>
+
+    <!-- CABECERA CURRICULAR -->
+    <header class="w-full max-w-4xl mx-auto bg-white border-4 border-sky-400 rounded-2xl p-3 flex flex-wrap items-center justify-between gummy-shadow mb-4">
+        <div class="flex items-center gap-3">
+            <span class="bg-sky-500 text-white text-xs md:text-sm font-bold px-3 py-1 rounded-full uppercase">2º Primaria</span>
+            <span class="text-gray-700 font-bold text-xs md:text-base">Salud e Higiene: <span class="text-sky-600">Lavado de Manos</span></span>
+        </div>
+        <div class="text-gray-500 font-bold text-sm mt-1 md:mt-0" id="slide-indicator">Sección 1 de 5</div>
+    </header>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main class="w-full max-w-4xl mx-auto bg-white border-4 border-gray-100 rounded-3xl p-4 sm:p-6 flex-grow flex flex-col justify-center items-center gummy-shadow relative min-h-[400px] sm:min-h-[460px]">
+
+        <!-- DIAPOSITIVA 1: INTRODUCCIÓN CONCEPTUAL -->
+        <div id="slide-1" class="slide flex flex-col items-center text-center max-w-2xl">
+            <span class="text-5xl sm:text-7xl mb-4 animate-bounce">🦠🔍</span>
+            <h2 class="text-2xl sm:text-4xl font-bold text-gray-800 mb-4">El Mundo Invisible</h2>
+            <p class="text-base sm:text-xl text-gray-600 leading-relaxed">
+                ¡Hola! A simple vista nuestras manos pueden parecer limpias, pero en todo lo que tocamos (juguetes, tierra, mascotas) existen unos bichitos diminutos llamados <strong class="text-lime-600">Bacterias y Gérmenes</strong>.
+            </p>
+            <p class="text-xs sm:text-sm text-gray-400 mt-6 font-semibold italic">Usa el botón "Siguiente" para aprender cómo vencerlos.</p>
+        </div>
+
+        <!-- DIAPOSITIVA 2: EL PROBLEMA -->
+        <div id="slide-2" class="slide hidden flex-col items-center text-center max-w-3xl w-full">
+            <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-6">¿Por qué son peligrosos? 🤒</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 w-full">
+                <div class="bg-rose-50 border-4 border-rose-300 rounded-2xl p-4 sm:p-6 gummy-shadow">
+                    <span class="text-5xl sm:text-6xl block mb-2 sm:mb-4">🤧</span>
+                    <h3 class="font-bold text-rose-800 text-lg sm:text-xl mb-1 sm:mb-2">Nos pueden enfermar</h3>
+                    <p class="text-gray-600 text-sm sm:text-base font-medium">Si comemos o nos tocamos los ojos con las manos sucias, los gérmenes entran a nuestro cuerpo y nos dan dolor de pancita o resfriados.</p>
+                </div>
+                <div class="bg-sky-50 border-4 border-sky-300 rounded-2xl p-4 sm:p-6 gummy-shadow">
+                    <span class="text-5xl sm:text-6xl block mb-2 sm:mb-4">🧼✨</span>
+                    <h3 class="font-bold text-sky-800 text-lg sm:text-xl mb-1 sm:mb-2">¡Tenemos el mejor escudo!</h3>
+                    <p class="text-gray-600 text-sm sm:text-base font-medium">Por suerte, los gérmenes odian dos cosas: <strong class="text-sky-600">El agua y el jabón</strong>. Al usarlos, los gérmenes resbalan y desaparecen.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 3: LOS PASOS DEL LAVADO -->
+        <div id="slide-3" class="slide hidden flex-col items-center text-center w-full">
+            <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-6">Los 3 pasos mágicos 💧</h2>
+            
+            <div class="flex flex-col md:flex-row gap-4 w-full justify-center">
+                <div class="flex-1 bg-white border-4 border-blue-200 rounded-2xl p-3 sm:p-4 flex flex-col items-center">
+                    <span class="text-3xl sm:text-4xl mb-1 sm:mb-2">💧</span>
+                    <h4 class="font-bold text-blue-700 text-sm sm:text-base">1. Mojar</h4>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-1">Abre la llave y moja tus manos con agua limpia.</p>
+                </div>
+                <div class="flex-1 bg-white border-4 border-cyan-200 rounded-2xl p-3 sm:p-4 flex flex-col items-center">
+                    <span class="text-3xl sm:text-4xl mb-1 sm:mb-2">🧼</span>
+                    <h4 class="font-bold text-cyan-700 text-sm sm:text-base">2. Enjabonar y Frotar</h4>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-1">Ponte jabón y <strong class="text-cyan-600">frota muy bien</strong> palmas, dorsos y entre los dedos.</p>
+                </div>
+                <div class="flex-1 bg-white border-4 border-sky-200 rounded-2xl p-3 sm:p-4 flex flex-col items-center">
+                    <span class="text-3xl sm:text-4xl mb-1 sm:mb-2">🌪️</span>
+                    <h4 class="font-bold text-sky-700 text-sm sm:text-base">3. Enjuagar y Secar</h4>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-1">Quita toda la espuma con agua y seca con una toalla limpia.</p>
+                </div>
+            </div>
+            
+            <p class="text-sky-600 font-bold text-base sm:text-lg mt-6 bg-sky-50 py-2 px-6 rounded-full border-2 border-sky-200">
+                Preparado para la práctica... ¡Ve a la siguiente sección!
+            </p>
+        </div>
+
+        <!-- DIAPOSITIVA 4: EL SIMULADOR DE JABÓN (TALLER INTERACTIVO) -->
+        <div id="slide-4" class="slide hidden flex-col items-center w-full">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">¡A frotar las manos! 🧼🧤</h2>
+            <p class="text-xs sm:text-sm text-gray-500 mb-4 text-center max-w-xl">
+                ¡Oh no! Hay gérmenes invisibles. <strong>Mantén presionado y arrastra tu dedo o ratón sobre las manos</strong> para frotar, crear espuma y eliminarlos todos.
+            </p>
+
+            <!-- Contenedor Interactivo -->
+            <div id="hands-container" onpointerdown="startScrubbing(event)" onpointerup="stopScrubbing()" onpointerleave="stopScrubbing()" onpointermove="scrub(event)">
+                <!-- SVG Dibujo anatómico y amigable de manos infantiles -->
+                <svg viewBox="0 0 400 350" class="absolute inset-0 w-full h-full pointer-events-none select-none z-0">
+                    <!-- Mano Izquierda -->
+                    <g id="left-hand">
+                        <!-- Antebrazo/Muñeca -->
+                        <path d="M 85,350 C 95,280 105,250 115,220 L 155,240 C 145,270 130,310 120,350 Z" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" />
+                        <!-- Palma -->
+                        <path d="M 115,220 C 95,200 90,160 115,140 C 135,120 165,140 165,185 C 165,210 155,230 155,240 Z" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" />
+                        <!-- Dedos -->
+                        <path d="M 105,185 C 80,185 70,160 90,150 C 105,140 115,160 115,175" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" /> <!-- Pulgar -->
+                        <path d="M 118,143 C 110,110 122,100 130,115 L 135,150" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" /> <!-- Índice -->
+                        <path d="M 132,135 C 130,95 145,90 150,110 L 150,150" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" /> <!-- Medio -->
+                        <path d="M 148,140 C 150,105 162,100 165,120 L 160,165" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" /> <!-- Anular -->
+                        <path d="M 160,155 C 168,125 178,125 175,145 L 165,185" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" /> <!-- Meñique -->
+                        <!-- Líneas de la palma -->
+                        <path d="M 120,205 Q 135,225 150,205" stroke="#F9A8D4" stroke-width="3" fill="none" stroke-linecap="round" />
+                    </g>
+                    <!-- Mano Derecha (Espejo de la Izquierda) -->
+                    <g id="right-hand">
+                        <!-- Antebrazo/Muñeca -->
+                        <path d="M 315,350 C 305,280 295,250 285,220 L 245,240 C 255,270 270,310 280,350 Z" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" />
+                        <!-- Palma -->
+                        <path d="M 285,220 C 305,200 310,160 285,140 C 265,120 235,140 235,185 C 235,210 245,230 245,240 Z" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" />
+                        <!-- Dedos -->
+                        <path d="M 295,185 C 320,185 330,160 310,150 C 295,140 285,160 285,175" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" /> <!-- Pulgar -->
+                        <path d="M 282,143 C 290,110 278,100 270,115 L 265,150" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" /> <!-- Índice -->
+                        <path d="M 268,135 C 270,95 255,90 250,110 L 250,150" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" /> <!-- Medio -->
+                        <path d="M 252,140 C 250,105 238,100 235,120 L 240,165" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" /> <!-- Anular -->
+                        <path d="M 240,155 C 232,125 222,125 225,145 L 235,185" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" /> <!-- Meñique -->
+                        <!-- Líneas de la palma -->
+                        <path d="M 280,205 Q 265,225 250,205" stroke="#F9A8D4" stroke-width="3" fill="none" stroke-linecap="round" />
+                    </g>
+                </svg>
+                
+                <!-- Progreso -->
+                <div class="absolute top-2 left-2 bg-white/80 rounded-full px-3 py-1 font-bold text-sky-700 text-xs sm:text-sm border-2 border-sky-300 pointer-events-none z-20">
+                    Bacterias: <span id="germ-count">0</span>
+                </div>
+            </div>
+
+            <!-- Caja de retroalimentación -->
+            <div id="simulator-feedback" class="bg-lime-50 border-4 border-lime-300 rounded-3xl p-3 mt-4 max-w-md w-full text-center hidden">
+                <p class="text-lime-800 font-bold text-lg sm:text-xl">✨ ¡Manos súper limpias! ✨</p>
+                <p class="text-lime-700 text-xs sm:text-sm">Has eliminado todas las bacterias gracias a la fricción y el jabón.</p>
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 5: COMPROBACIÓN -->
+        <div id="slide-5" class="slide hidden flex flex-col items-center w-full max-w-2xl">
+            <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-5 text-center">¡Repaso Rápido! 🧠🌟</h2>
+            
+            <div class="flex flex-col gap-5 w-full">
+                <!-- Pregunta 1 -->
+                <div class="bg-sky-50 border-4 border-sky-300 rounded-2xl p-4 gummy-shadow relative w-full">
+                    <p class="text-base sm:text-lg font-bold text-gray-800 mb-3">1. Para que el lavado de manos funcione, ¿qué es muy importante hacer con el jabón?</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="choices-q1">
+                        <button onclick="checkQuizAnswer(1, 'mirar', false, this)" class="bg-white border-2 border-sky-200 py-3 px-4 rounded-xl font-bold text-sm md:text-base text-gray-700 active:scale-95 transition min-h-[48px] flex items-center justify-center">Mirarlo fijamente 👀</button>
+                        <button onclick="checkQuizAnswer(1, 'frotar', true, this)" class="bg-white border-2 border-sky-200 py-3 px-4 rounded-xl font-bold text-sm md:text-base text-gray-700 active:scale-95 transition min-h-[48px] flex items-center justify-center">Frotarlo en toda la mano 👏</button>
+                    </div>
+                    <p id="feedback-q1" class="mt-2 text-center font-bold text-base hidden"></p>
+                </div>
+            </div>
+
+            <!-- Botón Volver a Comenzar -->
+            <button onclick="changeSlide('restart')" class="mt-6 sm:mt-8 bg-sky-500 hover:bg-sky-400 text-white font-bold text-lg sm:text-xl px-6 py-3 sm:px-8 sm:py-3 rounded-full border-4 border-sky-600 gummy-shadow-blue transition transform active:translate-y-1">
+                🔄 Lavar de nuevo
+            </button>
+        </div>
+
+    </main>
+
+    <!-- -->
+    <!-- BARRA DE NAVEGACIÓN INFERIOR -->
+    <footer class="w-full max-w-4xl mx-auto flex items-center justify-between mt-4 gap-4 px-1 sm:px-0">
+        <button id="btn-prev" onclick="changeSlide('prev')" class="bg-amber-500 hover:bg-amber-400 text-white font-bold py-3 px-5 sm:px-6 rounded-2xl border-4 border-amber-600 gummy-shadow transition transform active:translate-y-1 flex items-center gap-2 opacity-50 cursor-not-allowed text-sm sm:text-base min-h-[48px]" disabled>
+            ⬅️ Atrás
+        </button>
+        
+        <button id="btn-next" onclick="changeSlide('next')" class="bg-cyan-500 hover:bg-cyan-400 text-white font-bold py-3 px-5 sm:px-6 rounded-2xl border-4 border-cyan-700 gummy-shadow-cyan transition transform active:translate-y-1 flex items-center gap-2 text-sm sm:text-base min-h-[48px]">
+            Siguiente ➡️
+        </button>
+    </footer>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 5;
+
+        // --- SISTEMA DE AUDIO NATIVO ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'success') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); 
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); 
+                osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); 
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.4);
+            } else if (type === 'bubble') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400 + Math.random()*200, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'pop') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.1);
+            }
+        }
+
+        // --- NAVEGACIÓN ---
+        function changeSlide(direction) {
+            if (direction === 'restart') {
+                currentSlide = 1;
+                resetQuiz();
+            } else if (direction === 'next' && currentSlide < totalSlides) {
+                currentSlide++;
+            } else if (direction === 'prev' && currentSlide > 1) {
+                currentSlide--;
+            }
+
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.add('hidden');
+                slide.classList.remove('flex');
+            });
+
+            document.getElementById(`slide-${currentSlide}`).classList.remove('hidden');
+            document.getElementById(`slide-${currentSlide}`).classList.add('flex');
+            document.getElementById('slide-indicator').textContent = `Sección ${currentSlide} de ${totalSlides}`;
+
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
+
+            btnPrev.disabled = currentSlide === 1;
+            btnPrev.className = currentSlide === 1 ? 
+                "bg-amber-500 text-white font-bold py-3 px-5 sm:px-6 rounded-2xl border-4 border-amber-600 transition flex items-center gap-2 opacity-50 cursor-not-allowed text-sm sm:text-base min-h-[48px]" :
+                "bg-amber-500 hover:bg-amber-400 text-white font-bold py-3 px-5 sm:px-6 rounded-2xl border-4 border-amber-600 gummy-shadow transition transform active:translate-y-1 flex items-center gap-2 text-sm sm:text-base min-h-[48px]";
+
+            btnNext.disabled = currentSlide === totalSlides;
+            btnNext.className = currentSlide === totalSlides ? 
+                "bg-cyan-500 text-white font-bold py-3 px-5 sm:px-6 rounded-2xl border-4 border-cyan-700 transition flex items-center gap-2 opacity-50 cursor-not-allowed text-sm sm:text-base min-h-[48px]" :
+                "bg-cyan-500 hover:bg-cyan-400 text-white font-bold py-3 px-5 sm:px-6 rounded-2xl border-4 border-cyan-700 gummy-shadow-cyan transition transform active:translate-y-1 flex items-center gap-2 text-sm sm:text-base min-h-[48px]";
+
+            if (currentSlide === 4) {
+                initSimulator();
+            }
+        }
+
+        function startPresentation() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            document.getElementById('welcome-screen').style.display = 'none';
+        }
+
+        //        // --- LÓGICA DEL SIMULADOR DE JABÓN (Diapositiva 4) ---
+        let isScrubbing = false;
+        let germs = [];
+        let lastBubbleTime = 0;
+        const totalGerms = 8;
+        const container = document.getElementById('hands-container');
+
+        function initSimulator() {
+            container.innerHTML = `
+                <!-- SVG Dibujo anatómico y amigable de manos infantiles -->
+                <svg viewBox="0 0 400 350" class="absolute inset-0 w-full h-full pointer-events-none select-none z-0">
+                    <!-- Mano Izquierda -->
+                    <g id="left-hand">
+                        <!-- Antebrazo/Muñeca -->
+                        <path d="M 85,350 C 95,280 105,250 115,220 L 155,240 C 145,270 130,310 120,350 Z" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" />
+                        <!-- Palma -->
+                        <path d="M 115,220 C 95,200 90,160 115,140 C 135,120 165,140 165,185 C 165,210 155,230 155,240 Z" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" />
+                        <!-- Dedos -->
+                        <path d="M 105,185 C 80,185 70,160 90,150 C 105,140 115,160 115,175" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" /> <!-- Pulgar -->
+                        <path d="M 118,143 C 110,110 122,100 130,115 L 135,150" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" /> <!-- Índice -->
+                        <path d="M 132,135 C 130,95 145,90 150,110 L 150,150" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" /> <!-- Medio -->
+                        <path d="M 148,140 C 150,105 162,100 165,120 L 160,165" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" /> <!-- Anular -->
+                        <path d="M 160,155 C 168,125 178,125 175,145 L 165,185" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" /> <!-- Meñique -->
+                        <!-- Líneas de la palma -->
+                        <path d="M 120,205 Q 135,225 150,205" stroke="#F9A8D4" stroke-width="3" fill="none" stroke-linecap="round" />
+                    </g>
+                    <!-- Mano Derecha (Espejo de la Izquierda) -->
+                    <g id="right-hand">
+                        <!-- Antebrazo/Muñeca -->
+                        <path d="M 315,350 C 305,280 295,250 285,220 L 245,240 C 255,270 270,310 280,350 Z" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" />
+                        <!-- Palma -->
+                        <path d="M 285,220 C 305,200 310,160 285,140 C 265,120 235,140 235,185 C 235,210 245,230 245,240 Z" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" />
+                        <!-- Dedos -->
+                        <path d="M 295,185 C 320,185 330,160 310,150 C 295,140 285,160 285,175" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" /> <!-- Pulgar -->
+                        <path d="M 282,143 C 290,110 278,100 270,115 L 265,150" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" /> <!-- Índice -->
+                        <path d="M 268,135 C 270,95 255,90 250,110 L 250,150" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" /> <!-- Medio -->
+                        <path d="M 252,140 C 250,105 238,100 235,120 L 240,165" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" /> <!-- Anular -->
+                        <path d="M 240,155 C 232,125 222,125 225,145 L 235,185" fill="#FFDDD5" stroke="#FBCFE8" stroke-width="4" /> <!-- Meñique -->
+                        <!-- Líneas de la palma -->
+                        <path d="M 280,205 Q 265,225 250,205" stroke="#F9A8D4" stroke-width="3" fill="none" stroke-linecap="round" />
+                    </g>
+                </svg>
+                <div class="absolute top-2 left-2 bg-white/80 rounded-full px-3 py-1 font-bold text-sky-700 text-xs sm:text-sm border-2 border-sky-300 pointer-events-none z-20">
+                    Bacterias: <span id="germ-count">${totalGerms}</span>
+                </div>
+            `;
+            germs = [];
+            document.getElementById('simulator-feedback').classList.add('hidden');
+
+            const emojis = ['🦠', '👾', '🤢'];
+            
+            for (let i = 0; i < totalGerms; i++) {
+                const germEl = document.createElement('div');
+                germEl.className = 'reveal-bounce absolute text-3xl pointer-events-none z-10';
+                germEl.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                // Posicionar de manera pseudo-aleatoria sobre las manos
+                const x = 80 + Math.random() * 240;
+                const y = 80 + Math.random() * 180;
+                
+                // Usamos porcentajes para que mantenga la posición relativa exacta al reescalar el contenedor de forma responsiva
+                const pctX = (x / 400) * 100;
+                const pctY = (y / 350) * 100;
+                
+                germEl.style.left = `${pctX}%`;
+                germEl.style.top = `${pctY}%`;
+                germEl.style.transform = 'translate(-50%, -50%)';
+                
+                container.appendChild(germEl);
+                
+                germs.push({
+                    el: germEl,
+                    x: x + 15, // Centro aproxima en el espacio virtual 400x350
+                    y: y + 15,
+                    health: 100,
+                    active: true
+                });
+            }
+            updateGermCount();
+        }
+
+        function startScrubbing(e) {
+            isScrubbing = true;
+            scrub(e);
+        }
+
+        function stopScrubbing() {
+            isScrubbing = false;
+        }
+
+        function scrub(e) {
+            if (!isScrubbing) return;
+
+            const rect = container.getBoundingClientRect();
+            // Obtenemos coordenadas relativas locales en píxeles del render real
+            const localX = e.clientX - rect.left;
+            const localY = e.clientY - rect.top;
+
+            // 1. Crear burbujas visuales en base a píxeles locales
+            const now = Date.now();
+            if (now - lastBubbleTime > 50) {
+                createBubble(localX, localY);
+                playSound('bubble');
+                lastBubbleTime = now;
+            }
+
+            // Normalizamos la posición de la pantalla del celular a la escala matemática 400x350 original del SVG
+            const pointerX = (localX / rect.width) * 400;
+            const pointerY = (localY / rect.height) * 350;
+
+            // 2. Frotar gérmenes
+            let activeCount = 0;
+            germs.forEach(germ => {
+                if (!germ.active) return;
+                activeCount++;
+                
+                // Calcular distancia del puntero normalizado al germen normalizado
+                const dist = Math.hypot(pointerX - germ.x, pointerY - germ.y);
+                
+                // Radio de fricción uniforme
+                if (dist < 40) {
+                    germ.health -= 5; // Reducir salud
+                    germ.el.style.opacity = germ.health / 100;
+                    germ.el.style.transform = `translate(-50%, -50%) scale(${germ.health / 100})`;
+                    
+                    if (germ.health <= 0) {
+                        germ.active = false;
+                        germ.el.remove();
+                        playSound('pop');
+                        updateGermCount();
+                    }
+                }
+            });
+
+            // Condición de victoria
+            if (activeCount === 0 && germs.length > 0) {
+                isScrubbing = false;
+                document.getElementById('simulator-feedback').classList.remove('hidden');
+                playSound('success');
+                germs = []; // Prevenir múltiples llamadas
+            }
+        }
+
+        function createBubble(x, y) {
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble z-10';
+            const size = 10 + Math.random() * 20;
+            bubble.style.width = `${size}px`;
+            bubble.style.height = `${size}px`;
+            // Las burbujas se posicionan directamente usando las coordenadas locales exactas
+            bubble.style.left = `${x - size/2 + (Math.random() * 20 - 10)}px`;
+            bubble.style.top = `${y - size/2 + (Math.random() * 20 - 10)}px`;
+            
+            container.appendChild(bubble);
+            
+            setTimeout(() => {
+                bubble.remove();
+            }, 800);
+        }
+
+        function updateGermCount() {
+            const active = germs.filter(g => g.active).length;
+            const counter = document.getElementById('germ-count');
+            if (counter) counter.textContent = active;
+        }
+
+        // --- LÓGICA DE EVALUACIÓN (Diapositiva 5) ---
+        function checkQuizAnswer(questionNum, answer, isCorrect, btnElement) {
+            const feedback = document.getElementById(`feedback-q${questionNum}`);
+            const parentRow = document.getElementById(`choices-q${questionNum}`);
+            
+            parentRow.querySelectorAll('button').forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('opacity-50');
+            });
+
+            feedback.classList.remove('hidden');
+
+            if (isCorrect) {
+                playSound('success');
+                btnElement.classList.remove('bg-white', 'border-sky-200');
+                btnElement.classList.add('bg-lime-500', 'text-white', 'border-lime-600', 'opacity-100');
+                feedback.textContent = "¡Exacto! 🌟 La fricción destruye a los gérmenes.";
+                feedback.className = "mt-2 text-center font-bold text-base text-lime-600 animate-[pulse_0.4s_ease]";
+            } else {
+                playSound('pop');
+                btnElement.classList.remove('bg-white', 'border-sky-200');
+                btnElement.classList.add('bg-rose-500', 'text-white', 'border-rose-600', 'opacity-100');
+                feedback.textContent = "Oops... Solo mirar no sirve. ¡Hay que frotar! 🧼";
+                feedback.className = "mt-2 text-center font-bold text-base text-rose-600";
+            }
+        }
+
+        function resetQuiz() {
+            document.querySelectorAll('#slide-5 button').forEach(btn => {
+                if (btn.id === 'btn-prev' || btn.id === 'btn-next' || btn.textContent.includes('Lavar de nuevo')) return;
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'bg-lime-500', 'bg-rose-500', 'text-white', 'border-lime-600', 'border-rose-600');
+                btn.classList.add('bg-white', 'border-2', 'text-gray-700');
+            });
+            document.getElementById('feedback-q1').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

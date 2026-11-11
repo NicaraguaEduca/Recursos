@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aspiradora de Haches: Edición Pro 🧹</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Public+Sans:wght@400;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --pink: #f472b6;
+            --blue: #3b82f6;
+            --dark: #0f172a;
+            --green: #22c55e;
+            --yellow: #fde047;
+            --red: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Public Sans', sans-serif; }
+        h1, h2, .btn-main { font-family: 'Unbounded', sans-serif; text-transform: uppercase; }
+
+        body {
+            background: var(--dark);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            color: white;
+        }
+
+        .navbar {
+            height: 60px;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+            border-bottom: 3px solid var(--pink);
+        }
+
+        .pantalla {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .game-canvas {
+            width: 100%;
+            max-width: 950px;
+            height: clamp(350px, 60vh, 550px);
+            background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+            border: 4px solid var(--pink);
+            border-radius: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(244, 114, 182, 0.2);
+        }
+
+        .word-bubble {
+            position: absolute;
+            padding: 12px 25px;
+            background: white;
+            color: var(--dark);
+            border-radius: 50px;
+            font-weight: 900;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #cbd5e1;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stats-bar {
+            margin-top: 20px;
+            display: flex;
+            gap: 30px;
+            font-weight: 900;
+            background: rgba(255,255,255,0.05);
+            padding: 10px 30px;
+            border-radius: 50px;
+        }
+
+        .btn-main {
+            background: var(--pink);
+            color: white;
+            padding: 18px 45px;
+            font-size: 1.3rem;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #be185d;
+        }
+
+        /* --- EFECTOS --- */
+        @keyframes suction {
+            0% { transform: scale(1) rotate(0); opacity: 1; }
+            100% { transform: scale(0) rotate(720deg); opacity: 0; }
+        }
+        .suction-anim { animation: suction 0.5s cubic-bezier(0.13, 0.9, 0.4, 1) forwards; pointer-events: none; }
+
+        @keyframes shake { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-10px, 0); } 75% { transform: translate(10px, 0); } }
+        .error-shake { animation: shake 0.3s; background: var(--red) !important; color: white !important; box-shadow: 0 8px 0 #991b1b !important; }
+
+        .hint-pop {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--yellow);
+            color: var(--dark);
+            padding: 8px 20px;
+            border-radius: 10px;
+            font-weight: 800;
+            z-index: 50;
+        }
+    </style>
+</head>
+<body x-data="aspiradoraApp()">
+
+    <nav class="navbar">
+        <div style="font-weight: 900; color: var(--pink); letter-spacing: 1px;">🌪️ ASPIRADORA DE HACHES</div>
+        <div style="font-weight: 900;">OBJETIVO: <span x-text="puntos" style="color: var(--green);"></span> / 10</div>
+    </nav>
+
+    <main class="pantalla" x-show="paso === 'inicio'">
+        <div style="background: white; color: var(--dark); padding: 35px; border-radius: 30px; border: 6px solid var(--pink); max-width: 650px; text-align: center;">
+            <div style="font-size: 4rem;">🌀</div>
+            <h1>¡Misión Ortográfica!</h1>
+            <p style="margin: 15px 0; font-size: 1.1rem;">Aspira las palabras que lleven la <b>H muda</b> correctamente. <br>¡Cuidado con las palabras trampa!</p>
+            <button class="btn-main" @click="iniciarJuego()">¡ENCENDER!</button>
+        </div>
+    </main>
+
+    <main class="pantalla" x-show="paso === 'juego'" x-transition>
+        <div class="game-canvas" id="pista">
+            <template x-for="word in activeWords" :key="word.id">
+                <div class="word-bubble" 
+                     :id="'w-' + word.id"
+                     @click="aspirar(word)">
+                    <span x-text="word.text"></span>
+                </div>
+            </template>
+            <div x-show="showHint" class="hint-pop" x-text="hintMsg" x-transition></div>
+        </div>
+
+        <div class="stats-bar">
+            <span style="color: var(--red);">ERRORES: <span x-text="errores"></span></span>
+        </div>
+    </main>
+
+    <main class="pantalla" x-show="paso === 'fin'">
+        <div style="text-align: center;">
+            <div style="font-size: 7rem;">✨</div>
+            <h1 style="color: var(--pink); font-size: 3.5rem;">¡EXCELENTE!</h1>
+            <p style="font-size: 1.5rem; margin: 20px 0;">Has atrapado las palabras con "H" correctamente.<br>
+                <span style="font-size: 1.1rem; opacity: 0.9;">
+                    Lograste limpiar el tablero 
+                    <span x-show="errores > 0">(aunque hubo un par de fallos, ¡lo hiciste muy bien!)</span>.
+                </span>
+            </p>
+            <button class="btn-main" @click="location.reload()">VOLVER A JUGAR</button>
+        </div>
+    </main>
+
+    <script>
+        function aspiradoraApp() {
+            return {
+                paso: 'inicio', puntos: 0, errores: 0, activeWords: [],
+                showHint: false, hintMsg: '',
+                diccionario: [
+                    { text: "HUEVO", ok: true }, { text: "HIELO", ok: true }, { text: "HUMO", ok: true }, 
+                    { text: "HOJA", ok: true }, { text: "HORMIGA", ok: true }, { text: "HELADO", ok: true },
+                    { text: "HUESO", ok: true }, { text: "HOSPITAL", ok: true }, { text: "HADA", ok: true }, { text: "HUERTO", ok: true },
+                    { text: "ORMIGA", ok: false, m: "¡Falta la H!" },
+                    { text: "HOSO", ok: false, m: "Oso no lleva H" },
+                    { text: "HAVIÓN", ok: false, m: "Avión es sin H" },
+                    { text: "IELO", ok: false, m: "Hielo lleva H" },
+                    { text: "ARDILLA", ok: false, m: "Sin H" }
+                ],
+                iniciarJuego() {
+                    this.paso = 'juego';
+                    this.spawnWords();
+                    this.loop();
+                },
+                spawnWords() {
+                    this.activeWords = this.diccionario.map((w, index) => ({
+                        id: index, text: w.text, ok: w.ok, m: w.m,
+                        x: Math.random() * (window.innerWidth < 800 ? 200 : 700),
+                        y: Math.random() * 300,
+                        vx: (Math.random() - 0.5) * 1.5, vy: (Math.random() - 0.5) * 1.5
+                    }));
+                },
+                loop() {
+                    const move = () => {
+                        if (this.paso !== 'juego') return;
+                        this.activeWords.forEach(w => {
+                            const el = document.getElementById('w-' + w.id);
+                            if (!el) return;
+                            w.x += w.vx; w.y += w.vy;
+                            if (w.x <= 10 || w.x >= (document.getElementById('pista').offsetWidth - 120)) w.vx *= -1;
+                            if (w.y <= 10 || w.y >= (document.getElementById('pista').offsetHeight - 60)) w.vy *= -1;
+                            el.style.transform = `translate(${w.x}px, ${w.y}px)`;
+                        });
+                        requestAnimationFrame(move);
+                    };
+                    requestAnimationFrame(move);
+                },
+                aspirar(word) {
+                    const el = document.getElementById('w-' + word.id);
+                    if (word.ok) {
+                        el.classList.add('suction-anim');
+                        this.puntos++;
+                        if (this.puntos >= 10) {
+                            confetti({ particleCount: 150, spread: 70 });
+                            setTimeout(() => this.paso = 'fin', 800);
+                        }
+                    } else {
+                        el.classList.add('error-shake');
+                        this.errores++;
+                        this.hintMsg = word.m;
+                        this.showHint = true;
+                        setTimeout(() => { 
+                            el.classList.remove('error-shake'); 
+                            this.showHint = false;
+                        }, 1000);
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html> 

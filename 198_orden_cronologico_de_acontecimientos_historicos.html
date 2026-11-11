@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>La Biblioteca del Tiempo - Ordena la Historia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Ajuste de escala global para visualización perfecta */
+        html {
+            font-size: 90%;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #faf7f2; /* Tono papel antiguo/madera suave */
+            background-image: 
+                radial-gradient(#e4dcd3 3px, transparent 3px),
+                radial-gradient(#e4dcd3 3px, transparent 3px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            overflow-y: auto;
+            margin: 0;
+            padding: 0;
+            touch-action: pan-y;
+        }
+
+        /* --- Animaciones e Interacciones Mágicas --- */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(1deg); }
+        }
+        .floating { animation: float 4.5s ease-in-out infinite; }
+
+        @keyframes pulseGlow {
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(217, 119, 6, 0.4)); }
+            50% { filter: drop-shadow(0 0 15px rgba(217, 119, 6, 0.8)); }
+        }
+        .glow-chest { animation: pulseGlow 2s infinite ease-in-out; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px) rotate(-1deg); }
+            40%, 80% { transform: translateX(8px) rotate(1deg); }
+        }
+        .shake { animation: shake 0.4s ease-in-out; }
+
+        @keyframes popIn {
+            0% { transform: scale(0.6); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop-in { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        /* Partículas mágicas de celebración */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            animation: flyUp 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            z-index: 100;
+        }
+        @keyframes flyUp {
+            0% { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-150px) scale(1.6) rotate(360deg); opacity: 0; }
+        }
+
+        /* Selección de Pergamino */
+        .pergamino-seleccionado {
+            border-color: #d97706 !important;
+            background-color: #fffbeb !important;
+            box-shadow: 0 12px 20px -3px rgba(217, 119, 6, 0.4);
+            transform: scale(1.04) translateY(-2px);
+        }
+
+        /* Ocultar barra de scroll para estética */
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Layout responsivo adaptable */
+        .board-layout {
+            display: grid;
+            grid-template-columns: 100%;
+            gap: 1.5rem;
+            width: 100%;
+        }
+        @media (min-width: 1024px) {
+            .board-layout {
+                grid-template-columns: 52% 48%;
+                gap: 2rem;
+            }
+        }
+    </style>
+</head>
+<body class="w-full min-h-screen flex flex-col relative text-gray-800 select-none">
+
+    <!-- ================= SVGs VECTORIALES DE COFRES (Cerrado y Abierto) ================= -->
+    <svg width="0" height="0" class="hidden">
+        <defs>
+            <!-- Cofre Cerrado -->
+            <g id="cofre-cerrado-vector">
+                <!-- Base del cofre -->
+                <rect x="15" y="45" width="70" height="42" rx="8" fill="#8b5a2b" stroke="#3d2110" stroke-width="4"/>
+                <!-- Tapa -->
+                <path d="M15 45 C15 20, 85 25, 85 45 Z" fill="#a0522d" stroke="#3d2110" stroke-width="4"/>
+                <!-- Bandas metálicas protectoras -->
+                <rect x="28" y="24" width="10" height="63" fill="#cd853f" stroke="#3d2110" stroke-width="3"/>
+                <rect x="62" y="24" width="10" height="63" fill="#cd853f" stroke="#3d2110" stroke-width="3"/>
+                <!-- Cerradura dorada -->
+                <rect x="42" y="38" width="16" height="18" rx="3" fill="#ffd700" stroke="#3d2110" stroke-width="3"/>
+                <!-- Ojo de la cerradura -->
+                <circle cx="50" cy="45" r="3" fill="#000"/>
+                <polygon points="49,45 51,45 52,52 48,53" fill="#000"/>
+            </g>
+            
+            <!-- Cofre Abierto Mágicamente -->
+            <g id="cofre-abierto-vector">
+                <!-- Tapa abierta detrás inclinada -->
+                <path d="M15 32 C15 6, 85 6, 85 32 Z" fill="#8b4513" stroke="#3d2110" stroke-width="4" transform="rotate(-15 50 32)"/>
+                <!-- Brillo interior mágico -->
+                <circle cx="50" cy="40" r="25" fill="#fde047" opacity="0.45" filter="blur(6px)"/>
+                <!-- Pergamino saliendo del cofre -->
+                <rect x="40" y="14" width="20" height="42" rx="4" fill="#fffcf0" stroke="#a16207" stroke-width="3" transform="rotate(12 50 32)"/>
+                <rect x="40" y="24" width="20" height="4" fill="#eab308" transform="rotate(12 50 32)"/>
+                <!-- Base del cofre al frente -->
+                <rect x="15" y="45" width="70" height="42" rx="8" fill="#8b5a2b" stroke="#3d2110" stroke-width="4"/>
+                <!-- Apertura oscura del cofre -->
+                <rect x="19" y="41" width="62" height="12" fill="#2d1708" rx="3"/>
+                <!-- Bandas metálicas de la base -->
+                <rect x="28" y="45" width="10" height="42" fill="#cd853f" stroke="#3d2110" stroke-width="3"/>
+                <rect x="62" y="45" width="10" height="42" fill="#cd853f" stroke="#3d2110" stroke-width="3"/>
+                <!-- Candado colgando abierto -->
+                <rect x="42" y="45" width="16" height="18" rx="3" fill="#ffd700" stroke="#3d2110" stroke-width="3" transform="rotate(25 50 45)"/>
+            </g>
+        </defs>
+    </svg>
+
+    <!-- ================= PANTALLA DE INICIO ================= -->
+    <div id="pantalla-inicio" class="absolute inset-0 z-50 flex flex-col items-center justify-start lg:justify-center p-4 sm:p-6 pt-12 lg:pt-6 text-center bg-stone-100/95 backdrop-blur-md transition-opacity duration-500 overflow-y-auto">
+        <div class="bg-amber-100 border border-amber-300 rounded-full px-5 py-2 mb-4 font-bold text-amber-800 tracking-wider shadow-sm text-xs md:text-sm">
+            📚 LENGUA Y LITERATURA • II UP (3º/4º GRADO)
+        </div>
+        
+        <!-- PROTECCIÓN EMOJI: Emojis fuera del gradiente -->
+        <h1 class="text-5xl sm:text-6xl md:text-8xl font-black mb-6 drop-shadow-sm leading-tight">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-700 via-orange-600 to-amber-900">La Biblioteca<br>del Tiempo</span>
+            <span class="inline-block mt-2 sm:mt-0 select-none">🕰️📚</span>
+        </h1>
+        
+        <div class="w-full max-w-2xl bg-white p-6 sm:p-8 rounded-[2rem] shadow-2xl border-4 border-amber-300 mb-8 transform hover:scale-[1.01] transition-transform relative overflow-hidden">
+            <h2 class="text-2xl font-bold text-amber-800 mb-3 flex items-center justify-center gap-3">
+                <span>🦉</span> ¡Restauradores de Cuentos!
+            </h2>
+            <p class="text-base sm:text-lg text-gray-600 leading-relaxed font-semibold">
+                ¡Oh no! El travieso duendecillo de los libros **"Tinta"** 👾 ha soplado los cuentos más de la biblioteca y ha mezclado todas sus páginas.<br><br>
+                Usa tu lógica de lector para acomodar las hojas en su orden correcto: El **Inicio 🟢**, el **Nudo 🟡** y el **Desenlace 🔴**. ¡Ayuda al Búho Bibliotecario a salvar las historias!
+            </p>
+            <div class="flex justify-center gap-6 mt-4 text-4xl">
+                <span class="floating" style="animation-delay: 0s;">📖</span>
+                <span class="floating" style="animation-delay: 0.3s;">✨</span>
+                <span class="floating" style="animation-delay: 0.6s;">👾</span>
+            </div>
+        </div>
+
+        <button onclick="iniciarSeleccion()" class="relative inline-flex items-center justify-center px-10 py-5 text-xl font-black text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full shadow-[0_6px_0_#9a3412] active:translate-y-1 active:shadow-[0_2px_0_#9a3412] transition-all">
+            ¡Entrar a la Biblioteca! 🔑🏛️
+        </button>
+    </div>
+
+    <!-- ================= PANTALLA DE SELECCIÓN DE CUENTO ================= -->
+    <div id="pantalla-seleccion" class="hidden absolute inset-0 z-40 flex flex-col items-center justify-start lg:justify-center p-4 sm:p-6 pt-12 lg:pt-6 text-center bg-stone-50/95 backdrop-blur-md transition-opacity duration-500 overflow-y-auto">
+        <h2 class="text-3xl sm:text-5xl font-black text-amber-900 mb-2">Elige un libro para restaurar</h2>
+        <p class="text-base sm:text-lg text-gray-500 font-bold mb-8">Cada libro es un desafío lógico diferente</p>
+        
+        <div class="flex flex-col md:flex-row gap-6 w-full max-w-4xl justify-center items-stretch px-2 mb-8">
+            
+            <!-- Libro 1: Dragón -->
+            <div onclick="seleccionarCuento(0)" class="cursor-pointer bg-orange-50 border-4 border-orange-300 p-6 rounded-[2rem] flex flex-col items-center justify-between w-full md:w-64 hover:-translate-y-2 hover:shadow-xl transition-all duration-300 shadow-md">
+                <span class="text-6xl mb-4 drop-shadow-md floating" style="animation-delay: 0s;">🐉</span>
+                <div class="w-full">
+                    <h3 class="text-xl font-black text-orange-800 leading-tight mb-2">El Dragón sin Fuego</h3>
+                    <p class="text-xs font-bold text-gray-500">Un dragón que aprendió a salvar al pueblo usando burbujas mágicas.</p>
+                </div>
+            </div>
+
+            <!-- Libro 2: Robot -->
+            <div onclick="seleccionarCuento(1)" class="cursor-pointer bg-sky-50 border-4 border-sky-300 p-6 rounded-[2rem] flex flex-col items-center justify-between w-full md:w-64 hover:-translate-y-2 hover:shadow-xl transition-all duration-300 shadow-md">
+                <span class="text-6xl mb-4 drop-shadow-md floating" style="animation-delay: 0.3s;">🤖</span>
+                <div class="w-full">
+                    <h3 class="text-xl font-black text-sky-800 leading-tight mb-2">El Robot Bailarín</h3>
+                    <p class="text-xs font-bold text-gray-500">Un robot oxidado que inventó el baile más famoso del mundo.</p>
+                </div>
+            </div>
+
+            <!-- Libro 3: Semilla -->
+            <div onclick="seleccionarCuento(2)" class="cursor-pointer bg-emerald-50 border-4 border-emerald-300 p-6 rounded-[2rem] flex flex-col items-center justify-between w-full md:w-64 hover:-translate-y-2 hover:shadow-xl transition-all duration-300 shadow-md">
+                <span class="text-6xl mb-4 drop-shadow-md floating" style="animation-delay: 0.6s;">🌱</span>
+                <div class="w-full">
+                    <h3 class="text-xl font-black text-emerald-800 leading-tight mb-2">La Semilla Viajera</h3>
+                    <p class="text-xs font-bold text-gray-500">El largo viaje de una semilla que soñaba con convertirse en una flor.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= PANTALLA DEL JUEGO ================= -->
+    <div id="pantalla-juego" class="hidden absolute inset-0 z-10 flex flex-col h-full w-full bg-[#fafaf9]">
+        
+        <!-- Cabecera de Progreso -->
+        <div class="w-full flex justify-between items-center bg-white p-3 shadow-md border-b-4 border-amber-200 z-30 shrink-0">
+            <div class="flex items-center gap-3">
+                <button onclick="regresarASeleccion()" class="bg-stone-100 hover:bg-stone-200 border-2 border-stone-300 rounded-full w-10 h-10 flex items-center justify-center text-xl transition-colors">🔙</button>
+                <div>
+                    <h2 id="titulo-libro-actual" class="text-base sm:text-xl font-black text-amber-800 leading-tight">Cargando...</h2>
+                    <p class="hidden sm:block text-[10px] font-bold text-gray-400">Restaurando el orden del libro</p>
+                </div>
+            </div>
+            <div class="flex flex-col items-end">
+                <span class="text-[9px] font-black text-gray-400 uppercase">Progreso</span>
+                <span id="contador-progreso" class="bg-amber-100 px-3 py-0.5 rounded-full text-amber-800 font-black border border-amber-200 text-sm shadow-sm">0 / 3 Libros ⭐</span>
+            </div>
+        </div>
+
+        <!-- Tablero de Desafío (Layout adaptativo) -->
+        <!-- CORRECCIÓN: Cambiado flex "items-center" a "items-start lg:items-center" para que el scroll empiece desde arriba y no oculte el primer pergamino en celulares -->
+        <div class="flex-1 w-full p-3 sm:p-5 flex items-start lg:items-center overflow-y-auto">
+            <div class="board-layout max-w-6xl mx-auto w-full pb-32 lg:pb-0">
+                
+                <!-- Columna Izquierda: Páginas Mezcladas (Pergaminos más grandes) -->
+                <div class="flex flex-col justify-center gap-4">
+                    <div class="bg-amber-50 border-2 border-amber-100 rounded-2xl py-2.5 px-4 text-center">
+                        <span id="guia-usuario" class="text-xs md:text-base font-black text-amber-800">
+                            📜 1. Toca una hoja de papel de abajo. 2. Toca el cofre donde debe ir.
+                        </span>
+                    </div>
+
+                    <!-- Contenedor de Pergaminos Mezclados GIGANTES -->
+                    <div id="contenedor-pergaminos" class="flex flex-col gap-4 w-full">
+                        <!-- Inyectado por JS -->
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Los 3 Cofres (Zonas de Destino Interactivas) -->
+                <div class="flex flex-col justify-center gap-4">
+                    
+                    <h3 class="text-lg md:text-xl font-black text-amber-900 text-center lg:text-left uppercase tracking-wide">
+                        Acomoda las páginas en sus cofres mágicos:
+                    </h3>
+
+                    <!-- Grid de Cofres (Con soporte visual 3D e indicador dinámico) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-4 w-full">
+                        
+                        <!-- Cofre Inicio (🟢) -->
+                        <div id="cofre-inicio" onclick="colocarEnCofre('inicio')" class="cofre-zona bg-emerald-50/50 border-4 border-dashed border-emerald-300 rounded-[2rem] p-4 flex flex-row items-center gap-4 cursor-pointer hover:bg-emerald-50 transition-all select-none min-h-[90px] shadow-sm relative group" data-fase="inicio">
+                            <!-- Cofre SVG Dinámico -->
+                            <div class="contenedor-cofre-svg w-16 h-16 shrink-0 transition-transform duration-300 group-hover:scale-105">
+                                <!-- Cambia por JS a Abierto o Cerrado -->
+                            </div>
+                            <div class="text-left flex-1 min-w-0">
+                                <h4 class="font-black text-emerald-800 text-sm md:text-lg leading-tight flex items-center gap-1.5">
+                                    Inicio del cuento <span class="text-xs bg-emerald-200 px-2 py-0.5 rounded-full uppercase tracking-wider">Paso 1</span>
+                                </h4>
+                                <p id="texto-inicio" class="text-xs font-bold text-gray-500 leading-tight mt-1 truncate">¿Cómo empieza la aventura?</p>
+                            </div>
+                        </div>
+
+                        <!-- Cofre Nudo (🟡) -->
+                        <div id="cofre-nudo" onclick="colocarEnCofre('nudo')" class="cofre-zona bg-amber-50/50 border-4 border-dashed border-amber-300 rounded-[2rem] p-4 flex flex-row items-center gap-4 cursor-pointer hover:bg-amber-50 transition-all select-none min-h-[90px] shadow-sm relative group" data-fase="nudo">
+                            <!-- Cofre SVG Dinámico -->
+                            <div class="contenedor-cofre-svg w-16 h-16 shrink-0 transition-transform duration-300 group-hover:scale-105"></div>
+                            <div class="text-left flex-1 min-w-0">
+                                <h4 class="font-black text-amber-800 text-sm md:text-lg leading-tight flex items-center gap-1.5">
+                                    Nudo (El conflicto) <span class="text-xs bg-amber-200 px-2 py-0.5 rounded-full uppercase tracking-wider">Paso 2</span>
+                                </h4>
+                                <p id="texto-nudo" class="text-xs font-bold text-gray-500 leading-tight mt-1 truncate">¿Qué aventura o problema ocurre?</p>
+                            </div>
+                        </div>
+
+                        <!-- Cofre Desenlace (🔴) -->
+                        <div id="cofre-desenlace" onclick="colocarEnCofre('desenlace')" class="cofre-zona bg-rose-50/50 border-4 border-dashed border-rose-300 rounded-[2rem] p-4 flex flex-row items-center gap-4 cursor-pointer hover:bg-rose-50 transition-all select-none min-h-[90px] shadow-sm relative group" data-fase="desenlace">
+                            <!-- Cofre SVG Dinámico -->
+                            <div class="contenedor-cofre-svg w-16 h-16 shrink-0 transition-transform duration-300 group-hover:scale-105"></div>
+                            <div class="text-left flex-1 min-w-0">
+                                <h4 class="font-black text-rose-800 text-sm md:text-lg leading-tight flex items-center gap-1.5">
+                                    Desenlace (El final) <span class="text-xs bg-rose-200 px-2 py-0.5 rounded-full uppercase tracking-wider">Paso 3</span>
+                                </h4>
+                                <p id="texto-desenlace" class="text-xs font-bold text-gray-500 leading-tight mt-1 truncate">¿Cómo se soluciona todo?</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Botones de Acción de Control de la Historia -->
+                    <div class="flex gap-4 w-full mt-2">
+                        <button onclick="limpiarTablero()" class="flex-1 py-4 bg-stone-200 border-b-4 border-stone-400 text-stone-700 font-black rounded-2xl shadow-sm hover:bg-stone-300 active:translate-y-1 active:border-b-0 transition-all flex items-center justify-center gap-2">
+                            <span>🔄</span> Reiniciar
+                        </button>
+                        <button id="btn-comprobar" onclick="comprobarHistoria()" class="flex-[2] py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black text-lg rounded-2xl shadow-[0_5px_0_#9a3412] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2 opacity-50 pointer-events-none">
+                            📖 ¡Leer Historia!
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PANEL DE RETROALIMENTACIÓN INFERIOR ================= -->
+    <div id="burbuja-pedagogica" class="fixed bottom-0 left-0 w-full bg-white border-t-[10px] border-amber-400 shadow-[0_-20px_50px_rgba(0,0,0,0.2)] z-[100] transform translate-y-full transition-transform duration-500 flex flex-col md:flex-row items-center justify-between p-6 md:px-10 md:py-8 rounded-t-[3rem]">
+        <div class="flex items-center gap-4 md:gap-6 w-full md:w-3/4 mb-4 md:mb-0">
+            <span id="burbuja-icono" class="text-6xl md:text-7xl select-none font-bold block bg-amber-100 p-3 rounded-full border-4 border-amber-200">🦉</span>
+            <div>
+                <h3 id="burbuja-titulo" class="text-2xl md:text-4xl font-black text-amber-700 mb-1 md:mb-2 select-none leading-none">Título</h3>
+                <p id="burbuja-mensaje" class="text-sm md:text-xl font-bold text-gray-700 leading-snug select-none">Mensaje...</p>
+            </div>
+        </div>
+        <div id="burbuja-boton-container" class="w-full md:w-auto shrink-0 flex justify-end">
+            <!-- Inyectado por JS -->
+        </div>
+    </div>
+
+    <!-- ================= PANTALLA FINAL ================= -->
+    <div id="pantalla-final" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-white/95 backdrop-blur-md transition-opacity duration-500 select-none overflow-hidden">
+        <div class="flex gap-6 justify-center text-7xl md:text-9xl mb-8 floating select-none">
+            <span>📚</span>
+            <span>🏆</span>
+            <span>✨</span>
+        </div>
+
+        <h1 class="text-4xl sm:text-6xl md:text-8xl font-black mb-6 leading-normal flex flex-col items-center justify-center gap-1">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-700 to-orange-600 py-1">¡SÚPER MAESTRO!</span>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-700 to-orange-600 py-1">DE HISTORIAS</span>
+        </h1>
+        <p class="text-xl md:text-3xl text-gray-700 max-w-3xl mb-10 font-bold leading-relaxed">
+            ¡Has ordenado todos los cuentos de la biblioteca del tiempo! Las historias volvieron a brillar con su inicio, nudo y desenlace gracias a tu increíble comprensión lectora. 🌟📚
+        </p>
+        
+        <button onclick="reiniciarJuegoTotal()" class="group relative inline-flex items-center justify-center px-12 lg:px-16 py-6 lg:py-8 text-2xl lg:text-3xl font-black text-white bg-blue-500 rounded-full overflow-hidden shadow-[0_10px_0_#1e3a8a] active:shadow-[0_0px_0_#1e3a8a] active:translate-y-2 transition-all">
+            <span class="relative flex items-center gap-3">Volver a Empezar <span class="text-3xl lg:text-4xl">🔄</span></span>
+        </button>
+    </div>
+
+    <!-- ================= LÓGICA DEL JUEGO ================= -->
+    <script>
+        // --- BASE DE DATOS DE CUENTOS (Orden lógico y descripciones enriquecidas) ---
+        const cuentosDb = [
+            {
+                titulo: "🐉 El Dragón sin Fuego",
+                pasos: [
+                    {
+                        fase: "inicio",
+                        resumen: "Chispa solo hace burbujas",
+                        texto: "En un reino muy lejano vivía un pequeño dragón llamado Chispa. Él estaba muy triste porque, en lugar de lanzar fuego caliente, solo escupía burbujas de jabón de muchos colores cada vez que abría su boca.",
+                        explicacion: "¡Inicio Correcto! Aquí se presenta a Chispa y nos cuenta su problema de no poder lanzar fuego. Así comienza nuestro viaje."
+                    },
+                    {
+                        fase: "nudo",
+                        resumen: "El hielo congela el pueblo",
+                        texto: "Un día, un gigante de hielo sopló un viento frío que congeló las chimeneas del pueblo. Chispa comió chile picante de la cocina real y sopló con todas sus fuerzas, creando una gran nube de vapor caliente que lo cubrió todo.",
+                        explicacion: "¡Nudo Correcto! Este es el problema de la historia: el gigante congela el pueblo y Chispa debe comer chile picante para actuar."
+                    },
+                    {
+                        fase: "desenlace",
+                        resumen: "El vapor derrite el hielo",
+                        texto: "El vapor derritió el hielo y devolvió el calor al pueblo. Desde ese día, Chispa fue nombrado el héroe del reino y aprendió a calentar las casas con sus burbujas mágicas de vapor tibio en cada invierno.",
+                        explicacion: "¡Desenlace Correcto! Todo se soluciona: Chispa se convierte en héroe y el pueblo vuelve a estar feliz y calientito."
+                    }
+                ]
+            },
+            {
+                titulo: "🤖 El Robot Bailarín",
+                pasos: [
+                    {
+                        fase: "inicio",
+                        resumen: "Robby sueña con bailar",
+                        texto: "Robby era un robot metálico que trabajaba en una enorme fábrica de tuercas, pero su mayor sueño en la vida era convertirse en un bailarín de ballet y saltar por los escenarios del mundo.",
+                        explicacion: "¡Inicio Correcto! Conocemos a Robby, su aburrido trabajo de tuercas y su gran sueño artístico."
+                    },
+                    {
+                        fase: "nudo",
+                        resumen: "La lluvia oxida a Robby",
+                        texto: "Al intentar hacer un gran giro en el concurso del bosque, sus engranajes se oxidaron de golpe debido a una lluvia repentina, dejándolo completamente duro a mitad del escenario sin poder moverse.",
+                        explicacion: "¡Nudo Correcto! Surge el conflicto: Robby se oxida bajo la lluvia en pleno escenario y se queda tieso."
+                    },
+                    {
+                        fase: "desenlace",
+                        resumen: "Sus amigos le ponen aceite",
+                        texto: "Sus amigos le pusieron aceite de oliva aromático en las articulaciones. Robby no solo volvió a moverse, sino que inventó el baile robótico más famoso del mundo que todos copiaban alegres.",
+                        explicacion: "¡Desenlace Correcto! Sus amigos lo salvan con aceite y él inventa un nuevo baile de forma exitosa."
+                    }
+                ]
+            },
+            {
+                titulo: "🌱 La Semilla Viajera",
+                pasos: [
+                    {
+                        fase: "inicio",
+                        resumen: "Samy duerme en la flor",
+                        texto: "Samy era una pequeña y suave semilla de diente de león que vivía feliz durmiendo en una mullida flor amarilla en medio de un campo lleno de mariposas.",
+                        explicacion: "¡Inicio Correcto! Aquí se nos presenta la vida tranquila de la pequeña semilla Samy en su pradera."
+                    },
+                    {
+                        fase: "nudo",
+                        resumen: "El viento se lleva a Samy",
+                        texto: "De repente, un travieso viento de otoño la sopló tan fuerte que la arrancó de su flor, llevándola volando por encima de ríos caudalosos y montañas altísimas, asustada y lejos de su hogar.",
+                        explicacion: "¡Nudo Correcto! El conflicto o aventura: el fuerte viento de otoño arrastra a Samy lejos de su pradera."
+                    },
+                    {
+                        fase: "desenlace",
+                        resumen: "Samy florece en la tierra",
+                        texto: "Samy cayó suavemente sobre tierra húmeda y fértil. Con la llegada de la lluvia de primavera, echó fuertes raíces y creció hasta convertirse en una hermosa y brillante flor nueva.",
+                        explicacion: "¡Desenlace Correcto! Todo se resuelve de forma pacífica: Samy cae en buena tierra y florece en primavera."
+                    }
+                ]
+            }
+        ];
+
+        // Estado del juego
+        let indicesLibrosResueltos = [];
+        let indexLibroActual = -1;
+        let pergaminoSeleccionadoId = null;
+
+        // Distribución del tablero del niño
+        let asignaciones = {
+            inicio: null,      // Almacenará el objeto { idPergamino, texto }
+            nudo: null,
+            desenlace: null
+        };
+
+        // Referencias DOM
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const pantallaSeleccion = document.getElementById('pantalla-seleccion');
+        const pantallaJuego = document.getElementById('pantalla-juego');
+        const pantallaFinal = document.getElementById('pantalla-final');
+        const contadorProgreso = document.getElementById('contador-progreso');
+        const burbujaPedagogica = document.getElementById('burbuja-pedagogica');
+
+        const tituloLibroActual = document.getElementById('titulo-libro-actual');
+        const contenedorPergaminos = document.getElementById('contenedor-pergaminos');
+        const btnComprobar = document.getElementById('btn-comprobar');
+
+        const textoInicio = document.getElementById('texto-inicio');
+        const textoNudo = document.getElementById('texto-nudo');
+        const textoDesenlace = document.getElementById('texto-desenlace');
+
+        // Referencias SVGs de los cofres
+        const cofreSVGCerrado = '<svg viewBox="0 0 100 100" class="w-full h-full"><use href="#cofre-cerrado-vector" /></svg>';
+        const cofreSVGAbierto = '<svg viewBox="0 0 100 100" class="w-full h-full glow-chest"><use href="#cofre-abierto-vector" /></svg>';
+
+        // --- FLUJO GENERAL ---
+
+        function iniciarSeleccion() {
+            pantallaInicio.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaInicio.classList.add('hidden');
+                pantallaInicio.classList.remove('opacity-0');
+                pantallaSeleccion.classList.remove('hidden');
+            }, 500);
+        }
+
+        function regresarASeleccion() {
+            pantallaJuego.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaJuego.classList.add('hidden');
+                pantallaJuego.classList.remove('opacity-0');
+                pantallaSeleccion.classList.remove('hidden');
+                ocultarBurbujaPedagogica();
+            }, 500);
+        }
+
+        function seleccionarCuento(index) {
+            indexLibroActual = index;
+            pantallaSeleccion.classList.add('hidden');
+            pantallaJuego.classList.remove('hidden');
+            
+            limpiarTablero();
+            cargarLibro();
+        }
+
+        function actualizarContadorTotal() {
+            contadorProgreso.innerText = `${indicesLibrosResueltos.length} / ${cuentosDb.length} ⭐`;
+        }
+
+        // --- CARGAR LIBRO SELECCIONADO ---
+
+        function cargarLibro() {
+            actualizarContadorTotal();
+            const cuento = cuentosDb[indexLibroActual];
+            tituloLibroActual.innerText = cuento.titulo;
+
+            // Barajar los pasos para el desorden
+            const pasosMezclados = barajarArray([...cuento.pasos]);
+
+            contenedorPergaminos.innerHTML = '';
+            pasosMezclados.forEach((paso, idx) => {
+                const idGenerado = `pergamino-${idx}`;
+                
+                const card = document.createElement('div');
+                card.id = idGenerado;
+                // Clases modificadas: Más grandes, bordes más gruesos y redondeados, mayor padding y sombra para simular pergamino infantil
+                card.className = "tarjeta-pergamino bg-[#fffdf5] border-4 border-[#e9dbbe] rounded-[2rem] p-5 cursor-pointer hover:bg-[#fff9e6] shadow-md hover:shadow-lg transition-all duration-200 text-sm md:text-lg font-bold text-gray-700 leading-relaxed flex items-center gap-4 relative min-h-[110px]";
+                card.dataset.faseOriginal = paso.fase;
+                card.dataset.texto = paso.texto;
+
+                card.innerHTML = `
+                    <span class="bg-[#fcf3d9] text-amber-800 rounded-full w-10 h-10 md:w-12 md:h-10 flex items-center justify-center font-black text-xl shrink-0 select-none shadow-inner border-2 border-[#e9dbbe]">📜</span>
+                    <span class="flex-1 text-left leading-relaxed">${paso.texto}</span>
+                `;
+
+                card.addEventListener('pointerdown', () => seleccionarPergamino(idGenerado));
+                contenedorPergaminos.appendChild(card);
+            });
+
+            habilitarComprobar(false);
+            actualizarCofresVisuales();
+        }
+
+        // --- SISTEMA INTERACTIVO TAP-TO-PLACE ---
+
+        function seleccionarPergamino(id) {
+            // Si el pergamino ya está asignado a algún cofre, no se puede volver a seleccionar de aquí directamente
+            const pergaminoDom = document.getElementById(id);
+            if (pergaminoDom.style.opacity === "0.3") return;
+
+            // Desmarcar anterior
+            document.querySelectorAll('.tarjeta-pergamino').forEach(el => {
+                el.classList.remove('pergamino-seleccionado');
+            });
+
+            if (pergaminoSeleccionadoId === id) {
+                // Deseleccionar si hace clic al mismo
+                pergaminoSeleccionadoId = null;
+                document.getElementById('guia-usuario').innerText = "📜 1. Toca una hoja de papel de abajo. 2. Toca el cofre donde debe ir.";
+            } else {
+                pergaminoSeleccionadoId = id;
+                pergaminoDom.classList.add('pergamino-seleccionado');
+                document.getElementById('guia-usuario').innerText = "👇 ¡Ahora toca el cofre de la derecha para acomodar esta página!";
+            }
+        }
+
+        function colocarEnCofre(faseDestino) {
+            if (!pergaminoSeleccionadoId) {
+                // Si hace clic en un cofre que ya está ocupado, devolvemos la página a la pila
+                if (asignaciones[faseDestino]) {
+                    devolverPaginaAlMazo(faseDestino);
+                }
+                return;
+            }
+
+            const pergaminoDom = document.getElementById(pergaminoSeleccionadoId);
+            const textoLargo = pergaminoDom.dataset.texto;
+
+            // Si el cofre de destino ya tenía algo asignado, devolvemos lo viejo primero
+            if (asignaciones[faseDestino]) {
+                devolverPaginaAlMazo(faseDestino);
+            }
+
+            // Realizar la nueva asignación
+            asignaciones[faseDestino] = {
+                idPergamino: pergaminoSeleccionadoId,
+                texto: textoLargo,
+                faseOriginal: pergaminoDom.dataset.faseOriginal
+            };
+
+            // Cambiar visualmente el texto del cofre
+            const resumenTexto = textoLargo.substring(0, 35) + "...";
+            const parrafoCofre = document.getElementById(`texto-${faseDestino}`);
+            parrafoCofre.innerHTML = `<span class="text-slate-800 font-extrabold block text-xs md:text-sm bg-white p-1 rounded-xl border border-slate-100 truncate shadow-inner">📜 ${resumenTexto}</span>`;
+
+            // Ocultar de la pila de hojas mezcladas
+            pergaminoDom.classList.remove('pergamino-seleccionado');
+            pergaminoDom.style.opacity = "0.3";
+            pergaminoDom.style.pointerEvents = "none";
+
+            pergaminoSeleccionadoId = null;
+            document.getElementById('guia-usuario').innerText = "📜 ¡Acomodado! Sigue ordenando las demás hojas.";
+
+            actualizarCofresVisuales();
+            verificarTodoColocado();
+        }
+
+        function devolverPaginaAlMazo(faseCofre) {
+            const asignacionPrevia = asignaciones[faseCofre];
+            if (!asignacionPrevia) return;
+
+            // Restaurar en la pila de hojas
+            const pergaminoDom = document.getElementById(asignacionPrevia.idPergamino);
+            if (pergaminoDom) {
+                pergaminoDom.style.opacity = "1";
+                pergaminoDom.style.pointerEvents = "auto";
+            }
+
+            // Vaciar el cofre
+            const descripcionesDefault = {
+                inicio: "¿Cómo empieza la aventura?",
+                nudo: "¿Qué aventura o problema ocurre?",
+                desenlace: "¿Cómo se soluciona todo?"
+            };
+
+            document.getElementById(`texto-${faseCofre}`).innerText = descripcionesDefault[faseCofre];
+            asignaciones[faseCofre] = null;
+
+            actualizarCofresVisuales();
+            habilitarComprobar(false);
+        }
+
+        function actualizarCofresVisuales() {
+            // Actualiza de forma dinámica las ranuras de cofres cargando el SVG adecuado
+            ["inicio", "nudo", "desenlace"].forEach(fase => {
+                const cofreDOM = document.getElementById(`cofre-${fase}`);
+                const contenedorSVG = cofreDOM.querySelector('.contenedor-cofre-svg');
+                
+                if (asignaciones[fase]) {
+                    // Si tiene asignada una tarjeta, mostrar el cofre abierto mágicamente
+                    contenedorSVG.innerHTML = cofreSVGAbierto;
+                    cofreDOM.classList.remove('border-dashed', 'bg-opacity-50');
+                    cofreDOM.classList.add('border-solid', 'bg-opacity-100', 'shadow-md');
+                } else {
+                    // Si está vacío, mostrar el cofre cerrado
+                    contenedorSVG.innerHTML = cofreSVGCerrado;
+                    cofreDOM.classList.add('border-dashed', 'bg-opacity-50');
+                    cofreDOM.classList.remove('border-solid', 'bg-opacity-100', 'shadow-md');
+                }
+            });
+        }
+
+        function verificarTodoColocado() {
+            if (asignaciones.inicio && asignaciones.nudo && asignaciones.desenlace) {
+                habilitarComprobar(true);
+                document.getElementById('guia-usuario').innerText = "🎉 ¡Todas las hojas están acomodadas! Dale clic a LEER HISTORIA.";
+            } else {
+                habilitarComprobar(false);
+            }
+        }
+
+        function habilitarComprobar(estado) {
+            if (estado) {
+                btnComprobar.classList.remove('opacity-50', 'pointer-events-none');
+            } else {
+                btnComprobar.classList.add('opacity-50', 'pointer-events-none');
+            }
+        }
+
+        function limpiarTablero() {
+            pergaminoSeleccionadoId = null;
+            document.getElementById('guia-usuario').innerText = "📜 1. Toca una hoja de papel de abajo. 2. Toca el cofre donde debe ir.";
+
+            // Devolver todas las asignaciones
+            ["inicio", "nudo", "desenlace"].forEach(f => {
+                devolverPaginaAlMazo(f);
+            });
+
+            document.querySelectorAll('.tarjeta-pergamino').forEach(el => {
+                el.classList.remove('pergamino-seleccionado');
+                el.style.opacity = "1";
+                el.style.pointerEvents = "auto";
+            });
+
+            actualizarCofresVisuales();
+            habilitarComprobar(false);
+        }
+
+        // --- COMPROBACIÓN LÓGICA DE SECUENCIA ---
+
+        function comprobarHistoria() {
+            const c = cuentosDb[indexLibroActual];
+
+            // Comprobamos si las asignaciones hechas coinciden con las fases correspondientes
+            const inicioCorrecto = (asignaciones.inicio.faseOriginal === "inicio");
+            const nudoCorrecto = (asignaciones.nudo.faseOriginal === "nudo");
+            const desenlaceCorrecto = (asignaciones.desenlace.faseOriginal === "desenlace");
+
+            if (inicioCorrecto && nudoCorrecto && desenlaceCorrecto) {
+                // ¡Éxito de lectura completo!
+                if (!indicesLibrosResueltos.includes(indexLibroActual)) {
+                    indicesLibrosResueltos.push(indexLibroActual);
+                }
+                actualizarContadorTotal();
+
+                // Detonar lluvia de hojas de papel y destellos de celebración
+                const rectCofres = document.getElementById('cofre-nudo').getBoundingClientRect();
+                crearCelebracion(rectCofres);
+
+                lanzarBurbujaPedagogica(
+                    true,
+                    "📖",
+                    "¡Libro Restaurado! ✨",
+                    `¡Súper! Ordenaste el cuento de forma impecable. <br><br><b>Inicio:</b> ${c.pasos[0].explicacion}<br><b>Nudo:</b> ${c.pasos[1].explicacion}<br><b>Desenlace:</b> ${c.pasos[2].explicacion}`,
+                    "border-green-400 text-green-700",
+                    () => {
+                        ocultarBurbujaPedagogica();
+                        if (indicesLibrosResueltos.length >= cuentosDb.length) {
+                            finalizarJuego();
+                        } else {
+                            regresarASeleccion();
+                        }
+                    }
+                );
+
+            } else {
+                // Se equivocó de orden lógico
+                document.querySelectorAll('.cofre-zona').forEach(el => {
+                    el.classList.add('shake');
+                    setTimeout(() => el.classList.remove('shake'), 500);
+                });
+
+                // Encontrar cuál fase está mal colocada para dar una pista personalizada
+                let pista = "Recuerda que el **Inicio** presenta a los personajes, el **Nudo** cuenta el problema de la aventura y el **Desenlace** nos regala el final feliz.";
+                if (!inicioCorrecto && nudoCorrecto && desenlaceCorrecto) {
+                    pista = "¡Casi! El nudo y desenlace están perfectos, pero la hoja del **Inicio** no corresponde ahí. ¡Busca cuál presenta la historia!";
+                } else if (inicioCorrecto && !nudoCorrecto && desenlaceCorrecto) {
+                    pista = "¡Muy cerca! El inicio y el desenlace están bien, pero el **Nudo** está fuera de lugar. Busca el párrafo que cuente la aventura más emocionante.";
+                } else if (inicioCorrecto && nudoCorrecto && !desenlaceCorrecto) {
+                    pista = "¡Por poco! Las dos primeras hojas están correctas, pero falta acomodar el **Desenlace** que dé un cierre feliz y lógico al cuento.";
+                }
+
+                lanzarBurbujaPedagogica(
+                    false,
+                    "👾",
+                    "¡Tinta sopló con enojo!",
+                    `El cuento suena un poco confuso y sin lógica de esa manera. <br><br>💡 <b>Pista del Búho:</b> ${pista}`,
+                    "border-red-400 text-red-700"
+                );
+            }
+        }
+
+        // --- BURBUJA DE RETROALIMENTACIÓN INFERIOR ---
+
+        function lanzarBurbujaPedagogica(esExito, icono, titulo, mensaje, clasesColor, callback = null) {
+            const colorBorde = clasesColor.split(' ')[0];
+            const colorTexto = clasesColor.split(' ')[1];
+
+            burbujaPedagogica.className = `fixed bottom-0 left-0 w-full bg-white border-t-[10px] ${colorBorde} shadow-[0_-20px_50px_rgba(0,0,0,0.3)] z-[100] transform translate-y-0 transition-transform duration-500 flex flex-col md:flex-row items-center justify-between p-6 md:px-10 md:py-8 rounded-t-[3rem]`;
+            
+            document.getElementById('burbuja-icono').innerText = icono;
+            document.getElementById('burbuja-titulo').className = `text-2xl md:text-4xl font-black ${colorTexto} mb-1 md:mb-2 select-none leading-none`;
+            document.getElementById('burbuja-titulo').innerText = titulo;
+            document.getElementById('burbuja-mensaje').innerHTML = mensaje;
+
+            const btnContainer = document.getElementById('burbuja-boton-container');
+
+            if (esExito) {
+                callbackContinuar = callback;
+                burbujaPedagogica.style.pointerEvents = 'auto';
+                btnContainer.innerHTML = `
+                    <button onclick="ejecutarContinuar()" class="px-8 md:px-12 py-4 md:py-5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black text-lg md:text-2xl rounded-full shadow-[0_6px_0_#9a3412] active:translate-y-1 active:shadow-none transition-all flex items-center gap-2 select-none w-full md:w-auto mt-4 md:mt-0">
+                        Continuar ➡️
+                    </button>
+                `;
+            } else {
+                callbackContinuar = null;
+                burbujaPedagogica.style.pointerEvents = 'none';
+                btnContainer.innerHTML = '';
+                setTimeout(() => {
+                    if (!callbackContinuar) ocultarBurbujaPedagogica();
+                }, 7500); // Dar suficiente tiempo de lectura para niños de 3º/4º
+            }
+        }
+
+        function ocultarBurbujaPedagogica() {
+            burbujaPedagogica.classList.remove('translate-y-0');
+            burbujaPedagogica.classList.add('translate-y-full');
+        }
+
+        function ejecutarContinuar() {
+            if (callbackContinuar) {
+                const cb = callbackContinuar;
+                callbackContinuar = null;
+                cb();
+            }
+        }
+
+        // --- EFECTOS VISUALES EXTRA ---
+
+        function crearCelebracion(rect) {
+            const emojis = ['🌟', '✨', '💖', '📜', '🍂', '🍁'];
+            const container = document.body;
+
+            for (let i = 0; i < 25; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                const posX = rect.left + (rect.width / 2) + (Math.random() * 200 - 100);
+                const posY = rect.top + (rect.height / 2) + (Math.random() * 100 - 50);
+                
+                p.style.left = `${posX}px`;
+                p.style.top = `${posY}px`;
+                p.style.fontSize = `${Math.random() * 15 + 25}px`;
+                p.style.animationDelay = `${Math.random() * 0.2}s`;
+                
+                container.appendChild(p);
+                
+                setTimeout(() => p.remove(), 1500);
+            }
+        }
+
+        function finalizarJuego() {
+            pantallaJuego.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaJuego.classList.add('hidden');
+                pantallaFinal.classList.remove('hidden');
+                setTimeout(() => pantallaFinal.classList.remove('opacity-0'), 50);
+                
+                // Celebración con hojas voladoras de libros mágicos
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        const fakeRect = {
+                            left: Math.random() * window.innerWidth - 50,
+                            width: 100,
+                            top: window.innerHeight - 100,
+                            height: 100
+                        };
+                        crearCelebracion(fakeRect);
+                    }, i * 250);
+                }
+            }, 500);
+        }
+
+        function reiniciarJuegoTotal() {
+            pantallaFinal.classList.add('opacity-0');
+            setTimeout(() => {
+                window.location.reload(); // Recarga F5 limpia de toda la memoria y estados
+            }, 300);
+        }
+
+        // --- AUXILIARES ---
+
+        function barajarArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // --- CARGA INICIAL ---
+        document.addEventListener('DOMContentLoaded', () => {
+            pantallaInicio.classList.remove('hidden');
+            setTimeout(() => pantallaInicio.classList.remove('opacity-0'), 50);
+        });
+
+    </script>
+</body>
+</html>

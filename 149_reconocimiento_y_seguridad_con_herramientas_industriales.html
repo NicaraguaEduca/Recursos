@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taller Seguro - Instrumentos Industriales</title>
+    
+    <!-- Fuentes Google: Russo One (Industrial) y Nunito (Lectura) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;900&family=Russo+One&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA DE TAILWIND -->
+    <script>
+        tailwind.config = {
+            important: '#recurso-wp-taller',
+            corePlugins: {
+                preflight: false,
+            },
+            theme: {
+                extend: {
+                    fontFamily: {
+                        hard: ['"Russo One"', 'sans-serif'],
+                        body: ['Nunito', 'sans-serif'],
+                    },
+                    colors: {
+                        ind: {
+                            dark: '#0f172a',      /* Slate 900 */
+                            gray: '#334155',      /* Slate 700 */
+                            steel: '#94a3b8',     /* Slate 400 */
+                            yellow: '#facc15',    /* Yellow 400 (Hazard) */
+                            orange: '#f97316',    /* Orange 500 */
+                            red: '#ef4444',       /* Red 500 */
+                            green: '#10b981'      /* Emerald 500 */
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* =========================================================
+           MICRO-RESET LOCAL: Protege el recurso del tema de WP
+           ========================================================= */
+        #recurso-wp-taller * {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: currentColor;
+            line-height: normal;
+        }
+        #recurso-wp-taller h1, #recurso-wp-taller h2, #recurso-wp-taller h3, #recurso-wp-taller p, #recurso-wp-taller span, #recurso-wp-taller div {
+            margin: 0; padding: 0;
+        }
+        #recurso-wp-taller button {
+            background-color: transparent; background-image: none; cursor: pointer; padding: 0; font-family: inherit;
+        }
+
+        /* =========================================================
+           ESTILOS PANTALLA COMPLETA & INDUSTRIAL
+           ========================================================= */
+        #recurso-wp-taller {
+            font-family: 'Nunito', sans-serif;
+            background-color: #0f172a; 
+            /* Fondo de metal perforado */
+            background-image: radial-gradient(#334155 2px, transparent 2px);
+            background-size: 20px 20px;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Cintas de Peligro (Hazard Stripes) */
+        .bg-hazard {
+            background-image: repeating-linear-gradient(
+                -45deg,
+                #facc15,
+                #facc15 20px,
+                #1e293b 20px,
+                #1e293b 40px
+            );
+        }
+        .bg-hazard-red {
+            background-image: repeating-linear-gradient(
+                -45deg,
+                #ef4444,
+                #ef4444 20px,
+                #1e293b 20px,
+                #1e293b 40px
+            );
+        }
+        .bg-hazard-green {
+            background-image: repeating-linear-gradient(
+                -45deg,
+                #10b981,
+                #10b981 20px,
+                #1e293b 20px,
+                #1e293b 40px
+            );
+        }
+
+        /* Paneles Industriales */
+        #recurso-wp-taller .ind-panel {
+            background-color: #1e293b;
+            border: 4px solid #94a3b8;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.8), inset 0 2px 5px rgba(255,255,255,0.1);
+        }
+
+        #recurso-wp-taller .ind-btn {
+            background: linear-gradient(to bottom, #facc15, #eab308);
+            border: 4px solid #1e293b;
+            color: #1e293b;
+            border-radius: 8px;
+            box-shadow: 0 6px 0px #854d0e, 0 10px 15px rgba(0,0,0,0.5);
+            transition: all 0.15s ease-out;
+            text-transform: uppercase;
+            font-family: 'Russo One', sans-serif;
+            letter-spacing: 1px;
+        }
+        #recurso-wp-taller .ind-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0px #854d0e, 0 15px 20px rgba(0,0,0,0.6);
+            filter: brightness(1.1);
+        }
+        #recurso-wp-taller .ind-btn:active:not(:disabled) {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0px #854d0e, 0 5px 5px rgba(0,0,0,0.3);
+        }
+
+        /* Botones de Equipamiento */
+        .gear-btn {
+            background-color: #334155;
+            border: 4px solid #475569;
+            color: #f8fafc;
+            border-radius: 12px;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+        }
+        .gear-btn:hover {
+            border-color: #94a3b8;
+            transform: translateY(-3px);
+            background-color: #475569;
+        }
+        .gear-selected {
+            background-color: #fef08a !important;
+            border-color: #eab308 !important;
+            color: #854d0e !important;
+            transform: scale(1.05) translateY(-3px) !important;
+            box-shadow: 0 8px 15px rgba(234, 179, 8, 0.4) !important;
+        }
+
+        /* Pantallas SPA */
+        #recurso-wp-taller .screen {
+            display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; position: absolute; top: 0; left: 0; overflow-y: auto; overflow-x: hidden; z-index: 10;
+        }
+        #recurso-wp-taller .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-taller .screen.active {
+            display: flex;
+            animation: industrialSlide 0.5s ease-out forwards;
+        }
+        @keyframes industrialSlide {
+            0% { opacity: 0; transform: translateY(40px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .shake-error { animation: shakeError 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shakeError {
+            10%, 90% { transform: translate3d(-3px, 0, 0); }
+            20%, 80% { transform: translate3d(5px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
+        /* Animación del Avatar */
+        .worker-idle {
+            animation: workerBreathe 3s ease-in-out infinite alternate;
+        }
+        @keyframes workerBreathe {
+            0% { transform: scaleY(1); }
+            100% { transform: scaleY(0.98) translateY(2px); }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-taller">
+
+        <!-- ==============================================
+             PANTALLA 1: INICIO
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="ind-panel p-8 md:p-14 max-w-3xl w-full mx-4 flex flex-col items-center border-t-[12px] border-t-ind-yellow">
+                <div class="text-[5rem] md:text-[8rem] mb-4 animate__animated animate__pulse animate__infinite drop-shadow-xl">🚧</div>
+                
+                <h2 class="text-xs md:text-sm text-ind-dark font-hard font-bold mb-4 uppercase bg-ind-yellow inline-block px-6 py-2 rounded shadow-md tracking-widest">
+                    Tecnología - 5/6to Grado
+                </h2>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-hard text-white leading-none uppercase drop-shadow-lg mb-6">
+                    Taller <br><span class="text-ind-yellow">Seguro</span>
+                </h1>
+                <p class="text-lg md:text-xl text-gray-300 font-bold mb-10 px-2 leading-relaxed max-w-xl">
+                    Las máquinas industriales no perdonan errores. Aprende a evaluar los riesgos y equipa a tu trabajador con las medidas de protección correctas antes de encender la maquinaria.
+                </p>
+                <button onclick="playBeep(); showScreen('screen-theory')" class="ind-btn text-xl md:text-3xl px-12 py-5 w-full md:w-auto">
+                    LEER MANUAL DE SEGURIDAD ▶
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: TEORÍA Y EPP (Equipo de Protección)
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center">
+            <div class="ind-panel p-6 md:p-12 max-w-5xl w-full text-center my-auto">
+                <h2 class="text-3xl md:text-5xl font-hard text-white mb-6 uppercase border-b-4 border-ind-steel pb-4">
+                    Equipo de Protección (EPP)
+                </h2>
+                <p class="text-base md:text-lg text-gray-300 mb-8 font-bold max-w-3xl mx-auto leading-relaxed">
+                    Antes de entrar a la zona de pruebas, memoriza para qué sirve cada pieza del equipo:
+                </p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-10 text-left">
+                    <div class="bg-ind-dark p-4 rounded-lg border-2 border-ind-steel flex items-center gap-4 hover:border-ind-yellow transition">
+                        <div class="text-4xl bg-ind-gray p-2 rounded-lg border border-gray-500">👷‍♂️</div>
+                        <div>
+                            <h3 class="font-hard text-lg text-ind-yellow uppercase">Casco</h3>
+                            <p class="text-xs text-gray-400 font-bold">Protege la cabeza de objetos que caen de arriba.</p>
+                        </div>
+                    </div>
+                    <div class="bg-ind-dark p-4 rounded-lg border-2 border-ind-steel flex items-center gap-4 hover:border-ind-yellow transition">
+                        <div class="text-4xl bg-ind-gray p-2 rounded-lg border border-gray-500">🥽</div>
+                        <div>
+                            <h3 class="font-hard text-lg text-ind-yellow uppercase">Gafas</h3>
+                            <p class="text-xs text-gray-400 font-bold">Bloquean astillas, polvo o líquidos hacia los ojos.</p>
+                        </div>
+                    </div>
+                    <div class="bg-ind-dark p-4 rounded-lg border-2 border-ind-steel flex items-center gap-4 hover:border-ind-yellow transition">
+                        <div class="text-4xl bg-ind-gray p-2 rounded-lg border border-gray-500">🎧</div>
+                        <div>
+                            <h3 class="font-hard text-lg text-ind-yellow uppercase">Orejeras</h3>
+                            <p class="text-xs text-gray-400 font-bold">Aíslan el ruido ensordecedor de los motores.</p>
+                        </div>
+                    </div>
+                    <div class="bg-ind-dark p-4 rounded-lg border-2 border-ind-steel flex items-center gap-4 hover:border-ind-yellow transition">
+                        <div class="text-4xl bg-ind-gray p-2 rounded-lg border border-gray-500">🧤</div>
+                        <div>
+                            <h3 class="font-hard text-lg text-ind-yellow uppercase">Guantes</h3>
+                            <p class="text-xs text-gray-400 font-bold">Evitan cortes, quemaduras y reducen la vibración.</p>
+                        </div>
+                    </div>
+                    <div class="bg-ind-dark p-4 rounded-lg border-2 border-ind-steel flex items-center gap-4 hover:border-ind-yellow transition">
+                        <div class="text-4xl bg-ind-gray p-2 rounded-lg border border-gray-500">🥾</div>
+                        <div>
+                            <h3 class="font-hard text-lg text-ind-yellow uppercase">Botas</h3>
+                            <p class="text-xs text-gray-400 font-bold">Tienen punta de acero contra caídas de cargas pesadas.</p>
+                        </div>
+                    </div>
+                    <div class="bg-ind-dark p-4 rounded-lg border-2 border-ind-steel flex items-center gap-4 hover:border-ind-yellow transition">
+                        <div class="text-4xl bg-ind-gray p-2 rounded-lg border border-gray-500">🦺</div>
+                        <div>
+                            <h3 class="font-hard text-lg text-ind-yellow uppercase">Chaleco</h3>
+                            <p class="text-xs text-gray-400 font-bold">Alta visibilidad para que los vehículos te vean de lejos.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="playBeep(); showScreen('screen-start')" class="border-2 border-gray-500 text-gray-400 font-bold px-8 py-3 rounded text-sm uppercase hover:bg-gray-800 transition font-hard">
+                        ⬅ SALIR DEL TALLER
+                    </button>
+                    <button onclick="playBeep(); startGame()" class="ind-btn text-xl md:text-2xl px-10 py-3">
+                        ENTRAR A LA ZONA DE RIESGO 🚧
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: EL JUEGO (Simulador de Equipamiento)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start p-0 bg-transparent relative">
+            
+            <!-- HUD Superior -->
+            <div class="w-full bg-hazard p-1 shrink-0 z-30 shadow-lg">
+                <div class="w-full bg-ind-dark p-2 md:p-3 flex justify-between items-center">
+                    <div class="flex items-center gap-3 px-2">
+                        <div class="text-2xl md:text-4xl drop-shadow-[0_0_8px_#facc15]">✅</div>
+                        <div class="flex flex-col">
+                            <span class="text-[9px] md:text-xs text-gray-400 font-bold uppercase tracking-widest leading-none mb-1">Misiones Seguras</span>
+                            <span class="font-hard text-xl md:text-3xl text-ind-yellow leading-none"><span id="score-display">0</span><span class="text-gray-500 text-lg">/5</span></span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center">
+                        <span id="level-title" class="px-4 py-1 border-2 border-ind-steel bg-ind-gray text-white font-hard text-sm md:text-base rounded uppercase tracking-widest shadow-inner">
+                            Cargando Área...
+                        </span>
+                    </div>
+
+                    <div class="flex items-center gap-3 pr-2">
+                        <div class="flex flex-col text-right">
+                            <span class="text-[9px] md:text-xs text-gray-400 font-bold uppercase tracking-widest leading-none mb-1">Autorizaciones</span>
+                            <span id="lives-display" class="text-lg md:text-xl tracking-widest mt-1">🎫 🎫 🎫</span>
+                        </div>
+                        <button onclick="playBeep(); exitGame()" class="bg-red-900/50 border border-red-500 text-red-400 hover:bg-red-500 hover:text-white transition-colors p-2 rounded ml-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Área Principal de Simulación -->
+            <div class="w-full flex-grow flex flex-col md:flex-row gap-4 p-4 md:p-6 overflow-hidden relative max-w-6xl mx-auto">
+                
+                <!-- SECCIÓN IZQUIERDA: Vestuario (Avatar del Trabajador) -->
+                <div id="worker-box" class="w-full md:w-5/12 flex items-center justify-center relative bg-ind-gray border-4 border-ind-steel rounded-2xl shadow-inner h-[40%] md:h-full shrink-0 overflow-hidden transition-all duration-300">
+                    <div class="absolute top-2 left-3 text-[10px] font-hard text-gray-500 uppercase tracking-widest">Cámara de Preparación</div>
+                    
+                    <!-- SVG del Trabajador -->
+                    <div class="w-32 h-48 md:w-48 md:h-[300px] lg:w-64 lg:h-[400px] worker-idle">
+                        <svg viewBox="0 0 200 350" class="w-full h-full drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
+                            <!-- Worker Base -->
+                            <rect x="75" y="180" width="20" height="120" fill="#1e3a8a"/>
+                            <rect x="105" y="180" width="20" height="120" fill="#1e3a8a"/>
+                            <path d="M 65 300 L 95 300 L 95 315 L 65 315 Z" fill="#1f2937"/>
+                            <path d="M 105 300 L 135 300 L 135 315 L 105 315 Z" fill="#1f2937"/>
+                            <rect x="50" y="90" width="20" height="90" rx="10" fill="#3b82f6"/>
+                            <rect x="130" y="90" width="20" height="90" rx="10" fill="#3b82f6"/>
+                            <circle cx="60" cy="180" r="10" fill="#fbcfe8"/>
+                            <circle cx="140" cy="180" r="10" fill="#fbcfe8"/>
+                            <rect x="65" y="80" width="70" height="110" rx="15" fill="#3b82f6"/>
+                            <rect x="65" y="80" width="70" height="30" fill="#2563eb"/>
+                            <rect x="90" y="65" width="20" height="20" fill="#fbcfe8"/>
+                            <circle cx="100" cy="45" r="30" fill="#fbcfe8"/>
+                            <circle cx="90" cy="40" r="3" fill="#1e293b"/>
+                            <circle cx="110" cy="40" r="3" fill="#1e293b"/>
+                            <path d="M 90 55 Q 100 65 110 55" fill="none" stroke="#1e293b" stroke-width="3" stroke-linecap="round"/>
+
+                            <!-- ================= EQUIPAMIENTO OCULTO ================= -->
+                            <!-- Botas Industriales Rediseñadas -->
+                            <g id="eq-botas" class="transition-opacity duration-300 opacity-0">
+                                <!-- Bota Izquierda -->
+                                <path d="M 70 250 L 95 250 L 100 308 L 50 308 L 55 280 Z" fill="#78350f" stroke="#451a03" stroke-width="2"/>
+                                <path d="M 50 308 L 100 308 L 100 320 L 50 320 Z" fill="#1e293b" stroke="#0f172a" stroke-width="2"/>
+                                <!-- Punta de acero izq -->
+                                <path d="M 50 295 Q 75 295 75 308 L 50 308 Z" fill="#9ca3af" stroke="#64748b" stroke-width="2"/>
+
+                                <!-- Bota Derecha -->
+                                <path d="M 105 250 L 130 250 L 145 280 L 150 308 L 100 308 Z" fill="#78350f" stroke="#451a03" stroke-width="2"/>
+                                <path d="M 100 308 L 150 308 L 150 320 L 100 320 Z" fill="#1e293b" stroke="#0f172a" stroke-width="2"/>
+                                <!-- Punta de acero der -->
+                                <path d="M 125 295 Q 150 295 150 308 L 125 308 Z" fill="#9ca3af" stroke="#64748b" stroke-width="2"/>
+                            </g>
+                            <!-- Chaleco -->
+                            <g id="eq-chaleco" class="transition-opacity duration-300 opacity-0">
+                                <rect x="63" y="80" width="74" height="100" rx="10" fill="#f97316"/>
+                                <rect x="63" y="110" width="74" height="15" fill="#d9f99d"/>
+                                <rect x="63" y="150" width="74" height="15" fill="#d9f99d"/>
+                                <path d="M 85 80 L 115 80 L 100 110 Z" fill="#3b82f6"/>
+                            </g>
+                            <!-- Guantes -->
+                            <g id="eq-guantes" class="transition-opacity duration-300 opacity-0">
+                                <rect x="48" y="160" width="24" height="32" rx="8" fill="#fb923c"/>
+                                <rect x="128" y="160" width="24" height="32" rx="8" fill="#fb923c"/>
+                            </g>
+                            <!-- Orejeras -->
+                            <g id="eq-orejeras" class="transition-opacity duration-300 opacity-0">
+                                <rect x="65" y="30" width="12" height="30" rx="6" fill="#ef4444"/>
+                                <rect x="123" y="30" width="12" height="30" rx="6" fill="#ef4444"/>
+                                <path d="M 71 35 Q 100 -10 129 35" fill="none" stroke="#1f2937" stroke-width="6"/>
+                            </g>
+                            <!-- Gafas -->
+                            <g id="eq-gafas" class="transition-opacity duration-300 opacity-0">
+                                <rect x="75" y="30" width="50" height="20" rx="6" fill="#22d3ee" fill-opacity="0.8" stroke="#164e63" stroke-width="3"/>
+                            </g>
+                            <!-- Casco -->
+                            <g id="eq-casco" class="transition-opacity duration-300 opacity-0">
+                                <path d="M 65 30 Q 100 -5 135 30 L 145 35 L 55 35 Z" fill="#eab308" stroke="#a16207" stroke-width="2"/>
+                                <rect x="90" y="15" width="20" height="15" fill="#fef08a"/>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN DERECHA: Panel de Control y Misión -->
+                <div class="w-full md:w-7/12 flex flex-col h-[60%] md:h-full gap-4 shrink-0">
+                    
+                    <!-- Reporte de Misión -->
+                    <div class="bg-ind-yellow border-4 border-ind-dark rounded-xl p-4 md:p-6 shadow-[4px_4px_0_#0f172a] relative shrink-0">
+                        <div class="absolute -top-3 -right-3 bg-ind-red text-white font-hard px-3 py-1 rounded shadow text-xs uppercase transform rotate-6">Reporte de Riesgos</div>
+                        <p id="mission-desc" class="text-sm md:text-lg text-black font-bold leading-snug">
+                            Cargando informe de riesgos...
+                        </p>
+                    </div>
+
+                    <!-- Cuadrícula de Selección de Equipo -->
+                    <div class="ind-panel p-4 flex-grow flex flex-col justify-center gap-4 overflow-y-auto">
+                        <h3 class="font-hard text-ind-steel text-xs md:text-sm uppercase tracking-widest text-center border-b border-ind-gray pb-2">Selecciona el equipo necesario:</h3>
+                        
+                        <div class="grid grid-cols-3 gap-2 md:gap-4 w-full">
+                            <button id="btn-casco" onclick="toggleGear('casco', this)" class="gear-btn">
+                                <span class="text-3xl md:text-4xl drop-shadow-md mb-1">👷‍♂️</span>
+                                <span class="font-hard text-[10px] md:text-xs tracking-wider">Casco</span>
+                            </button>
+                            <button id="btn-gafas" onclick="toggleGear('gafas', this)" class="gear-btn">
+                                <span class="text-3xl md:text-4xl drop-shadow-md mb-1">🥽</span>
+                                <span class="font-hard text-[10px] md:text-xs tracking-wider">Gafas</span>
+                            </button>
+                            <button id="btn-orejeras" onclick="toggleGear('orejeras', this)" class="gear-btn">
+                                <span class="text-3xl md:text-4xl drop-shadow-md mb-1">🎧</span>
+                                <span class="font-hard text-[10px] md:text-xs tracking-wider">Orejeras</span>
+                            </button>
+                            <button id="btn-chaleco" onclick="toggleGear('chaleco', this)" class="gear-btn">
+                                <span class="text-3xl md:text-4xl drop-shadow-md mb-1">🦺</span>
+                                <span class="font-hard text-[10px] md:text-xs tracking-wider">Chaleco</span>
+                            </button>
+                            <button id="btn-guantes" onclick="toggleGear('guantes', this)" class="gear-btn">
+                                <span class="text-3xl md:text-4xl drop-shadow-md mb-1">🧤</span>
+                                <span class="font-hard text-[10px] md:text-xs tracking-wider">Guantes</span>
+                            </button>
+                            <button id="btn-botas" onclick="toggleGear('botas', this)" class="gear-btn">
+                                <span class="text-3xl md:text-4xl drop-shadow-md mb-1">🥾</span>
+                                <span class="font-hard text-[10px] md:text-xs tracking-wider">Botas</span>
+                            </button>
+                        </div>
+                        
+                        <div class="mt-auto pt-2">
+                            <button onclick="verifyEquipment()" class="ind-btn w-full py-3 md:py-4 text-lg md:text-2xl flex items-center justify-center gap-2">
+                                EVALUAR SEGURIDAD 🚧
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ==============================================
+             MODAL DE FEEDBACK (Éxito o Error Específico)
+             ============================================== -->
+        <div id="feedback-modal" class="hidden absolute inset-0 z-[60] flex-col items-center justify-center bg-black/90 p-4 text-center backdrop-blur-sm">
+            <div id="feedback-card" class="ind-panel p-8 md:p-12 max-w-xl w-full animate__animated text-center border-t-[8px]">
+                <div id="feedback-icon" class="text-[5rem] md:text-[6rem] mb-2 leading-none drop-shadow-lg">✨</div>
+                <h3 id="feedback-title" class="font-hard text-3xl md:text-4xl text-white mb-4 uppercase tracking-widest drop-shadow-md">Título</h3>
+                <div class="bg-black/50 p-4 rounded border border-gray-600 mb-8">
+                    <p id="feedback-reason" class="text-base md:text-lg font-bold text-gray-300 leading-relaxed"></p>
+                </div>
+                <button onclick="closeFeedback()" class="ind-btn text-lg md:text-xl px-10 py-3 w-full">
+                    Botón
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (Resultados)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex-col items-center justify-center p-6 text-center bg-ind-dark bg-hazard">
+            <div id="result-card" class="ind-panel p-10 md:p-16 max-w-2xl w-full animate__animated animate__zoomIn text-center z-10 border-t-[8px]">
+                <div id="result-icon" class="text-[6rem] md:text-[8rem] mb-6 drop-shadow-lg leading-none">🏆</div>
+                <h2 id="result-title" class="font-hard text-4xl md:text-6xl text-white mb-4 uppercase tracking-widest drop-shadow-lg">
+                    ¡Taller Seguro!
+                </h2>
+                <p id="result-msg" class="text-lg md:text-2xl text-gray-300 mb-10 font-bold leading-relaxed">
+                    Mensaje de victoria
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="playBeep(); exitGame()" class="bg-transparent border-2 border-gray-500 text-gray-400 font-bold hover:bg-gray-800 hover:text-white px-8 py-4 rounded text-sm uppercase transition-colors font-hard">
+                        SALIR DEL TALLER
+                    </button>
+                    <button onclick="playBeep(); startGame()" class="ind-btn text-xl md:text-2xl px-10 py-4">
+                        NUEVO TURNO 🔄
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO CON VALIDACIÓN ESTRICTA
+         ============================================== -->
+    <script>
+        // --- SINTETIZADOR DE AUDIO ---
+        let audioCtx = null;
+        function initAudio() {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+            } catch (e) {}
+        }
+        document.body.addEventListener('click', initAudio, { once: true });
+
+        function playBeep(freq = 600, duration = 0.1, type = "sine") {
+            try {
+                if (audioCtx && audioCtx.state !== 'suspended') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + duration);
+                }
+            } catch (e) {}
+        }
+        function playBlip() { playBeep(900, 0.05, "square"); }
+        function playSuccess() { playBeep(523.25, 0.1); setTimeout(() => playBeep(659.25, 0.1), 100); setTimeout(() => playBeep(783.99, 0.3), 200); }
+        function playError() { playBeep(150, 0.4, "sawtooth"); }
+
+        // --- BASE DE DATOS DE MISIONES (5 NIVELES LÓGICOS) ---
+        const missions = [
+            {
+                title: "Área 1: La Sierra Circular",
+                desc: "Cortaremos gruesos troncos de madera. El motor chilla fuertemente lastimando el oído, y saltan astillas afiladas a gran velocidad hacia la cara. Además, la madera cortada lastima la piel al agarrarla.",
+                req: ["gafas", "orejeras", "guantes"],
+                successMsg: "¡Excelente! Has protegido la vista, los oídos y las manos del trabajador de los peligros de la madera.",
+                errors: {
+                    missing_gafas: "¡Peligro! Una astilla de madera acaba de saltar hacia los ojos del trabajador.",
+                    missing_orejeras: "¡Ay! El ruido de la sierra es tan agudo que le ha dañado los tímpanos.",
+                    missing_guantes: "¡Cuidado! Se ha clavado profundas astillas en las manos al mover los troncos.",
+                    extra_casco: "El casco aquí es innecesario, no hay peligro de objetos pesados cayendo desde el techo.",
+                    extra_botas: "Las botas con punta de acero son excesivas. Los troncos están seguros sobre la mesa firme.",
+                    extra_chaleco: "¡El chaleco flojo puede engancharse en los dientes de la sierra! Es un peligro usarlo en esta máquina."
+                }
+            },
+            {
+                title: "Área 2: Patio de Grúas",
+                desc: "Debes caminar por el patio donde las grúas mueven cajas gigantes y vigas pesadas suspendidas en el aire. Además, los camiones de carga circulan a toda velocidad y necesitan verte desde lejos.",
+                req: ["casco", "chaleco", "botas"],
+                successMsg: "¡Perfecto! Estás protegido contra cargas que caen, vehículos rápidos y aplastamientos en los pies.",
+                errors: {
+                    missing_casco: "¡Alerta roja! Un gran tornillo se soltó de la grúa y golpeó la cabeza del trabajador.",
+                    missing_chaleco: "¡Freno de emergencia! El camión casi te atropella porque el conductor no podía verte caminar.",
+                    missing_botas: "¡Ouch! Un tubo de acero rodó por el suelo y le aplastó los dedos del pie.",
+                    extra_gafas: "Tus gafas de seguridad se han empañado con el clima del patio, reduciendo tu visión del entorno.",
+                    extra_orejeras: "¡Peligro! Al tapar tus oídos, no lograste escuchar la bocina del camión acercándose.",
+                    extra_guantes: "Solo vas a supervisar la carga, usar guantes gruesos te impide usar tu radio comunicador."
+                }
+            },
+            {
+                title: "Área 3: Demolición Extrema",
+                desc: "Estamos demoliendo un muro de concreto antiguo. Hay un ruido ensordecedor constante. Caen escombros pesados del techo, el polvo y piedras saltan directo a la cara, y trozos pesados de muro ruedan por el suelo.",
+                req: ["casco", "orejeras", "gafas", "botas"],
+                successMsg: "¡Operación blindada! Cabeza, oídos, vista y pies están totalmente protegidos de la demolición.",
+                errors: {
+                    missing_casco: "¡Cuidado! Un pedazo pesado de techo acaba de caer sobre tu cabeza.",
+                    missing_orejeras: "¡El ruido de las explosiones de concreto destrozó tus tímpanos!",
+                    missing_gafas: "¡El polvo espeso de concreto y las piedritas han cegado tus ojos!",
+                    missing_botas: "¡Ay! Un ladrillo muy pesado rodó y aplastó tu pie desprotegido.",
+                    extra_guantes: "Manejarás una tableta electrónica a distancia para la demolición, los guantes impiden usar la pantalla táctil.",
+                    extra_chaleco: "Estás trabajando solo dentro de una cabina protegida, no hay vehículos que necesiten verte brillar."
+                }
+            },
+            {
+                title: "Área 4: Soldadura de Tuberías",
+                desc: "Estamos uniendo tubos metálicos. Saltan chispas ardientes directo a los ojos y los tubos alcanzan temperaturas altísimas, capaces de causar graves quemaduras al tocarlos.",
+                req: ["gafas", "guantes"],
+                successMsg: "¡Bien hecho! Los ojos están protegidos de las chispas y las manos de las altas temperaturas del metal.",
+                errors: {
+                    missing_gafas: "¡Fuego! Una chispa ardiente ha saltado a los ojos del trabajador.",
+                    missing_guantes: "¡Ay! El metal fundido ha causado quemaduras graves en sus manos.",
+                    extra_casco: "No hay objetos pesados cayendo del techo, el casco solo estorba aquí.",
+                    extra_botas: "Los tubos están fijos en la pared, no hay riesgo de aplastamiento en los pies.",
+                    extra_chaleco: "Es un lugar cerrado y sin tráfico, un chaleco de alta visibilidad es innecesario.",
+                    extra_orejeras: "El sonido de la soldadura no supera los límites peligrosos, necesita escuchar sus alrededores."
+                }
+            },
+            {
+                title: "Área 5: Pista de Carga Nocturna",
+                desc: "Los aviones y camiones hacen un ruido ensordecedor en esta pista oscura. Hay vehículos grandes circulando a toda velocidad que necesitan verte, y cilindros pesados rodando cerca de tus pies.",
+                req: ["orejeras", "chaleco", "botas"],
+                successMsg: "¡Excelente protección! Eres visible, tus oídos están a salvo del estruendo y tus pies blindados.",
+                errors: {
+                    missing_orejeras: "¡El ruido extremo de las turbinas ha causado daño auditivo permanente!",
+                    missing_chaleco: "¡Freno de emergencia! Un camión en la oscuridad casi te atropella por no verte.",
+                    missing_botas: "¡Cuidado! Un cilindro rodó por la pista y aplastó tu pie.",
+                    extra_gafas: "Tus gafas oscurecen aún más tu visión en la noche, ¡es peligroso aquí!",
+                    extra_guantes: "Necesitas tus manos libres para operar las luces de señalización pequeñas.",
+                    extra_casco: "En la pista abierta no hay objetos cayendo desde arriba."
+                }
+            }
+        ];
+
+        let score = 0;
+        let lives = 3;
+        let currentLevel = 0;
+        let isProcessing = false;
+        let currentGear = [];
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startGame() {
+            score = 0;
+            lives = 3;
+            currentLevel = 0;
+            isProcessing = false;
+            
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('flex');
+            
+            updateUI();
+            showScreen('screen-game');
+            loadLevel();
+        }
+
+        function updateUI() {
+            document.getElementById('score-display').innerText = score;
+            let battery = "";
+            for(let i=0; i<3; i++) battery += i < lives ? "🎫 " : "❌ ";
+            document.getElementById('lives-display').innerText = battery;
+        }
+
+        function loadLevel() {
+            if (currentLevel >= missions.length) {
+                setTimeout(() => endGame(true), 500);
+                return;
+            }
+
+            const mission = missions[currentLevel];
+            isProcessing = false;
+
+            // Reset UI and Gear
+            currentGear = [];
+            
+            // Restablecer Botones Visualmente
+            const gearList = ['casco', 'gafas', 'orejeras', 'chaleco', 'guantes', 'botas'];
+            gearList.forEach(id => {
+                const btn = document.getElementById(`btn-${id}`);
+                btn.className = "gear-btn";
+                // Ocultar SVG del avatar
+                document.getElementById(`eq-${id}`).classList.replace('opacity-100', 'opacity-0');
+            });
+
+            document.getElementById('level-title').innerText = mission.title;
+            document.getElementById('mission-desc').innerText = mission.desc;
+        }
+
+        function toggleGear(gearId, btnElement) {
+            if (isProcessing) return;
+            playBlip();
+
+            const idx = currentGear.indexOf(gearId);
+            if (idx > -1) {
+                // Quitar equipo
+                currentGear.splice(idx, 1);
+                btnElement.className = "gear-btn";
+                document.getElementById(`eq-${gearId}`).classList.replace('opacity-100', 'opacity-0');
+            } else {
+                // Poner equipo
+                currentGear.push(gearId);
+                btnElement.className = "gear-btn gear-selected";
+                document.getElementById(`eq-${gearId}`).classList.replace('opacity-0', 'opacity-100');
+            }
+        }
+
+        function verifyEquipment() {
+            if (isProcessing) return;
+            isProcessing = true;
+
+            const mission = missions[currentLevel];
+            
+            // Lógica estricta de validación
+            const missing = mission.req.filter(item => !currentGear.includes(item));
+            const extra = currentGear.filter(item => !mission.req.includes(item));
+
+            const workerBox = document.getElementById('worker-box');
+
+            if (missing.length === 0 && extra.length === 0) {
+                // ÉXITO (Equipamiento Exacto)
+                score++;
+                updateUI();
+                playSuccess();
+                
+                workerBox.classList.replace('border-ind-steel', 'border-ind-green');
+                workerBox.style.backgroundColor = "rgba(16, 185, 129, 0.2)";
+
+                setTimeout(() => {
+                    workerBox.classList.replace('border-ind-green', 'border-ind-steel');
+                    workerBox.style.backgroundColor = "";
+                    showFeedback(true, "¡ACCESO CONCEDIDO! ✅", mission.successMsg);
+                }, 600);
+
+            } else {
+                // ERROR LÓGICO
+                lives--;
+                updateUI();
+                playError();
+                
+                let errorReason = "";
+                if (missing.length > 0) {
+                    errorReason = mission.errors[`missing_${missing[0]}`];
+                } else {
+                    errorReason = mission.errors[`extra_${extra[0]}`];
+                }
+
+                workerBox.classList.add('shake-error');
+                workerBox.classList.replace('border-ind-steel', 'border-ind-red');
+                workerBox.style.backgroundColor = "rgba(239, 68, 68, 0.2)";
+                
+                setTimeout(() => {
+                    workerBox.classList.remove('shake-error');
+                    workerBox.classList.replace('border-ind-red', 'border-ind-steel');
+                    workerBox.style.backgroundColor = "";
+                    
+                    showFeedback(false, "¡ALERTA DE PELIGRO! 🚨", errorReason);
+                }, 600);
+            }
+        }
+
+        function showFeedback(isSuccess, titleText, reasonText) {
+            const modal = document.getElementById('feedback-modal');
+            const card = document.getElementById('feedback-card');
+            const icon = document.getElementById('feedback-icon');
+            const title = document.getElementById('feedback-title');
+            const reason = document.getElementById('feedback-reason');
+            const btn = card.querySelector('button');
+
+            card.classList.remove('animate__bounceIn', 'border-ind-green', 'border-ind-red');
+            void card.offsetWidth;
+
+            if (isSuccess) {
+                icon.innerText = "🛠️✨";
+                title.innerText = titleText;
+                title.className = "font-hard text-3xl md:text-4xl mb-4 uppercase tracking-widest drop-shadow-md text-ind-green";
+                card.classList.add('border-ind-green');
+                btn.className = "ind-btn bg-ind-green text-white text-lg md:text-xl px-10 py-3 w-full border-2 border-green-800";
+                btn.innerText = "Siguiente Área ➡";
+                modal.dataset.action = "next";
+            } else {
+                icon.innerText = "💥⚠️";
+                title.innerText = titleText;
+                title.className = "font-hard text-3xl md:text-4xl mb-4 uppercase tracking-widest drop-shadow-md text-ind-red";
+                card.classList.add('border-ind-red');
+                btn.className = "ind-btn bg-ind-red text-white text-lg md:text-xl px-10 py-3 w-full border-2 border-red-900";
+                btn.innerText = "Ajustar Equipo 🔧";
+                modal.dataset.action = "retry";
+            }
+
+            reason.innerHTML = reasonText;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            card.classList.add('animate__bounceIn');
+        }
+
+        function closeFeedback() {
+            const modal = document.getElementById('feedback-modal');
+            const action = modal.dataset.action;
+            
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            
+            if (lives <= 0) {
+                endGame(false);
+            } else if (action === "next") {
+                currentLevel++;
+                loadLevel();
+            } else {
+                // Retry: Permitir al usuario deseleccionar o agregar equipo
+                isProcessing = false;
+            }
+        }
+
+        function endGame(victory) {
+            const screenResult = document.getElementById('screen-result');
+            const title = document.getElementById('result-title');
+            const msg = document.getElementById('result-msg');
+            const icon = document.getElementById('result-icon');
+            const card = document.getElementById('result-card');
+            
+            card.classList.remove('border-ind-green', 'border-ind-red');
+
+            if (victory) {
+                icon.innerText = "🏆🚧";
+                title.innerText = "¡TALLER DOMINADO!";
+                title.className = "font-hard text-4xl md:text-6xl text-ind-green mb-4 uppercase tracking-widest drop-shadow-lg";
+                msg.innerHTML = "Excelente trabajo. Has equipado a los trabajadores con la precisión exacta, evitando accidentes sin sobrecargarlos de equipo inútil.";
+                card.classList.add('border-ind-green');
+            } else {
+                icon.innerText = "🚑💥";
+                title.innerText = "¡ACCIDENTE EVITADO!";
+                title.className = "font-hard text-4xl md:text-6xl text-ind-red mb-4 uppercase tracking-widest drop-shadow-lg";
+                msg.innerHTML = "El sistema te ha bloqueado por seguridad debido a repetidas fallas en la selección del equipo. ¡Lee atentamente los riesgos e inténtalo de nuevo!";
+                card.classList.add('border-ind-red');
+            }
+
+            screenResult.classList.remove('hidden');
+            screenResult.classList.add('flex');
+        }
+
+        function exitGame() {
+            if(confirm("¿Deseas salir del taller? Perderás tu progreso de seguridad.")) {
+                isProcessing = false;
+                showScreen('screen-start');
+            }
+        }
+    </script>
+</body>
+</html>

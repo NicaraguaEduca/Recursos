@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Balanza Biológica - Beneficios y Perjuicios</title>
+    
+    <!-- Fuentes Google: Fredoka One (Títulos) y Quicksand (Lectura amigable) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA PARA WORDPRESS -->
+    <script>
+        window.tailwind = {
+            config: {
+                important: '#recurso-wp-balanza',
+                corePlugins: { preflight: false },
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            toon: ['"Fredoka One"', 'cursive'],
+                            body: ['Quicksand', 'sans-serif'],
+                        },
+                        colors: {
+                            bio: {
+                                dark: '#1e1b4b',
+                                purple: '#7c3aed',
+                                green: '#10b981',
+                                red: '#f43f5e',
+                                yellow: '#fcd34d',
+                                blue: '#0ea5e9'
+                            }
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* =========================================================
+           MICRO-RESET
+           ========================================================= */
+        #recurso-wp-balanza * { box-sizing: border-box; border-width: 0; border-style: solid; border-color: currentColor; line-height: normal; }
+        #recurso-wp-balanza h1, #recurso-wp-balanza h2, #recurso-wp-balanza h3, #recurso-wp-balanza p, #recurso-wp-balanza span { margin: 0; padding: 0; }
+        #recurso-wp-balanza button { background-color: transparent; cursor: pointer; padding: 0; font-family: inherit; }
+
+        /* =========================================================
+           ESTILOS GENERALES Y FONDOS
+           ========================================================= */
+        #recurso-wp-balanza {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #1e1b4b; 
+            background-image: radial-gradient(#4c1d95 3px, transparent 3px);
+            background-size: 40px 40px;
+            color: #1e1b4b;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Botones y Paneles Estilo Toon */
+        #recurso-wp-balanza .toon-panel {
+            background-color: #ffffff;
+            border: 6px solid #000;
+            border-radius: 2rem;
+            box-shadow: 8px 8px 0px #000;
+        }
+
+        #recurso-wp-balanza .toon-btn {
+            border: 4px solid #000;
+            border-radius: 1rem;
+            box-shadow: 4px 4px 0px #000;
+            transition: all 0.1s ease-out;
+            text-transform: uppercase;
+        }
+        #recurso-wp-balanza .toon-btn:hover:not(:disabled) {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #000;
+        }
+        #recurso-wp-balanza .toon-btn:active:not(:disabled) {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px #000;
+        }
+        #recurso-wp-balanza .toon-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: 4px 4px 0px #000 !important;
+        }
+
+        /* Pantallas SPA */
+        #recurso-wp-balanza .screen {
+            display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; position: absolute; top: 0; left: 0; overflow-y: auto; overflow-x: hidden; z-index: 10;
+        }
+        #recurso-wp-balanza .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-balanza .screen.active {
+            display: flex;
+            animation: bounceInUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+        }
+        @keyframes bounceInUp {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Animaciones para la Balanza */
+        .balance-beam {
+            transform-origin: center center;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .balance-pan {
+            transform-origin: top center;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .drop-animation {
+            animation: dropToPan 0.5s ease-in forwards;
+        }
+        @keyframes dropToPan {
+            0% { transform: scale(1) translateY(0); opacity: 1; }
+            100% { transform: scale(0.3) translateY(200px); opacity: 0; }
+        }
+        
+        .pop-in { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.5) forwards; }
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.5); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .shake { animation: shakeAnim 0.5s ease-in-out; }
+        @keyframes shakeAnim {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-balanza">
+
+        <!-- ==============================================
+             PANTALLA 1: PORTADA
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="toon-panel p-6 md:p-12 max-w-3xl w-full mx-4 flex flex-col items-center transform -rotate-1">
+                <div class="flex gap-4 mb-2 md:mb-4">
+                    <span class="text-[3rem] md:text-[5rem] animate-bounce">🦸‍♂️</span>
+                    <span class="text-[3rem] md:text-[5rem] animate-bounce" style="animation-delay: 0.2s">⚖️</span>
+                    <span class="text-[3rem] md:text-[5rem] animate-bounce" style="animation-delay: 0.4s">🦹‍♂️</span>
+                </div>
+                
+                <h2 class="text-xs md:text-sm text-black font-body font-black mb-3 uppercase bg-bio-yellow inline-block px-4 py-1 border-4 border-black rounded-full rotate-2 shadow-[4px_4px_0_#000]">
+                    Ciencias Naturales - 5/6to Grado
+                </h2>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-toon text-bio-purple leading-none uppercase drop-shadow-[2px_2px_0_#000] mb-4">
+                    Balanza <br><span class="text-bio-green">Biológica</span>
+                </h1>
+                <p class="text-base md:text-xl text-gray-700 font-bold mb-6 px-2 leading-relaxed">
+                    ¿Sabías que no todos los microbios son malos? ¡Algunos nos ayudan a hacer comida deliciosa y medicinas!
+                </p>
+                <button id="btn-theory" class="toon-btn bg-bio-blue text-white font-toon text-lg md:text-3xl px-8 py-4 w-full md:w-auto">
+                    ¿CÓMO SE JUEGA? 📜
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: INSTRUCCIONES RÁPIDAS
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center">
+            <div class="toon-panel p-6 md:p-10 max-w-5xl w-full text-center my-auto">
+                <h2 class="text-3xl md:text-5xl font-toon text-black mb-6 uppercase border-b-4 border-dashed border-gray-300 pb-2">
+                    Héroes vs Villanos
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 mb-6">
+                    
+                    <!-- HÉROES (Salud) -->
+                    <div class="bg-emerald-100 p-4 md:p-6 rounded-3xl border-4 border-black shadow-[6px_6px_0_#10b981] transform hover:-translate-y-2 transition-transform">
+                        <div class="text-[3rem] md:text-[4rem] mb-1">💚</div>
+                        <h3 class="font-toon text-xl md:text-3xl text-bio-green uppercase mb-2">Los Buenos (Salud)</h3>
+                        <p class="text-base md:text-lg text-gray-800 font-bold leading-snug">
+                            Nos ayudan a hacer pan, queso, yogur y antibióticos para curarnos. ¡Son nuestros aliados!
+                        </p>
+                    </div>
+
+                    <!-- VILLANOS (Enfermedad) -->
+                    <div class="bg-rose-100 p-4 md:p-6 rounded-3xl border-4 border-black shadow-[6px_6px_0_#f43f5e] transform hover:-translate-y-2 transition-transform">
+                        <div class="text-[3rem] md:text-[4rem] mb-1">🦠</div>
+                        <h3 class="font-toon text-xl md:text-3xl text-bio-red uppercase mb-2">Los Malos (Daño)</h3>
+                        <p class="text-base md:text-lg text-gray-800 font-bold leading-snug">
+                            Se meten en nuestro cuerpo sin permiso y nos causan gripe, tos o dolor de barriga.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button id="btn-back-start" class="toon-btn bg-gray-200 text-black font-toon px-6 py-3 text-lg md:text-xl">
+                        ⬅ VOLVER
+                    </button>
+                    <button id="btn-play" class="toon-btn bg-bio-yellow text-black font-toon text-xl md:text-2xl px-10 py-3">
+                        ¡A JUGAR! ⚖️
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: EL JUEGO (Diseño Compacto)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start p-0 bg-transparent">
+            
+            <!-- Barra Superior (Puntos y Vidas) - Reducida en tamaño -->
+            <div class="w-full bg-white border-b-4 border-black p-2 md:p-3 flex justify-between items-center z-30 shrink-0 shadow-lg">
+                <div class="flex items-center gap-2 px-2 md:px-4">
+                    <span class="text-xl md:text-3xl">⭐</span>
+                    <div class="flex flex-col">
+                        <span class="text-[9px] md:text-[10px] text-gray-500 font-black uppercase tracking-widest leading-none mb-1">Aciertos</span>
+                        <span class="font-toon text-xl md:text-2xl text-bio-purple leading-none"><span id="score">0</span><span class="text-gray-400 text-sm">/6</span></span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <div class="flex flex-col text-right">
+                        <span class="text-[9px] md:text-[10px] text-gray-500 font-black uppercase tracking-widest leading-none mb-1">Vidas</span>
+                        <span id="lives" class="text-lg md:text-xl tracking-widest mt-1">❤️❤️❤️</span>
+                    </div>
+                    <button id="btn-exit" class="toon-btn bg-bio-red text-white p-1 md:p-2 ml-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Área de Juego Central (Ajustada para que todo quepa) -->
+            <div class="w-full flex-grow flex flex-col items-center justify-around p-3 md:p-4 overflow-hidden relative">
+                
+                <!-- Tarjeta del Microorganismo HORIZONTAL Y COMPACTA -->
+                <div id="microbe-card" class="bg-white border-4 border-black rounded-3xl p-3 md:p-4 shadow-[6px_6px_0_#000] max-w-3xl w-full text-left z-20 transition-all duration-300 transform flex items-center gap-4">
+                    <div id="microbe-emoji" class="text-[3.5rem] md:text-[4.5rem] shrink-0 drop-shadow-md">❓</div>
+                    <div class="flex-grow">
+                        <h3 id="microbe-name" class="font-toon text-xl md:text-2xl text-bio-purple mb-1">Nombre</h3>
+                        <p id="microbe-desc" class="text-sm md:text-lg font-bold text-gray-700 bg-gray-100 p-2 md:p-3 rounded-xl border-2 border-dashed border-gray-300 leading-snug">
+                            Descripción...
+                        </p>
+                    </div>
+                </div>
+
+                <!-- La Balanza Visual (SVG) Reducida -->
+                <div class="w-full max-w-lg relative z-10 flex-grow max-h-[160px] md:max-h-[200px] flex items-end justify-center my-2">
+                    <svg viewBox="0 0 400 200" class="w-full h-full overflow-visible">
+                        <!-- Base fija -->
+                        <path d="M180,200 L220,200 L205,100 L195,100 Z" fill="#333" stroke="#000" stroke-width="4"/>
+                        <circle cx="200" cy="100" r="10" fill="#fcd34d" stroke="#000" stroke-width="4"/>
+                        
+                        <!-- Brazo móvil (Rota desde el centro cx=200 cy=100) -->
+                        <g id="balance-arm" class="balance-beam" style="transform: rotate(0deg);">
+                            <!-- Barra -->
+                            <line x1="60" y1="100" x2="340" y2="100" stroke="#000" stroke-width="8" stroke-linecap="round"/>
+                            <line x1="60" y1="100" x2="340" y2="100" stroke="#cbd5e1" stroke-width="4" stroke-linecap="round"/>
+                            
+                            <!-- Platillo Izquierdo (Salud) -->
+                            <g id="pan-left" class="balance-pan" style="transform: rotate(0deg);">
+                                <line x1="60" y1="100" x2="30" y2="160" stroke="#000" stroke-width="2"/>
+                                <line x1="60" y1="100" x2="90" y2="160" stroke="#000" stroke-width="2"/>
+                                <path d="M20,160 L100,160 Q60,190 20,160 Z" fill="#10b981" stroke="#000" stroke-width="4"/>
+                                <text x="60" y="155" font-family="Fredoka One" font-size="14" fill="#fff" text-anchor="middle">SALUD</text>
+                                <!-- Emoticono de salud en el platillo -->
+                                <text id="icon-health-pan" x="60" y="140" font-size="30" text-anchor="middle" opacity="0">🦠</text>
+                            </g>
+
+                            <!-- Platillo Derecho (Enfermedad) -->
+                            <g id="pan-right" class="balance-pan" style="transform: rotate(0deg);">
+                                <line x1="340" y1="100" x2="310" y2="160" stroke="#000" stroke-width="2"/>
+                                <line x1="340" y1="100" x2="370" y2="160" stroke="#000" stroke-width="2"/>
+                                <path d="M300,160 L380,160 Q340,190 300,160 Z" fill="#f43f5e" stroke="#000" stroke-width="4"/>
+                                <text x="340" y="155" font-family="Fredoka One" font-size="14" fill="#fff" text-anchor="middle">DAÑO</text>
+                                <!-- Emoticono de daño en el platillo -->
+                                <text id="icon-damage-pan" x="340" y="140" font-size="30" text-anchor="middle" opacity="0">🦠</text>
+                            </g>
+                        </g>
+                    </svg>
+                </div>
+
+                <!-- Botones de Decisión Más Pequeños -->
+                <div class="w-full max-w-2xl flex flex-row gap-3 z-20">
+                    <button id="btn-salud" class="toon-btn bg-bio-green text-white flex-1 py-3 md:py-4 flex items-center justify-center gap-2 shadow-[4px_4px_0_#000]">
+                        <span class="text-2xl md:text-3xl">💚</span>
+                        <span class="font-toon text-base md:text-xl">ES BUENO</span>
+                    </button>
+                    <button id="btn-dano" class="toon-btn bg-bio-red text-white flex-1 py-3 md:py-4 flex items-center justify-center gap-2 shadow-[4px_4px_0_#000]">
+                        <span class="text-2xl md:text-3xl">🦠</span>
+                        <span class="font-toon text-base md:text-xl">ES MALO</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             MODAL DE FEEDBACK (Explicación)
+             ============================================== -->
+        <div id="feedback-modal" class="hidden absolute inset-0 z-[60] flex-col items-center justify-center bg-black/80 p-4 text-center backdrop-blur-sm">
+            <div id="feedback-card" class="toon-panel p-6 md:p-8 max-w-lg w-full text-center border-t-8">
+                <div id="feedback-icon" class="text-[4rem] md:text-[5rem] mb-2 drop-shadow-md">✨</div>
+                <h3 id="feedback-title" class="font-toon text-2xl md:text-4xl text-black mb-3 uppercase">Título</h3>
+                <div class="bg-gray-100 p-4 rounded-xl border-4 border-dashed border-gray-300 mb-6">
+                    <p id="feedback-reason" class="text-base md:text-lg font-bold text-gray-700 leading-relaxed"></p>
+                </div>
+                <button id="btn-next" class="toon-btn bg-bio-yellow text-black font-toon text-lg md:text-xl px-8 py-3 w-full">
+                    Siguiente ➡
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (Victoria/Derrota)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex-col items-center justify-center p-6 text-center bg-bio-dark">
+            <div id="result-card" class="toon-panel p-6 md:p-10 max-w-2xl w-full text-center z-10 border-t-[10px]">
+                <div id="result-icon" class="text-[5rem] md:text-[6rem] mb-4 drop-shadow-md">🏆</div>
+                <h2 id="result-title" class="font-toon text-3xl md:text-5xl text-bio-purple mb-4 uppercase">¡Equilibrio Logrado!</h2>
+                <p id="result-msg" class="text-base md:text-xl text-gray-800 mb-8 font-bold leading-relaxed">
+                    Mensaje final
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button id="btn-end-home" class="toon-btn bg-gray-200 text-black font-toon px-6 py-3 text-lg">
+                        IR AL INICIO
+                    </button>
+                    <button id="btn-end-retry" class="toon-btn bg-bio-blue text-white font-toon text-xl md:text-2xl px-8 py-3">
+                        JUGAR DE NUEVO 🔄
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO (BLINDADA Y CORREGIDA)
+         ============================================== -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- AUDIO SINTETIZADO SEGURO ---
+            let audioCtx = null;
+            function initAudio() {
+                try {
+                    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                } catch (e) {}
+            }
+            document.body.addEventListener('click', initAudio, { once: true });
+
+            function playBeep(freq = 600, duration = 0.1, type = "sine") {
+                try {
+                    if (audioCtx && audioCtx.state !== 'suspended') {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = type;
+                        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + duration);
+                    }
+                } catch (e) {}
+            }
+
+            function playSuccess() { playBeep(523.25, 0.1); setTimeout(() => playBeep(659.25, 0.1), 100); setTimeout(() => playBeep(783.99, 0.2), 200); }
+            function playError() { playBeep(220, 0.3, "sawtooth"); }
+
+            // --- BASE DE DATOS PARA NIÑOS ---
+            const gameData = [
+                {
+                    name: "Lactobacilos",
+                    emoji: "🥛",
+                    type: "Salud",
+                    desc: "Me encanta vivir en la leche fresca. Gracias a mí, puedes comer yogur y queso muy deliciosos.",
+                    explanation: "Estas bacterias son buenas porque nos dan alimentos nutritivos y cuidan nuestra barriga."
+                },
+                {
+                    name: "Virus de la Gripe",
+                    emoji: "🤧",
+                    type: "Daño",
+                    desc: "Viajo por el aire cuando alguien estornuda. Si entro a tu nariz, te daré fiebre y mucha tos.",
+                    explanation: "Los virus invaden nuestro cuerpo y nos hacen sentir muy enfermos."
+                },
+                {
+                    name: "Levadura (Hongo)",
+                    emoji: "🥖",
+                    type: "Salud",
+                    desc: "Soy un honguito especial. Me como el azúcar de la harina y hago burbujas para que el pan se infle en el horno.",
+                    explanation: "La levadura es súper útil para hacer panes esponjosos e increíbles."
+                },
+                {
+                    name: "Salmonella",
+                    emoji: "🤢",
+                    type: "Daño",
+                    desc: "Me escondo en el pollo crudo o los huevos sin lavar. Si me comes por error, te dolerá mucho el estómago.",
+                    explanation: "Es una bacteria mala que nos enferma si no cocinamos bien la comida."
+                },
+                {
+                    name: "Penicillium",
+                    emoji: "💊",
+                    type: "Salud",
+                    desc: "Soy un hongo verde. Parezco moho, pero los doctores me usan para crear la 'Penicilina', una medicina que destruye bacterias malas.",
+                    explanation: "De este hongo sacamos antibióticos que salvan vidas."
+                },
+                {
+                    name: "Estreptococo",
+                    emoji: "🤒",
+                    type: "Daño",
+                    desc: "Me pego en tu garganta y la pongo muy roja. Hago que te duela mucho cuando tragas agua o comida.",
+                    explanation: "Es una bacteria que causa fuertes infecciones en la garganta."
+                }
+            ];
+
+            let score = 0;
+            let lives = 3;
+            let currentLevel = 0;
+            let gameQueue = [];
+
+            // --- NAVEGACIÓN Y MEZCLA ---
+            function showScreen(id) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+            }
+
+            function shuffle(arr) {
+                let a = [...arr];
+                for (let i = a.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [a[i], a[j]] = [a[j], a[i]];
+                }
+                return a;
+            }
+
+            // --- FLUJO DEL JUEGO ---
+            function startGame() {
+                score = 0;
+                lives = 3;
+                currentLevel = 0;
+                gameQueue = shuffle(gameData);
+                
+                document.getElementById('screen-result').classList.add('hidden');
+                document.getElementById('screen-result').classList.remove('flex');
+                
+                updateUI();
+                showScreen('screen-game');
+                loadMicrobe();
+            }
+
+            function updateUI() {
+                document.getElementById('score').innerText = score;
+                let h = "";
+                for(let i=0; i<3; i++) h += i < lives ? "❤️ " : "🖤 ";
+                document.getElementById('lives').innerText = h;
+            }
+
+            function loadMicrobe() {
+                if (currentLevel >= gameQueue.length) {
+                    endGame(true);
+                    return;
+                }
+
+                const data = gameQueue[currentLevel];
+
+                // Restaurar tarjeta
+                const card = document.getElementById('microbe-card');
+                card.classList.remove('drop-animation', 'opacity-0');
+                
+                document.getElementById('microbe-emoji').innerText = data.emoji;
+                document.getElementById('microbe-name').innerText = data.name;
+                document.getElementById('microbe-desc').innerText = `"${data.desc}"`;
+
+                // Restaurar balanza
+                document.getElementById('balance-arm').style.transform = "rotate(0deg)";
+                document.getElementById('pan-left').style.transform = "rotate(0deg)";
+                document.getElementById('pan-right').style.transform = "rotate(0deg)";
+                document.getElementById('icon-health-pan').style.opacity = "0";
+                document.getElementById('icon-damage-pan').style.opacity = "0";
+
+                // Habilitar botones de acción
+                document.getElementById('btn-salud').disabled = false;
+                document.getElementById('btn-dano').disabled = false;
+                
+                // Efecto pop-in de la tarjeta
+                card.classList.add('pop-in');
+                setTimeout(() => card.classList.remove('pop-in'), 600);
+            }
+
+            function checkAnswer(chosenType) {
+                playBeep(800, 0.05);
+
+                // Bloquear botones para evitar múltiples clics
+                document.getElementById('btn-salud').disabled = true;
+                document.getElementById('btn-dano').disabled = true;
+
+                const data = gameQueue[currentLevel];
+                const isCorrect = chosenType === data.type;
+
+                // Animación de la tarjeta cayendo
+                const card = document.getElementById('microbe-card');
+                card.classList.add('drop-animation');
+
+                // Inclinación de la balanza
+                const arm = document.getElementById('balance-arm');
+                const pLeft = document.getElementById('pan-left');
+                const pRight = document.getElementById('pan-right');
+
+                setTimeout(() => {
+                    if (chosenType === 'Salud') {
+                        arm.style.transform = "rotate(-15deg)";
+                        pLeft.style.transform = "rotate(15deg)"; // Contra-rotar para mantener recto
+                        pRight.style.transform = "rotate(15deg)";
+                        document.getElementById('icon-health-pan').innerText = data.emoji;
+                        document.getElementById('icon-health-pan').style.opacity = "1";
+                    } else {
+                        arm.style.transform = "rotate(15deg)";
+                        pLeft.style.transform = "rotate(-15deg)";
+                        pRight.style.transform = "rotate(-15deg)";
+                        document.getElementById('icon-damage-pan').innerText = data.emoji;
+                        document.getElementById('icon-damage-pan').style.opacity = "1";
+                    }
+
+                    if (isCorrect) {
+                        score++;
+                        updateUI();
+                        playSuccess();
+                        setTimeout(() => showModal(true, "¡Correcto! 🌟", data.explanation), 800);
+                    } else {
+                        lives--;
+                        updateUI();
+                        playError();
+                        const svgBox = document.querySelector('svg');
+                        svgBox.classList.add('shake');
+                        setTimeout(() => svgBox.classList.remove('shake'), 500);
+                        setTimeout(() => showModal(false, "¡Oh no! 🚨", data.explanation), 800);
+                    }
+                }, 400); // Sincronizado con la caída de la tarjeta
+            }
+
+            // CORRECCIÓN CLAVE: El nombre del parámetro es reasonTxt, no reasonText.
+            function showModal(isSuccess, titleTxt, reasonTxt) {
+                const m = document.getElementById('feedback-modal');
+                const c = document.getElementById('feedback-card');
+                
+                c.classList.remove('border-bio-green', 'border-bio-red', 'pop-in');
+                void c.offsetWidth; // Reflow
+
+                document.getElementById('feedback-icon').innerText = isSuccess ? "✅" : "❌";
+                document.getElementById('feedback-title').innerText = titleTxt;
+                document.getElementById('feedback-title').className = isSuccess ? "font-toon text-2xl md:text-4xl text-bio-green mb-3 uppercase" : "font-toon text-2xl md:text-4xl text-bio-red mb-3 uppercase";
+                c.classList.add(isSuccess ? 'border-bio-green' : 'border-bio-red');
+                
+                // CORRECCIÓN: Utilizar reasonTxt correctamente
+                document.getElementById('feedback-reason').innerText = reasonTxt;
+
+                m.classList.remove('hidden');
+                m.classList.add('flex');
+                c.classList.add('pop-in');
+            }
+
+            function closeModal() {
+                document.getElementById('feedback-modal').classList.add('hidden');
+                document.getElementById('feedback-modal').classList.remove('flex');
+                
+                currentLevel++;
+                if (lives <= 0) endGame(false);
+                else loadMicrobe();
+            }
+
+            function endGame(victory) {
+                const res = document.getElementById('screen-result');
+                const card = document.getElementById('result-card');
+                
+                card.classList.remove('border-bio-green', 'border-bio-red');
+
+                if (victory) {
+                    document.getElementById('result-icon').innerText = "🏆💚";
+                    document.getElementById('result-title').innerText = "¡Súper Científico!";
+                    document.getElementById('result-title').className = "font-toon text-3xl md:text-5xl text-bio-green mb-4 uppercase";
+                    document.getElementById('result-msg').innerText = `¡Clasificaste perfectamente ${score} microorganismos! Sabes muy bien quiénes son los héroes y los villanos.`;
+                    card.classList.add('border-bio-green');
+                } else {
+                    document.getElementById('result-icon').innerText = "🚑🦠";
+                    document.getElementById('result-title').innerText = "¡Cuidado!";
+                    document.getElementById('result-title').className = "font-toon text-3xl md:text-5xl text-bio-red mb-4 uppercase";
+                    document.getElementById('result-msg').innerText = "La balanza se descontroló y nos enfermamos. ¡Repasa la guía y vuelve a intentarlo!";
+                    card.classList.add('border-bio-red');
+                }
+
+                res.classList.remove('hidden');
+                res.classList.add('flex');
+            }
+
+            function exitGame() {
+                currentLevel = 0;
+                gameQueue = [];
+                showScreen('screen-start');
+            }
+
+            // --- ASIGNAR EVENTOS ---
+            document.getElementById('btn-theory').addEventListener('click', () => { playBeep(); showScreen('screen-theory'); });
+            document.getElementById('btn-back-start').addEventListener('click', () => { playBeep(); showScreen('screen-start'); });
+            document.getElementById('btn-play').addEventListener('click', () => { playBeep(); startGame(); });
+            document.getElementById('btn-exit').addEventListener('click', () => { playBeep(); exitGame(); });
+            document.getElementById('btn-salud').addEventListener('click', () => checkAnswer('Salud'));
+            document.getElementById('btn-dano').addEventListener('click', () => checkAnswer('Daño'));
+            document.getElementById('btn-next').addEventListener('click', () => { playBeep(); closeModal(); });
+            document.getElementById('btn-end-home').addEventListener('click', () => { playBeep(); exitGame(); });
+            document.getElementById('btn-end-retry').addEventListener('click', () => { playBeep(); startGame(); });
+
+        });
+    </script>
+</body>
+</html>

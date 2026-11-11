@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Rebaño | Sustantivos Colectivos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+            background-color: #F0F4F8;
+        }
+        .hero-title {
+            font-size: clamp(3rem, 12vw, 10rem);
+            line-height: 0.8;
+        }
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .card-hover:hover {
+            transform: scale(1.03) translateY(-5px);
+        }
+        .selected-node {
+            border-color: #4F46E5 !important;
+            background-color: #EEF2FF !important;
+            box-shadow: 0 0 0 6px rgba(79, 70, 229, 0.2);
+        }
+        .line-canvas {
+            pointer-events: none;
+            z-index: 5;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(2deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        .floating-emoji {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        /* Flashcard Flip Logic */
+        .flashcard-container {
+            perspective: 1000px;
+        }
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            text-align: center;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+        @media (min-width: 768px) {
+            .flashcard-inner { height: 350px; }
+        }
+        .flashcard-container:hover .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 2rem;
+            padding: 1rem;
+        }
+        @media (min-width: 768px) {
+            .flashcard-front, .flashcard-back { border-radius: 3rem; padding: 2rem; }
+        }
+        .flashcard-back {
+            transform: rotateY(180deg);
+        }
+
+        /* Game UI tweaks to avoid scroll */
+        .game-node {
+            height: calc((100vh - 250px) / 6); /* Altura dinámica basada en el viewport */
+            min-height: 60px;
+            max-height: 100px;
+        }
+    </style>
+</head>
+<body class="text-slate-900">
+
+    <!-- SECCIÓN 1: INTRODUCCIÓN -->
+    <section class="min-h-screen w-full flex flex-col justify-center items-center bg-[#E0F2F1] p-6 relative overflow-hidden">
+        <div class="absolute top-6 left-0 right-0 md:left-10 text-center md:text-left text-sm md:text-xl font-bold uppercase tracking-[0.3em] opacity-40">
+            5to Grado • Gramática
+        </div>
+        <div class="z-10 text-center">
+            <h1 class="hero-title font-[900] text-[#00695C] mb-4">EL<br>REBAÑO</h1>
+            <p class="text-xl md:text-4xl font-light text-[#00897B] max-w-4xl mx-auto leading-tight mb-8 px-4">
+                Domina los sustantivos colectivos con asociación visual rápida.
+            </p>
+            <div class="flex gap-4 justify-center">
+                <span class="text-6xl md:text-8xl floating-emoji">🐑</span>
+                <span class="text-6xl md:text-8xl floating-emoji" style="animation-delay: 1s;">🐝</span>
+                <span class="text-6xl md:text-8xl floating-emoji" style="animation-delay: 2s;">🐟</span>
+            </div>
+        </div>
+        <a href="#aprende" class="absolute bottom-6 animate-bounce bg-white p-4 rounded-full shadow-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#00695C" stroke-width="3"><path d="M7 13l5 5 5-5M7 6l5 5 5-5"/></svg>
+        </a>
+    </section>
+
+    <!-- SECCIÓN 2: DEFINICIONES -->
+    <section id="aprende" class="min-h-screen w-full flex flex-col items-center justify-center bg-white p-6 md:p-12">
+        <div class="w-full flex flex-col md:flex-row gap-6 md:gap-12 items-center max-w-7xl">
+            <div class="w-full md:w-1/2 p-8 bg-[#FFF9C4] rounded-[3rem] card-hover shadow-xl">
+                <h2 class="text-4xl md:text-6xl font-black text-[#FBC02D] mb-4 uppercase">Individual</h2>
+                <p class="text-xl md:text-3xl text-[#9A7D0A]">Nombra a <b>un solo</b> ser u objeto.Es la unidad básica.</p>
+                <div class="text-[5rem] md:text-[8rem] mt-4">🐕</div>
+                <p class="text-xl font-bold mt-2 uppercase tracking-widest text-[#9A7D0A]">Perro</p>
+            </div>
+            <div class="w-full md:w-1/2 p-8 bg-[#C8E6C9] rounded-[3rem] card-hover shadow-xl">
+                <h2 class="text-4xl md:text-6xl font-black text-[#2E7D32] mb-4 uppercase">Colectivo</h2>
+                <p class="text-xl md:text-3xl text-[#1B5E20]">Nombra en <b>singular</b> a un grupo de la misma especie.</p>
+                <div class="text-[5rem] md:text-[8rem] mt-4">🐕🐕🐕</div>
+                <p class="text-xl font-bold mt-2 uppercase tracking-widest text-[#1B5E20]">Jauría</p>
+            </div>
+        </div>
+        <div class="mt-12 md:mt-20 text-center max-w-6xl px-4">
+            <p class="text-xl md:text-4xl font-light italic text-slate-500">
+                "¡Ojo! Aunque un sustantivo colectivo hable de muchos, la palabra se escribe como si fuera una sola cosa."
+            </p>
+        </div>
+    </section>
+
+    <!-- SECCIÓN 3: REGLAS -->
+    <section class="min-h-screen w-full flex flex-col items-center justify-center bg-[#FFE5D9] p-6 md:p-12">
+        <h2 class="text-5xl md:text-8xl font-[900] text-[#D44D5C] mb-12 text-center">REGLAS DE ORO</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-7xl">
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-lg text-center">
+                <div class="text-5xl mb-4">🧩</div>
+                <h3 class="text-xl font-black mb-2 uppercase">Misma Especie</h3>
+                <p class="text-lg text-slate-600">Un colectivo solo agrupa elementos iguales (ej. Peces).</p>
+            </div>
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-lg text-center">
+                <div class="text-5xl mb-4">🔤</div>
+                <h3 class="text-xl font-black mb-2 uppercase">Singularidad</h3>
+                <p class="text-lg text-slate-600">Decimos "La Piara corre". La palabra es singular.</p>
+            </div>
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-lg text-center">
+                <div class="text-5xl mb-4">💡</div>
+                <h3 class="text-xl font-black mb-2 uppercase">Nombres Propios (únicos)</h3>
+                <p class="text-lg text-slate-600">Cada grupo tiene su propio nombre único que debes conocer.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN 4: ESTUDIO (8 FLASHCARDS) -->
+    <section class="min-h-screen w-full flex flex-col items-center justify-center bg-[#BDE0FE] p-4 md:p-12 overflow-hidden">
+        <h2 class="text-4xl md:text-[6rem] font-[900] text-[#0077B6] mb-8 uppercase text-center">ZONA DE ESTUDIO</h2>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 w-full max-w-7xl overflow-y-auto max-h-[70vh] md:max-h-full p-2">
+            <!-- Flashcards generadas dinámicamente -->
+            <script>
+                const studyData = [
+                    { ind: "Lobo", col: "Jauría", e: "🐺" },
+                    { ind: "Cerdo", col: "Piara", e: "🐖" },
+                    { ind: "León", col: "Manada", e: "🦁" },
+                    { ind: "Abeja", col: "Enjambre", e: "🐝" },
+                    { ind: "Pez", col: "Cardumen", e: "🐟" },
+                    { ind: "Oveja", col: "Rebaño", e: "🐑" },
+                    { ind: "Árbol", col: "Arboleda", e: "🌳" },
+                    { ind: "Libro", col: "Biblioteca", e: "📚" }
+                ];
+                studyData.forEach(item => {
+                    document.write(`
+                        <div class="flashcard-container">
+                            <div class="flashcard-inner">
+                                <div class="flashcard-front bg-white shadow-lg">
+                                    <span class="text-5xl md:text-7xl mb-2">${item.e}</span>
+                                    <span class="text-sm md:text-xl font-black text-slate-400 uppercase">${item.ind}</span>
+                                </div>
+                                <div class="flashcard-back bg-[#0077B6] text-white shadow-lg">
+                                    <span class="text-5xl md:text-7xl mb-2">${item.e}${item.e}</span>
+                                    <span class="text-lg md:text-2xl font-black uppercase">${item.col}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                });
+            </script>
+        </div>
+    </section>
+
+    <!-- SECCIÓN 5: DESAFÍO FINAL -->
+    <section class="min-h-screen w-full flex flex-col items-center justify-center bg-[#F3E5F5] p-6 text-center">
+        <h2 class="text-5xl md:text-9xl font-[900] text-[#4A148C] mb-8 uppercase">DESAFÍO FINAL</h2>
+        <button onclick="startChallenge()" class="bg-[#7B1FA2] text-white px-12 py-6 md:px-20 md:py-10 rounded-full text-2xl md:text-4xl font-black shadow-2xl hover:scale-105 active:scale-95 transition-all">¡COMENZAR! 🎯</button>
+    </section>
+
+    <!-- OVERLAY JUEGO (ADAPTADO AL TAMAÑO DE PANTALLA, SIN SCROLL) -->
+    <div id="game-overlay" class="fixed inset-0 bg-[#0F172A] z-50 transform translate-y-full transition-transform duration-700 overflow-hidden flex flex-col">
+        <svg id="line-svg" class="line-canvas"></svg>
+        <div class="relative z-10 w-full h-full flex flex-col p-4 md:p-10">
+            <div class="flex justify-between items-center h-[60px] md:h-[100px]">
+                <h3 class="text-white text-xl md:text-4xl font-black uppercase tracking-tight">Une los Conceptos</h3>
+                <button onclick="closeChallenge()" class="text-white text-3xl font-bold bg-white/10 w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center">✕</button>
+            </div>
+
+            <div class="flex-1 flex items-center justify-between gap-4 md:gap-20 max-w-5xl mx-auto w-full py-4">
+                <div id="col-individual" class="flex flex-col justify-between h-full w-1/2 gap-2"></div>
+                <div id="col-colectivo" class="flex flex-col justify-between h-full w-1/2 gap-2"></div>
+            </div>
+
+            <div id="success-msg" class="hidden absolute inset-0 bg-emerald-500/95 flex flex-col items-center justify-center text-center p-6 z-[100]">
+                <h4 class="text-white text-5xl md:text-[10rem] font-black mb-8 uppercase">¡MAGNÍFICO!</h4>
+                <button onclick="location.reload()" class="bg-white text-emerald-600 px-10 py-5 rounded-full text-2xl md:text-4xl font-black shadow-xl">Reiniciar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const pairs = [
+            { id: 1, ind: "Oveja", col: "Rebaño", e: "🐑" },
+            { id: 2, ind: "Abeja", col: "Enjambre", e: "🐝" },
+            { id: 3, ind: "Pez", col: "Cardumen", e: "🐟" },
+            { id: 4, ind: "Lobo", col: "Jauría", e: "🐺" },
+            { id: 5, ind: "Árbol", col: "Arboleda", e: "🌳" },
+            { id: 6, ind: "León", col: "Manada", e: "🦁" }
+        ];
+
+        let selectedNode = null;
+        let connections = 0;
+
+        function startChallenge() {
+            document.getElementById('game-overlay').classList.remove('translate-y-full');
+            renderNodes();
+        }
+
+        function closeChallenge() {
+            document.getElementById('game-overlay').classList.add('translate-y-full');
+            document.getElementById('line-svg').innerHTML = '';
+            connections = 0;
+        }
+
+        function renderNodes() {
+            const colInd = document.getElementById('col-individual');
+            const colCol = document.getElementById('col-colectivo');
+            colInd.innerHTML = '';
+            colCol.innerHTML = '';
+
+            const shInd = [...pairs].sort(() => Math.random() - 0.5);
+            const shCol = [...pairs].sort(() => Math.random() - 0.5);
+
+            shInd.forEach(p => {
+                colInd.innerHTML += `<div id="ind-${p.id}" onclick="handleSelect('ind', ${p.id})" class="game-node bg-white p-2 md:p-4 rounded-xl md:rounded-3xl flex items-center gap-2 md:gap-4 cursor-pointer border-4 border-transparent shadow-md transition-all active:scale-95"><span class="text-2xl md:text-4xl">${p.e}</span><span class="text-xs md:text-xl font-black uppercase text-slate-800 truncate">${p.ind}</span></div>`;
+            });
+
+            shCol.forEach(p => {
+                colCol.innerHTML += `<div id="col-${p.id}" onclick="handleSelect('col', ${p.id})" class="game-node bg-slate-800 p-2 md:p-4 rounded-xl md:rounded-3xl flex items-center justify-center cursor-pointer border-4 border-transparent shadow-md transition-all text-white active:scale-95"><span class="text-xs md:text-xl font-black uppercase text-center truncate w-full">${p.col}</span></div>`;
+            });
+        }
+
+        function handleSelect(type, id) {
+            const el = document.getElementById(`${type}-${id}`);
+            if (el.classList.contains('matched')) return;
+            if (selectedNode && selectedNode.type === type) {
+                document.getElementById(`${selectedNode.type}-${selectedNode.id}`).classList.remove('selected-node');
+            }
+            if (selectedNode && selectedNode.type !== type) {
+                if (selectedNode.id === id) {
+                    makeMatch(selectedNode.type, type, id);
+                } else {
+                    el.classList.add('bg-red-500');
+                    setTimeout(() => el.classList.remove('bg-red-500'), 400);
+                }
+                document.getElementById(`${selectedNode.type}-${selectedNode.id}`).classList.remove('selected-node');
+                selectedNode = null;
+                return;
+            }
+            selectedNode = { type, id };
+            el.classList.add('selected-node');
+        }
+
+        function makeMatch(t1, t2, id) {
+            const el1 = document.getElementById(`${t1}-${id}`);
+            const el2 = document.getElementById(`${t2}-${id}`);
+            el1.classList.add('matched', 'opacity-20', 'bg-emerald-500');
+            el2.classList.add('matched', 'opacity-20', 'bg-emerald-500');
+            drawConnection(el1, el2);
+            connections++;
+            if (connections === pairs.length) {
+                setTimeout(() => document.getElementById('success-msg').classList.remove('hidden'), 500);
+            }
+        }
+
+        function drawConnection(el1, el2) {
+            const svg = document.getElementById('line-svg');
+            const r1 = el1.getBoundingClientRect();
+            const r2 = el2.getBoundingClientRect();
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            const x1 = r1.right - 10, y1 = r1.top + r1.height / 2;
+            const x2 = r2.left + 10, y2 = r2.top + r2.height / 2;
+            line.setAttribute("x1", x1); line.setAttribute("y1", y1);
+            line.setAttribute("x2", x2); line.setAttribute("y2", y2);
+            line.setAttribute("stroke", "#10B981");
+            line.setAttribute("stroke-width", window.innerWidth < 768 ? "4" : "8");
+            line.setAttribute("stroke-linecap", "round");
+            line.setAttribute("stroke-dasharray", "10, 8");
+            svg.appendChild(line);
+        }
+
+        window.addEventListener('resize', () => { document.getElementById('line-svg').innerHTML = ''; });
+    </script>
+</body>
+</html>

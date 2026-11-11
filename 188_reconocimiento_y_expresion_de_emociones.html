@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cazador de Emojis - Buscador de Sonrisas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #fff1f2; /* Rosa súper cálido y acogedor */
+            background-image: 
+                radial-gradient(#fecdd3 3px, transparent 3px),
+                radial-gradient(#fecdd3 3px, transparent 3px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        /* Animaciones para niños */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(1.5deg); }
+        }
+        .floating {
+            animation: float 3.5s ease-in-out infinite;
+        }
+
+        @keyframes pulseOwl {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+        .pulse-owl {
+            animation: pulseOwl 2s infinite ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px) rotate(-1.5deg); }
+            40%, 80% { transform: translateX(8px) rotate(1.5deg); }
+        }
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop-in {
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Partículas de celebración */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            animation: flyUp 1.5s ease-out forwards;
+            z-index: 100;
+        }
+        @keyframes flyUp {
+            0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-120px) scale(1.6) rotate(360deg); opacity: 0; }
+        }
+
+        /* Botones del panel */
+        .btn-interactivo {
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .btn-interactivo:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body class="w-screen h-screen flex flex-col relative text-gray-800 select-none">
+
+    <!-- ================= PANTALLA DE INICIO ================= -->
+    <div id="pantalla-inicio" class="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-rose-50/95 backdrop-blur-md transition-opacity duration-500">
+        
+        <div class="bg-rose-100 rounded-full px-6 py-2 mb-4 font-bold text-rose-700 tracking-wider shadow-sm border border-rose-200">
+            FORMACIÓN CÍVICA Y VALORES • 2º GRADO
+        </div>
+        
+        <h1 class="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-pink-600 mb-6 drop-shadow-sm leading-tight">
+            Cazador de Emojis 💖🕵️‍♂️
+        </h1>
+        
+        <div class="max-w-2xl bg-white p-8 rounded-[2.5rem] shadow-2xl border-4 border-rose-400 mb-8 transform hover:scale-105 transition-transform duration-300 relative overflow-hidden">
+            <h2 class="text-3xl font-bold text-rose-700 mb-4 flex items-center justify-center gap-3">
+                <span>🎯</span> Conviértete en un Súper Amigo Empático
+            </h2>
+            <p class="text-xl text-gray-600 leading-relaxed font-semibold">
+                La <b>empatía</b> es el súper poder de entender cómo se sienten los demás y ayudarlos a sentirse mejor.<br>
+                Identifica la emoción de tus compañeros del bosque y elige el mejor gesto de consuelo para devolverles la sonrisa.<br><br>
+                <span class="text-pink-600 font-black">¿Listo para encender el cazador de sonrisas? ✨</span>
+            </p>
+            <div class="flex justify-center gap-6 mt-6 text-5xl">
+                <span class="floating" style="animation-delay: 0s;">🤗</span>
+                <span class="floating" style="animation-delay: 0.3s;">❤️</span>
+                <span class="floating" style="animation-delay: 0.6s;">😊</span>
+            </div>
+        </div>
+
+        <button onclick="iniciarJuego()" class="group relative inline-flex items-center justify-center px-12 py-5 text-2xl font-bold text-white bg-gradient-to-r from-rose-500 to-pink-500 rounded-full overflow-hidden shadow-[0_8px_0_#be123c] active:shadow-[0_0px_0_#be123c] active:translate-y-2 transition-all">
+            <span class="relative flex items-center gap-2">¡Empezar a Buscar Sonrisas! <span class="text-3xl group-hover:animate-bounce">🚀</span></span>
+        </button>
+    </div>
+
+    <!-- ================= PANTALLA DEL JUEGO ================= -->
+    <div id="pantalla-juego" class="hidden absolute inset-0 z-10 flex flex-col h-full w-full">
+        
+        <!-- Cabecera -->
+        <div class="w-full flex justify-between items-center bg-white/95 p-4 shadow-md border-b-4 border-rose-200 z-20 shrink-0">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl md:text-4xl bg-rose-100 p-2 rounded-full">💖</span>
+                <div>
+                    <h2 class="text-xl md:text-3xl font-black text-rose-700">Buscador de Sonrisas</h2>
+                    <p class="hidden md:block text-xs font-bold text-gray-400">Reconocimiento Emocional y Empatía • 2º Primaria</p>
+                </div>
+            </div>
+            <div class="flex flex-col items-end">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Sonrisas Recuperadas</span>
+                <span id="contador-progreso" class="bg-rose-100 px-4 py-1 rounded-full text-rose-700 font-black border-2 border-rose-200 text-lg md:text-xl shadow-sm">0 / 5 😊</span>
+            </div>
+        </div>
+
+        <!-- Área Principal de Juego (Distribución Horizontal) -->
+        <div class="flex-1 w-full p-4 md:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 overflow-hidden relative">
+            
+            <!-- Burbuja de Guía Pedagógica flotante -->
+            <div id="burbuja-pedagogica" class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white px-6 py-4 rounded-[2.5rem] shadow-2xl border-4 border-rose-400 opacity-0 transition-all duration-300 z-50 text-center w-11/12 max-w-lg pointer-events-none scale-90">
+                <!-- Se inyecta feedback dinámicamente -->
+            </div>
+
+            <!-- Columna Izquierda: El Personaje y su Situación -->
+            <div class="w-full lg:w-1/2 h-full flex flex-col justify-between bg-rose-50/50 backdrop-blur-sm rounded-[2.5rem] p-6 border-4 border-dashed border-rose-300 relative">
+                
+                <!-- Globo de texto del personaje explicando su situación -->
+                <div class="bg-white/95 px-5 py-4 rounded-3xl border-2 border-rose-100 shadow-md relative">
+                    <div class="absolute -bottom-3 left-10 w-6 h-6 bg-white border-r-2 border-b-2 border-rose-100 rotate-45"></div>
+                    <p id="texto-situacion" class="text-base md:text-lg font-bold text-rose-950 leading-relaxed">
+                        Situación...
+                    </p>
+                </div>
+
+                <!-- Representación del Personaje en escena -->
+                <div class="flex-1 w-full flex items-center justify-center relative my-4">
+                    <div id="personaje-contenedor" class="flex flex-col items-center justify-center transition-all duration-500">
+                        <div id="personaje-emoji" class="text-[7.5rem] md:text-[9.5rem] filter drop-shadow-xl select-none floating">😢</div>
+                        <span id="personaje-nombre" class="bg-rose-600 text-white text-sm font-black px-4 py-1.5 rounded-full shadow-md mt-4 tracking-wider uppercase">Personaje</span>
+                    </div>
+                </div>
+
+                <!-- Barra de Camino de Sonrisas (Progreso) -->
+                <div class="w-full bg-white/70 p-3 rounded-2xl border border-rose-100 flex justify-between items-center px-6">
+                    <span class="text-sm font-black text-rose-800">Tus Misiones:</span>
+                    <div class="flex gap-2.5" id="camino-progreso">
+                        <!-- Se llena por JS -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Columna Derecha: Panel de Decisión Interactivo (Fase 1 y Fase 2) -->
+            <div id="panel-interactivo" class="w-full lg:w-1/2 h-72 lg:h-full flex flex-col justify-between bg-white rounded-[2.5rem] p-6 border-4 border-rose-100 shadow-xl relative shrink-0">
+                
+                <!-- Cabecera de la Fase de Decisión -->
+                <div class="text-center shrink-0">
+                    <span id="fase-subtitulo" class="text-xs font-black text-rose-500 uppercase tracking-widest block mb-1">Paso 1 de 2: Reconoce la emoción</span>
+                    <h3 id="fase-titulo" class="text-xl md:text-2xl font-black text-gray-700 leading-tight">¿Cómo se siente nuestro amigo?</h3>
+                </div>
+
+                <!-- Contenedor dinámico para botones de opciones (Fase 1 o Fase 2) -->
+                <div class="flex-1 my-4 flex flex-col justify-center gap-3 w-full">
+                    <div id="contenedor-opciones" class="flex flex-col gap-3">
+                        <!-- Botones de opciones inyectados por JS -->
+                    </div>
+                </div>
+
+                <!-- Consejo del Búho Sabio de la Empatía -->
+                <div class="text-left text-xs font-bold text-rose-900 bg-rose-50 p-3 rounded-2xl shrink-0 flex items-center gap-3 border border-rose-100 shadow-inner">
+                    <span class="text-3xl pulse-owl select-none">🦉</span>
+                    <div>
+                        <span class="font-black text-rose-600 block">Búho de la Empatía:</span>
+                        <span id="tutor-consejo">Observa con atención su carita y lee lo que le pasó para saber qué siente en su corazón.</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= PANTALLA FINAL ================= -->
+    <div id="pantalla-final" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-white/95 backdrop-blur-md transition-opacity duration-500">
+        <!-- Emojis flotantes sin riesgo de cortarse -->
+        <div class="flex gap-4 justify-center text-6xl md:text-8xl mb-6 floating select-none">
+            <span>🤗</span>
+            <span>💖</span>
+            <span>😊</span>
+        </div>
+        <h1 class="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-pink-600 mb-6 drop-shadow-sm leading-tight">
+            ¡Súper Amigo de la Empatía! 🏆
+        </h1>
+        <p class="text-xl md:text-2xl text-gray-700 max-w-2xl mb-10 font-bold leading-relaxed">
+            Has completado todas las misiones y recuperado todas las sonrisas del bosque.<br>
+            ¡Tu capacidad para reconocer emociones y consolar a tus amigos demuestra que tienes un corazón de oro! Sigue repartiendo empatía en tu aula y hogar. 🌟🤝
+        </p>
+        <button onclick="reiniciarJuego()" class="group relative inline-flex items-center justify-center px-12 py-5 text-2xl font-bold text-white bg-gradient-to-r from-rose-500 to-pink-500 rounded-full overflow-hidden shadow-[0_8px_0_#be123c] active:shadow-[0_0px_0_#be123c] active:translate-y-2 transition-all">
+            <span class="relative flex items-center gap-2">Volver a Jugar <span class="text-3xl">🔄</span></span>
+        </button>
+    </div>
+
+    <!-- ================= LÓGICA DEL JUEGO ================= -->
+    <script>
+        // --- BASE DE DATOS DE CASOS EMPÁTICOS (5 situaciones corregidas) ---
+        const casos = [
+            {
+                id: 1,
+                nombre: "Lucas 👦🏼",
+                situacion: "¡Oh no! Se me cayó mi delicioso sándwich de queso al suelo de tierra y me quedé sin nada de merienda para disfrutar en el recreo... 🥪",
+                emociones: [
+                    { texto: "Tristeza", esCorrecto: true, emoji: "😢" },
+                    { texto: "Enojo", esCorrecto: false, emoji: "😡", feedback: "¡Espera! Aunque Lucas está molesto por perder su sándwich, lo que más siente es pena porque se quedó sin su merienda. Su carita está a punto de llorar." },
+                    { texto: "Miedo", esCorrecto: false, emoji: "😨", feedback: "¡Oh! Lucas no siente peligro ni se asustó por el sándwich. ¡Mira sus lágrimas de pena!" }
+                ],
+                consolaciones: [
+                    { texto: "Darle un fuerte abrazo y ofrecer compartir tu merienda con él.", esCorrecto: true, feedback: "¡Qué hermoso corazón! Darle un abrazo cálido y compartir tu sándwich hace que nuestro amigo se sienta querido y acompañado en su tristeza. ¡Recuperaste su sonrisa! 🥪😊" },
+                    { texto: "Decirle que no es para tanto y que consiga otra cosa.", esCorrecto: false, feedback: "¡Uy! Si le restamos importancia a su pena, Lucas sentirá que no respetas sus sentimientos. ¡Intenta otra acción!" },
+                    { texto: "Reírte de él por ser tan distraído con su comida.", esCorrecto: false, feedback: "¡Cuidado! Burlarse de los accidentes de los demás lastima su corazón y rompe la amistad. ¡La empatía busca cuidar al otro!" }
+                ],
+                emojiTriste: "😢",
+                emojiFeliz: "😊"
+            },
+            {
+                id: 2,
+                nombre: "Mateo 👦🏽",
+                situacion: "¡Estuve una hora entera construyendo mi súper torre de bloques gigantes y el viento sopló muy fuerte y lo tiró todo! 🏰💨",
+                emociones: [
+                    { texto: "Frustración o Enojo", esCorrecto: true, emoji: "😡" },
+                    { texto: "Miedo", esCorrecto: false, emoji: "😨", feedback: "¡Uy! Mateo no está asustado del viento. Está molesto porque su gran esfuerzo se derrumbó de repente." },
+                    { texto: "Alegría", esCorrecto: false, emoji: "😁", feedback: "¡Ay! ¿Alegría? Mira sus puños cerrados y su carita colorada. A nadie le gusta que tiren su trabajo." }
+                ],
+                consolaciones: [
+                    { texto: "Ofrecer tu ayuda para reconstruir la torre de bloques más fuerte.", esCorrecto: true, feedback: "¡Extraordinario! Ofrecer nuestra ayuda para reconstruir juntos transforma su molestia en un nuevo juego colaborativo. ¡Gran gesto de empatía! 🏰✨" },
+                    { texto: "Decirle que es un mal constructor y que por eso se cayó.", esCorrecto: false, feedback: "¡Oh! Culpar a Mateo de su accidente lo hará sentir incapaz y mucho más molesto. ¡Busquemos una solución amigable!" },
+                    { texto: "Ignorarlo y ponerte a jugar solo con tus propios juguetes.", esCorrecto: false, feedback: "¡Piénsalo! Darle la espalda a un amigo molesto no ayuda a solucionar su frustración. ¡La empatía propone colaborar!" }
+                ],
+                emojiTriste: "😡",
+                emojiFeliz: "😁"
+            },
+            {
+                id: 3,
+                nombre: "Sofía 👧🏽",
+                situacion: "La luz de mi habitación se apagó por la tormenta, afuera llueve muy fuerte y los truenos suenan como rugidos gigantes... ⚡⛈️",
+                emociones: [
+                    { texto: "Miedo", esCorrecto: true, emoji: "😨" },
+                    { texto: "Enojo", esCorrecto: false, emoji: "😡", feedback: "¡Oh! Sofía no está molesta con la tormenta. Sus ojitos están abiertos de par en par y está temblando del susto." },
+                    { texto: "Frustración", esCorrecto: false, emoji: "😔", feedback: "¡Uy! Ella no está cansada ni aburrida del apagón. El ruido fuerte de los truenos la hace sentir en peligro." }
+                ],
+                consolaciones: [
+                    { texto: "Abrazarla, tomar su mano y prender una pequeña linterna de juguete.", esCorrecto: true, feedback: "¡Espectacular! El miedo se hace muy chiquito cuando alguien nos toma de la mano, nos acompaña y nos regala una luz cálida. ¡La hiciste sentir súper segura! 🔦❤️" },
+                    { texto: "Decirle que los truenos la van a atrapar si no se duerme ya.", esCorrecto: false, feedback: "¡Cuidado! Asustar más a alguien que ya tiene miedo lastima mucho su mente y corazón. ¡Queremos consolar!" },
+                    { texto: "Dejarla solita en la oscuridad para que aprenda a ser fuerte.", esCorrecto: false, feedback: "¡Uy! El abandono aumenta el miedo. La empatía nos enseña a acompañar a quienes se sienten vulnerables." }
+                ],
+                emojiTriste: "😨",
+                emojiFeliz: "😊"
+            },
+            {
+                id: 4,
+                nombre: "Ana 👧🏻",
+                situacion: "Todos mis compañeros están jugando súper contentos a la pelota en el patio del recreo, pero yo estoy solita aquí sentada... 😔",
+                emociones: [
+                    { texto: "Soledad", esCorrecto: true, emoji: "😔" },
+                    { texto: "Enojo", esCorrecto: false, emoji: "😡", feedback: "¡Espera! Aunque Ana podría estar un poco molesta, el sentimiento que más resalta en su carita triste es sentirse aislada y sola." },
+                    { texto: "Miedo", esCorrecto: false, emoji: "😨", feedback: "¡Oh! Ana no está en peligro ni le asusta la pelota de recreo. Ella quiere integrarse pero no sabe cómo." }
+                ],
+                consolaciones: [
+                    { texto: "Acercarte, saludarla e invitarla a jugar contigo y con los demás.", esCorrecto: true, feedback: "¡Qué hermoso gesto! Invitar a alguien que está solo a integrarse al grupo enciende de inmediato una gran luz de felicidad en su corazón. ¡Bien hecho! 🌟🤝" },
+                    { texto: "Pasar junto a ella corriendo y no invitarla para no perder el partido.", esCorrecto: false, feedback: "¡Oh! Ignorar a un compañero aislado aumenta su sentimiento de soledad. La diversión es más linda cuando todos participan." },
+                    { texto: "Decirle que nadie quiere jugar con ella por ser tímida.", esCorrecto: false, feedback: "¡Cuidado! Esas palabras son excluyentes y lastiman su autoestima. La empatía integra a los demás." }
+                ],
+                emojiTriste: "😔",
+                emojiFeliz: "😆"
+            },
+            {
+                id: 5,
+                nombre: "Diego 👦🏽",
+                situacion: "¡Iba corriendo súper rápido persiguiendo una mariposa, tropecé con una roca y me duele mucho mi rodilla raspada! 🩹🏃‍♂️",
+                emociones: [
+                    { texto: "Dolor físico", esCorrecto: true, emoji: "😭" },
+                    { texto: "Enojo", esCorrecto: false, emoji: "😡", feedback: "¡Uy! Diego no está molesto con la mariposa. Su carita es de dolor y llanto por el golpe físico en su rodilla." },
+                    { texto: "Aburrimiento", esCorrecto: false, emoji: "🥱", feedback: "¡Oh! No está aburrido ni con sueño. ¡Mira sus lágrimas por el raspón!" }
+                ],
+                consolaciones: [
+                    { texto: "Llamar a la maestra, traer una curita y acompañarlo para que lo curen con cariño.", esCorrecto: true, feedback: "¡Fabuloso! Cuidar del bienestar físico de nuestros amigos trayendo primeros auxilios y acompañándolos con un adulto demuestra empatía protectora. ¡Gran final! 🏥💖" },
+                    { texto: "Decirle que los niños fuertes no lloran por un rasguño.", esCorrecto: false, feedback: "¡Cuidado! Minimizar el dolor del otro o decirle que no llore invalida su dolor físico real. Todos tenemos derecho a expresar el dolor." },
+                    { texto: "Quitarle su juguete favorito mientras llora porque está distraído.", esCorrecto: false, feedback: "¡Qué mala acción! Aprovecharse del dolor físico de un amigo para quitarle cosas es muy injusto y desleal." }
+                ],
+                emojiTriste: "😭",
+                emojiFeliz: "😊"
+            }
+        ];
+
+        let indiceActual = 0;
+        let faseActual = 1; // 1: Reconocer emoción, 2: Consolar
+        let bloqueandoAccion = false;
+        let callbackContinuar = null; // Callback para el botón "Continuar"
+
+        // Elementos DOM
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const pantallaJuego = document.getElementById('pantalla-juego');
+        const pantallaFinal = document.getElementById('pantalla-final');
+        const contadorProgreso = document.getElementById('contador-progreso');
+        const burbujaPedagogica = document.getElementById('burbuja-pedagogica');
+        
+        // Elementos del juego (Izquierda)
+        const textoSituacion = document.getElementById('texto-situacion');
+        const personajeContenedor = document.getElementById('personaje-contenedor');
+        const personajeEmoji = document.getElementById('personaje-emoji');
+        const personajeNombre = document.getElementById('personaje-nombre');
+        const caminoProgreso = document.getElementById('camino-progreso');
+
+        // Elementos del panel de control (Derecha)
+        const faseSubtitulo = document.getElementById('fase-subtitulo');
+        const faseTitulo = document.getElementById('fase-titulo');
+        const contenedorOpciones = document.getElementById('contenedor-opciones');
+        const tutorConsejo = document.getElementById('tutor-consejo');
+
+        // --- INICIALIZACIÓN ---
+
+        function iniciarJuego() {
+            pantallaInicio.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaInicio.classList.add('hidden');
+                pantallaInicio.classList.remove('opacity-0');
+                pantallaJuego.classList.remove('hidden');
+                
+                indiceActual = 0;
+                faseActual = 1;
+                bloqueandoAccion = false;
+                callbackContinuar = null;
+                
+                actualizarProgreso();
+                construirBarraCamino();
+                cargarCaso();
+            }, 500);
+        }
+
+        function reiniciarJuego() {
+            pantallaFinal.classList.add('opacity-0');
+            setTimeout(() => {
+                window.location.reload(); // Recarga F5 impecable de estados
+            }, 300);
+        }
+
+        function actualizarProgreso() {
+            contadorProgreso.innerText = `${indiceActual} / ${casos.length} 😊`;
+        }
+
+        function construirBarraCamino() {
+            caminoProgreso.innerHTML = '';
+            casos.forEach((c, index) => {
+                const punto = document.createElement('div');
+                punto.id = `punto-camino-${index}`;
+                punto.className = "w-6 h-6 rounded-full border-2 border-rose-300 bg-white transition-all duration-500 flex items-center justify-center text-xs";
+                punto.innerHTML = "•";
+                caminoProgreso.appendChild(punto);
+            });
+        }
+
+        // --- CARGAR NUEVA SITUACIÓN ---
+
+        function cargarCaso() {
+            if (indiceActual >= casos.length) {
+                finalizarJuego();
+                return;
+            }
+
+            bloqueandoAccion = false;
+            callbackContinuar = null;
+            burbujaPedagogica.className = "absolute top-4 left-1/2 transform -translate-x-1/2 bg-white px-6 py-4 rounded-[2.5rem] shadow-2xl border-4 border-rose-400 opacity-0 transition-all duration-300 z-50 text-center w-11/12 max-w-lg pointer-events-none scale-90";
+            burbujaPedagogica.style.pointerEvents = 'none';
+
+            const c = casos[indiceActual];
+
+            // Cargar datos a la izquierda
+            textoSituacion.innerText = c.situacion;
+            personajeEmoji.innerText = c.emojiTriste;
+            personajeNombre.innerText = c.nombre;
+
+            // Restablecer posición y animación
+            personajeContenedor.style.transform = "scale(1)";
+            personajeContenedor.classList.remove('shake');
+            personajeContenedor.classList.add('floating');
+
+            // Actualizar color de los puntos de progreso en la barra inferior
+            casos.forEach((_, idx) => {
+                const p = document.getElementById(`punto-camino-${idx}`);
+                if (idx < indiceActual) {
+                    p.className = "w-6 h-6 rounded-full bg-rose-500 border-2 border-rose-600 text-white flex items-center justify-center text-[10px] font-black";
+                    p.innerHTML = "✓";
+                } else if (idx === indiceActual) {
+                    p.className = "w-6 h-6 rounded-full bg-pink-300 border-2 border-pink-500 text-pink-800 flex items-center justify-center text-[10px] font-black animate-pulse";
+                    p.innerHTML = "💖";
+                } else {
+                    p.className = "w-6 h-6 rounded-full border-2 border-rose-300 bg-white flex items-center justify-center text-xs";
+                    p.innerHTML = "•";
+                }
+            });
+
+            // Arrancar en la Fase 1
+            faseActual = 1;
+            cargarFase();
+        }
+
+        // --- CARGAR FASE ESPECÍFICA (Fase 1: Reconocer o Fase 2: Consolar) ---
+
+        function cargarFase() {
+            const c = casos[indiceActual];
+            contenedorOpciones.innerHTML = '';
+
+            if (faseActual === 1) {
+                // FASE 1: Identificar Emoción
+                faseSubtitulo.innerText = "Paso 1 de 2: Reconoce la emoción";
+                faseTitulo.innerText = `¿Cómo se siente ${c.nombre.split(' ')[0]}?`;
+                tutorConsejo.innerText = "Observa con atención su carita y lee lo que le pasó para saber qué siente en su corazón.";
+
+                const letras = ["A", "B", "C"];
+                c.emociones.forEach((em, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = "btn-interactivo w-full py-3.5 px-4 text-left bg-rose-50 hover:bg-rose-100 border-2 border-rose-200 rounded-2xl font-bold text-sm md:text-base text-gray-700 flex items-center gap-3";
+                    btn.innerHTML = `
+                        <span class="bg-rose-200 text-rose-800 rounded-full w-8 h-8 flex items-center justify-center font-black text-xs shrink-0 select-none">${letras[index]}</span>
+                        <span class="leading-tight select-none">${em.texto}</span>
+                    `;
+                    btn.addEventListener('pointerdown', () => procesarEmocion(em, btn));
+                    contenedorOpciones.appendChild(btn);
+                });
+
+            } else if (faseActual === 2) {
+                // FASE 2: Consolar y Sanar
+                faseSubtitulo.innerText = "Paso 2 de 2: ¡Tiempo de Consolar!";
+                faseTitulo.innerText = `¿Cómo ayudarías a ${c.nombre.split(' ')[0]}?`;
+                tutorConsejo.innerText = "Piensa qué le haría bien a su corazón para calmar su sentimiento y recuperar su gran sonrisa.";
+
+                c.consolaciones.forEach((con, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = "btn-interactivo w-full py-3 px-4 text-left bg-rose-50/50 hover:bg-rose-100/80 border-2 border-rose-200 rounded-2xl font-bold text-xs md:text-sm text-gray-700 flex items-center gap-3";
+                    btn.innerHTML = `
+                        <span class="bg-rose-200 text-rose-800 rounded-full w-7 h-7 flex items-center justify-center font-black text-xs shrink-0 select-none">${index + 1}</span>
+                        <span class="leading-tight select-none">${con.texto}</span>
+                    `;
+                    btn.addEventListener('pointerdown', () => procesarConsolacion(con, btn));
+                    contenedorOpciones.appendChild(btn);
+                });
+            }
+        }
+
+        // --- PROCESAR PASO 1 (EMOCIÓN) ---
+
+        function procesarEmocion(emocion, botonDOM) {
+            if (bloqueandoAccion) return;
+
+            if (emocion.esCorrecto) {
+                bloqueandoAccion = true;
+                desactivarOpciones();
+
+                // Estilo botón exitoso
+                botonDOM.className = "btn-interactivo w-full py-3.5 px-4 text-left bg-rose-500 border-2 border-rose-600 text-white rounded-2xl font-black text-sm md:text-base flex items-center gap-3 shadow-lg scale-102";
+
+                // Feedback que invita a continuar pulsando el botón dinámico de paz
+                lanzarFeedbackBurbuja(
+                    true, 
+                    `¡Sí! Identificaste su emoción con éxito. Ahora pensemos cómo podemos consolar a nuestro amigo/a.`, 
+                    "border-rose-400 text-rose-600", 
+                    "¡Gran Ojo Emocional! 🕵️‍♂️✨",
+                    () => {
+                        faseActual = 2;
+                        bloqueandoAccion = false;
+                        cargarFase();
+                    }
+                );
+
+            } else {
+                bloqueandoAccion = true;
+                desactivarOpciones();
+
+                botonDOM.classList.add('shake');
+                botonDOM.className = "btn-interactivo w-full py-3.5 px-4 text-left bg-red-100 border-2 border-red-300 text-red-800 rounded-2xl font-bold text-sm md:text-base flex items-center gap-3";
+                
+                personajeContenedor.classList.add('shake');
+
+                // Consejo tutor personalizado
+                lanzarFeedbackBurbuja(false, emocion.feedback, "border-pink-300 text-pink-700", "¡Piénsalo un poquito! 🦉💡");
+
+                setTimeout(() => {
+                    botonDOM.classList.remove('shake');
+                    personajeContenedor.classList.remove('shake');
+                    bloqueandoAccion = false;
+                    activarOpciones();
+                }, 4500); // Acortado a 4.5s para dinamismo
+            }
+        }
+
+        // --- PROCESAR PASO 2 (CONSOLACIÓN) ---
+
+        function procesarConsolacion(con, botonDOM) {
+            if (bloqueandoAccion) return;
+
+            const c = casos[indiceActual];
+
+            if (con.esCorrecto) {
+                bloqueandoAccion = true;
+                desactivarOpciones();
+
+                // Estilo botón condecorado
+                botonDOM.className = "btn-interactivo w-full py-3 px-4 text-left bg-emerald-500 border-2 border-emerald-600 text-white rounded-2xl font-black text-xs md:text-sm flex items-center gap-3 shadow-lg scale-102";
+
+                // Cambiar el emoji del personaje a feliz en tiempo real
+                personajeEmoji.innerText = c.emojiFeliz;
+                personajeContenedor.style.transform = "scale(1.15)";
+
+                // Lanzar lluvia intensa de corazones y estrellas
+                const rectPersonaje = personajeContenedor.getBoundingClientRect();
+                crearCelebracion(rectPersonaje);
+
+                // Feedback pedagógico de por qué esa acción ayudó con acción manual de continuar
+                lanzarFeedbackBurbuja(
+                    true, 
+                    con.feedback, 
+                    "border-amber-400 text-amber-600", 
+                    "¡Súper Amigo de la Empatía! 🤗❤️",
+                    () => {
+                        indiceActual++;
+                        actualizarProgreso();
+                        cargarCaso();
+                    }
+                );
+
+            } else {
+                bloqueandoAccion = true;
+                desactivarOpciones();
+
+                botonDOM.classList.add('shake');
+                botonDOM.className = "btn-interactivo w-full py-3 px-4 text-left bg-red-100 border-2 border-red-300 text-red-800 rounded-2xl font-bold text-xs md:text-sm flex items-center gap-3";
+
+                lanzarFeedbackBurbuja(false, con.feedback, "border-rose-400 text-rose-700", "¡Busquemos otra opción! 🤔🩹");
+
+                setTimeout(() => {
+                    botonDOM.classList.remove('shake');
+                    bloqueandoAccion = false;
+                    activarOpciones();
+                }, 4500); // Acortado a 4.5s para evitar frustración
+            }
+        }
+
+        // --- MANEJO DE ESTADOS DE OPCIONES ---
+
+        function desactivarOpciones() {
+            const btns = contenedorOpciones.querySelectorAll('button');
+            btns.forEach(b => {
+                b.style.pointerEvents = "none";
+                if (!b.classList.contains('bg-rose-500') && !b.classList.contains('bg-emerald-500') && !b.classList.contains('bg-red-100')) {
+                    b.style.opacity = "0.4";
+                }
+            });
+        }
+
+        function activarOpciones() {
+            const btns = contenedorOpciones.querySelectorAll('button');
+            btns.forEach(b => {
+                b.style.pointerEvents = "auto";
+                b.style.opacity = "1";
+                if (b.classList.contains('bg-red-100')) {
+                    if (faseActual === 1) {
+                        b.className = "btn-interactivo w-full py-3.5 px-4 text-left bg-rose-50 hover:bg-rose-100 border-2 border-rose-200 rounded-2xl font-bold text-sm md:text-base text-gray-700 flex items-center gap-3";
+                    } else {
+                        b.className = "btn-interactivo w-full py-3 px-4 text-left bg-rose-50/50 hover:bg-rose-100/80 border-2 border-rose-200 rounded-2xl font-bold text-xs md:text-sm text-gray-700 flex items-center gap-3";
+                    }
+                }
+            });
+        }
+
+        // --- BURBUJA DE RETROALIMENTACIÓN CON BOTÓN DE CONTINUAR INTEGRADO ---
+
+        function lanzarFeedbackBurbuja(esExito, mensaje, clasesColor, titulo, callback) {
+            burbujaPedagogica.className = `absolute top-4 left-1/2 transform -translate-x-1/2 bg-white px-6 py-4 rounded-[2.5rem] shadow-2xl border-4 ${clasesColor.split(' ')[0]} transition-all duration-300 z-50 text-center w-11/12 max-w-lg scale-100 opacity-100`;
+            
+            let botonHTML = '';
+            if (esExito) {
+                callbackContinuar = callback;
+                burbujaPedagogica.style.pointerEvents = 'auto'; // Permitir hacer clic en el botón Continuar
+                botonHTML = `
+                    <button onclick="ejecutarContinuar()" class="mt-4 px-8 py-2.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-black text-sm rounded-full shadow-md hover:from-rose-600 hover:to-pink-600 active:scale-95 transition-all animate-bounce">
+                        Continuar ➡️
+                    </button>
+                `;
+            } else {
+                callbackContinuar = null;
+                burbujaPedagogica.style.pointerEvents = 'none'; // Ignorar clics cuando es mensaje de error temporal
+            }
+
+            burbujaPedagogica.innerHTML = `
+                <div class="text-xl md:text-2xl font-black ${clasesColor.split(' ')[1]} mb-1.5">${titulo}</div>
+                <div class="text-sm md:text-base font-bold text-gray-700 leading-snug">${mensaje}</div>
+                ${botonHTML}
+            `;
+
+            if (!esExito) {
+                setTimeout(() => {
+                    burbujaPedagogica.className = "absolute top-4 left-1/2 transform -translate-x-1/2 bg-white px-6 py-4 rounded-[2rem] shadow-2xl border-4 border-rose-400 opacity-0 transition-all duration-300 z-50 text-center max-w-lg pointer-events-none scale-90";
+                }, 4500);
+            }
+        }
+
+        function ejecutarContinuar() {
+            // Ocultar burbuja primero
+            burbujaPedagogica.className = "absolute top-4 left-1/2 transform -translate-x-1/2 bg-white px-6 py-4 rounded-[2rem] shadow-2xl border-4 border-rose-400 opacity-0 transition-all duration-300 z-50 text-center max-w-lg pointer-events-none scale-90";
+            burbujaPedagogica.style.pointerEvents = 'none';
+
+            if (callbackContinuar) {
+                const cb = callbackContinuar;
+                callbackContinuar = null;
+                cb();
+            }
+        }
+
+        // --- EFECTOS VISUALES EXTRA ---
+
+        function crearCelebracion(rect) {
+            const emojis = ['🌟', '✨', '💖', '🤗', '🌸', '❤️'];
+            const container = document.body;
+
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                // Nace en el centro del personaje curado
+                const posX = rect.left + (rect.width / 2) + (Math.random() * 80 - 40);
+                const posY = rect.top + (rect.height / 2) + (Math.random() * 60 - 30);
+                
+                p.style.left = `${posX}px`;
+                p.style.top = `${posY}px`;
+                p.style.fontSize = `${Math.random() * 15 + 20}px`;
+                p.style.animationDelay = `${Math.random() * 0.2}s`;
+                
+                container.appendChild(p);
+                
+                setTimeout(() => p.remove(), 1500);
+            }
+        }
+
+        function finalizarJuego() {
+            pantallaJuego.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaJuego.classList.add('hidden');
+                pantallaFinal.classList.remove('hidden');
+                setTimeout(() => pantallaFinal.classList.remove('opacity-0'), 50);
+                
+                // Megacelebración
+                for (let i = 0; i < 4; i++) {
+                    setTimeout(() => {
+                        const fakeRect = {
+                            left: Math.random() * window.innerWidth - 50,
+                            width: 100,
+                            top: window.innerHeight - 100,
+                            height: 100
+                        };
+                        crearCelebracion(fakeRect);
+                    }, i * 250);
+                }
+            }, 500);
+        }
+
+        // --- CARGA INICIAL ---
+        document.addEventListener('DOMContentLoaded', () => {
+            pantallaInicio.classList.remove('hidden');
+            setTimeout(() => pantallaInicio.classList.remove('opacity-0'), 50);
+        });
+
+    </script>
+</body>
+</html>

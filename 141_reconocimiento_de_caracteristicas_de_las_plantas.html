@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Galería Botánica - Las Plantas</title>
+    
+    <!-- Fuentes Google: Fredoka One (Títulos) y Quicksand (Lectura clara) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA PARA TAILWIND -->
+    <script>
+        window.tailwind = {
+            config: {
+                important: '#recurso-wp-botanico',
+                corePlugins: { preflight: false },
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            toon: ['"Fredoka One"', 'cursive'],
+                            body: ['Quicksand', 'sans-serif'],
+                        },
+                        colors: {
+                            nature: {
+                                dark: '#064e3b',     /* Verde pino oscuro */
+                                bg: '#ecfdf5',       /* Verde fondo muy suave */
+                                green: '#10b981',    /* Verde vibrante */
+                                leaf: '#22c55e',     /* Verde hoja */
+                                brown: '#78350f',    /* Café tierra */
+                                yellow: '#facc15',   /* Amarillo Sol */
+                                blue: '#0ea5e9',     /* Azul agua */
+                                pink: '#ec4899',     /* Rosa flor */
+                                white: '#ffffff'
+                            }
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* =========================================================
+           MICRO-RESET LOCAL: Protege el recurso del tema de WP
+           ========================================================= */
+        #recurso-wp-botanico * { box-sizing: border-box; border-width: 0; border-style: solid; border-color: currentColor; line-height: normal; }
+        #recurso-wp-botanico h1, #recurso-wp-botanico h2, #recurso-wp-botanico h3, #recurso-wp-botanico h4, #recurso-wp-botanico p, #recurso-wp-botanico span { margin: 0; padding: 0; }
+        #recurso-wp-botanico button { background-color: transparent; cursor: pointer; padding: 0; font-family: inherit; }
+
+        /* =========================================================
+           ESTILOS GENERALES (Pantalla Completa Responsiva)
+           ========================================================= */
+        #recurso-wp-botanico {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #ecfdf5; 
+            background-image: radial-gradient(#a7f3d0 3px, transparent 3px);
+            background-size: 30px 30px;
+            color: #064e3b;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Paneles y Botones Estilo Toon / Neo-brutalista amigable */
+        #recurso-wp-botanico .toon-panel {
+            background-color: #ffffff;
+            border: 6px solid #064e3b;
+            border-radius: 2rem;
+            box-shadow: 8px 8px 0px rgba(6, 78, 59, 0.3);
+        }
+
+        #recurso-wp-botanico .toon-btn {
+            border: 4px solid #064e3b;
+            border-radius: 1rem;
+            box-shadow: 4px 4px 0px rgba(6, 78, 59, 1);
+            transition: all 0.1s ease-out;
+            font-family: 'Fredoka One', cursive;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        #recurso-wp-botanico .toon-btn:hover:not(:disabled) {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px rgba(6, 78, 59, 1);
+        }
+        #recurso-wp-botanico .toon-btn:active:not(:disabled) {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px rgba(6, 78, 59, 1);
+        }
+        #recurso-wp-botanico .toon-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: 4px 4px 0px rgba(6, 78, 59, 1) !important;
+        }
+
+        /* Pantallas SPA */
+        #recurso-wp-botanico .screen {
+            display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; position: absolute; top: 0; left: 0; overflow-y: auto; overflow-x: hidden; z-index: 10;
+        }
+        #recurso-wp-botanico .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-botanico .screen.active {
+            display: flex;
+            animation: bounceInUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+        }
+        @keyframes bounceInUp {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Animaciones para las Ilustraciones SVG */
+        .svg-float { animation: floatAnim 4s ease-in-out infinite; }
+        @keyframes floatAnim {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .pulse-light { animation: pulseLight 3s infinite alternate; }
+        @keyframes pulseLight {
+            0% { filter: drop-shadow(0 0 5px #facc15); }
+            100% { filter: drop-shadow(0 0 20px #facc15); }
+        }
+
+        .flow-up { animation: flowUp 2s linear infinite; stroke-dasharray: 10; }
+        @keyframes flowUp {
+            to { stroke-dashoffset: -20; }
+        }
+
+        /* Transiciones de la Galería */
+        .slide-content {
+            opacity: 0;
+            transform: translateX(30px);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .slide-content.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .quiz-btn {
+            transition: all 0.2s;
+        }
+        .quiz-btn:hover {
+            transform: scale(1.02);
+            background-color: #d1fae5;
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-botanico">
+
+        <!-- ==============================================
+             PANTALLA 1: PORTADA
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="toon-panel p-8 md:p-14 max-w-3xl w-full mx-4 flex flex-col items-center transform -rotate-1 relative overflow-hidden">
+                <!-- Decoración de hojas en las esquinas -->
+                <div class="absolute -top-4 -left-4 text-6xl opacity-30 transform -rotate-45">🌿</div>
+                <div class="absolute -bottom-4 -right-4 text-6xl opacity-30 transform rotate-135">🍃</div>
+
+                <div class="flex gap-4 mb-4 z-10">
+                    <span class="text-[4rem] md:text-[6rem] animate-bounce">🌻</span>
+                </div>
+                
+                <h2 class="text-xs md:text-sm text-white font-body font-black mb-4 uppercase bg-nature-dark inline-block px-6 py-2 border-4 border-nature-dark rounded-full rotate-2">
+                    Ciencias Naturales - 5/6to Grado
+                </h2>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-toon text-nature-dark leading-none uppercase mb-6 drop-shadow-md">
+                    La Galería <br><span class="text-nature-green">Botánica</span>
+                </h1>
+                <p class="text-lg md:text-xl text-gray-700 font-bold mb-10 px-2 leading-relaxed max-w-xl">
+                    ¡Bienvenido a la exposición! Aquí descubriremos, pieza por pieza, cómo funciona la increíble maquinaria que mantiene vivas a las plantas.
+                </p>
+                <button onclick="window.startGallery()" class="toon-btn bg-nature-yellow text-nature-dark text-xl md:text-3xl px-12 py-5 w-full md:w-auto z-10">
+                    ENTRAR AL MUSEO 🏛️
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: LA GALERÍA (Presentación SVG)
+             ============================================== -->
+        <div id="screen-gallery" class="screen justify-start md:justify-center">
+            
+            <!-- Barra Superior (Progreso y Salida) -->
+            <div class="w-full max-w-6xl mx-auto flex justify-between items-center mb-4 z-20 px-2">
+                <div class="bg-white border-4 border-nature-dark rounded-full px-6 py-2 shadow-[4px_4px_0_#064e3b] font-toon text-lg text-nature-dark">
+                    Exhibición <span id="gallery-counter">1</span> de 4
+                </div>
+                <button onclick="window.exitToMenu()" class="toon-btn bg-nature-pink text-white px-4 py-2 text-sm flex items-center gap-2">
+                    <span>X</span> SALIR
+                </button>
+            </div>
+
+            <!-- Contenedor Principal de la Diapositiva -->
+            <div class="toon-panel p-4 md:p-8 max-w-6xl w-full flex flex-col lg:flex-row gap-6 lg:gap-10 h-full max-h-[80vh] md:max-h-[70vh] shadow-[10px_10px_0_#064e3b]">
+                
+                <!-- IZQUIERDA: Área de Ilustración Gigante SVG -->
+                <div class="w-full lg:w-1/2 bg-nature-bg border-4 border-dashed border-nature-green rounded-3xl flex items-center justify-center p-6 relative min-h-[250px] overflow-hidden shrink-0">
+                    <!-- Efecto de iluminación de fondo -->
+                    <div class="absolute inset-0 bg-white/50 backdrop-blur-sm z-0"></div>
+                    
+                    <!-- SVG Inyectado dinámicamente -->
+                    <div id="svg-container" class="w-full h-full max-h-[350px] relative z-10 flex items-center justify-center svg-float drop-shadow-[0_15px_15px_rgba(0,0,0,0.2)]">
+                        <!-- SVG code goes here -->
+                    </div>
+                </div>
+
+                <!-- DERECHA: Información y Textos -->
+                <div id="info-container" class="w-full lg:w-1/2 flex flex-col justify-center slide-content visible overflow-y-auto pr-2 pb-4">
+                    <span id="slide-tag" class="text-sm md:text-base text-nature-blue font-black uppercase tracking-widest mb-2 border-b-2 border-nature-blue/30 pb-1 w-max">
+                        EL ANCLA
+                    </span>
+                    <h2 id="slide-title" class="font-toon text-4xl md:text-6xl text-nature-dark mb-4 uppercase leading-none">
+                        La Raíz
+                    </h2>
+                    <p id="slide-desc" class="text-base md:text-xl font-bold text-gray-700 leading-relaxed mb-6">
+                        Descripción principal de la parte de la planta.
+                    </p>
+                    
+                    <!-- Tarjeta "Dato Curioso" -->
+                    <div class="bg-yellow-50 border-4 border-nature-yellow rounded-2xl p-4 md:p-5 mt-auto shadow-[4px_4px_0_#facc15]">
+                        <h4 class="font-toon text-nature-brown text-lg mb-1 flex items-center gap-2">
+                            <span class="text-2xl">💡</span> ¿Sabías que...?
+                        </h4>
+                        <p id="slide-fact" class="text-sm md:text-base font-bold text-gray-800 leading-snug">
+                            Dato curioso.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controles de Navegación Inferior -->
+            <div class="w-full max-w-6xl mx-auto flex justify-between items-center mt-6 z-20 px-2 gap-4">
+                <button id="btn-prev" onclick="window.prevSlide()" class="toon-btn bg-white text-nature-dark px-6 py-3 text-lg opacity-50 cursor-not-allowed w-1/3 md:w-auto" disabled>
+                    ⬅ ATRÁS
+                </button>
+
+                <!-- Puntos de progreso -->
+                <div class="hidden md:flex gap-3">
+                    <div id="dot-0" class="w-4 h-4 rounded-full bg-nature-green border-2 border-nature-dark transition-all scale-125"></div>
+                    <div id="dot-1" class="w-4 h-4 rounded-full bg-gray-300 border-2 border-nature-dark transition-all"></div>
+                    <div id="dot-2" class="w-4 h-4 rounded-full bg-gray-300 border-2 border-nature-dark transition-all"></div>
+                    <div id="dot-3" class="w-4 h-4 rounded-full bg-gray-300 border-2 border-nature-dark transition-all"></div>
+                </div>
+
+                <button id="btn-next" onclick="window.nextSlide()" class="toon-btn bg-nature-green text-white px-8 py-3 text-xl md:text-2xl w-2/3 md:w-auto flex-grow md:flex-grow-0 text-center">
+                    SIGUIENTE ➡
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: MINI QUIZ DE REPASO (Interactivo)
+             ============================================== -->
+        <div id="screen-quiz" class="screen justify-start md:justify-center">
+            <div class="toon-panel p-6 md:p-10 max-w-4xl w-full flex flex-col items-center">
+                <div class="text-[4rem] mb-2 drop-shadow-md">🧠</div>
+                <h2 class="font-toon text-3xl md:text-5xl text-nature-dark mb-2 text-center uppercase">¡Prueba Express!</h2>
+                <p class="font-bold text-gray-600 mb-8 text-center text-lg md:text-xl border-b-2 border-gray-200 pb-4 w-full">Demuestra lo que aprendiste en la galería.</p>
+                
+                <div class="w-full bg-nature-bg border-4 border-nature-dark p-6 rounded-2xl mb-8 shadow-inner text-center">
+                    <h3 id="quiz-question" class="font-toon text-2xl md:text-3xl text-nature-blue leading-snug">
+                        ¿Qué parte de la planta actúa como la "Cocina Solar" atrapando la luz?
+                    </h3>
+                </div>
+
+                <!-- Opciones del Quiz -->
+                <div id="quiz-options" class="grid grid-cols-2 gap-4 w-full max-w-2xl">
+                    <button onclick="window.checkAnswer('Raíz', this)" class="quiz-btn border-4 border-nature-dark rounded-xl p-4 font-body font-black text-xl text-nature-dark bg-white shadow-[4px_4px_0_#064e3b]">La Raíz</button>
+                    <button onclick="window.checkAnswer('Tallo', this)" class="quiz-btn border-4 border-nature-dark rounded-xl p-4 font-body font-black text-xl text-nature-dark bg-white shadow-[4px_4px_0_#064e3b]">El Tallo</button>
+                    <button onclick="window.checkAnswer('Hoja', this)" class="quiz-btn border-4 border-nature-dark rounded-xl p-4 font-body font-black text-xl text-nature-dark bg-white shadow-[4px_4px_0_#064e3b]">La Hoja</button>
+                    <button onclick="window.checkAnswer('Flor', this)" class="quiz-btn border-4 border-nature-dark rounded-xl p-4 font-body font-black text-xl text-nature-dark bg-white shadow-[4px_4px_0_#064e3b]">La Flor</button>
+                </div>
+
+                <!-- Feedback del Quiz en línea -->
+                <div id="quiz-feedback" class="mt-6 h-12 flex items-center justify-center font-toon text-2xl opacity-0 transition-opacity">
+                    ¡Correcto!
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 4: RESULTADO / DIPLOMA
+             ============================================== -->
+        <div id="screen-result" class="screen justify-center p-4 bg-nature-dark/95 backdrop-blur-md z-[70]">
+            <div class="toon-panel p-8 md:p-14 max-w-3xl w-full text-center animate__animated animate__zoomIn border-t-[12px] border-t-nature-yellow relative overflow-hidden">
+                <!-- Estrellas flotantes de CSS -->
+                <div class="absolute top-4 left-4 text-4xl animate-pulse">✨</div>
+                <div class="absolute bottom-4 right-4 text-4xl animate-pulse" style="animation-delay: 0.5s">✨</div>
+
+                <div class="text-[6rem] md:text-[8rem] mb-4 drop-shadow-md leading-none">🎖️</div>
+                <h2 class="font-toon text-4xl md:text-6xl text-nature-dark mb-4 uppercase leading-none">
+                    ¡Botánico Junior!
+                </h2>
+                <p class="text-lg md:text-2xl text-gray-800 mb-8 font-bold leading-relaxed max-w-xl mx-auto border-y-2 border-gray-200 py-4">
+                    Has completado la Galería Botánica y demostrado que conoces perfectamente cómo funciona la maquinaria de la vida vegetal. ¡Excelente trabajo!
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="window.exitToMenu()" class="toon-btn bg-gray-200 text-nature-dark px-8 py-3 text-lg md:text-xl">
+                        VOLVER AL INICIO
+                    </button>
+                    <button onclick="window.startGallery()" class="toon-btn bg-nature-green text-white text-xl md:text-2xl px-10 py-3">
+                        VER GALERÍA DE NUEVO 🔄
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA E INFORMACIÓN (DATA) BLINDADA
+         ============================================== -->
+    <script>
+        // 1. BASE DE DATOS DE LA GALERÍA (Textos y SVGs Gigantes)
+        const galleryData = [
+            {
+                id: 'raiz',
+                tag: "El Ancla y el Popote ⚓",
+                title: "La Raíz",
+                desc: "Es la parte de la planta que crece bajo la tierra. Tiene dos misiones súper importantes: <br><br> 1. Sujetar la planta con fuerza para que el viento no la tumbe. <br> 2. Absorber el agua y los minerales del suelo (Savia Bruta) como si fuera un popote gigante.",
+                fact: "Existen raíces que podemos comer y son muy nutritivas, como las zanahorias, los rábanos y las remolachas.",
+                svg: `
+                    <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-xl overflow-visible">
+                        <!-- Línea de tierra -->
+                        <path d="M 10,60 Q 100,50 190,60" fill="none" stroke="#78350f" stroke-width="8" stroke-linecap="round"/>
+                        <!-- Base del tallo arriba de la tierra -->
+                        <path d="M 100,60 L 100,20" fill="none" stroke="#16a34a" stroke-width="20" stroke-linecap="round"/>
+                        <!-- Raíz principal gruesa -->
+                        <path d="M 100,60 Q 95,120 110,180" fill="none" stroke="#92400e" stroke-width="16" stroke-linecap="round"/>
+                        <!-- Raíces secundarias -->
+                        <path d="M 98,90 Q 70,120 40,140" fill="none" stroke="#b45309" stroke-width="8" stroke-linecap="round"/>
+                        <path d="M 105,120 Q 140,140 160,170" fill="none" stroke="#b45309" stroke-width="8" stroke-linecap="round"/>
+                        <path d="M 60,110 Q 50,140 30,160" fill="none" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M 130,130 Q 150,140 170,140" fill="none" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+                        <!-- Gotas de agua animadas subiendo -->
+                        <circle cx="40" cy="140" r="4" fill="#0ea5e9" class="pulse-light">
+                            <animate attributeName="cy" values="140; 90" dur="2s" repeatCount="indefinite" />
+                            <animate attributeName="opacity" values="1; 0" dur="2s" repeatCount="indefinite" />
+                        </circle>
+                        <circle cx="160" cy="170" r="4" fill="#0ea5e9" class="pulse-light">
+                            <animate attributeName="cy" values="170; 120" dur="2s" repeatCount="indefinite" />
+                            <animate attributeName="opacity" values="1; 0" dur="2s" repeatCount="indefinite" />
+                        </circle>
+                    </svg>
+                `
+            },
+            {
+                id: 'tallo',
+                tag: "La Autopista Central 🛣️",
+                title: "El Tallo",
+                desc: "Es la columna vertebral de la planta. Sostiene las ramas, las hojas y las flores para que alcancen la luz del sol.<br><br> Por dentro está lleno de tubitos. Es una carretera de doble vía: sube el agua desde la raíz y baja el alimento creado por las hojas.",
+                fact: "Los árboles tienen tallos gigantes y duros de madera llamados 'Troncos'. ¡Algunos pueden vivir miles de años!",
+                svg: `
+                    <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-xl overflow-visible">
+                        <!-- Tallo Principal grueso -->
+                        <path d="M 100,180 L 100,20" fill="none" stroke="#16a34a" stroke-width="30" stroke-linecap="round"/>
+                        <!-- Textura del tallo -->
+                        <path d="M 90,160 L 90,40" fill="none" stroke="#14532d" stroke-width="4" stroke-linecap="round" opacity="0.4"/>
+                        <path d="M 110,140 L 110,60" fill="none" stroke="#14532d" stroke-width="4" stroke-linecap="round" opacity="0.4"/>
+                        
+                        <!-- Ramas naciendo -->
+                        <path d="M 100,120 Q 140,110 160,80" fill="none" stroke="#22c55e" stroke-width="12" stroke-linecap="round"/>
+                        <path d="M 100,80 Q 60,70 40,40" fill="none" stroke="#22c55e" stroke-width="12" stroke-linecap="round"/>
+                        
+                        <!-- Flechas de flujo animadas (Savia) -->
+                        <!-- Sube agua (azul) -->
+                        <path d="M 90,160 L 90,40" fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-dasharray="10 10" class="flow-up"/>
+                        <polygon points="90,30 85,45 95,45" fill="#38bdf8" />
+                        <!-- Baja alimento (amarillo) -->
+                        <path d="M 110,40 L 110,160" fill="none" stroke="#facc15" stroke-width="3" stroke-linecap="round" stroke-dasharray="10 10" class="flow-up" style="animation-direction: reverse;"/>
+                        <polygon points="110,170 105,155 115,155" fill="#facc15" />
+                    </svg>
+                `
+            },
+            {
+                id: 'hoja',
+                tag: "La Gran Cocina Solar 🍳",
+                title: "Las Hojas",
+                desc: "Son los pulmones y la cocina de la planta. Nacen en el tallo y casi siempre son verdes por una sustancia llamada <strong>Clorofila</strong>.<br><br>Atrapan la energía del Sol y mezclan el agua con el aire para fabricar su propio alimento. ¡A esto se le llama <strong>Fotosíntesis</strong>!",
+                fact: "Al hacer fotosíntesis, las hojas liberan el Oxígeno que nosotros y todos los animales necesitamos para respirar.",
+                svg: `
+                    <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-xl overflow-visible">
+                        <!-- El Sol brillante al fondo -->
+                        <circle cx="160" cy="40" r="30" fill="#facc15" class="pulse-light"/>
+                        <!-- Rayos de luz -->
+                        <path d="M 130,60 L 100,80" fill="none" stroke="#facc15" stroke-width="4" stroke-dasharray="5 5" class="flow-up"/>
+                        <path d="M 150,80 L 130,110" fill="none" stroke="#facc15" stroke-width="4" stroke-dasharray="5 5" class="flow-up"/>
+                        
+                        <!-- Hoja grande y detallada -->
+                        <path d="M 20,180 Q 20,100 120,40 Q 140,120 20,180" fill="#4ade80" stroke="#16a34a" stroke-width="6" stroke-linejoin="round"/>
+                        <!-- Tallo de la hoja (peciolo) -->
+                        <path d="M 20,180 L 5,195" fill="none" stroke="#14532d" stroke-width="8" stroke-linecap="round"/>
+                        <!-- Nervadura Central -->
+                        <path d="M 20,180 Q 70,130 115,45" fill="none" stroke="#16a34a" stroke-width="6" stroke-linecap="round"/>
+                        <!-- Nervaduras Secundarias -->
+                        <path d="M 45,155 Q 50,120 80,110" fill="none" stroke="#22c55e" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M 70,130 Q 90,100 115,100" fill="none" stroke="#22c55e" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M 60,160 Q 90,170 110,150" fill="none" stroke="#22c55e" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M 90,110 Q 120,120 130,100" fill="none" stroke="#22c55e" stroke-width="4" stroke-linecap="round"/>
+                        
+                        <!-- Burbuja de Oxígeno saliendo -->
+                        <circle cx="80" cy="80" r="10" fill="#e0f2fe" stroke="#38bdf8" stroke-width="2" opacity="0.8">
+                            <animate attributeName="cy" values="80; 20" dur="3s" repeatCount="indefinite" />
+                            <animate attributeName="opacity" values="0.8; 0" dur="3s" repeatCount="indefinite" />
+                        </circle>
+                    </svg>
+                `
+            },
+            {
+                id: 'flor',
+                tag: "La Fábrica de Semillas 🐝",
+                title: "La Flor",
+                desc: "Es el órgano reproductor de la planta. Es de colores hermosos y olores dulces para atraer a los insectos polinizadores, como las abejas.<br><br> Después de ser polinizada, la flor pierde sus pétalos y se transforma en un fruto que protege las semillas.",
+                fact: "¡Sin flores no habría frutos! Cada vez que comes una manzana, naranja o fresa, estás comiendo lo que antes fue una flor.",
+                svg: `
+                    <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-xl overflow-visible">
+                        <!-- Tallo -->
+                        <path d="M 100,200 L 100,100" fill="none" stroke="#16a34a" stroke-width="12" stroke-linecap="round"/>
+                        <!-- Hojitas base -->
+                        <path d="M 100,150 Q 70,140 60,110 Q 90,120 100,150" fill="#4ade80" stroke="#16a34a" stroke-width="3"/>
+                        <path d="M 100,160 Q 130,150 140,120 Q 110,130 100,160" fill="#4ade80" stroke="#16a34a" stroke-width="3"/>
+                        
+                        <!-- Pétalos de la flor (girados alrededor del centro) -->
+                        <circle cx="100" cy="60" r="25" fill="#f472b6" stroke="#db2777" stroke-width="4"/> <!-- Arriba -->
+                        <circle cx="100" cy="140" r="25" fill="#f472b6" stroke="#db2777" stroke-width="4"/> <!-- Abajo -->
+                        <circle cx="60" cy="100" r="25" fill="#f472b6" stroke="#db2777" stroke-width="4"/> <!-- Izquierda -->
+                        <circle cx="140" cy="100" r="25" fill="#f472b6" stroke="#db2777" stroke-width="4"/> <!-- Derecha -->
+                        
+                        <circle cx="70" cy="70" r="25" fill="#f9a8d4" stroke="#db2777" stroke-width="4"/> <!-- Diagonales -->
+                        <circle cx="130" cy="70" r="25" fill="#f9a8d4" stroke="#db2777" stroke-width="4"/>
+                        <circle cx="70" cy="130" r="25" fill="#f9a8d4" stroke="#db2777" stroke-width="4"/>
+                        <circle cx="130" cy="130" r="25" fill="#f9a8d4" stroke="#db2777" stroke-width="4"/>
+                        
+                        <!-- Centro de la flor (Polen) -->
+                        <circle cx="100" cy="100" r="25" fill="#facc15" stroke="#ca8a04" stroke-width="6"/>
+                        <!-- Textura centro -->
+                        <circle cx="90" cy="90" r="3" fill="#ca8a04"/>
+                        <circle cx="110" cy="95" r="3" fill="#ca8a04"/>
+                        <circle cx="100" cy="110" r="3" fill="#ca8a04"/>
+                        <circle cx="90" cy="105" r="3" fill="#ca8a04"/>
+                        <circle cx="110" cy="105" r="3" fill="#ca8a04"/>
+                        <circle cx="100" cy="90" r="3" fill="#ca8a04"/>
+
+                        <!-- Animación de polen brillando -->
+                        <circle cx="100" cy="100" r="28" fill="none" stroke="#fef08a" stroke-width="2" class="pulse-light"/>
+                    </svg>
+                `
+            }
+        ];
+
+        // Preguntas del Quiz Rápido Final
+        const quizData = [
+            { q: "¿Qué parte de la planta actúa como la 'Cocina Solar' atrapando la luz?", a: "Hoja" },
+            { q: "¿Quién se encarga de producir las semillas atrayendo a las abejas?", a: "Flor" },
+            { q: "¿Qué parte actúa como un ancla y absorbe el agua de la tierra?", a: "Raíz" },
+            { q: "¿Cuál es la 'Autopista Central' que transporta líquidos a toda la planta?", a: "Tallo" }
+        ];
+
+        // 2. ESTADOS Y VARIABLES GLOBALES (Blindado en `window` para WP)
+        window.currentSlideIndex = 0;
+        window.currentQuizIndex = 0;
+        window.quizScore = 0;
+
+        // 3. FUNCIONES DE NAVEGACIÓN Y CONTROL
+        window.showScreen = function(screenId) {
+            const container = document.getElementById('recurso-wp-botanico');
+            container.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        };
+
+        window.startGallery = function() {
+            window.currentSlideIndex = 0;
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('flex');
+            
+            window.showScreen('screen-gallery');
+            window.loadSlide();
+        };
+
+        window.exitToMenu = function() {
+            window.showScreen('screen-start');
+        };
+
+        // 4. LÓGICA DE LA GALERÍA (Slider)
+        window.loadSlide = function() {
+            const data = galleryData[window.currentSlideIndex];
+            const infoContainer = document.getElementById('info-container');
+            
+            // Efecto Slide In/Out
+            infoContainer.classList.remove('visible');
+            
+            setTimeout(() => {
+                // Actualizar textos
+                document.getElementById('gallery-counter').innerText = window.currentSlideIndex + 1;
+                document.getElementById('slide-tag').innerText = data.tag;
+                document.getElementById('slide-title').innerText = data.title;
+                document.getElementById('slide-desc').innerHTML = data.desc;
+                document.getElementById('slide-fact').innerText = data.fact;
+                
+                // Actualizar SVG
+                document.getElementById('svg-container').innerHTML = data.svg;
+
+                // Mostrar de nuevo
+                infoContainer.classList.add('visible');
+            }, 300); // 300ms de transición suave
+
+            // Actualizar Botones y Puntos
+            window.updateGalleryControls();
+        };
+
+        window.updateGalleryControls = function() {
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
+
+            // Botón Atrás
+            if (window.currentSlideIndex === 0) {
+                btnPrev.disabled = true;
+                btnPrev.classList.replace('opacity-100', 'opacity-50');
+                btnPrev.classList.remove('hover:-translate-y-1');
+            } else {
+                btnPrev.disabled = false;
+                btnPrev.classList.replace('opacity-50', 'opacity-100');
+                btnPrev.classList.add('hover:-translate-y-1');
+            }
+
+            // Botón Siguiente (Cambia a Jugar en la última diapositiva)
+            if (window.currentSlideIndex === galleryData.length - 1) {
+                btnNext.innerText = "¡A PONERSE A PRUEBA! 🎮";
+                btnNext.classList.replace('bg-nature-green', 'bg-nature-yellow');
+                btnNext.classList.replace('text-white', 'text-nature-dark');
+            } else {
+                btnNext.innerText = "SIGUIENTE ➡";
+                btnNext.classList.replace('bg-nature-yellow', 'bg-nature-green');
+                btnNext.classList.replace('text-nature-dark', 'text-white');
+            }
+
+            // Puntos de progreso
+            for (let i = 0; i < galleryData.length; i++) {
+                const dot = document.getElementById(`dot-${i}`);
+                if (i === window.currentSlideIndex) {
+                    dot.className = "w-4 h-4 rounded-full bg-nature-green border-2 border-nature-dark transition-all scale-125 shadow-md";
+                } else if (i < window.currentSlideIndex) {
+                    dot.className = "w-4 h-4 rounded-full bg-nature-leaf border-2 border-nature-dark transition-all";
+                } else {
+                    dot.className = "w-4 h-4 rounded-full bg-gray-300 border-2 border-nature-dark transition-all";
+                }
+            }
+        };
+
+        window.nextSlide = function() {
+            if (window.currentSlideIndex < galleryData.length - 1) {
+                window.currentSlideIndex++;
+                window.loadSlide();
+            } else {
+                // Iniciar el Quiz
+                window.startQuiz();
+            }
+        };
+
+        window.prevSlide = function() {
+            if (window.currentSlideIndex > 0) {
+                window.currentSlideIndex--;
+                window.loadSlide();
+            }
+        };
+
+        // 5. LÓGICA DEL MINI-QUIZ FINAL
+        window.startQuiz = function() {
+            window.currentQuizIndex = 0;
+            window.quizScore = 0;
+            window.showScreen('screen-quiz');
+            window.loadQuizQuestion();
+        };
+
+        window.loadQuizQuestion = function() {
+            if (window.currentQuizIndex >= quizData.length) {
+                window.showVictory();
+                return;
+            }
+
+            const data = quizData[window.currentQuizIndex];
+            document.getElementById('quiz-question').innerText = data.q;
+            document.getElementById('quiz-feedback').style.opacity = '0';
+            
+            // Restablecer estilos de botones
+            const buttons = document.querySelectorAll('.quiz-btn');
+            buttons.forEach(btn => {
+                btn.disabled = false;
+                btn.className = "quiz-btn border-4 border-nature-dark rounded-xl p-4 font-body font-black text-xl text-nature-dark bg-white shadow-[4px_4px_0_#064e3b]";
+            });
+        };
+
+        window.checkAnswer = function(selectedAnswer, btnElement) {
+            const data = quizData[window.currentQuizIndex];
+            const feedbackBox = document.getElementById('quiz-feedback');
+            
+            // Bloquear todos los botones
+            document.querySelectorAll('.quiz-btn').forEach(b => b.disabled = true);
+
+            if (selectedAnswer === data.a) {
+                // Correcto
+                btnElement.classList.replace('bg-white', 'bg-nature-green');
+                btnElement.classList.replace('text-nature-dark', 'text-white');
+                feedbackBox.innerHTML = '<span class="text-nature-green drop-shadow-sm">¡Excelente respuesta! 🌟</span>';
+                feedbackBox.style.opacity = '1';
+                window.quizScore++;
+            } else {
+                // Incorrecto
+                btnElement.classList.replace('bg-white', 'bg-nature-pink');
+                btnElement.classList.replace('text-nature-dark', 'text-white');
+                btnElement.classList.add('shake-error'); // Reusando animación de error
+                
+                feedbackBox.innerHTML = `<span class="text-nature-pink drop-shadow-sm">¡Casi! Era la <strong>${data.a}</strong>.</span>`;
+                feedbackBox.style.opacity = '1';
+                
+                // Mostrar el correcto de color verde para que aprenda
+                document.querySelectorAll('.quiz-btn').forEach(b => {
+                    if(b.innerText.includes(data.a)) {
+                        b.classList.replace('bg-white', 'bg-green-200');
+                    }
+                });
+            }
+
+            // Pasar a la siguiente pregunta después de 2 segundos
+            setTimeout(() => {
+                window.currentQuizIndex++;
+                window.loadQuizQuestion();
+            }, 2000);
+        };
+
+        window.showVictory = function() {
+            const screenResult = document.getElementById('screen-result');
+            screenResult.classList.remove('hidden');
+            screenResult.classList.add('flex');
+        };
+
+        // El documento está listo
+        document.addEventListener('DOMContentLoaded', () => {
+            // Ya no buscamos 'screen-1' porque no existe en este archivo, evitando el error de nulo.
+        });
+
+    </script>
+</body>
+</html>

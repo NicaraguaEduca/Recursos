@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Programando al Robot - Algoritmos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Bloqueo de scroll y estilos base infantiles */
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #e0f2fe; /* Azul cielo muy suave */
+            background-image: 
+                radial-gradient(#bae6fd 4px, transparent 4px),
+                radial-gradient(#bae6fd 4px, transparent 4px);
+            background-size: 60px 60px;
+            background-position: 0 0, 30px 30px;
+            height: 100dvh;
+            width: 100vw;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            touch-action: none; /* Bloquea el scroll táctil */
+        }
+
+        /* Layout Principal */
+        .game-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+        }
+
+        /* Cuadrícula del Tablero (Más grande y clara) */
+        .tablero-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            width: 100%;
+        }
+
+        .grid-habitacion {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            width: 100%;
+            max-width: 360px; /* Tamaño ideal para evitar desbordes */
+            aspect-ratio: 1 / 1;
+            background-color: #ffffff;
+            border: 8px solid #0284c7;
+            border-radius: 1.5rem;
+            position: relative;
+            box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        @media (min-width: 768px) {
+            .grid-habitacion { max-width: 460px; }
+            .game-wrapper { flex-direction: row; }
+            .tablero-container { flex: 1; }
+            .controles-container { width: 450px !important; border-radius: 3rem 0 0 3rem !important; border-top: none !important; border-left: 8px solid #38bdf8 !important;}
+        }
+
+        .celda {
+            border: 2px solid #bae6fd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8fafc;
+        }
+        .celda:nth-child(odd) { background-color: #f0f9ff; }
+
+        /* Entidades del tablero (Optimizadas para que no se corten) */
+        .entidad {
+            position: absolute;
+            width: 25%;
+            height: 25%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem; /* Tamaño proporcional seguro */
+            z-index: 10;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+            overflow: visible;
+        }
+
+        @media (min-width: 768px) {
+            .entidad { font-size: 4rem; }
+        }
+
+        .robot {
+            transition: top 0.5s ease-in-out, left 0.5s ease-in-out;
+            z-index: 20;
+        }
+
+        /* Contenedor de Controles */
+        .controles-container {
+            width: 100%;
+            background: white;
+            border-radius: 2.5rem 2.5rem 0 0;
+            padding: 1.5rem 1rem;
+            border-top: 8px solid #38bdf8;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        /* Animaciones */
+        @keyframes popIn { 0% { transform: scale(0.3); opacity: 0; } 80% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+        .pop-in { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 50% { transform: translateX(10px); } 75% { transform: translateX(-10px); } }
+        .shake { animation: shake 0.4s ease-in-out; }
+
+        @keyframes pulseActive { 
+            0%, 100% { transform: scale(1); background-color: #3b82f6; } 
+            50% { transform: scale(1.15); background-color: #facc15; box-shadow: 0 0 20px #facc15; z-index: 50;} 
+        }
+        .executing-block { animation: pulseActive 0.5s ease-in-out infinite; border-color: #ca8a04 !important; color: #713f12 !important;}
+
+        @keyframes jumpHappy { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-25px); } }
+        .happy-jump { animation: jumpHappy 0.5s ease-in-out infinite; }
+
+        /* Partículas */
+        .particle { position: absolute; pointer-events: none; animation: flyUp 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards; z-index: 9999; }
+        @keyframes flyUp { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-150px) scale(2); opacity: 0; } }
+
+        /* Botones súper infantiles */
+        .btn-flecha {
+            transition: transform 0.1s, box-shadow 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1.5rem;
+            color: white;
+            border: 4px solid rgba(0,0,0,0.1);
+        }
+        .btn-flecha:active { transform: scale(0.9) translateY(4px); box-shadow: 0 0px 0px rgba(0,0,0,0.2) !important; }
+
+        /* Bloques de la línea de código */
+        .bloque-codigo {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: white;
+            border: 3px solid rgba(0,0,0,0.15);
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+        @media (min-width: 768px) {
+            .bloque-codigo { width: 4.5rem; height: 4.5rem; }
+        }
+    </style>
+</head>
+<body class="flex flex-col relative text-gray-800 select-none">
+
+    <!-- ================= SVGs GIGANTES ================= -->
+    <svg width="0" height="0" class="hidden">
+        <defs>
+            <g id="arrow-up"><path d="M50 20 L50 80 M50 20 L25 45 M50 20 L75 45" stroke="currentColor" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none"/></g>
+            <g id="arrow-down"><path d="M50 80 L50 20 M50 80 L25 55 M50 80 L75 55" stroke="currentColor" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none"/></g>
+            <g id="arrow-left"><path d="M20 50 L80 50 M20 50 L45 25 M20 50 L45 75" stroke="currentColor" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none"/></g>
+            <g id="arrow-right"><path d="M80 50 L20 50 M80 50 L55 25 M80 50 L55 75" stroke="currentColor" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none"/></g>
+        </defs>
+    </svg>
+
+    <!-- ================= PANTALLA DE INICIO ================= -->
+    <div id="pantalla-inicio" class="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-sky-50/95 backdrop-blur-md transition-opacity duration-500">
+        <div class="bg-blue-500 text-white rounded-full px-6 py-2 mb-4 text-xl md:text-2xl font-black tracking-widest shadow-md border-4 border-blue-600">
+            PROGRAMACIÓN • 1º GRADO
+        </div>
+        
+        <!-- Corrección del degradado de texto y emoji separado para evitar recortes -->
+        <h1 class="text-5xl md:text-7xl lg:text-8xl font-black mb-6 drop-shadow-lg leading-normal flex flex-wrap items-center justify-center gap-4">
+            <span class="text-transparent bg-clip-text bg-gradient-to-b from-blue-500 to-indigo-700 py-2">¡Robot en Acción!</span>
+            <span class="pop-in inline-block" style="animation-delay: 0.2s;">🤖</span>
+        </h1>
+
+        <div class="max-w-2xl bg-white p-8 lg:p-10 rounded-[3rem] shadow-2xl border-8 border-sky-300 mb-8 transform transition-transform duration-300">
+            <h2 class="text-3xl md:text-4xl font-black text-sky-600 mb-4 flex items-center justify-center gap-3">
+                <span>💻</span> Pasito a Pasito
+            </h2>
+            <p class="text-2xl md:text-3xl text-gray-700 leading-snug font-bold">
+                ¡Los robots necesitan que les digas qué hacer!<br>
+                Usa las flechas gigantes para armar tu código y ayuda al robot a llegar a su juguete. 🧸
+            </p>
+        </div>
+        <button onclick="iniciarJuego()" class="group relative inline-flex items-center justify-center px-12 lg:px-16 py-6 lg:py-8 text-3xl lg:text-4xl font-black text-white bg-green-500 rounded-full overflow-hidden shadow-[0_10px_0_#15803d] active:shadow-[0_0px_0_#15803d] active:translate-y-2 transition-all">
+            <span class="relative flex items-center gap-3">¡A JUGAR! <span class="text-4xl group-hover:animate-bounce">🚀</span></span>
+        </button>
+    </div>
+
+    <!-- ================= PANTALLA DEL JUEGO ================= -->
+    <div id="pantalla-juego" class="hidden game-wrapper">
+        
+        <!-- ZONA 1: El Tablero -->
+        <div class="tablero-container flex flex-col items-center relative">
+            
+            <!-- Título Súper Grande Arriba -->
+            <div class="bg-white/90 px-8 py-3 rounded-full shadow-md border-4 border-sky-200 mb-4 z-10">
+                <h2 id="titulo-nivel" class="text-3xl md:text-4xl font-black text-blue-700 tracking-wide uppercase">Nivel 1</h2>
+            </div>
+
+            <!-- La Cuadrícula -->
+            <div id="cuadricula" class="grid-habitacion">
+                <!-- Celdas base (16) -->
+                <div class="celda"></div><div class="celda"></div><div class="celda"></div><div class="celda"></div>
+                <div class="celda"></div><div class="celda"></div><div class="celda"></div><div class="celda"></div>
+                <div class="celda"></div><div class="celda"></div><div class="celda"></div><div class="celda"></div>
+                <div class="celda"></div><div class="celda"></div><div class="celda"></div><div class="celda"></div>
+                
+                <!-- El Robot (Absoluto) -->
+                <div id="robot" class="entidad robot">🤖</div>
+            </div>
+
+        </div>
+
+        <!-- ZONA 2: Panel de Controles Gigantes -->
+        <div class="controles-container">
+            
+            <!-- Barra de Código (Cinta de programación) -->
+            <div class="w-full">
+                <div class="text-xl md:text-2xl font-black text-sky-800 mb-2 uppercase tracking-wider text-center">Tu Código:</div>
+                <div class="bg-slate-200 border-4 border-slate-300 rounded-[2rem] p-3 md:p-4 min-h-[5.5rem] md:min-h-[6.5rem] flex items-center justify-start gap-2 overflow-x-auto shadow-inner">
+                    <!-- Los bloques se inyectan aquí -->
+                    <div id="linea-codigo" class="flex items-center gap-2 w-full"></div>
+                </div>
+            </div>
+
+            <!-- Botones Súper Gigantes -->
+            <div class="flex flex-col gap-4 mt-2 flex-1 justify-center w-full max-w-[400px] mx-auto">
+                
+                <!-- Cruceta Direccional -->
+                <div class="grid grid-cols-3 grid-rows-2 gap-3 w-56 md:w-64 mx-auto">
+                    <div class="col-start-2 row-start-1">
+                        <button onclick="agregarComando('U')" class="btn-flecha w-full aspect-square bg-blue-500 shadow-[0_8px_0_#1e3a8a]">
+                            <svg viewBox="0 0 100 100" class="w-12 h-12 md:w-16 md:h-16"><use href="#arrow-up" /></svg>
+                        </button>
+                    </div>
+                    <div class="col-start-1 row-start-2">
+                        <button onclick="agregarComando('L')" class="btn-flecha w-full aspect-square bg-blue-500 shadow-[0_8px_0_#1e3a8a]">
+                            <svg viewBox="0 0 100 100" class="w-12 h-12 md:w-16 md:h-16"><use href="#arrow-left" /></svg>
+                        </button>
+                    </div>
+                    <div class="col-start-2 row-start-2">
+                        <button onclick="agregarComando('D')" class="btn-flecha w-full aspect-square bg-blue-500 shadow-[0_8px_0_#1e3a8a]">
+                            <svg viewBox="0 0 100 100" class="w-12 h-12 md:w-16 md:h-16"><use href="#arrow-down" /></svg>
+                        </button>
+                    </div>
+                    <div class="col-start-3 row-start-2">
+                        <button onclick="agregarComando('R')" class="btn-flecha w-full aspect-square bg-blue-500 shadow-[0_8px_0_#1e3a8a]">
+                            <svg viewBox="0 0 100 100" class="w-12 h-12 md:w-16 md:h-16"><use href="#arrow-right" /></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción Extra Grandes -->
+                <div class="flex gap-3 mt-4">
+                    <button id="btn-borrar" onclick="borrarUltimo()" class="flex-1 bg-red-500 text-white font-black text-2xl py-4 rounded-3xl shadow-[0_8px_0_#9f1239] active:translate-y-2 active:shadow-[0_0px_0_#9f1239] transition-all flex items-center justify-center gap-2">
+                        <span>🔙</span> Borrar
+                    </button>
+                    <button id="btn-ejecutar" onclick="ejecutarPrograma()" class="flex-[1.5] bg-green-500 text-white font-black text-2xl py-4 rounded-3xl shadow-[0_8px_0_#15803d] active:translate-y-2 active:shadow-[0_0px_0_#15803d] transition-all flex items-center justify-center gap-2">
+                        ¡EJECUTAR! <span>▶️</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PANEL DE FEEDBACK GIGANTE (INFERIOR) ================= -->
+    <div id="burbuja-pedagogica" class="fixed bottom-0 left-0 w-full bg-white border-t-8 border-cyan-400 shadow-[0_-20px_50px_rgba(0,0,0,0.2)] z-[100] transform translate-y-full transition-transform duration-500 flex flex-col items-center justify-center p-6 md:p-10 rounded-t-[3rem] text-center">
+        <!-- Emoji del búho separado del texto para evitar cortes de renderizado -->
+        <span id="burbuja-icono" class="text-7xl md:text-8xl mb-4">🦉</span>
+        <h3 id="burbuja-titulo" class="text-4xl md:text-5xl font-black text-cyan-600 mb-2 leading-none">¡Oh no!</h3>
+        <p id="burbuja-mensaje" class="text-2xl md:text-3xl font-bold text-gray-700 leading-snug">Chocamos con la pared.</p>
+        
+        <div id="burbuja-boton-container" class="mt-6 w-full max-w-sm">
+            <!-- Botón se inyecta por JS si es éxito -->
+        </div>
+    </div>
+
+    <!-- ================= PANTALLA FINAL ================= -->
+    <div id="pantalla-final" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-white/95 backdrop-blur-md transition-opacity duration-500 select-none overflow-hidden">
+        
+        <div class="flex gap-6 justify-center text-8xl md:text-9xl mb-8 floating">
+            <span>🤖</span>
+            <span>🏆</span>
+            <span>🧸</span>
+        </div>
+
+        <h1 class="text-5xl md:text-7xl font-black mb-6 drop-shadow-sm leading-normal flex flex-col items-center justify-center gap-1">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-blue-600 py-1">¡SÚPER</span>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-blue-600 py-1">PROGRAMADOR!</span>
+        </h1>
+        <p class="text-2xl md:text-4xl text-gray-700 max-w-2xl mb-10 font-bold leading-relaxed">
+            ¡El robot está muy feliz! Le diste las instrucciones correctas paso a pasito. 🌟
+        </p>
+        
+        <button onclick="reiniciarJuego()" class="group relative inline-flex items-center justify-center px-12 lg:px-16 py-6 lg:py-8 text-3xl lg:text-4xl font-black text-white bg-blue-500 rounded-full overflow-hidden shadow-[0_10px_0_#1e3a8a] active:shadow-[0_0px_0_#1e3a8a] active:translate-y-2 transition-all">
+            <span class="relative flex items-center gap-3">Jugar otra vez <span class="text-4xl">🔄</span></span>
+        </button>
+    </div>
+
+    <!-- ================= LÓGICA DEL JUEGO ================= -->
+    <script>
+        // --- BASE DE DATOS DE NIVELES SÚPER SIMPLES CON 6 NIVELES PARA 6 AÑOS ---
+        const nivelesData = [
+            {
+                id: 1,
+                robotStart: { x: 0, y: 2 },
+                toy: { x: 3, y: 2, emoji: "🧸" },
+                obstacles: [], // Línea recta horizontal simple (3 pasos derecha)
+                maxPasos: 4
+            },
+            {
+                id: 2,
+                robotStart: { x: 2, y: 3 },
+                toy: { x: 2, y: 0, emoji: "🚗" },
+                obstacles: [], // Línea recta vertical simple (3 pasos arriba)
+                maxPasos: 4
+            },
+            {
+                id: 3,
+                robotStart: { x: 0, y: 3 },
+                toy: { x: 2, y: 1, emoji: "🪁" },
+                obstacles: [{ x: 1, y: 3 }, { x: 1, y: 2 }], // Desvío sencillo: esquivar por arriba
+                maxPasos: 6
+            },
+            {
+                id: 4,
+                robotStart: { x: 0, y: 0 },
+                toy: { x: 2, y: 2, emoji: "🚂" },
+                obstacles: [{ x: 1, y: 1 }], // Desvío diagonal simple
+                maxPasos: 6
+            },
+            {
+                id: 5,
+                robotStart: { x: 3, y: 3 },
+                toy: { x: 0, y: 0, emoji: "🦕" },
+                obstacles: [{ x: 2, y: 1 }, { x: 1, y: 2 }], // Reto en forma de "S"
+                maxPasos: 7
+            },
+            {
+                id: 6,
+                robotStart: { x: 1, y: 3 },
+                toy: { x: 1, y: 0, emoji: "🚀" },
+                obstacles: [{ x: 1, y: 2 }, { x: 1, y: 1 }, { x: 2, y: 0 }], // Laberinto final para rodear cajas
+                maxPasos: 7
+            }
+        ];
+
+        let nivelActual = 0;
+        let comandosIngresados = []; 
+        let robotPos = { x: 0, y: 0 };
+        let ejecutando = false;
+
+        // Referencias DOM
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const pantallaJuego = document.getElementById('pantalla-juego');
+        const pantallaFinal = document.getElementById('pantalla-final');
+        const tituloNivel = document.getElementById('titulo-nivel');
+        const burbujaPedagogica = document.getElementById('burbuja-pedagogica');
+        
+        const cuadricula = document.getElementById('cuadricula');
+        const robotDOM = document.getElementById('robot');
+        const lineaCodigo = document.getElementById('linea-codigo');
+        const btnBorrar = document.getElementById('btn-borrar');
+        const btnEjecutar = document.getElementById('btn-ejecutar');
+
+        // Configuración de Bloques de Código Gigantes
+        const comandoVisuals = {
+            'U': { color: 'bg-blue-500', icon: '<svg viewBox="0 0 100 100" class="w-8 h-8 md:w-10 md:h-10"><use href="#arrow-up" /></svg>' },
+            'D': { color: 'bg-blue-500', icon: '<svg viewBox="0 0 100 100" class="w-8 h-8 md:w-10 md:h-10"><use href="#arrow-down" /></svg>' },
+            'L': { color: 'bg-blue-500', icon: '<svg viewBox="0 0 100 100" class="w-8 h-8 md:w-10 md:h-10"><use href="#arrow-left" /></svg>' },
+            'R': { color: 'bg-blue-500', icon: '<svg viewBox="0 0 100 100" class="w-8 h-8 md:w-10 md:h-10"><use href="#arrow-right" /></svg>' }
+        };
+
+        // --- INICIALIZACIÓN ---
+
+        function iniciarJuego() {
+            pantallaInicio.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaInicio.classList.add('hidden');
+                pantallaInicio.classList.remove('opacity-0');
+                pantallaJuego.classList.remove('hidden');
+                
+                nivelActual = 0;
+                ejecutando = false;
+                
+                cargarNivel();
+            }, 500);
+        }
+
+        function reiniciarJuego() {
+            pantallaFinal.classList.add('opacity-0');
+            setTimeout(() => window.location.reload(), 300);
+        }
+
+        // --- LÓGICA DE NIVEL ---
+
+        function cargarNivel() {
+            if (nivelActual >= nivelesData.length) {
+                finalizarJuego();
+                return;
+            }
+
+            ejecutando = false; // Restablecer el estado bloqueante de ejecución al cargar cualquier nivel.
+
+            const nivel = nivelesData[nivelActual];
+            tituloNivel.innerText = `Nivel ${nivelActual + 1}`;
+            
+            // Limpiar entidades anteriores (cajas, juguetes)
+            document.querySelectorAll('.entidad-tablero').forEach(e => e.remove());
+
+            // Ubicar Robot
+            robotPos = { x: nivel.robotStart.x, y: nivel.robotStart.y };
+            actualizarPosicionRobotDOM(robotPos.x, robotPos.y);
+            robotDOM.className = "entidad robot"; 
+            robotDOM.innerText = "🤖";
+
+            // Ubicar Juguete (Meta) GIGANTE
+            const juguete = document.createElement('div');
+            juguete.className = "entidad entidad-tablero floating";
+            juguete.style.left = `${nivel.toy.x * 25}%`;
+            juguete.style.top = `${nivel.toy.y * 25}%`;
+            juguete.innerText = nivel.toy.emoji;
+            cuadricula.appendChild(juguete);
+
+            // Ubicar Obstáculos GIGANTES
+            nivel.obstacles.forEach(obs => {
+                const caja = document.createElement('div');
+                caja.className = "entidad entidad-tablero";
+                caja.style.left = `${obs.x * 25}%`;
+                caja.style.top = `${obs.y * 25}%`;
+                caja.innerText = "📦";
+                cuadricula.appendChild(caja);
+            });
+
+            // Reset Código
+            comandosIngresados = [];
+            renderizarLineaCodigo();
+            habilitarBotones(true);
+        }
+
+        function actualizarPosicionRobotDOM(x, y) {
+            robotDOM.style.left = `${x * 25}%`;
+            robotDOM.style.top = `${y * 25}%`;
+        }
+
+        // --- CONSTRUCCIÓN DEL CÓDIGO ---
+
+        function agregarComando(cmd) {
+            if (ejecutando) return;
+            const max = nivelesData[nivelActual].maxPasos;
+
+            if (comandosIngresados.length < max) {
+                comandosIngresados.push(cmd);
+                renderizarLineaCodigo();
+            } else {
+                lanzarBurbujaPedagogica(false, "🛑", "¡Espacio Lleno!", `Solo podemos usar ${max} flechas. Presiona BORRAR si quieres cambiar algo.`, "border-red-500 text-red-600");
+            }
+        }
+
+        function borrarUltimo() {
+            if (ejecutando || comandosIngresados.length === 0) return;
+            comandosIngresados.pop();
+            renderizarLineaCodigo();
+        }
+
+        function renderizarLineaCodigo() {
+            lineaCodigo.innerHTML = '';
+            const max = nivelesData[nivelActual].maxPasos;
+
+            // Render de los bloques con flecha
+            comandosIngresados.forEach((cmd, idx) => {
+                const vis = comandoVisuals[cmd];
+                const bloque = document.createElement('div');
+                bloque.id = `block-${idx}`;
+                bloque.className = `bloque-codigo pop-in ${vis.color}`;
+                bloque.innerHTML = vis.icon;
+                lineaCodigo.appendChild(bloque);
+            });
+
+            // Render de los huecos vacíos
+            const vacios = max - comandosIngresados.length;
+            for (let i = 0; i < vacios; i++) {
+                const hueco = document.createElement('div');
+                hueco.className = "bloque-codigo border-dashed border-slate-400 bg-slate-300 opacity-50";
+                lineaCodigo.appendChild(hueco);
+            }
+        }
+
+        // --- EJECUCIÓN PASO A PASO ---
+
+        async function ejecutarPrograma() {
+            if (ejecutando) return;
+            if (comandosIngresados.length === 0) {
+                lanzarBurbujaPedagogica(false, "🤔", "¡Código Vacío!", "Pon algunas flechas en la cinta antes de apretar jugar.", "border-sky-500 text-sky-700");
+                return;
+            }
+
+            ejecutando = true;
+            habilitarBotones(false);
+            ocultarBurbujaPedagogica();
+
+            let posX = nivelesData[nivelActual].robotStart.x;
+            let posY = nivelesData[nivelActual].robotStart.y;
+            let errorDetectado = false;
+
+            for (let i = 0; i < comandosIngresados.length; i++) {
+                const cmd = comandosIngresados[i];
+                
+                // Resaltar el bloque de código que se está ejecutando (Amarillo brillante)
+                document.querySelectorAll('.bloque-codigo').forEach(el => el.classList.remove('executing-block'));
+                const bloqueActual = document.getElementById(`block-${i}`);
+                if (bloqueActual) bloqueActual.classList.add('executing-block');
+
+                // Lógica de posición
+                let nextX = posX;
+                let nextY = posY;
+                if (cmd === 'U') nextY--;
+                if (cmd === 'D') nextY++;
+                if (cmd === 'L') nextX--;
+                if (cmd === 'R') nextX++;
+
+                // Verificar Choques
+                const colision = verificarColision(nextX, nextY);
+
+                if (colision === 'muro') {
+                    robotDOM.classList.add('shake');
+                    lanzarBurbujaPedagogica(false, "🧱", "¡PUM! Muro", "El robot se salió de la habitación. Revisa bien las flechas.", "border-red-500 text-red-600");
+                    errorDetectado = true;
+                    break;
+                } else if (colision === 'obstaculo') {
+                    robotDOM.classList.add('shake');
+                    lanzarBurbujaPedagogica(false, "📦", "¡PUM! Caja", "Chocamos con una caja. ¡Trata de rodearla!", "border-orange-500 text-orange-600");
+                    errorDetectado = true;
+                    break;
+                }
+
+                // Mover robot
+                posX = nextX;
+                posY = nextY;
+                actualizarPosicionRobotDOM(posX, posY);
+                
+                await sleep(600); // Dar suficiente tiempo para que el niño vea el movimiento (600ms)
+            }
+
+            // Limpiar brillo de bloques
+            document.querySelectorAll('.bloque-codigo').forEach(el => el.classList.remove('executing-block'));
+
+            if (errorDetectado) {
+                // Volver a empezar tras el error
+                setTimeout(() => {
+                    robotDOM.classList.remove('shake');
+                    robotPos = { x: nivelesData[nivelActual].robotStart.x, y: nivelesData[nivelActual].robotStart.y };
+                    actualizarPosicionRobotDOM(robotPos.x, robotPos.y);
+                    habilitarBotones(true);
+                    ejecutando = false;
+                }, 4000);
+            } else {
+                // Si no hay errores, verificar meta
+                const meta = nivelesData[nivelActual].toy;
+                if (posX === meta.x && posY === meta.y) {
+                    // ¡ÉXITO!
+                    robotDOM.innerText = "🤖❤️";
+                    robotDOM.classList.add('happy-jump');
+                    crearDestellos(robotDOM.getBoundingClientRect());
+                    
+                    lanzarBurbujaPedagogica(
+                        true, 
+                        "🎉", 
+                        "¡Súper Bien!", 
+                        "¡El robot encontró su juguete! Eres un genio programando.", 
+                        "border-green-500 text-green-600"
+                    );
+                } else {
+                    // Terminó lejos de la meta
+                    robotDOM.innerText = "🤖❓";
+                    lanzarBurbujaPedagogica(false, "🧐", "¡Casi!", "Se nos acabaron los pasos y no llegamos al juguete.", "border-sky-500 text-sky-700");
+                    
+                    setTimeout(() => {
+                        robotPos = { x: nivelesData[nivelActual].robotStart.x, y: nivelesData[nivelActual].robotStart.y };
+                        actualizarPosicionRobotDOM(robotPos.x, robotPos.y);
+                        robotDOM.innerText = "🤖";
+                        habilitarBotones(true);
+                        ejecutando = false;
+                    }, 4000);
+                }
+            }
+        }
+
+        function verificarColision(x, y) {
+            if (x < 0 || x > 3 || y < 0 || y > 3) return 'muro';
+            
+            const nivel = nivelesData[nivelActual];
+            const esObstaculo = nivel.obstacles.some(obs => obs.x === x && obs.y === y);
+            if (esObstaculo) return 'obstaculo';
+
+            return 'ok';
+        }
+
+        // --- UTILIDADES Y FEEDBACK GIGANTE ---
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function habilitarBotones(estado) {
+            const opacity = estado ? '1' : '0.5';
+            const pointer = estado ? 'auto' : 'none';
+            
+            document.querySelectorAll('.btn-flecha').forEach(b => {
+                b.style.opacity = opacity;
+                b.style.pointerEvents = pointer;
+            });
+            btnBorrar.style.opacity = opacity;
+            btnBorrar.style.pointerEvents = pointer;
+            btnEjecutar.style.opacity = opacity;
+            btnEjecutar.style.pointerEvents = pointer;
+        }
+
+        function lanzarBurbujaPedagogica(esExito, icono, titulo, mensaje, clasesColor) {
+            const colorBorde = clasesColor.split(' ')[0];
+            const colorTexto = clasesColor.split(' ')[1];
+
+            burbujaPedagogica.className = `fixed bottom-0 left-0 w-full bg-white border-t-8 ${colorBorde} shadow-[0_-20px_50px_rgba(0,0,0,0.2)] z-[100] transform translate-y-0 transition-transform duration-500 flex flex-col items-center justify-center p-6 md:p-10 rounded-t-[3rem] text-center`;
+            
+            document.getElementById('burbuja-icono').innerText = icono;
+            document.getElementById('burbuja-titulo').className = `text-4xl md:text-5xl font-black ${colorTexto} mb-3 leading-none`;
+            document.getElementById('burbuja-titulo').innerText = titulo;
+            document.getElementById('burbuja-mensaje').innerText = mensaje;
+
+            const btnContainer = document.getElementById('burbuja-boton-container');
+
+            if (esExito) {
+                btnContainer.innerHTML = `
+                    <button onclick="siguienteNivel()" class="w-full py-5 bg-green-500 text-white font-black text-3xl rounded-full shadow-[0_8px_0_#15803d] active:translate-y-2 active:shadow-[0_0px_0_#15803d] transition-all flex items-center justify-center gap-2">
+                        Siguiente ➡️
+                    </button>
+                `;
+            } else {
+                btnContainer.innerHTML = '';
+                setTimeout(() => { ocultarBurbujaPedagogica(); }, 4000); // 4 segundos para errores
+            }
+        }
+
+        // Corrección de la transición entre niveles
+        function ocultarBurbujaPedagogica() {
+            burbujaPedagogica.classList.remove('translate-y-0');
+            burbujaPedagogica.classList.add('translate-y-full');
+        }
+
+        function siguienteNivel() {
+            ocultarBurbujaPedagogica();
+            nivelActual++;
+            cargarNivel();
+        }
+
+        // --- EFECTOS VISUALES FINALES ---
+
+        function crearDestellos(rect) {
+            const emojis = ['🌟', '✨', '💻', '🤖', '🎉'];
+            const container = document.body;
+
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                const posX = rect.left + (rect.width / 2) + (Math.random() * 100 - 50);
+                const posY = rect.top + (rect.height / 2);
+                
+                p.style.left = `${posX}px`;
+                p.style.top = `${posY}px`;
+                p.style.fontSize = `${Math.random() * 20 + 30}px`; // Muy grandes
+                p.style.animationDelay = `${Math.random() * 0.2}s`;
+                
+                container.appendChild(p);
+                setTimeout(() => p.remove(), 1500);
+            }
+        }
+
+        function finalizarJuego() {
+            pantallaJuego.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaJuego.classList.add('hidden');
+                pantallaFinal.classList.remove('hidden');
+                setTimeout(() => pantallaFinal.classList.remove('opacity-0'), 50);
+                
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        const fakeRect = { left: window.innerWidth / 2 - 50, width: 100, top: window.innerHeight / 2 - 100, height: 100 };
+                        crearDestellos(fakeRect);
+                    }, i * 250);
+                }
+            }, 500);
+        }
+
+        // --- CARGA INICIAL ---
+        document.addEventListener('DOMContentLoaded', () => {
+            pantallaInicio.classList.remove('hidden');
+            setTimeout(() => pantallaInicio.classList.remove('opacity-0'), 50);
+        });
+
+    </script>
+</body>
+</html>

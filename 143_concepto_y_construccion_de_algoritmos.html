@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Constructor - ¿Qué es un Algoritmo?</title>
+    
+    <!-- Fuentes Google: 'Press Start 2P' (Pixel Art), 'Righteous' (Títulos) y 'Nunito' (Lectura) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;900&family=Press+Start+2P&family=Righteous&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA DE TAILWIND -->
+    <script>
+        window.tailwind = {
+            config: {
+                important: '#recurso-wp-robot',
+                corePlugins: { preflight: false },
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            pixel: ['"Press Start 2P"', 'cursive'],
+                            title: ['Righteous', 'sans-serif'],
+                            body: ['Nunito', 'sans-serif'],
+                        },
+                        colors: {
+                            robo: {
+                                dark: '#0f172a',      
+                                panel: '#1e293b',     
+                                cyan: '#06b6d4',      
+                                green: '#10b981',     
+                                red: '#ef4444',       
+                                yellow: '#eab308',    
+                                metal: '#94a3b8'      
+                            }
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* MICRO-RESET LOCAL */
+        #recurso-wp-robot * { box-sizing: border-box; border-width: 0; border-style: solid; border-color: currentColor; line-height: normal; }
+        #recurso-wp-robot h1, #recurso-wp-robot h2, #recurso-wp-robot h3, #recurso-wp-robot p, #recurso-wp-robot span { margin: 0; padding: 0; }
+        #recurso-wp-robot button { background-color: transparent; cursor: pointer; padding: 0; font-family: inherit; }
+
+        /* ESTILOS PANTALLA COMPLETA */
+        #recurso-wp-robot {
+            font-family: 'Nunito', sans-serif;
+            background-color: #0f172a; 
+            background-image: 
+                linear-gradient(rgba(6, 182, 212, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6, 182, 212, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Paneles Sci-Fi */
+        #recurso-wp-robot .tech-panel {
+            background-color: #1e293b;
+            border: 4px solid #06b6d4;
+            border-radius: 1.5rem;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.3), inset 0 0 20px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        #recurso-wp-robot .tech-btn {
+            background: #0f172a;
+            border: 3px solid #06b6d4;
+            color: #06b6d4;
+            border-radius: 0.75rem;
+            box-shadow: 4px 4px 0px #06b6d4;
+            transition: all 0.15s ease-out;
+            text-transform: uppercase;
+            font-family: 'Righteous', sans-serif;
+            letter-spacing: 1px;
+        }
+        #recurso-wp-robot .tech-btn:hover:not(:disabled) {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #06b6d4;
+            background: rgba(6, 182, 212, 0.1);
+        }
+        #recurso-wp-robot .tech-btn:active:not(:disabled) {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px #06b6d4;
+        }
+        #recurso-wp-robot .tech-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: #475569;
+            color: #475569;
+            box-shadow: 4px 4px 0px #475569 !important;
+        }
+
+        /* Bloques de Código Ajustados */
+        .code-block {
+            background: linear-gradient(145deg, #334155, #1e293b);
+            border: 2px solid #94a3b8;
+            border-radius: 8px;
+            border-left: 6px solid #06b6d4;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+        }
+        .code-block:hover:not(.used) {
+            transform: translateX(6px);
+            border-color: #06b6d4;
+            background: linear-gradient(145deg, #475569, #334155);
+        }
+        .code-block.used {
+            opacity: 0.3;
+            pointer-events: none;
+            filter: grayscale(100%);
+            box-shadow: none;
+            transform: scale(0.98);
+        }
+
+        /* Slots del Programa */
+        .program-slot {
+            background: rgba(0,0,0,0.4);
+            border: 2px dashed #475569;
+            border-radius: 8px;
+            min-height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        .program-slot.filled {
+            border-style: solid;
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+            cursor: pointer;
+        }
+        .program-slot.filled:hover {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+        .program-slot.filled:hover::after {
+            content: '❌ Quitar';
+            position: absolute;
+            color: #ef4444;
+            font-weight: bold;
+            background: #0f172a;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            z-index: 20;
+        }
+
+        /* Elementos Animados en el Escenario de Construcción */
+        .build-item {
+            position: absolute;
+            bottom: 0; /* Punto de anclaje base exacto */
+            left: 50%;
+            opacity: 0;
+            /* La animación reemplazará el translateY con --target-y */
+            transform: translate(-50%, -250px);
+        }
+        .drop-item {
+            animation: dropAnim 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        @keyframes dropAnim {
+            0% { transform: translate(-50%, -250px); opacity: 0; }
+            100% { transform: translate(-50%, var(--target-y)); opacity: 1; }
+        }
+
+        /* Pantallas SPA */
+        #recurso-wp-robot .screen {
+            display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; position: absolute; top: 0; left: 0; overflow-y: auto; overflow-x: hidden; z-index: 10;
+        }
+        #recurso-wp-robot .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-robot .screen.active {
+            display: flex;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Animación del Robot */
+        .robot-bounce { animation: roboBounce 2s ease-in-out infinite; }
+        @keyframes roboBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .shake-error { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-3px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-robot">
+
+        <!-- ==============================================
+             PANTALLA 1: PORTADA
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="tech-panel p-8 md:p-12 max-w-3xl w-full mx-4 flex flex-col items-center">
+                <div class="text-[5rem] md:text-[8rem] mb-4 animate__animated animate__pulse animate__infinite robot-bounce">🤖</div>
+                
+                <h2 class="text-xs md:text-sm text-robo-cyan font-pixel mb-4 uppercase bg-robo-cyan/10 inline-block px-4 py-2 border-2 border-robo-cyan rounded-lg">
+                    TECNOLOGÍA - 5/6to GRADO
+                </h2>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-title text-white leading-none uppercase drop-shadow-[0_0_10px_rgba(6,182,212,0.5)] mb-6">
+                    Robot <br><span class="text-robo-green">Constructor</span>
+                </h1>
+                <p class="text-lg md:text-2xl text-gray-300 font-bold mb-8 px-2 leading-relaxed font-body max-w-xl">
+                    Las computadoras no piensan solas. Necesitan instrucciones en un <strong>orden estricto</strong> llamadas <strong class="text-robo-cyan text-2xl md:text-3xl">ALGORITMOS</strong>.
+                </p>
+                <button id="btn-theory" class="tech-btn text-robo-cyan text-xl md:text-3xl px-12 py-5 w-full md:w-auto">
+                    INICIAR SISTEMA ▶
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: TEORÍA Y REGLAS
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center">
+            <div class="tech-panel p-6 md:p-12 max-w-5xl w-full text-center my-auto">
+                <h2 class="text-3xl md:text-5xl font-title text-white mb-6 uppercase border-b-2 border-robo-cyan/30 pb-4">
+                    ¿Qué es un Algoritmo?
+                </h2>
+                
+                <div class="bg-black/40 border border-robo-metal p-6 md:p-8 rounded-xl mb-8">
+                    <p class="text-lg md:text-3xl text-gray-200 font-bold leading-snug font-body">
+                        Es una <strong class="text-robo-green">secuencia lógica y ordenada</strong> de pasos para lograr una meta. En la construcción, el orden debe ser exacto.
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 mb-10 text-left">
+                    <div class="bg-slate-800 p-6 md:p-8 rounded-xl border-2 border-slate-600 shadow-lg">
+                        <div class="text-5xl mb-4 text-center drop-shadow-md">1️⃣</div>
+                        <h3 class="font-title text-xl md:text-2xl text-robo-cyan uppercase text-center mb-2">Orden Estricto</h3>
+                        <p class="text-sm md:text-base text-gray-300 font-bold text-center">¡No puedes poner el techo de una casa si antes no has construido las paredes!</p>
+                    </div>
+                    <div class="bg-slate-800 p-6 md:p-8 rounded-xl border-2 border-slate-600 shadow-lg">
+                        <div class="text-5xl mb-4 text-center drop-shadow-md">2️⃣</div>
+                        <h3 class="font-title text-xl md:text-2xl text-robo-cyan uppercase text-center mb-2">Claridad</h3>
+                        <p class="text-sm md:text-base text-gray-300 font-bold text-center">Los robots no adivinan intenciones. Si le das las instrucciones al revés, lo hará al revés.</p>
+                    </div>
+                    <div class="bg-slate-800 p-6 md:p-8 rounded-xl border-2 border-slate-600 shadow-lg">
+                        <div class="text-5xl mb-4 text-center drop-shadow-md">3️⃣</div>
+                        <h3 class="font-title text-xl md:text-2xl text-robo-cyan uppercase text-center mb-2">Bugs</h3>
+                        <p class="text-sm md:text-base text-gray-300 font-bold text-center">Si te equivocas en la secuencia y el puente colapsa, a eso se le llama "Bug" (Error de programación).</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-6 justify-center">
+                    <button id="btn-back-start" class="tech-btn border-robo-metal text-robo-metal hover:bg-slate-800 hover:text-white px-8 py-4 text-xl md:text-2xl">
+                        ⬅ VOLVER
+                    </button>
+                    <button id="btn-play" class="tech-btn border-robo-green text-robo-green hover:shadow-[6px_6px_0_#10b981] text-2xl md:text-4xl px-12 py-4">
+                        ¡A PROGRAMAR! 💻
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: EL JUEGO (Programador Mejorado)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start p-0 bg-transparent">
+            
+            <!-- Barra Superior (Objetivo) -->
+            <div class="w-full bg-robo-panel border-b-4 border-robo-cyan p-3 flex justify-between items-center z-30 shrink-0 shadow-[0_4px_15px_rgba(0,0,0,0.5)]">
+                <div class="flex items-center gap-3 px-2 md:px-4">
+                    <span id="level-icon" class="text-3xl md:text-4xl drop-shadow-[0_0_10px_#10b981]">🏗️</span>
+                    <div class="flex flex-col">
+                        <span class="text-[9px] md:text-xs text-gray-400 font-pixel uppercase leading-none mb-1">Proyecto <span id="level-indicator">1/3</span>:</span>
+                        <span id="level-title" class="font-title text-lg md:text-2xl text-white leading-none">Construir...</span>
+                    </div>
+                </div>
+
+                <button id="btn-exit" class="bg-robo-red/20 border-2 border-robo-red text-robo-red hover:bg-robo-red hover:text-white transition-colors p-2 rounded-lg ml-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Área Principal Nivelada y Balanceada -->
+            <div class="w-full flex-grow flex flex-col md:flex-row gap-4 p-3 md:p-6 overflow-hidden relative">
+                
+                <!-- PANEL IZQUIERDO: Consola de Comandos -->
+                <div class="w-full md:w-5/12 tech-panel p-3 md:p-5 flex flex-col h-[50%] md:h-full shrink-0">
+                    <h3 class="font-title text-robo-cyan text-base md:text-xl uppercase border-b-2 border-robo-cyan/30 pb-2 mb-2">
+                        💾 Banco de Instrucciones
+                    </h3>
+                    <p class="text-[10px] md:text-sm text-robo-yellow font-bold mb-3 bg-robo-yellow/10 p-2 rounded border border-robo-yellow/30 leading-tight">
+                        Los pasos están desordenados. Añádelos en el orden lógico de construcción.
+                    </p>
+                    
+                    <!-- Botones de comandos inyectados por JS -->
+                    <div id="command-bank" class="flex flex-col gap-2 overflow-y-auto pr-2 pb-2">
+                        <!-- Generados dinámicamente -->
+                    </div>
+
+                    <!-- Secuencia a rellenar -->
+                    <div class="mt-auto pt-3 border-t-4 border-robo-metal/30">
+                        <h4 class="font-title text-xs md:text-sm text-white uppercase mb-2">Algoritmo (Memoria 4/4):</h4>
+                        <div class="grid grid-cols-1 gap-1.5 md:gap-2" id="program-queue">
+                            <div class="program-slot text-gray-500 font-pixel text-[9px] md:text-[10px]" data-slot="0">Paso 1: [Vacío]</div>
+                            <div class="program-slot text-gray-500 font-pixel text-[9px] md:text-[10px]" data-slot="1">Paso 2: [Vacío]</div>
+                            <div class="program-slot text-gray-500 font-pixel text-[9px] md:text-[10px]" data-slot="2">Paso 3: [Vacío]</div>
+                            <div class="program-slot text-gray-500 font-pixel text-[9px] md:text-[10px]" data-slot="3">Paso 4: [Vacío]</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL DERECHO: Visor del Robot y Botón de Ejecución -->
+                <div class="w-full md:w-7/12 flex flex-col items-center justify-between relative h-[50%] md:h-full">
+                    
+                    <!-- Escenario visual -->
+                    <div class="w-full bg-slate-900 border-4 border-slate-700 rounded-2xl flex-grow flex flex-col items-center justify-between py-4 md:py-6 relative overflow-hidden shadow-inner">
+                        <div class="absolute top-2 left-3 text-[10px] font-pixel text-robo-green opacity-50">BUILD-BOT v2.0</div>
+                        
+                        <!-- Robot animado con respiro visual -->
+                        <div class="z-0 robot-bounce w-20 h-20 md:w-28 md:h-28 flex items-center justify-center shrink-0 mt-2 md:mt-4">
+                            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-xl">
+                                <path d="M 40,50 Q 100,0 160,50 L 170,60 L 30,60 Z" fill="#eab308" stroke="#ca8a04" stroke-width="4"/>
+                                <rect x="50" y="60" width="100" height="70" rx="10" fill="#cbd5e1" stroke="#334155" stroke-width="6"/>
+                                <rect x="65" y="75" width="70" height="25" rx="5" fill="#0f172a"/>
+                                <rect x="75" y="80" width="12" height="12" fill="#10b981" id="eye-left"/>
+                                <rect x="113" y="80" width="12" height="12" fill="#10b981" id="eye-right"/>
+                                <rect x="80" y="115" width="40" height="6" rx="3" fill="#334155" id="mouth"/>
+                                <rect x="80" y="130" width="40" height="40" fill="#94a3b8" stroke="#334155" stroke-width="6"/>
+                            </svg>
+                        </div>
+
+                        <!-- Plataforma de Construcción Perfectamente Alineada -->
+                        <div class="relative w-44 md:w-56 h-4 md:h-6 bg-slate-600 rounded-lg border-b-8 border-slate-800 z-0 flex items-center justify-center shadow-[0_15px_15px_rgba(0,0,0,0.5)] shrink-0 mt-auto mb-2 md:mb-4">
+                            
+                            <!-- CONTENEDOR BASE DE LAS PIEZAS: Se ancla exactamente encima de la plataforma gris -->
+                            <div id="build-stack" class="absolute bottom-full w-full">
+                                <!-- Elementos SVG inyectados aquí -->
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Botonera de Acción -->
+                    <div class="w-full mt-3 flex gap-3 shrink-0">
+                        <button id="btn-clear" class="tech-btn bg-slate-800 text-white border-slate-600 px-4 py-3 md:py-4 flex-1 text-xs md:text-base font-bold tracking-widest">
+                            LIMPIAR 🗑️
+                        </button>
+                        <button id="btn-execute" class="tech-btn border-robo-green text-robo-green w-2/3 py-3 md:py-4 text-base md:text-xl flex items-center justify-center gap-2 tracking-widest" disabled>
+                            ▶ EJECUTAR
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ==============================================
+             MODAL DE FEEDBACK (Error Lógico - Bugs)
+             ============================================== -->
+        <div id="feedback-modal" class="hidden absolute inset-0 z-[60] flex-col items-center justify-center bg-black/90 p-4 text-center backdrop-blur-md">
+            <div id="feedback-card" class="tech-panel p-6 md:p-12 max-w-2xl w-full text-center border-t-[10px]">
+                <div id="feedback-icon" class="text-[4rem] md:text-[6rem] mb-2 drop-shadow-md">🐛</div>
+                <h3 id="feedback-title" class="font-title text-2xl md:text-4xl mb-4 uppercase tracking-widest leading-tight">¡Error Lógico!</h3>
+                <div class="bg-black/50 p-4 md:p-6 rounded-xl border border-gray-600 mb-6">
+                    <p id="feedback-reason" class="text-base md:text-xl font-bold text-gray-200 leading-relaxed font-body"></p>
+                </div>
+                <button id="btn-continue-feedback" class="tech-btn text-white font-title text-lg md:text-2xl px-8 py-4 w-full shadow-[6px_6px_0_currentColor] hover:shadow-[4px_4px_0_currentColor] active:shadow-none">
+                    BOTON
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (Victoria)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex-col items-center justify-center p-6 text-center bg-robo-dark">
+            <div class="tech-panel p-8 md:p-16 max-w-4xl w-full text-center z-10 border-t-[12px] border-t-robo-green shadow-[0_0_50px_rgba(16,185,129,0.3)]">
+                <div class="text-[5rem] md:text-[8rem] mb-4 drop-shadow-lg animate-bounce">🤖🏆</div>
+                <h2 class="font-title text-4xl md:text-6xl text-robo-green mb-4 uppercase drop-shadow-[0_2px_2px_#000]">¡Misiones Cumplidas!</h2>
+                <p class="text-lg md:text-2xl text-gray-300 mb-8 font-bold leading-relaxed font-body max-w-2xl mx-auto">
+                    Has dominado la lógica algorítmica. Le enseñaste al Build-Bot a construir en el orden perfecto, paso a paso y sin un solo error (bug).
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button id="btn-end-home" class="tech-btn bg-slate-800 text-white font-title px-6 py-4 text-base md:text-xl border-slate-600">
+                        APAGAR SISTEMA
+                    </button>
+                    <button id="btn-end-retry" class="tech-btn border-robo-green text-robo-green font-title text-xl md:text-2xl px-10 py-4">
+                        REINICIAR 💻
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO CON COORDENADAS EXACTAS SVG
+         ============================================== -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- AUDIO SINTETIZADO SEGURO ---
+            let audioCtx = null;
+            function initAudio() {
+                try {
+                    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                } catch (e) {}
+            }
+            document.body.addEventListener('click', initAudio, { once: true });
+
+            function playBeep(freq = 600, duration = 0.1, type = "sine") {
+                try {
+                    if (audioCtx && audioCtx.state !== 'suspended') {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = type;
+                        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + duration);
+                    }
+                } catch (e) {}
+            }
+
+            function playBlip() { playBeep(900, 0.05, "square"); }
+            function playSuccess() { playBeep(523.25, 0.1); setTimeout(() => playBeep(659.25, 0.1), 100); setTimeout(() => playBeep(783.99, 0.3), 200); }
+            function playError() { playBeep(200, 0.3, "sawtooth"); setTimeout(() => playBeep(150, 0.4, "sawtooth"), 150); }
+
+            function shuffleArray(arr) {
+                let array = [...arr];
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            // --- INGENIERÍA DE DIBUJOS Y COORDENADAS (SVGs) ---
+            const SVGs = {
+                // MUÑECO DE NIEVE
+                snBase: `<div class="build-item drop-item" style="width: 100px; height: 100px;"><svg viewBox="0 0 100 100" class="w-full h-full overflow-visible"><circle cx="50" cy="50" r="46" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/></svg></div>`,
+                snMedio: `<div class="build-item drop-item" style="width: 76px; height: 76px;"><svg viewBox="0 0 100 100" class="w-full h-full overflow-visible"><circle cx="50" cy="50" r="46" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/><circle cx="50" cy="25" r="5" fill="#1e293b"/><circle cx="50" cy="50" r="5" fill="#1e293b"/><circle cx="50" cy="75" r="5" fill="#1e293b"/></svg></div>`,
+                snCabeza: `<div class="build-item drop-item" style="width: 56px; height: 56px;"><svg viewBox="0 0 100 100" class="w-full h-full overflow-visible"><circle cx="50" cy="50" r="46" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/><circle cx="35" cy="40" r="6" fill="#1e293b"/><circle cx="65" cy="40" r="6" fill="#1e293b"/><path d="M 50,55 L 90,65 L 50,65 Z" fill="#f97316"/></svg></div>`,
+                snGorro: `<div class="build-item drop-item" style="width: 60px; height: 40px;"><svg viewBox="0 0 100 66" class="w-full h-full overflow-visible"><rect x="10" y="50" width="80" height="10" rx="3" fill="#1e293b"/><rect x="25" y="0" width="50" height="50" rx="3" fill="#1e293b"/><rect x="25" y="35" width="50" height="15" fill="#ef4444"/></svg></div>`,
+                
+                // LA CASA
+                hsCimientos: `<div class="build-item drop-item" style="width: 140px; height: 30px;"><svg viewBox="0 0 100 20" preserveAspectRatio="none" class="w-full h-full overflow-visible"><rect x="0" y="0" width="100" height="20" rx="2" fill="#94a3b8" stroke="#475569" stroke-width="3"/></svg></div>`,
+                hsParedes: `<div class="build-item drop-item" style="width: 120px; height: 70px;"><svg viewBox="0 0 100 60" preserveAspectRatio="none" class="w-full h-full overflow-visible"><rect x="0" y="0" width="100" height="60" fill="#d97706" stroke="#b45309" stroke-width="2"/><rect x="40" y="25" width="20" height="35" fill="#fcd34d" stroke="#b45309" stroke-width="2"/><rect x="20" y="15" width="15" height="15" fill="#38bdf8" stroke="#0284c7" stroke-width="2"/><rect x="65" y="15" width="15" height="15" fill="#38bdf8" stroke="#0284c7" stroke-width="2"/></svg></div>`,
+                hsTecho: `<div class="build-item drop-item" style="width: 140px; height: 50px;"><svg viewBox="0 0 100 40" preserveAspectRatio="none" class="w-full h-full overflow-visible"><polygon points="0,40 50,0 100,40" fill="#ef4444" stroke="#b91c1c" stroke-width="2" stroke-linejoin="round"/></svg></div>`,
+                hsChimenea: `<div class="build-item drop-item" style="width: 20px; height: 40px;"><svg viewBox="0 0 20 40" preserveAspectRatio="none" class="w-full h-full overflow-visible"><rect x="0" y="0" width="20" height="40" fill="#64748b" stroke="#334155" stroke-width="2"/></svg></div>`,
+
+                // COHETE
+                rkBase: `<div class="build-item drop-item" style="width: 80px; height: 40px;"><svg viewBox="0 0 100 50" preserveAspectRatio="none" class="w-full h-full overflow-visible"><path d="M 20,0 L 20,30 L 0,50 Z" fill="#94a3b8" stroke="#475569" stroke-width="2"/><path d="M 80,0 L 80,30 L 100,50 Z" fill="#94a3b8" stroke="#475569" stroke-width="2"/><rect x="30" y="0" width="40" height="35" rx="3" fill="#64748b" stroke="#475569" stroke-width="2"/><polygon points="35,35 50,50 65,35" fill="#ef4444"/><polygon points="42,35 50,45 58,35" fill="#facc15"/></svg></div>`,
+                rkCuerpo: `<div class="build-item drop-item" style="width: 60px; height: 90px;"><svg viewBox="0 0 100 150" preserveAspectRatio="none" class="w-full h-full overflow-visible"><rect x="10" y="0" width="80" height="150" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/><circle cx="50" cy="40" r="15" fill="#38bdf8" stroke="#0ea5e9" stroke-width="3"/><circle cx="50" cy="110" r="15" fill="#38bdf8" stroke="#0ea5e9" stroke-width="3"/></svg></div>`,
+                rkCabina: `<div class="build-item drop-item" style="width: 60px; height: 60px;"><svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full overflow-visible"><path d="M 10,100 L 90,100 L 50,0 Z" fill="#ef4444" stroke="#b91c1c" stroke-width="3" stroke-linejoin="round"/></svg></div>`,
+                rkAntena: `<div class="build-item drop-item" style="width: 10px; height: 40px;"><svg viewBox="0 0 20 100" preserveAspectRatio="none" class="w-full h-full overflow-visible"><line x1="10" y1="20" x2="10" y2="100" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/><circle cx="10" cy="15" r="8" fill="#10b981"/></svg></div>`
+            };
+
+            // --- NIVELES (RECETAS Y REGLAS LÓGICAS ESTRICTAS) ---
+            const missions = [
+                {
+                    id: 1, name: "Muñeco de Nieve", icon: "⛄",
+                    ingredients: [
+                        { id: "snBase", name: "Cuerpo (Base)", visual: "❄️", yOffset: 0, z: 10 },
+                        { id: "snMedio", name: "Pecho", visual: "☃️", yOffset: -75, z: 11 },
+                        { id: "snCabeza", name: "Cabeza", visual: "🥕", yOffset: -130, z: 12 },
+                        { id: "snGorro", name: "Sombrero", visual: "🎩", yOffset: -168, z: 13 }
+                    ],
+                    validate: (prog) => {
+                        if(prog[0] !== 'snBase') return "El muñeco necesita una base firme. No puedes empezar a construir en el aire.";
+                        if(prog[1] !== 'snMedio') return "La lógica falla. Debes poner el pecho sobre la base antes de colocar la cabeza.";
+                        if(prog[2] !== 'snCabeza') return "No puedes poner el sombrero directamente sobre el pecho. Falta la cabeza.";
+                        if(prog[3] !== 'snGorro') return "El sombrero siempre va al final, ¡en lo más alto!";
+                        return "OK";
+                    }
+                },
+                {
+                    id: 2, name: "Construir Casa", icon: "🏠",
+                    ingredients: [
+                        { id: "hsCimientos", name: "Cimientos", visual: "🪨", yOffset: 0, z: 10 },
+                        { id: "hsParedes", name: "Paredes", visual: "🧱", yOffset: -28, z: 11 },
+                        { id: "hsTecho", name: "Techo", visual: "🔺", yOffset: -95, z: 12 },
+                        { id: "hsChimenea", name: "Chimenea", visual: "💨", yOffset: -120, z: 9, xOffset: 30 } 
+                    ],
+                    validate: (prog) => {
+                        if(prog[0] !== 'hsCimientos') return "¡Cuidado! Toda casa necesita empezar por los Cimientos o se caerá.";
+                        if(prog[1] !== 'hsParedes') return "No puedes poner el techo sin antes levantar las Paredes.";
+                        if(prog[2] !== 'hsTecho') return "La Chimenea se instala sobre el Techo, no sobre las paredes vacías.";
+                        if(prog[3] !== 'hsChimenea') return "La Chimenea es el último detalle que se instala en el exterior.";
+                        return "OK";
+                    }
+                },
+                {
+                    id: 3, name: "Cohete Espacial", icon: "🚀",
+                    ingredients: [
+                        { id: "rkBase", name: "Propulsores", visual: "🔥", yOffset: 0, z: 10 },
+                        { id: "rkCuerpo", name: "Tanque Gas", visual: "⛽", yOffset: -30, z: 11 },
+                        { id: "rkCabina", name: "Cabina", visual: "👨‍🚀", yOffset: -115, z: 12 },
+                        { id: "rkAntena", name: "Antena", visual: "📡", yOffset: -160, z: 9 }
+                    ],
+                    validate: (prog) => {
+                        if(prog[0] !== 'rkBase') return "Los Propulsores deben ir abajo del todo para levantar el cohete.";
+                        if(prog[1] !== 'rkCuerpo') return "El Tanque de gas se acopla directamente sobre los propulsores.";
+                        if(prog[2] !== 'rkCabina') return "Los astronautas en la Cabina deben ir en la punta, sobre el tanque.";
+                        if(prog[3] !== 'rkAntena') return "La Antena se coloca en la cima de la cabina como último paso.";
+                        return "OK";
+                    }
+                }
+            ];
+
+            // --- ESTADO DEL JUEGO ---
+            const maxSteps = 4;
+            let currentLevel = 0;
+            let currentMission = null;
+            let currentProgram = []; 
+            let isExecuting = false;
+
+            // --- NAVEGACIÓN ---
+            function showScreen(id) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+            }
+
+            function startGame() {
+                currentLevel = 0;
+                document.getElementById('screen-result').classList.add('hidden');
+                document.getElementById('screen-result').classList.remove('flex');
+                
+                showScreen('screen-game');
+                loadLevel();
+            }
+
+            function loadLevel() {
+                if (currentLevel >= missions.length) {
+                    endGame();
+                    return;
+                }
+
+                currentMission = missions[currentLevel];
+                currentProgram = [];
+                isExecuting = false;
+
+                document.getElementById('level-icon').innerText = currentMission.icon;
+                document.getElementById('level-indicator').innerText = `${currentLevel + 1}/${missions.length}`;
+                document.getElementById('level-title').innerText = `Construir ${currentMission.name}`;
+                
+                document.getElementById('build-stack').innerHTML = '';
+                setRobotFace('normal');
+
+                const bankContainer = document.getElementById('command-bank');
+                bankContainer.innerHTML = '';
+                
+                const shuffledPieces = shuffleArray(currentMission.ingredients);
+                
+                shuffledPieces.forEach(piece => {
+                    const btn = document.createElement('div');
+                    btn.className = 'code-block p-2 md:p-3 flex items-center gap-3 shadow-[0_4px_0_#94a3b8]';
+                    btn.id = `cmd-${piece.id}`;
+                    btn.innerHTML = `
+                        <span class="text-3xl drop-shadow-md shrink-0">${piece.visual}</span>
+                        <span class="font-title text-xs md:text-sm text-white tracking-widest leading-none">${piece.name}</span>
+                    `;
+                    btn.onclick = () => handleCommandClick(piece);
+                    bankContainer.appendChild(btn);
+                });
+
+                updateQueueUI();
+            }
+
+            // --- LÓGICA DE PROGRAMACIÓN ---
+            function handleCommandClick(pieceData) {
+                if (isExecuting) return;
+                
+                if (currentProgram.length < maxSteps) {
+                    playBlip();
+                    currentProgram.push(pieceData);
+                    document.getElementById(`cmd-${pieceData.id}`).classList.add('used');
+                    updateQueueUI();
+                }
+            }
+
+            function handleSlotClick(index) {
+                if (isExecuting) return;
+                
+                if (index < currentProgram.length) {
+                    playBlip();
+                    const removedCmd = currentProgram.splice(index, 1)[0];
+                    document.getElementById(`cmd-${removedCmd.id}`).classList.remove('used');
+                    updateQueueUI();
+                }
+            }
+
+            function clearProgram() {
+                if (isExecuting) return;
+                if (currentProgram.length > 0) playBlip();
+                
+                currentProgram.forEach(cmd => {
+                    const btn = document.getElementById(`cmd-${cmd.id}`);
+                    if (btn) btn.classList.remove('used');
+                });
+                
+                currentProgram = [];
+                updateQueueUI();
+                document.getElementById('build-stack').innerHTML = '';
+                setRobotFace('normal');
+            }
+
+            function updateQueueUI() {
+                const queueContainer = document.getElementById('program-queue');
+                const btnExecute = document.getElementById('btn-execute');
+                
+                for (let i = 0; i < maxSteps; i++) {
+                    const slot = queueContainer.children[i];
+                    if (i < currentProgram.length) {
+                        slot.className = "program-slot filled font-title text-white relative text-xs md:text-sm tracking-widest shadow-sm";
+                        slot.innerText = `${i+1}. ${currentProgram[i].name}`;
+                    } else {
+                        slot.className = "program-slot text-gray-500 font-pixel text-[9px] md:text-[10px] tracking-widest";
+                        slot.innerText = `Paso ${i+1}: [Vacío]`;
+                    }
+                }
+
+                if (currentProgram.length === maxSteps) {
+                    btnExecute.disabled = false;
+                    btnExecute.classList.add('bg-robo-green/20', 'shadow-[4px_4px_0_#10b981]');
+                } else {
+                    btnExecute.disabled = true;
+                    btnExecute.classList.remove('bg-robo-green/20', 'shadow-[4px_4px_0_#10b981]');
+                }
+            }
+
+            // --- LÓGICA DE EJECUCIÓN (Interpretación con Coordenadas Exactas) ---
+            async function executeProgram() {
+                if (isExecuting) return;
+                isExecuting = true;
+                
+                document.getElementById('btn-execute').disabled = true;
+                document.getElementById('btn-clear').disabled = true;
+                document.getElementById('build-stack').innerHTML = ''; 
+                setRobotFace('happy');
+
+                // Animar caída de piezas con sus desfases precalculados
+                for (let i = 0; i < currentProgram.length; i++) {
+                    const stepId = currentProgram[i].id;
+                    playBlip();
+                    
+                    const plate = document.getElementById('build-stack');
+                    const pieceHTML = SVGs[stepId];
+                    
+                    const wrap = document.createElement('div');
+                    wrap.innerHTML = pieceHTML;
+                    const el = wrap.firstElementChild; // El es el div con clase .build-item
+                    
+                    const itemConfig = currentMission.ingredients.find(ing => ing.id === stepId);
+                    
+                    // Aplicar coordenadas Z e Y de forma dinámica
+                    el.style.setProperty('--target-y', itemConfig.yOffset + "px");
+                    el.style.zIndex = itemConfig.z;
+                    if (itemConfig.xOffset) {
+                        el.style.marginLeft = itemConfig.xOffset + "px"; // Desfase horizontal para chimeneas o detalles
+                    }
+                    
+                    plate.appendChild(el);
+                    
+                    await new Promise(r => setTimeout(r, 600));
+                }
+
+                // Evaluar Lógica
+                const programIds = currentProgram.map(cmd => cmd.id);
+                const result = currentMission.validate(programIds);
+
+                if (result === "OK") {
+                    // ÉXITO
+                    playSuccess();
+                    
+                    setTimeout(() => {
+                        showModal(true, "¡Construcción Exacta! 🌟", "El algoritmo funcionó perfectamente.", "SIGUIENTE PROYECTO");
+                    }, 800);
+                } else {
+                    // ERROR
+                    playError();
+                    setRobotFace('error');
+                    const plateBox = document.getElementById('build-stack').parentElement;
+                    plateBox.classList.add('shake-error', 'border-red-500', 'bg-red-200');
+                    
+                    setTimeout(() => {
+                        plateBox.classList.remove('shake-error', 'border-red-500', 'bg-red-200');
+                        showModal(false, "¡Bug (Error Lógico)! 🐛", result, "DEPURAR CÓDIGO");
+                    }, 500);
+                }
+            }
+
+            // --- FEEDBACK & MODALES ---
+            function showModal(isSuccess, titleText, reasonText, btnText) {
+                const modal = document.getElementById('feedback-modal');
+                const card = document.getElementById('feedback-card');
+                const btn = document.getElementById('btn-continue-feedback');
+                
+                card.classList.remove('border-t-robo-red', 'border-t-robo-green', 'animate__fadeInDown');
+                void card.offsetWidth;
+
+                document.getElementById('feedback-icon').innerText = isSuccess ? "✅" : "🐛";
+                document.getElementById('feedback-title').innerText = titleText;
+                document.getElementById('feedback-title').className = isSuccess 
+                    ? "font-title text-2xl md:text-4xl mb-4 uppercase tracking-widest leading-tight text-robo-green" 
+                    : "font-title text-2xl md:text-4xl mb-4 uppercase tracking-widest leading-tight text-robo-red";
+                
+                document.getElementById('feedback-reason').innerText = reasonText;
+                
+                if (isSuccess) {
+                    card.classList.add('border-t-robo-green');
+                    btn.className = "tech-btn text-robo-dark bg-robo-green font-title text-lg md:text-2xl px-8 py-4 w-full shadow-[4px_4px_0_#0f172a] hover:shadow-[2px_2px_0_#0f172a]";
+                    btn.onclick = () => { closeModal(); currentLevel++; loadLevel(); };
+                } else {
+                    card.classList.add('border-t-robo-red');
+                    btn.className = "tech-btn text-white bg-robo-panel border-robo-red font-title text-lg md:text-2xl px-8 py-4 w-full shadow-[4px_4px_0_#ef4444] hover:shadow-[2px_2px_0_#ef4444]";
+                    btn.onclick = () => { closeModal(); clearProgram(); isExecuting = false; };
+                }
+                
+                btn.innerText = btnText;
+
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                card.classList.add('animate__fadeInDown');
+            }
+
+            function closeModal() {
+                document.getElementById('feedback-modal').classList.add('hidden');
+                document.getElementById('feedback-modal').classList.remove('flex');
+            }
+
+            function endGame() {
+                document.getElementById('screen-result').classList.remove('hidden');
+                document.getElementById('screen-result').classList.add('flex');
+            }
+
+            function setRobotFace(mood) {
+                const mouth = document.getElementById('mouth');
+                const eL = document.getElementById('eye-left');
+                const eR = document.getElementById('eye-right');
+
+                if (mood === 'normal') {
+                    mouth.setAttribute('fill', '#334155');
+                    mouth.setAttribute('y', '115');
+                    mouth.setAttribute('height', '6');
+                    eL.setAttribute('fill', '#10b981'); eR.setAttribute('fill', '#10b981');
+                } else if (mood === 'happy') {
+                    mouth.setAttribute('fill', '#10b981');
+                    mouth.setAttribute('y', '110');
+                    mouth.setAttribute('height', '18'); 
+                    eL.setAttribute('fill', '#10b981'); eR.setAttribute('fill', '#10b981');
+                } else if (mood === 'error') {
+                    mouth.setAttribute('fill', '#ef4444');
+                    mouth.setAttribute('y', '115');
+                    mouth.setAttribute('height', '20'); 
+                    eL.setAttribute('fill', '#ef4444'); eR.setAttribute('fill', '#ef4444');
+                }
+            }
+
+            // --- ASIGNACIÓN DE EVENTOS PRINCIPALES ---
+            document.getElementById('btn-theory').addEventListener('click', () => { playBlip(); showScreen('screen-theory'); });
+            document.getElementById('btn-back-start').addEventListener('click', () => { playBlip(); showScreen('screen-start'); });
+            document.getElementById('btn-play').addEventListener('click', () => { playBlip(); startGame(); });
+            document.getElementById('btn-exit').addEventListener('click', () => { playBlip(); showScreen('screen-start'); });
+            document.getElementById('btn-clear').addEventListener('click', clearProgram);
+            document.getElementById('btn-execute').addEventListener('click', executeProgram);
+            document.getElementById('btn-end-home').addEventListener('click', () => { playBlip(); showScreen('screen-start'); });
+            document.getElementById('btn-end-retry').addEventListener('click', () => { playBlip(); startGame(); });
+
+            for(let i=0; i<4; i++) {
+                document.querySelector(`[data-slot="${i}"]`).addEventListener('click', () => handleSlotClick(i));
+            }
+
+        });
+    </script>
+</body>
+</html>

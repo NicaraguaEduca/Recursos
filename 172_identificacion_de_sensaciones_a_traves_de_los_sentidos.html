@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1º Primaria | El Explorador de Sensaciones 👁️👃👅</title>
+    <!-- Tipografía infantil y amigable Fredoka -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS para estilizado premium -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Fredoka', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #FDF4E3;
+            background-image: radial-gradient(#F5E0B3 2px, transparent 2px);
+            background-size: 30px 30px;
+        }
+        /* Sombras suaves y caricaturescas */
+        .gummy-shadow {
+            box-shadow: 0 8px 0px rgba(0, 0, 0, 0.08);
+        }
+        .gummy-shadow-primary {
+            box-shadow: 0 8px 0px #1D4ED8;
+        }
+        .gummy-shadow-success {
+            box-shadow: 0 8px 0px #15803D;
+        }
+        .gummy-shadow-purple {
+            box-shadow: 0 8px 0px #6B21A8;
+        }
+        /* Animaciones */
+        .floating {
+            animation: softFloat 3s ease-in-out infinite alternate;
+        }
+        @keyframes softFloat {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-8px); }
+        }
+        /* Estilos de arrastre y contenedores activos */
+        .draggable-sensory {
+            touch-action: none;
+            cursor: grab;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 50;
+        }
+        .draggable-sensory:active {
+            cursor: grabbing;
+            transform: scale(1.15);
+        }
+        .organ-target {
+            transition: all 0.3s ease;
+        }
+        .organ-target.glow-active {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(147, 51, 234, 0.5);
+            border-color: #A855F7;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
+
+    <!-- PANTALLA INICIAL (BIENVENIDA PEDAGÓGICA) -->
+    <div id="welcome-screen" class="fixed inset-0 bg-[#FFFBEB] z-50 flex items-center justify-center p-4">
+        <div class="bg-white border-8 border-amber-400 rounded-3xl p-6 md:p-10 max-w-2xl w-full text-center gummy-shadow relative overflow-hidden">
+            <span class="bg-amber-500 text-white font-bold px-4 py-2 rounded-full text-sm uppercase tracking-wider block w-max mx-auto mb-4">
+                🎒 Ciencias Naturales • 1º Primaria
+            </span>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-amber-800 leading-tight mb-2" style="text-shadow: 3px 3px 0px #FDE047;">
+                El Explorador de Sensaciones 👁️👃👅
+            </h1>
+            <p class="text-xl text-amber-950 font-bold mb-6">Contenido: Los 5 Sentidos y sus Órganos</p>
+            
+            <div class="bg-amber-50 border-3 border-dashed border-amber-300 rounded-2xl p-4 text-left mb-6 space-y-2">
+                <p class="text-amber-900 font-bold text-lg">🎯 Objetivo del Recurso:</p>
+                <p class="text-amber-800 text-base leading-relaxed">
+                    Identificar los cinco sentidos de nuestro cuerpo y comprender la relación directa entre el estímulo (sensación), el órgano receptor (ojos, nariz, lengua, oídos y piel) y su función biológica protectora y exploradora.
+                </p>
+            </div>
+
+            <button onclick="startPresentation()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-2xl px-10 py-5 rounded-full border-4 border-purple-800 gummy-shadow-purple transition transform active:translate-y-1">
+                ¡Empezar a Explorar! 🚀✨
+            </button>
+        </div>
+    </div>
+
+    <!-- CABECERA CURRICULAR -->
+    <header class="w-full max-w-4xl mx-auto bg-white border-4 border-purple-400 rounded-2xl p-3 flex flex-wrap items-center justify-between gummy-shadow mb-4">
+        <div class="flex items-center gap-3">
+            <span class="bg-purple-600 text-white text-xs md:text-sm font-bold px-3 py-1 rounded-full uppercase">1º Primaria</span>
+            <span class="text-gray-700 font-bold text-xs md:text-base">Ciencias Naturales: <span class="text-purple-600">Los 5 Sentidos</span></span>
+        </div>
+        <div class="text-gray-500 font-bold text-sm mt-1 md:mt-0" id="slide-indicator">Sección 1 de 5</div>
+    </header>
+
+    <!-- ÁREA PRINCIPAL DE CONTENIDO (PÁGINAS DE LA PRESENTACIÓN) -->
+    <main class="w-full max-w-4xl mx-auto bg-white border-4 border-gray-100 rounded-3xl p-6 flex-grow flex flex-col justify-center items-center gummy-shadow relative min-h-[460px]">
+
+        <!-- DIAPOSITIVA 1: INTRODUCCIÓN CONCEPTUAL -->
+        <div id="slide-1" class="slide flex flex-col items-center text-center max-w-2xl">
+            <span class="text-7xl mb-4 floating">🌈👁️👂👃👅</span>
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">¡Nuestros Superpoderes!</h2>
+            <p class="text-lg md:text-xl text-gray-600 leading-relaxed">
+                ¿Sabías que en tu cuerpo tienes <strong class="text-purple-600">cinco superpoderes</strong> mágicos? Se llaman **sentidos** y nos ayudan a descubrir todo lo que pasa a nuestro alrededor de manera divertida y segura.
+            </p>
+            <p class="text-sm text-gray-400 mt-6 font-semibold italic">Usa los botones de "Atrás" y "Siguiente" abajo para explorar paso a paso.</p>
+        </div>
+
+        <!-- DIAPOSITIVA 2: LOS CINCO ÓRGANOS -->
+        <div id="slide-2" class="slide hidden flex-col items-center text-center max-w-3xl w-full">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">¿Cuáles son los órganos de los sentidos? 🧠</h2>
+            <p class="text-sm text-gray-500 mb-6">Cada sentido tiene una "puerta de entrada" especial en nuestro cuerpo. ¡Haz clic sobre cada uno para escuchar su secreto!</p>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 w-full">
+                <!-- Ojo -->
+                <div onclick="explainOrgan('vista')" class="bg-sky-50 border-4 border-sky-300 rounded-2xl p-3 hover:scale-105 transition duration-200 cursor-pointer gummy-shadow">
+                    <span class="text-4xl block mb-2">👁️</span>
+                    <h3 class="font-bold text-sky-800 text-sm">Ojos</h3>
+                    <span class="text-xs text-sky-600 font-bold">La Vista</span>
+                </div>
+                <!-- Oído -->
+                <div onclick="explainOrgan('oido')" class="bg-yellow-50 border-4 border-yellow-300 rounded-2xl p-3 hover:scale-105 transition duration-200 cursor-pointer gummy-shadow">
+                    <span class="text-4xl block mb-2">👂</span>
+                    <h3 class="font-bold text-yellow-800 text-sm">Oídos</h3>
+                    <span class="text-xs text-yellow-600 font-bold">El Oído</span>
+                </div>
+                <!-- Nariz -->
+                <div onclick="explainOrgan('olfato')" class="bg-pink-50 border-4 border-pink-300 rounded-2xl p-3 hover:scale-105 transition duration-200 cursor-pointer gummy-shadow">
+                    <span class="text-4xl block mb-2">👃</span>
+                    <h3 class="font-bold text-pink-800 text-sm">Nariz</h3>
+                    <span class="text-xs text-pink-600 font-bold">El Olfato</span>
+                </div>
+                <!-- Lengua -->
+                <div onclick="explainOrgan('gusto')" class="bg-red-50 border-4 border-red-300 rounded-2xl p-3 hover:scale-105 transition duration-200 cursor-pointer gummy-shadow">
+                    <span class="text-4xl block mb-2">👅</span>
+                    <h3 class="font-bold text-red-800 text-sm">Lengua</h3>
+                    <span class="text-xs text-red-600 font-bold">El Gusto</span>
+                </div>
+                <!-- Piel -->
+                <div onclick="explainOrgan('tacto')" class="bg-emerald-50 border-4 border-emerald-300 rounded-2xl p-3 hover:scale-105 transition duration-200 cursor-pointer gummy-shadow col-span-2 sm:col-span-1">
+                    <span class="text-4xl block mb-2">✋</span>
+                    <h3 class="font-bold text-emerald-800 text-sm">Piel</h3>
+                    <span class="text-xs text-emerald-600 font-bold">El Tacto</span>
+                </div>
+            </div>
+
+            <!-- Caja de descripción dinámica -->
+            <div class="bg-purple-50 border-2 border-purple-200 rounded-2xl p-4 mt-6 max-w-xl w-full min-h-[90px] flex items-center justify-center">
+                <p id="organ-description-box" class="text-purple-950 font-semibold text-base leading-relaxed">
+                    🌟 ¡Pulsa cualquier puerta sensorial de arriba para escuchar cómo nos ayuda!
+                </p>
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 3: EL EXPLORADOR DE SENSACIONES (PARTE 1 - OLFATO Y GUSTO) -->
+        <div id="slide-3" class="slide hidden flex-col items-center w-full">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">El Explorador: Olfato y Gusto 🌸🍦</h2>
+            <p class="text-sm text-gray-500 mb-6 text-center max-w-xl">
+                Lleva cada elemento al órgano que le corresponde. ¡Arrastra el objeto o haz clic sobre él y luego haz clic en su órgano receptor!
+            </p>
+
+            <div class="flex flex-col md:flex-row items-center justify-around w-full gap-8">
+                <!-- Contenedor de Estímulos/Objetos -->
+                <div class="flex flex-row md:flex-col gap-6 justify-center items-center">
+                    <!-- Flor -->
+                    <div id="item-flor" data-target="olfato-dest" class="draggable-sensory bg-white border-4 border-pink-200 hover:border-pink-400 rounded-2xl p-4 flex flex-col items-center gummy-shadow w-24 h-24 sm:w-28 sm:h-28" onpointerdown="startDrag(event, 'item-flor')">
+                        <span class="text-4xl sm:text-5xl">🌸</span>
+                        <span class="text-xs text-pink-500 font-bold mt-1">Flor olorosa</span>
+                    </div>
+                    <!-- Helado -->
+                    <div id="item-helado" data-target="gusto-dest" class="draggable-sensory bg-white border-4 border-red-200 hover:border-red-400 rounded-2xl p-4 flex flex-col items-center gummy-shadow w-24 h-24 sm:w-28 sm:h-28" onpointerdown="startDrag(event, 'item-helado')">
+                        <span class="text-4xl sm:text-5xl">🍦</span>
+                        <span class="text-xs text-red-500 font-bold mt-1">Helado rico</span>
+                    </div>
+                </div>
+
+                <!-- Contenedor de Órganos Receptores -->
+                <div class="flex flex-row md:flex-col gap-6 justify-center items-center">
+                    <!-- Destino Nariz -->
+                    <div id="olfato-dest" class="organ-target border-4 border-dashed border-pink-300 rounded-3xl p-4 w-32 h-32 flex flex-col items-center justify-center bg-pink-50/50" onclick="handleTargetClick('olfato-dest')">
+                        <span class="text-4xl">👃</span>
+                        <span class="text-xs font-bold text-pink-700 mt-1 uppercase text-center">Nariz (Olfato)</span>
+                    </div>
+                    <!-- Destino Lengua -->
+                    <div id="gusto-dest" class="organ-target border-4 border-dashed border-red-300 rounded-3xl p-4 w-32 h-32 flex flex-col items-center justify-center bg-red-50/50" onclick="handleTargetClick('gusto-dest')">
+                        <span class="text-4xl">👅</span>
+                        <span class="text-xs font-bold text-red-700 mt-1 uppercase text-center">Lengua (Gusto)</span>
+                    </div>
+                </div>
+
+                <!-- Caja explicativa del experimento -->
+                <div class="bg-amber-50 border-4 border-amber-300 rounded-3xl p-5 max-w-xs w-full gummy-shadow text-center min-h-[140px] flex flex-col justify-center items-center">
+                    <p id="sensory-feedback-p1" class="text-amber-900 font-bold text-sm sm:text-base">
+                        🔎 Explora: Conecta la flor o el helado con el órgano que nos permite sentirlos.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 4: EL EXPLORADOR (PARTE 2 - VISTA, OÍDO Y TACTO) -->
+        <div id="slide-4" class="slide hidden flex-col items-center w-full">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">El Explorador: Vista, Oído y Tacto 🌈🔔</h2>
+            <p class="text-sm text-gray-500 mb-6 text-center max-w-xl">
+                ¡Vamos con los siguientes sentidos! Conecta cada uno con su órgano correcto.
+            </p>
+
+            <div class="flex flex-col md:flex-row items-center justify-around w-full gap-8">
+                <!-- Estímulos -->
+                <div class="grid grid-cols-3 md:grid-cols-1 gap-4 justify-items-center">
+                    <!-- Arcoiris (Vista) -->
+                    <div id="item-arcoiris" data-target="vista-dest" class="draggable-sensory bg-white border-4 border-sky-200 hover:border-sky-400 rounded-2xl p-3 flex flex-col items-center gummy-shadow w-22 h-22 sm:w-26 sm:h-26" onpointerdown="startDrag(event, 'item-arcoiris')">
+                        <span class="text-3xl sm:text-4xl">🌈</span>
+                        <span class="text-[10px] text-sky-500 font-bold mt-1 text-center leading-none">Arcoíris lindo</span>
+                    </div>
+                    <!-- Campana (Oído) -->
+                    <div id="item-campana" data-target="oido-dest" class="draggable-sensory bg-white border-4 border-yellow-200 hover:border-yellow-400 rounded-2xl p-3 flex flex-col items-center gummy-shadow w-22 h-22 sm:w-26 sm:h-26" onpointerdown="startDrag(event, 'item-campana')">
+                        <span class="text-3xl sm:text-4xl">🔔</span>
+                        <span class="text-[10px] text-yellow-500 font-bold mt-1 text-center leading-none">Campana</span>
+                    </div>
+                    <!-- Peluche (Tacto) -->
+                    <div id="item-peluche" data-target="tacto-dest" class="draggable-sensory bg-white border-4 border-emerald-200 hover:border-emerald-400 rounded-2xl p-3 flex flex-col items-center gummy-shadow w-22 h-22 sm:w-26 sm:h-26" onpointerdown="startDrag(event, 'item-peluche')">
+                        <span class="text-3xl sm:text-4xl">🧸</span>
+                        <span class="text-[10px] text-emerald-500 font-bold mt-1 text-center leading-none">Peluche suave</span>
+                    </div>
+                </div>
+
+                <!-- Destinos -->
+                <div class="grid grid-cols-3 md:grid-cols-1 gap-4 justify-items-center">
+                    <!-- Destino Ojos -->
+                    <div id="vista-dest" class="organ-target border-4 border-dashed border-sky-300 rounded-3xl p-3 w-24 h-24 sm:w-28 sm:h-28 flex flex-col items-center justify-center bg-sky-50/50" onclick="handleTargetClick('vista-dest')">
+                        <span class="text-3xl">👁️</span>
+                        <span class="text-[10px] font-bold text-sky-700 mt-1 uppercase text-center leading-tight">Ojos (Vista)</span>
+                    </div>
+                    <!-- Destino Oídos -->
+                    <div id="oido-dest" class="organ-target border-4 border-dashed border-yellow-300 rounded-3xl p-3 w-24 h-24 sm:w-28 sm:h-28 flex flex-col items-center justify-center bg-yellow-50/50" onclick="handleTargetClick('oido-dest')">
+                        <span class="text-3xl">👂</span>
+                        <span class="text-[10px] font-bold text-yellow-700 mt-1 uppercase text-center leading-tight">Oídos (Oído)</span>
+                    </div>
+                    <!-- Destino Piel -->
+                    <div id="tacto-dest" class="organ-target border-4 border-dashed border-emerald-300 rounded-3xl p-3 w-24 h-24 sm:w-28 sm:h-28 flex flex-col items-center justify-center bg-emerald-50/50" onclick="handleTargetClick('tacto-dest')">
+                        <span class="text-3xl">✋</span>
+                        <span class="text-[10px] font-bold text-emerald-700 mt-1 uppercase text-center leading-tight">Piel (Tacto)</span>
+                    </div>
+                </div>
+
+                <!-- Retroalimentación -->
+                <div class="bg-amber-50 border-4 border-amber-300 rounded-3xl p-4 max-w-xs w-full gummy-shadow text-center min-h-[140px] flex flex-col justify-center items-center">
+                    <p id="sensory-feedback-p2" class="text-amber-900 font-bold text-sm sm:text-base leading-snug">
+                        🔎 Conecta el arcoíris, la campana y el peluche con sus respectivos órganos receptores.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 5: COMPROBACIÓN EXPLICATIVA -->
+        <div id="slide-5" class="slide hidden flex-col items-center w-full max-w-2xl">
+            <h2 class="text-3xl font-bold text-gray-800 mb-5 text-center">¡Retos del Explorador! 🧠🌟</h2>
+            
+            <div class="flex flex-col gap-5 w-full">
+                <!-- Pregunta 1 -->
+                <div class="bg-sky-50 border-4 border-sky-300 rounded-2xl p-4 gummy-shadow relative">
+                    <p class="text-base sm:text-lg font-bold text-gray-800 mb-3">1. Si tocas la bocina de tu bicicleta, ¿qué órgano recibe el sonido?</p>
+                    <div class="grid grid-cols-3 gap-2" id="choices-q1">
+                        <button onclick="checkQuizAnswer(1, 'ojos', false, this)" class="bg-white border-2 border-sky-200 py-2 rounded-xl font-bold text-sm text-gray-700 active:scale-95 transition flex flex-col items-center gap-1">👁️ Ojos</button>
+                        <button onclick="checkQuizAnswer(1, 'nariz', false, this)" class="bg-white border-2 border-sky-200 py-2 rounded-xl font-bold text-sm text-gray-700 active:scale-95 transition flex flex-col items-center gap-1">👃 Nariz</button>
+                        <button onclick="checkQuizAnswer(1, 'oidos', true, this)" class="bg-white border-2 border-sky-200 py-2 rounded-xl font-bold text-sm text-gray-700 active:scale-95 transition flex flex-col items-center gap-1">👂 Oídos</button>
+                    </div>
+                    <p id="feedback-q1" class="mt-2 text-center font-bold text-base hidden"></p>
+                </div>
+
+                <!-- Pregunta 2 -->
+                <div class="bg-emerald-50 border-4 border-emerald-300 rounded-2xl p-4 gummy-shadow relative">
+                    <p class="text-base sm:text-lg font-bold text-gray-800 mb-3">2. ¿Qué sentido usamos para darnos cuenta si un peluche está muy suave?</p>
+                    <div class="grid grid-cols-3 gap-2" id="choices-q2">
+                        <button onclick="checkQuizAnswer(2, 'tacto', true, this)" class="bg-white border-2 border-emerald-200 py-2 rounded-xl font-bold text-sm text-gray-700 active:scale-95 transition flex flex-col items-center gap-1">✋ Tacto</button>
+                        <button onclick="checkQuizAnswer(2, 'gusto', false, this)" class="bg-white border-2 border-emerald-200 py-2 rounded-xl font-bold text-sm text-gray-700 active:scale-95 transition flex flex-col items-center gap-1">👅 Gusto</button>
+                        <button onclick="checkQuizAnswer(2, 'vista', false, this)" class="bg-white border-2 border-emerald-200 py-2 rounded-xl font-bold text-sm text-gray-700 active:scale-95 transition flex flex-col items-center gap-1">👁️ Vista</button>
+                    </div>
+                    <p id="feedback-q2" class="mt-2 text-center font-bold text-base hidden"></p>
+                </div>
+            </div>
+
+            <!-- Botón Volver a Comenzar -->
+            <button onclick="changeSlide('restart')" class="mt-6 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xl px-8 py-3 rounded-full border-4 border-purple-800 gummy-shadow-purple transition transform active:translate-y-1">
+                🔄 Volver a comenzar
+            </button>
+        </div>
+
+    </main>
+
+    <!-- BARRA DE NAVEGACIÓN INFERIOR -->
+    <footer class="w-full max-w-4xl mx-auto flex items-center justify-between mt-4">
+        <button id="btn-prev" onclick="changeSlide('prev')" class="bg-amber-500 hover:bg-amber-400 text-white font-bold px-6 py-3 rounded-2xl border-4 border-amber-600 gummy-shadow-warning transition transform active:translate-y-1 flex items-center gap-2 opacity-50 cursor-not-allowed" disabled>
+            ⬅️ Atrás
+        </button>
+        
+        <button id="btn-next" onclick="changeSlide('next')" class="bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-6 py-3 rounded-2xl border-4 border-emerald-600 gummy-shadow-success transition transform active:translate-y-1 flex items-center gap-2">
+            Siguiente ➡️
+        </button>
+    </footer>
+
+    <!-- LÓGICA DE CONTROL EN JAVASCRIPT -->
+    <script>
+        // --- Estado General de la Presentación ---
+        let currentSlide = 1;
+        const totalSlides = 5;
+
+        // --- Sintetizador de Sonidos (Web Audio API) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'success') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+                osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.4);
+            } else if (type === 'error') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(110, audioCtx.currentTime + 0.25);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.25);
+            } else if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(450, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
+            }
+        }
+
+        // --- Narración de Voz (SpeechSynthesis) ---
+        function speakSentence(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Detiene cualquier discurso previo
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'es-ES';
+                utterance.rate = 0.95; // Velocidad pausada ideal para niños
+                utterance.pitch = 1.15; // Tono amigable y agudo
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // --- Navegación de Diapositivas ---
+        function changeSlide(direction) {
+            playSound('click');
+
+            if (direction === 'restart') {
+                currentSlide = 1;
+                resetInteractiveSenses();
+                resetQuiz();
+            } else if (direction === 'next') {
+                if (currentSlide < totalSlides) currentSlide++;
+            } else if (direction === 'prev') {
+                if (currentSlide > 1) currentSlide--;
+            }
+
+            // Cambiar visibilidad de diapositivas
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.add('hidden');
+                slide.classList.remove('flex');
+            });
+
+            const activeSlide = document.getElementById(`slide-${currentSlide}`);
+            activeSlide.classList.remove('hidden');
+            activeSlide.classList.add('flex');
+
+            // Actualizar número de slide en cabecera
+            document.getElementById('slide-indicator').textContent = `Sección ${currentSlide} de ${totalSlides}`;
+
+            // Control de botones inferiores
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
+
+            if (currentSlide === 1) {
+                btnPrev.disabled = true;
+                btnPrev.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                btnPrev.disabled = false;
+                btnPrev.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            if (currentSlide === totalSlides) {
+                btnNext.disabled = true;
+                btnNext.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                btnNext.disabled = false;
+                btnNext.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            // Explicar entrada a la diapositiva por voz
+            if (currentSlide === 1) {
+                speakSentence("¡Bienvenidos a nuestros superpoderes! Los cinco sentidos.");
+            } else if (currentSlide === 2) {
+                speakSentence("¿Cuáles son los órganos de los sentidos? Pulsa cada uno para escuchar su secreto.");
+            }
+        }
+
+        function startPresentation() {
+            playSound('click');
+            const overlay = document.getElementById('welcome-screen');
+            overlay.classList.add('opacity-0');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 500);
+
+            // Cargar motores de voz
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.getVoices();
+            }
+            speakSentence("¡Hola explorador! Vamos a descubrir los cinco sentidos de nuestro cuerpo.");
+        }
+
+        // --- Diapositiva 2: Explicaciones Conceptuales de Órganos ---
+        const organFacts = {
+            vista: {
+                text: "👁️ Los Ojos (Vista): Nos permiten ver los colores, formas y tamaños de las cosas que nos rodean.",
+                speech: "Los ojos nos dan el sentido de la vista. Con ellos puedes ver los colores, el arcoíris y las formas de todo el mundo."
+            },
+            oido: {
+                text: "👂 Los Oídos (Oído): Reciben las vibraciones del aire para que podamos escuchar música, cantos y campanas.",
+                speech: "Los oídos nos dan el sentido del oído. Sirven para escuchar tu música favorita, las campanas y la voz de tus amigos."
+            },
+            olfato: {
+                text: "👃 La Nariz (Olfato): Atrapa los olores suaves y fuertes del aire, como el olor de las flores o la comida deliciosa.",
+                speech: "La nariz nos da el sentido del olfato. Te permite oler cosas deliciosas como una flor o saber si la comida está lista."
+            },
+            gusto: {
+                text: "👅 La Lengua (Gusto): Tiene pequeños puntitos que distinguen si un alimento es dulce, salado, ácido o amargo.",
+                speech: "La lengua nos da el sentido del gusto. Con ella disfrutas un rico helado y sabes si es dulce o salado."
+            },
+            tacto: {
+                text: "✋ La Piel (Tacto): Cubre todo nuestro cuerpo y nos dice si los objetos están calientes, fríos, ásperos o suaves.",
+                speech: "La piel nos da el sentido del tacto. Te ayuda a sentir la suavidad de un oso de peluche o saber si algo está frío."
+            }
+        };
+
+        function explainOrgan(key) {
+            playSound('click');
+            const fact = organFacts[key];
+            const displayBox = document.getElementById('organ-description-box');
+            displayBox.innerHTML = `<strong>${fact.text}</strong>`;
+            displayBox.className = "text-purple-950 font-bold text-base leading-relaxed text-center animate-[pulse_0.5s_ease-out]";
+            speakSentence(fact.speech);
+        }
+
+        // --- Diapositiva 3 y 4: Motor de Arrastre Inteligente y Cliks de Emergencia ---
+        let activeDragId = null;
+        let startPos = { x: 0, y: 0 };
+        let offset = { x: 0, y: 0 };
+        let selectedClickItemId = null; // Para modo "Click-to-Select" táctil
+
+        function startDrag(e, elementId) {
+            e.preventDefault();
+            activeDragId = elementId;
+            const elem = document.getElementById(elementId);
+            const rect = elem.getBoundingClientRect();
+
+            startPos = {
+                left: elem.style.left || 'auto',
+                top: elem.style.top || 'auto',
+                position: elem.style.position || 'static'
+            };
+
+            // Ajuste al puntero
+            elem.style.width = `${rect.width}px`;
+            elem.style.height = `${rect.height}px`;
+            elem.style.position = 'fixed';
+            elem.style.left = `${rect.left}px`;
+            elem.style.top = `${rect.top}px`;
+            elem.style.zIndex = '100';
+
+            offset = {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+
+            // Activar brillos en destinos sugeridos
+            const targetDestId = elem.getAttribute('data-target');
+            document.getElementById(targetDestId).classList.add('glow-active');
+
+            // Registrar modo de selección por clic alternativo
+            if (selectedClickItemId) {
+                const prevElem = document.getElementById(selectedClickItemId);
+                prevElem.classList.remove('border-purple-500', 'bg-purple-50');
+            }
+            selectedClickItemId = elementId;
+            elem.classList.add('border-purple-500', 'bg-purple-50/50');
+
+            document.addEventListener('pointermove', dragMove);
+            document.addEventListener('pointerup', dragEnd);
+        }
+
+        function dragMove(e) {
+            if (!activeDragId) return;
+            const elem = document.getElementById(activeDragId);
+            elem.style.left = `${e.clientX - offset.x}px`;
+            elem.style.top = `${e.clientY - offset.y}px`;
+        }
+
+        function dragEnd(e) {
+            if (!activeDragId) return;
+            document.removeEventListener('pointermove', dragMove);
+            document.removeEventListener('pointerup', dragEnd);
+
+            const elem = document.getElementById(activeDragId);
+            const targetDestId = elem.getAttribute('data-target');
+            const targetDest = document.getElementById(targetDestId);
+            
+            // Apagar brillos
+            targetDest.classList.remove('glow-active');
+
+            const elemRect = elem.getBoundingClientRect();
+            const targetRect = targetDest.getBoundingClientRect();
+
+            const elemCenterX = elemRect.left + elemRect.width / 2;
+            const elemCenterY = elemRect.top + elemRect.height / 2;
+
+            // Detección de colisión espacial
+            const collided = (
+                elemCenterX >= targetRect.left &&
+                elemCenterX <= targetRect.right &&
+                elemCenterY >= targetRect.top &&
+                elemCenterY <= targetRect.bottom
+            );
+
+            if (collided) {
+                snapElement(elem, targetDestId);
+            } else {
+                playSound('error');
+                resetElementToOriginal(elem);
+            }
+            activeDragId = null;
+        }
+
+        // Fallback táctil para clic alternativo en el destino
+        function handleTargetClick(targetId) {
+            if (!selectedClickItemId) return;
+            const elem = document.getElementById(selectedClickItemId);
+            const expectedTargetId = elem.getAttribute('data-target');
+
+            if (targetId === expectedTargetId) {
+                snapElement(elem, targetId);
+            } else {
+                playSound('error');
+                elem.classList.remove('border-purple-500', 'bg-purple-50/50');
+                selectedClickItemId = null;
+                // Mensaje en feedback actual
+                const feedbackBox = currentSlide === 3 ? 'sensory-feedback-p1' : 'sensory-feedback-p2';
+                document.getElementById(feedbackBox).textContent = "❌ Inténtalo de nuevo. ¡Usa otro órgano!";
+            }
+        }
+
+        // Fijar elemento colocado con acierto espacial
+        function snapElement(elem, targetId) {
+            playSound('success');
+            
+            // Ocultar original
+            elem.style.display = 'none';
+
+            // Dibujar objeto dentro del destino
+            const targetBox = document.getElementById(targetId);
+            const emoji = elem.querySelector('span').textContent;
+            
+            const badge = document.createElement('span');
+            badge.className = "text-2xl mt-1 animate-[bounce_0.5s_ease] block";
+            badge.textContent = `🌟 ${emoji}`;
+            targetBox.appendChild(badge);
+
+            // Mensajes explicativos en tiempo real de relación estímulo-órgano
+            let msg = "";
+            let speech = "";
+
+            if (elem.id === 'item-flor') {
+                msg = "🌸 ¡Logrado! La flor entra por la NARIZ y activa el OLFATO.";
+                speech = "¡Excelente! La nariz atrapa el aroma de la flor y activa el sentido del olfato.";
+                document.getElementById('sensory-feedback-p1').textContent = msg;
+            } else if (elem.id === 'item-helado') {
+                msg = "🍦 ¡Riquísimo! El helado toca la LENGUA y activa el GUSTO.";
+                speech = "¡Qué rico! El helado toca la lengua y activa el sentido del gusto.";
+                document.getElementById('sensory-feedback-p1').textContent = msg;
+            } else if (elem.id === 'item-arcoiris') {
+                msg = "🌈 ¡Precioso! El arcoíris entra por tus OJOS y activa la VISTA.";
+                speech = "¡Fantástico! Tus ojos ven el arcoíris y activan el sentido de la vista.";
+                document.getElementById('sensory-feedback-p2').textContent = msg;
+            } else if (elem.id === 'item-campana') {
+                msg = "🔔 ¡Clin-clon! La campana vibra en tus OÍDOS y activa el OÍDO.";
+                speech = "¡Muy bien! El sonido de la campana entra en tus oídos y activa el sentido del oído.";
+                document.getElementById('sensory-feedback-p2').textContent = msg;
+            } else if (elem.id === 'item-peluche') {
+                msg = "🧸 ¡Suave! Sientes el peluche con tu PIEL de las manos y activa el TACTO.";
+                speech = "¡Estupendo! Tu piel siente la suavidad del peluche y activa el sentido del tacto.";
+                document.getElementById('sensory-feedback-p2').textContent = msg;
+            }
+
+            speakSentence(speech);
+            selectedClickItemId = null;
+        }
+
+        function resetElementToOriginal(elem) {
+            elem.style.position = startPos.position;
+            elem.style.left = startPos.left;
+            elem.style.top = startPos.top;
+            elem.style.width = 'auto';
+            elem.style.height = 'auto';
+            elem.style.zIndex = '50';
+            elem.classList.remove('border-purple-500', 'bg-purple-50/50');
+            selectedClickItemId = null;
+        }
+
+        function resetInteractiveSenses() {
+            // Mostrar todos los estímulos iniciales de vuelta
+            document.querySelectorAll('.draggable-sensory').forEach(elem => {
+                elem.style.display = 'flex';
+                elem.style.position = 'static';
+                elem.style.width = 'auto';
+                elem.style.height = 'auto';
+                elem.style.zIndex = '50';
+                elem.classList.remove('border-purple-500', 'bg-purple-50/50');
+            });
+
+            // Limpiar emojis agregados a destinos
+            document.querySelectorAll('.organ-target').forEach(target => {
+                const addedElements = target.querySelectorAll('span:not(.text-3xl):not(.text-4xl):not(.text-xs):not(.text-\\[10px\\])');
+                addedElements.forEach(el => el.remove());
+            });
+
+            document.getElementById('sensory-feedback-p1').textContent = "🔎 Explora: Conecta la flor o el helado con el órgano que nos permite sentirlos.";
+            document.getElementById('sensory-feedback-p2').textContent = "🔎 Conecta el arcoíris, la campana y el peluche con sus respectivos órganos receptores.";
+            document.getElementById('organ-description-box').textContent = "🌟 ¡Pulsa cualquier puerta sensorial de arriba para escuchar cómo nos ayuda!";
+            selectedClickItemId = null;
+        }
+
+        // --- Diapositiva 5: Lógica de Evaluación ---
+        function checkQuizAnswer(questionNumber, answer, isCorrect, clickedButton) {
+            const feedbackElem = document.getElementById(`feedback-q${questionNumber}`);
+            const parentRow = document.getElementById(`choices-q${questionNumber}`);
+
+            // Deshabilitar botones de esa pregunta
+            parentRow.querySelectorAll('button').forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('opacity-50');
+            });
+
+            feedbackElem.classList.remove('hidden');
+
+            if (isCorrect) {
+                playSound('success');
+                clickedButton.classList.remove('bg-white', 'border-sky-200', 'border-emerald-200');
+                clickedButton.classList.add('bg-emerald-500', 'text-white', 'border-emerald-600', 'opacity-100');
+                feedbackElem.textContent = "¡Excelente! 🌟 Tus oídos escuchan el sonido.";
+                feedbackElem.className = "mt-2 text-center font-bold text-base text-emerald-600 animate-[pulse_0.4s_ease]";
+                
+                if (questionNumber === 1) {
+                    speakSentence("¡Excelente! Tus oídos reciben las ondas sonoras de la bocina.");
+                } else {
+                    feedbackElem.textContent = "¡Estupendo! 🌟 El tacto de la piel nos ayuda a sentir.";
+                    speakSentence("¡Estupendo! El sentido del tacto en la piel nos dice si está suave.");
+                }
+            } else {
+                playSound('error');
+                clickedButton.classList.remove('bg-white', 'border-sky-200', 'border-emerald-200');
+                clickedButton.classList.add('bg-red-500', 'text-white', 'border-red-600', 'opacity-100');
+                feedbackElem.textContent = "¡Uy! Vuelve a examinar la pregunta 🤔";
+                feedbackElem.className = "mt-2 text-center font-bold text-base text-red-600";
+                speakSentence("Inténtalo de nuevo. Recuerda cómo interactúa ese órgano.");
+            }
+        }
+
+        function resetQuiz() {
+            document.querySelectorAll('#slide-5 button').forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'bg-emerald-500', 'bg-red-500', 'text-white', 'border-emerald-600', 'border-red-600');
+                btn.classList.add('bg-white', 'border-2', 'text-gray-700');
+            });
+
+            document.getElementById('feedback-q1').classList.add('hidden');
+            document.getElementById('feedback-q2').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

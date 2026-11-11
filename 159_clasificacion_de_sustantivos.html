@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Tienda de Todo - Clasificación de Sustantivos</title>
+    
+    <!-- Fuentes Google: Fredoka One (Divertido) y Quicksand (Lectura clara) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@600;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA DE TAILWIND PARA WORDPRESS -->
+    <script>
+        window.tailwind = {
+            config: {
+                important: '#recurso-wp-tienda',
+                corePlugins: { preflight: false },
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            toon: ['"Fredoka One"', 'cursive'],
+                            body: ['Quicksand', 'sans-serif'],
+                        },
+                        colors: {
+                            store: {
+                                dark: '#1e1b4b',      /* Azul medianoche */
+                                wood: '#7c2d12',      /* Café estantería */
+                                wall: '#fef08a',      /* Amarillo tienda */
+                                active: '#3b82f6',    /* Azul interactivo */
+                                success: '#10b981',   /* Verde acierto */
+                                error: '#ef4444',     /* Rojo error */
+                                gold: '#fbbf24'       /* Dorado estrellas */
+                            }
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* =========================================================
+           MICRO-RESET LOCAL
+           ========================================================= */
+        #recurso-wp-tienda * { box-sizing: border-box; border-width: 0; border-style: solid; border-color: currentColor; line-height: normal; }
+        #recurso-wp-tienda h1, #recurso-wp-tienda h2, #recurso-wp-tienda h3, #recurso-wp-tienda p, #recurso-wp-tienda span, #recurso-wp-tienda div { margin: 0; padding: 0; }
+        #recurso-wp-tienda button { background-color: transparent; cursor: pointer; padding: 0; font-family: inherit; }
+
+        /* =========================================================
+           ESTILOS GENERALES Y CONFIGURACIÓN PANTALLA COMPLETA
+           ========================================================= */
+        #recurso-wp-tienda {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #6366f1; /* Indigo escolar */
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(254, 240, 138, 0.15) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 20%);
+            color: #1e1b4b;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Paneles Estilo Cartoon */
+        #recurso-wp-tienda .toon-panel {
+            background-color: #ffffff;
+            border: 6px solid #1e1b4b;
+            border-radius: 2rem;
+            box-shadow: 8px 8px 0px #1e1b4b;
+            position: relative;
+        }
+
+        #recurso-wp-tienda .toon-btn {
+            border: 4px solid #1e1b4b;
+            border-radius: 1rem;
+            box-shadow: 4px 4px 0px #1e1b4b;
+            transition: all 0.1s ease-out;
+            font-family: 'Fredoka One', cursive;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        #recurso-wp-tienda .toon-btn:hover:not(:disabled) {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #1e1b4b;
+        }
+        #recurso-wp-tienda .toon-btn:active:not(:disabled) {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px #1e1b4b;
+        }
+
+        /* =========================================================
+           GIGANTES, COLORIDAS Y LLAMATIVAS ETIQUETAS (NUEVO DISEÑO 3D)
+           ========================================================= */
+        .name-tag {
+            background: #ffffff;
+            border: 4px solid #1e1b4b;
+            border-bottom-width: 8px; /* Efecto Botón 3D Grueso */
+            border-radius: 1.25rem;
+            cursor: pointer;
+            transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-family: 'Fredoka One', cursive;
+            color: #1e1b4b;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px 20px; 
+            font-size: 1.6rem; /* Letras enormes */
+            user-select: none;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            width: 100%; 
+            margin-bottom: 6px;
+        }
+        .name-tag:hover:not(.used) {
+            transform: translateY(4px);
+            border-bottom-width: 4px;
+            margin-bottom: 10px; /* Evita que el layout salte al reducir el borde */
+            background: #fef08a; /* Se ilumina amarillo al pasar el mouse */
+            color: #b45309;
+            border-color: #b45309;
+        }
+        .name-tag.selected {
+            background: #10b981; /* Verde al seleccionarse */
+            border-color: #064e3b;
+            color: #ffffff;
+            transform: translateY(4px) scale(1.02);
+            border-bottom-width: 4px;
+            margin-bottom: 10px;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.8);
+            z-index: 30;
+        }
+        .name-tag.used {
+            opacity: 0.3;
+            pointer-events: none;
+            transform: scale(0.95);
+            border-bottom-width: 4px;
+            box-shadow: none;
+        }
+
+        /* Zonas de selección en el mapa */
+        .target-zone {
+            transition: all 0.2s;
+            stroke-dasharray: 8 8;
+            animation: dashPulse 2.5s linear infinite;
+        }
+        @keyframes dashPulse {
+            to { stroke-dashoffset: -24; }
+        }
+        .target-zone:hover {
+            fill: rgba(251, 191, 36, 0.35);
+            stroke-width: 6;
+        }
+        .target-zone-active {
+            stroke: #3b82f6 !important;
+            fill: rgba(59, 130, 246, 0.25) !important;
+            stroke-width: 6;
+        }
+
+        /* Estrellitas mágicas flotantes */
+        .sparkle-note {
+            position: absolute;
+            font-size: 2.5rem;
+            color: #fbbf24;
+            pointer-events: none;
+            animation: floatUp 1.2s ease-out forwards;
+            z-index: 100;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-70px) scale(1.3) rotate(30deg); opacity: 0; }
+        }
+
+        /* Pantallas SPA */
+        #recurso-wp-tienda .screen {
+            display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; position: absolute; top: 0; left: 0; overflow-y: auto; overflow-x: hidden; z-index: 10;
+        }
+        #recurso-wp-tienda .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-tienda .screen.active {
+            display: flex;
+            animation: bounceInUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+        }
+        @keyframes bounceInUp {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .shake { animation: shakeAnim 0.4s ease-in-out; }
+        @keyframes shakeAnim {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            50% { transform: translateX(6px); }
+            75% { transform: translateX(-6px); }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-tienda">
+
+        <!-- Decoraciones de fondo de alta tecnología retro -->
+        <div class="absolute top-10 left-10 text-[6rem] opacity-10 pointer-events-none transform -rotate-12 select-none">🧸</div>
+        <div class="absolute bottom-10 right-10 text-[8rem] opacity-10 pointer-events-none transform rotate-12 select-none">⚽</div>
+
+        <!-- ==============================================
+             PANTALLA 1: PORTADA
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="toon-panel p-8 md:p-14 max-w-3xl w-full mx-4 flex flex-col items-center transform -rotate-1 relative overflow-hidden">
+                <!-- Decoración -->
+                <div class="absolute -top-4 -left-4 text-6xl opacity-20 transform -rotate-45">🧸</div>
+                <div class="absolute -bottom-4 -right-4 text-6xl opacity-20 transform rotate-135">🐕</div>
+
+                <div class="flex gap-4 mb-4">
+                    <span class="text-[4rem] md:text-[6rem] animate-bounce">👨🏽</span>
+                    <span class="text-[4rem] md:text-[6rem] animate-bounce" style="animation-delay: 0.15s">🐕</span>
+                    <span class="text-[4rem] md:text-[6rem] animate-bounce" style="animation-delay: 0.3s">🧸</span>
+                </div>
+                
+                <h2 class="text-xs md:text-sm text-white font-body font-black mb-4 uppercase bg-store-dark inline-block px-6 py-2 border-4 border-black rounded-full rotate-2 shadow-[4px_4px_0_#000]">
+                    Gramática - 2do Grado
+                </h2>
+                <h1 class="text-4xl md:text-6xl lg:text-[5.5rem] font-toon text-store-dark leading-none uppercase drop-shadow-md mb-6">
+                    La Tienda <br><span class="text-store-active">de Todo</span>
+                </h1>
+                <p class="text-lg md:text-2xl text-gray-700 font-bold mb-10 px-2 leading-relaxed">
+                    ¡Bienvenidos! Ha llegado mercancía nueva a la juguetería. Ayúdanos a colocar los nombres de las personas, animales y objetos en su lugar correcto.
+                </p>
+                <button onclick="window.openInstructions()" class="toon-btn bg-store-gold text-store-dark text-xl md:text-3xl px-12 py-5 w-full md:w-auto">
+                    ¿CÓMO CLASIFICAR? 📜
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: MANUAL DE CLASIFICACIÓN (INSTRUCCIONES)
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center">
+            <div class="toon-panel p-6 md:p-10 max-w-5xl w-full text-center my-auto">
+                <h2 class="text-3xl md:text-5xl font-toon text-store-dark mb-6 uppercase border-b-4 border-dashed border-gray-300 pb-2">
+                    ¿Qué es un Sustantivo?
+                </h2>
+                <p class="text-lg md:text-2xl text-gray-700 font-bold mb-8">
+                    Los <strong>Sustantivos</strong> son las palabras mágicas que usamos para nombrar todo lo que nos rodea. Se dividen en:
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-left">
+                    
+                    <!-- PERSONAS -->
+                    <div class="bg-blue-50 p-5 rounded-3xl border-4 border-black shadow-[4px_4px_0_#3b82f6] flex flex-col justify-between">
+                        <div>
+                            <span class="text-5xl">👨🏽</span>
+                            <h3 class="font-toon text-xl text-store-active uppercase mt-2">Personas</h3>
+                            <p class="text-sm text-gray-700 font-bold mt-2 leading-snug">
+                                Nombres de la gente que conocemos o sus profesiones. <br><br><strong>Ejemplos:</strong> Sofía, Luis, niño, doctora, vendedor.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- ANIMALES -->
+                    <div class="bg-green-50 p-5 rounded-3xl border-4 border-black shadow-[4px_4px_0_#10b981] flex flex-col justify-between">
+                        <div>
+                            <span class="text-5xl">🐕</span>
+                            <h3 class="font-toon text-xl text-store-success uppercase mt-2">Animales</h3>
+                            <p class="text-sm text-gray-700 font-bold mt-2 leading-snug">
+                                Nombres de todas las mascotas y seres de la naturaleza. <br><br><strong>Ejemplos:</strong> Toby, perro, loro, jirafa.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- OBJETOS / COSAS -->
+                    <div class="bg-red-50 p-5 rounded-3xl border-4 border-black shadow-[4px_4px_0_#ef4444] flex flex-col justify-between">
+                        <div>
+                            <span class="text-5xl">📦</span>
+                            <h3 class="font-toon text-xl text-store-error uppercase mt-2">Cosas / Objetos</h3>
+                            <p class="text-sm text-gray-700 font-bold mt-2 leading-snug">
+                                Todo lo que podemos tocar, jugar o usar en la vida diaria. <br><br><strong>Ejemplos:</strong> Oso, pelota, libro, guitarra.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="window.playBeep(); window.showScreen('screen-start')" class="toon-btn bg-gray-200 text-gray-700 px-8 py-4 text-xl">
+                        ⬅ VOLVER
+                    </button>
+                    <button onclick="window.playBeep(); window.startGame()" class="toon-btn bg-store-success text-white text-2xl md:text-3xl px-12 py-4">
+                        ¡ENTRAR A LA TIENDA! 🏪
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: EL JUEGO (Mesa de Trabajo)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start p-0 bg-transparent relative">
+            
+            <!-- HUD Superior -->
+            <div class="w-full bg-white border-b-4 border-black p-2 md:p-3 flex justify-between items-center z-30 shrink-0 shadow-lg">
+                <div class="flex items-center gap-2 px-2 md:px-4">
+                    <span class="text-2xl md:text-3xl">⭐</span>
+                    <div class="flex flex-col">
+                        <span class="text-[9px] md:text-[10px] text-gray-500 font-black uppercase tracking-widest leading-none mb-1">Clasificados</span>
+                        <span class="font-toon text-xl md:text-2xl text-store-dark leading-none"><span id="score">0</span><span class="text-gray-400 text-sm">/8</span></span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <div class="flex flex-col text-right">
+                        <span class="text-[9px] md:text-[10px] text-gray-500 font-black uppercase tracking-widest leading-none mb-1">Vidas</span>
+                        <span id="lives" class="text-lg md:text-xl tracking-widest mt-1 text-red-500">❤️❤️❤️</span>
+                    </div>
+                    <button onclick="window.exitGame()" class="toon-btn bg-store-error text-white p-1 md:p-2 ml-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tablero Principal (Tienda + Etiquetas) -->
+            <div class="w-full flex-grow flex flex-col lg:flex-row gap-4 p-3 md:p-6 overflow-hidden relative items-stretch max-w-7xl mx-auto">
+                
+                <!-- SECCIÓN IZQUIERDA: La Tienda Ilustrada (Física y estanterías correctas) -->
+                <div class="w-full lg:w-8/12 bg-sky-100 border-4 border-black rounded-3xl p-2 md:p-4 flex flex-col justify-center items-center shadow-[6px_6px_0_#000] relative shrink-0 overflow-hidden min-h-[350px] lg:min-h-0">
+                    
+                    <!-- Pizarra de Guía del Juego -->
+                    <div class="absolute top-2 left-1/2 transform -translate-x-1/2 bg-store-dark text-white border-2 border-white px-4 py-1.5 rounded-full shadow-lg z-20 text-center w-11/12 max-w-md">
+                        <p id="game-status-text" class="font-toon text-xs md:text-base text-store-gold tracking-wide leading-none">
+                            1. Toca una etiqueta del panel de la derecha 👇
+                        </p>
+                    </div>
+
+                    <!-- El Escenario de la Juguetería (Usando HTML foreignObject para evitar problemas de centrado en SVGs) -->
+                    <svg viewBox="0 0 800 500" class="w-full h-full max-h-[460px] select-none overflow-visible z-10 mt-6">
+                        
+                        <!-- Pared de fondo tienda -->
+                        <rect x="10" y="10" width="780" height="480" fill="#fef3c7" stroke="#1e1b4b" stroke-width="6" rx="12"/>
+                        <!-- Línea de piso -->
+                        <rect x="10" y="400" width="780" height="90" fill="#eddca9" stroke="#1e1b4b" stroke-width="6" rx="4"/>
+                        <line x1="10" y1="400" x2="790" y2="400" stroke="#1e1b4b" stroke-width="6"/>
+
+                        <!-- Estante 1 (Alto) -->
+                        <rect x="350" y="160" width="400" height="20" fill="#7c2d12" stroke="#1e1b4b" stroke-width="6" rx="4"/>
+                        <path d="M 380,180 L 380,200 M 720,180 L 720,200" stroke="#1e1b4b" stroke-width="6" stroke-linecap="round"/>
+
+                        <!-- Estante 2 (Medio) -->
+                        <rect x="450" y="280" width="300" height="20" fill="#7c2d12" stroke="#1e1b4b" stroke-width="6" rx="4"/>
+                        <path d="M 480,300 L 480,320 M 720,300 L 720,320" stroke="#1e1b4b" stroke-width="6" stroke-linecap="round"/>
+
+                        <!-- ================= OBJETOS Y PERSONAJES (Usando foreignObject) ================= -->
+
+                        <!-- Luis (El Vendedor) - Detrás del mostrador -->
+                        <g class="cursor-pointer" onclick="window.targetClick('Luis')">
+                            <!-- La zona interactiva de tiza -->
+                            <ellipse cx="140" cy="270" rx="60" ry="70" fill="transparent" class="target-zone" stroke="#1e1b4b" stroke-width="4" id="zone-Luis"/>
+                            <!-- Contenedor HTML embebido en el SVG para alinear Emojis sin problemas -->
+                            <foreignObject x="80" y="200" width="120" height="140">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size: 90px; line-height: 1;">👨🏽</div>
+                            </foreignObject>
+                            <!-- Pin de éxito -->
+                            <g id="pin-Luis" class="hidden"><circle cx="140" cy="270" r="16" fill="#10b981" stroke="#000" stroke-width="3"/><text x="140" y="276" font-family="Fredoka One" font-size="16" fill="#fff" text-anchor="middle">✓</text></g>
+                        </g>
+
+                        <!-- Mostrador Frontal (Tapa a Luis) -->
+                        <rect x="50" y="380" width="260" height="110" fill="#a16207" stroke="#1e1b4b" stroke-width="6" rx="4"/>
+                        <rect x="40" y="380" width="280" height="25" fill="#ca8a04" stroke="#1e1b4b" stroke-width="6" rx="4"/>
+                        <line x1="90" y1="405" x2="90" y2="490" stroke="#1e1b4b" stroke-width="4" opacity="0.3"/>
+                        <line x1="270" y1="405" x2="270" y2="490" stroke="#1e1b4b" stroke-width="4" opacity="0.3"/>
+
+                        <!-- Libro 📚 (Sobre el mostrador) -->
+                        <g class="cursor-pointer" onclick="window.targetClick('Libro')">
+                            <circle cx="250" cy="340" r="40" fill="transparent" class="target-zone" stroke="#1e1b4b" stroke-width="4" id="zone-Libro"/>
+                            <foreignObject x="210" y="300" width="80" height="80">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size: 60px; line-height: 1;">📚</div>
+                            </foreignObject>
+                            <g id="pin-Libro" class="hidden"><circle cx="250" cy="340" r="16" fill="#10b981" stroke="#000" stroke-width="3"/><text x="250" y="346" font-family="Fredoka One" font-size="16" fill="#fff" text-anchor="middle">✓</text></g>
+                        </g>
+
+                        <!-- Oso 🧸 (Estante Alto) -->
+                        <g class="cursor-pointer" onclick="window.targetClick('Oso')">
+                            <circle cx="420" cy="110" r="40" fill="transparent" class="target-zone" stroke="#1e1b4b" stroke-width="4" id="zone-Oso"/>
+                            <foreignObject x="380" y="70" width="80" height="80">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size: 60px; line-height: 1;">🧸</div>
+                            </foreignObject>
+                            <g id="pin-Oso" class="hidden"><circle cx="420" cy="110" r="16" fill="#10b981" stroke="#000" stroke-width="3"/><text x="420" y="116" font-family="Fredoka One" font-size="16" fill="#fff" text-anchor="middle">✓</text></g>
+                        </g>
+
+                        <!-- Pelota ⚽ (Estante Alto) -->
+                        <g class="cursor-pointer" onclick="window.targetClick('Pelota')">
+                            <circle cx="550" cy="110" r="40" fill="transparent" class="target-zone" stroke="#1e1b4b" stroke-width="4" id="zone-Pelota"/>
+                            <foreignObject x="510" y="70" width="80" height="80">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size: 60px; line-height: 1;">⚽</div>
+                            </foreignObject>
+                            <g id="pin-Pelota" class="hidden"><circle cx="550" cy="110" r="16" fill="#10b981" stroke="#000" stroke-width="3"/><text x="550" y="116" font-family="Fredoka One" font-size="16" fill="#fff" text-anchor="middle">✓</text></g>
+                        </g>
+
+                        <!-- Guitarra 🎸 (Estante Alto) -->
+                        <g class="cursor-pointer" onclick="window.targetClick('Guitarra')">
+                            <circle cx="680" cy="110" r="40" fill="transparent" class="target-zone" stroke="#1e1b4b" stroke-width="4" id="zone-Guitarra"/>
+                            <foreignObject x="640" y="70" width="80" height="80">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size: 60px; line-height: 1;">🎸</div>
+            </foreignObject>
+                            <g id="pin-Guitarra" class="hidden"><circle cx="680" cy="110" r="16" fill="#10b981" stroke="#000" stroke-width="3"/><text x="680" y="116" font-family="Fredoka One" font-size="16" fill="#fff" text-anchor="middle">✓</text></g>
+                        </g>
+
+                        <!-- Loro 🦜 (Estante Medio) -->
+                        <g class="cursor-pointer" onclick="window.targetClick('Loro')">
+                            <circle cx="600" cy="230" r="45" fill="transparent" class="target-zone" stroke="#1e1b4b" stroke-width="4" id="zone-Loro"/>
+                            <foreignObject x="555" y="185" width="90" height="90">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size: 70px; line-height: 1;">🦜</div>
+                            </foreignObject>
+                            <g id="pin-Loro" class="hidden"><circle cx="600" cy="230" r="16" fill="#10b981" stroke="#000" stroke-width="3"/><text x="600" y="236" font-family="Fredoka One" font-size="16" fill="#fff" text-anchor="middle">✓</text></g>
+                        </g>
+
+                        <!-- Sofía 👧🏽 (Suelo) -->
+                        <g class="cursor-pointer" onclick="window.targetClick('Sofía')">
+                            <ellipse cx="450" cy="340" rx="55" ry="65" fill="transparent" class="target-zone" stroke="#1e1b4b" stroke-width="4" id="zone-Sofía"/>
+                            <foreignObject x="395" y="285" width="110" height="110">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size: 90px; line-height: 1;">👧🏽</div>
+                            </foreignObject>
+                            <g id="pin-Sofía" class="hidden"><circle cx="450" cy="340" r="16" fill="#10b981" stroke="#000" stroke-width="3"/><text x="450" y="346" font-family="Fredoka One" font-size="16" fill="#fff" text-anchor="middle">✓</text></g>
+                        </g>
+
+                        <!-- Toby 🐕 (Suelo) -->
+                        <g class="cursor-pointer" onclick="window.targetClick('Toby')">
+                            <ellipse cx="650" cy="350" rx="50" ry="50" fill="transparent" class="target-zone" stroke="#1e1b4b" stroke-width="4" id="zone-Toby"/>
+                            <foreignObject x="600" y="300" width="100" height="100">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size: 80px; line-height: 1;">🐕</div>
+                            </foreignObject>
+                            <g id="pin-Toby" class="hidden"><circle cx="650" cy="350" r="16" fill="#10b981" stroke="#000" stroke-width="3"/><text x="650" y="356" font-family="Fredoka One" font-size="16" fill="#fff" text-anchor="middle">✓</text></g>
+                        </g>
+
+                    </svg>
+
+                </div>
+
+                <!-- SECCIÓN DERECHA: Tablero de Corcho (Archivador de Nombres) -->
+                <div class="w-full lg:w-4/12 bg-amber-100 border-8 border-amber-800 rounded-[2.5rem] p-4 md:p-6 flex flex-col justify-between h-auto lg:h-full shrink-0 shadow-[8px_8px_0_#1e1b4b] relative">
+                    <!-- Remaches decorativos de madera en el archivador -->
+                    <div class="absolute top-2 left-2 w-4 h-4 rounded-full bg-yellow-600 border border-black"></div>
+                    <div class="absolute top-2 right-2 w-4 h-4 rounded-full bg-yellow-600 border border-black"></div>
+                    <div class="absolute bottom-2 left-2 w-4 h-4 rounded-full bg-yellow-600 border border-black"></div>
+                    <div class="absolute bottom-2 right-2 w-4 h-4 rounded-full bg-yellow-600 border border-black"></div>
+
+                    <div class="border-b-4 border-dashed border-amber-800 pb-3 mb-4 shrink-0 text-center">
+                        <h3 class="font-toon text-2xl md:text-3xl text-amber-900 uppercase tracking-wide">📦 Nombres</h3>
+                        <p class="text-xs md:text-sm text-amber-800 font-bold mt-1">Toca un botón gigante y luego su silueta.</p>
+                    </div>
+
+                    <!-- Contenedor dinámico de Etiquetas Grandes -->
+                    <div id="labels-drawer" class="flex flex-col gap-4 items-center py-2 flex-grow overflow-y-auto px-2">
+                        <!-- Las 8 etiquetas se inyectan por JS desordenadas -->
+                    </div>
+
+                    <!-- Panel de Clasificación (Oculto, se activa al colocar un tag) -->
+                    <div id="classifier-panel" class="hidden bg-white border-4 border-black p-4 rounded-2xl flex-col items-center gap-3 shrink-0 mt-4 animate__animated animate__pulse animate__infinite shadow-[4px_4px_0_#000]">
+                        <h4 class="font-toon text-store-active text-sm uppercase tracking-widest text-center">¡Etiqueta Colocada!</h4>
+                        <p class="text-black font-bold text-center text-sm md:text-base leading-tight mb-2">
+                            ¿Qué tipo de sustantivo es <span id="placed-name-text" class="text-store-active font-toon text-lg uppercase bg-blue-100 px-3 py-1 rounded border-2 border-blue-300">Nombre</span>?
+                        </p>
+                        
+                        <div class="flex flex-col gap-2 w-full justify-center">
+                            <button onclick="window.classifyPlaced('Persona')" class="toon-btn bg-blue-500 text-white w-full py-3 text-sm md:text-base flex items-center justify-center gap-2">
+                                <span>👨🏽</span> Persona
+                            </button>
+                            <button onclick="window.classifyPlaced('Animal')" class="toon-btn bg-emerald-500 text-white w-full py-3 text-sm md:text-base flex items-center justify-center gap-2">
+                                <span>🐕</span> Animal
+                            </button>
+                            <button onclick="window.classifyPlaced('Objeto')" class="toon-btn bg-rose-500 text-white w-full py-3 text-sm md:text-base flex items-center justify-center gap-2">
+                                <span>📦</span> Objeto/Cosa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ==============================================
+             MODAL DE FEEDBACK (Retroalimentación pedagógica)
+             ============================================== -->
+        <div id="feedback-modal" class="hidden absolute inset-0 z-[60] flex-col items-center justify-center bg-black/85 p-4 text-center backdrop-blur-sm">
+            <div id="feedback-card" class="toon-panel p-6 md:p-10 max-w-lg w-full animate__animated text-center border-t-8 border-transparent">
+                <div id="feedback-icon" class="text-[4rem] md:text-[5rem] mb-2 drop-shadow-md">✨</div>
+                <h3 id="feedback-title" class="font-toon text-2xl md:text-4xl text-black mb-3 uppercase drop-shadow-sm">Título</h3>
+                <div class="bg-gray-100 p-4 rounded-xl border-4 border-dashed border-gray-300 mb-6">
+                    <p id="feedback-reason" class="text-base md:text-lg font-bold text-gray-700 leading-relaxed"></p>
+                </div>
+                <button onclick="window.closeFeedback()" class="toon-btn bg-store-gold text-store-dark font-toon text-lg md:text-xl px-8 py-4 w-full uppercase tracking-widest">
+                    Continuar Jugando ➡
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (Victoria/Derrota)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex-col items-center justify-center p-6 text-center bg-store-dark bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.4)_0%,rgba(0,0,0,0.9)_100%)]">
+            <div id="result-card" class="toon-panel p-8 md:p-14 max-w-2xl w-full text-center z-10 border-t-[10px] border-t-transparent">
+                <div id="result-icon" class="text-[5rem] md:text-[7rem] mb-4 drop-shadow-md animate-bounce">👑🏪🎉</div>
+                <h2 id="result-title" class="font-toon text-3xl md:text-5xl text-store-dark mb-4 uppercase">¡Dueño de la Tienda!</h2>
+                <p id="result-msg" class="text-base md:text-xl text-gray-800 mb-10 font-bold leading-relaxed max-w-lg mx-auto">
+                    ¡Impresionante! Lograste organizar todas las etiquetas en su lugar físico y clasificarlas semánticamente a la perfección. ¡Eres un maestro de los sustantivos!
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="window.exitGame()" class="toon-btn bg-gray-200 text-black font-toon px-8 py-4 text-xl">
+                        VOLVER AL INICIO
+                    </button>
+                    <button onclick="window.startGame()" class="toon-btn bg-store-gold text-store-dark font-toon text-2xl md:text-3xl px-12 py-4">
+                        NUEVO DESAFÍO 🔄
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO CON SINTETIZACIÓN E INTERACTIVIDAD
+         ============================================== -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- 1. SINTETIZADOR DE AUDIO GLOBAL (Web Audio API) ---
+            let audioCtx = null;
+            function initAudio() {
+                try {
+                    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                } catch (e) {}
+            }
+            document.body.addEventListener('click', initAudio, { once: true });
+            document.body.addEventListener('touchstart', initAudio, { once: true });
+
+            function playTone(freq, duration, type, vol) {
+                try {
+                    initAudio();
+                    if (audioCtx && audioCtx.state !== 'suspended') {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = type;
+                        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + duration);
+                    }
+                } catch (e) {}
+            }
+
+            window.playBeep = function() { playTone(600, 0.1, "sine", 0.05); } 
+            function playSuccess() { 
+                playTone(523.25, 0.1, "sine", 0.1); 
+                setTimeout(() => playTone(659.25, 0.1, "sine", 0.1), 100); 
+                setTimeout(() => playTone(783.99, 0.2, "sine", 0.1), 200); 
+            }
+            function playError() { playTone(180, 0.4, "sawtooth", 0.1); }
+            function playPlacment() { playTone(400, 0.15, "triangle", 0.1); }
+
+            // --- 2. BASE DE DATOS DE SUSTANTIVOS (Dama y Caballero bien diferenciados) ---
+            const storeNouns = [
+                { id: "Oso", name: "Oso", type: "Objeto", desc: "El tierno oso de peluche que adorna el estante superior.", explanation: "El <strong>Oso</strong> es un objeto (sustantivo común de cosa)." },
+                { id: "Pelota", name: "Pelota", type: "Objeto", desc: "La pelota de colores que sirve para jugar.", explanation: "La <strong>Pelota</strong> es un objeto (sustantivo común de cosa)." },
+                { id: "Loro", name: "Loro", type: "Animal", desc: "Paco, el loro de plumas de colores que saluda a los clientes.", explanation: "El <strong>Loro</strong> es un animal (sustantivo común de ser vivo)." },
+                { id: "Guitarra", name: "Guitarra", type: "Objeto", desc: "La pequeña guitarra colgada lista para tocar.", explanation: "La <strong>Guitarra</strong> es un objeto (sustantivo común de cosa)." },
+                { id: "Luis", name: "Luis", type: "Persona", desc: "Don Luis, el caballero vendedor que atiende detrás del mostrador.", explanation: "<strong>Luis</strong> es una persona (sustantivo propio de caballero)." },
+                { id: "Libro", name: "Libro", type: "Objeto", desc: "El libro de cuentos infantiles sobre el mostrador.", explanation: "El <strong>Libro</strong> es un objeto (sustantivo común de cosa)." },
+                { id: "Sofía", name: "Sofía", type: "Persona", desc: "Sofía, la pequeña niña que vino a buscar un juguete especial.", explanation: "<strong>Sofía</strong> es una persona (sustantivo propio de niña)." },
+                { id: "Toby", name: "Toby", type: "Animal", desc: "Toby, el perrito juguetón que espera sentado en el piso.", explanation: "El <strong>Perro (Toby)</strong> es un animal (sustantivo de ser vivo)." }
+            ];
+
+            let score = 0;
+            let lives = 3;
+            let isProcessing = false;
+            let selectedTag = null; // { id, data, element }
+            let completedItemsCount = 0;
+
+            // --- GESTIÓN DE PANTALLAS ---
+            window.showScreen = function(id) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+            };
+
+            window.openInstructions = function() {
+                window.playBeep();
+                window.showScreen('screen-theory');
+            };
+
+            // --- INICIAR JUEGO ---
+            window.startGame = function() {
+                score = 0;
+                lives = 3;
+                completedItemsCount = 0;
+                isProcessing = false;
+                selectedTag = null;
+
+                // Resetear estado solved en base de datos
+                storeNouns.forEach(n => n.solved = false);
+
+                document.getElementById('screen-result').classList.add('hidden');
+                document.getElementById('screen-result').classList.remove('flex');
+                
+                hideClassifierPanel();
+                updateUI();
+                window.showScreen('screen-game');
+                loadLevel();
+            };
+
+            function updateUI() {
+                document.getElementById('score').innerText = score;
+                
+                let hearts = "";
+                for(let i=0; i<3; i++) {
+                    hearts += i < lives ? "❤️ " : "🖤 ";
+                }
+                document.getElementById('lives').innerText = hearts;
+            }
+
+            function loadLevel() {
+                isProcessing = false;
+                selectedTag = null;
+
+                hideClassifierPanel();
+                document.getElementById('game-status-text').innerText = "1. Toca un botón de nombres en la madera 👇";
+                document.getElementById('game-status-text').className = "font-toon text-xs md:text-base text-store-gold tracking-wide leading-none";
+
+                // Desmarcar todas las zonas del SVG
+                document.querySelectorAll('.target-zone').forEach(z => {
+                    z.classList.remove('target-zone-active');
+                });
+
+                // Restaurar pines y estados en el SVG de la tienda
+                storeNouns.forEach(item => {
+                    const pin = document.getElementById(`pin-${item.id}`);
+                    if (pin) {
+                        if (item.solved) {
+                            pin.classList.remove('hidden');
+                        } else {
+                            pin.classList.add('hidden');
+                        }
+                    }
+                });
+
+                // Renderizar el cajón de etiquetas desordenadas
+                const drawer = document.getElementById('labels-drawer');
+                drawer.innerHTML = '';
+
+                // Filtrar solo las etiquetas que NO se han resuelto todavía
+                const remaining = storeNouns.filter(n => n.solved !== true);
+                const shuffled = shuffleArray(remaining);
+
+                shuffled.forEach((item, index) => {
+                    const tag = document.createElement('button');
+                    tag.className = 'name-tag animate__animated animate__fadeInUp';
+                    tag.style.animationDelay = `${index * 0.05}s`;
+                    tag.id = `tag-${item.id}`;
+                    tag.innerText = item.name;
+
+                    tag.onclick = (e) => selectTag(item, tag, e);
+                    drawer.appendChild(tag);
+                });
+            }
+
+            // --- SELECCIONAR ETIQUETA ---
+            function selectTag(itemData, element, e) {
+                if (isProcessing) return;
+                window.playBeep();
+                createStars(e.clientX, e.clientY);
+
+                // Quitar selección previa de todas las etiquetas
+                document.querySelectorAll('.name-tag').forEach(t => t.classList.remove('selected'));
+
+                selectedTag = { id: itemData.id, data: itemData, element: element };
+                element.classList.add('selected');
+
+                // Resaltar zonas interactivas en la Juguetería
+                document.querySelectorAll('.target-zone').forEach(z => {
+                    z.classList.remove('target-zone-active');
+                });
+                const activeZone = document.getElementById(`zone-${itemData.id}`);
+                if (activeZone) {
+                    activeZone.classList.add('target-zone-active');
+                }
+
+                document.getElementById('game-status-text').innerText = `2. Ahora toca la silueta de "${itemData.name}" en la Juguetería 🏪`;
+                document.getElementById('game-status-text').className = "font-toon text-xs md:text-base text-white tracking-wide leading-none";
+            }
+
+            // --- TOCAR SILUETA EN LA TIENDA ---
+            window.targetClick = function(clickedId) {
+                if (isProcessing) return;
+
+                if (!selectedTag) {
+                    // Si el niño no ha seleccionado una etiqueta primero, hacer vibrar la pizarra
+                    playError();
+                    const statusBox = document.getElementById('game-status-text').parentElement;
+                    statusBox.classList.add('shake');
+                    setTimeout(() => statusBox.classList.remove('shake'), 400);
+                    return;
+                }
+
+                // Evaluar si coincide el clic en la silueta con el tag seleccionado
+                const isMatch = clickedId === selectedTag.id;
+
+                if (isMatch) {
+                    // ACIERTO FÍSICO (Colocó bien el rótulo en la silueta)
+                    playPlacment();
+                    isProcessing = true; // Bloquear tablero mientras clasifica
+
+                    // Desactivar temporalmente la etiqueta visual del cajón
+                    selectedTag.element.classList.remove('selected');
+                    selectedTag.element.classList.add('used');
+
+                    // Encender el pin verde de verificado en la silueta
+                    const pin = document.getElementById(`pin-${clickedId}`);
+                    if (pin) pin.classList.remove('hidden');
+
+                    // Quitar los bordes de ayuda azul
+                    document.getElementById(`zone-${clickedId}`).classList.remove('target-zone-active');
+
+                    // Desplegar el clasificador de categorías
+                    showClassifierPanel(selectedTag.data);
+
+                } else {
+                    // ERROR FÍSICO (Intentó colocar Luis sobre Toby, por ejemplo)
+                    playError();
+                    selectedTag.element.classList.add('shake');
+                    setTimeout(() => selectedTag.element.classList.remove('shake'), 500);
+
+                    // Hacer temblar la silueta equivocada
+                    const wrongZone = document.getElementById(`zone-${clickedId}`);
+                    if (wrongZone) {
+                        wrongZone.style.stroke = "#ef4444";
+                        setTimeout(() => wrongZone.style.stroke = "", 500);
+                    }
+                }
+            };
+
+            // --- MOSTRAR CLASIFICADOR SEMÁNTICO ---
+            function showClassifierPanel(itemData) {
+                const panel = document.getElementById('classifier-panel');
+                document.getElementById('placed-name-text').innerText = itemData.name;
+                
+                panel.classList.remove('hidden');
+                panel.classList.add('flex');
+            }
+
+            function hideClassifierPanel() {
+                const panel = document.getElementById('classifier-panel');
+                panel.classList.add('hidden');
+                panel.classList.remove('flex');
+            }
+
+            // --- EVALUAR CLASIFICACIÓN FINAL ---
+            window.classifyPlaced = function(chosenCategory) {
+                const data = selectedTag.data;
+                const isCorrect = chosenCategory === data.type;
+
+                hideClassifierPanel();
+
+                if (isCorrect) {
+                    // CLASIFICACIÓN EXITOSA (Sustantivo correcto)
+                    playSuccess();
+                    score++;
+                    updateUI();
+
+                    data.solved = true;
+                    completedItemsCount++;
+
+                    setTimeout(() => {
+                        showFeedback(true, "¡Excelente Clasificación! 🌟", `Has colocado la etiqueta y clasificado correctamente a <strong>${data.name}</strong>.<br><br>${data.explanation}`);
+                    }, 400);
+
+                } else {
+                    // ERROR DE CLASIFICACIÓN SEMÁNTICA
+                    playError();
+                    lives--;
+                    updateUI();
+
+                    // Quitamos el pin de éxito del mapa
+                    const pin = document.getElementById(`pin-${data.id}`);
+                    if (pin) pin.classList.add('hidden');
+
+                    setTimeout(() => {
+                        showFeedback(false, "¡Falla de Categoría! ❌", `Te equivocaste al clasificar. Recuerda: <br><br>${data.explanation}`);
+                    }, 400);
+                }
+            };
+
+            function showFeedback(isSuccess, titleText, reasonText) {
+                const modal = document.getElementById('feedback-modal');
+                const card = document.getElementById('feedback-card');
+                const icon = document.getElementById('feedback-icon');
+                const title = document.getElementById('feedback-title');
+                const reason = document.getElementById('feedback-reason');
+
+                card.classList.remove('animate__bounceIn', 'border-t-store-success', 'border-t-store-error');
+                void card.offsetWidth; // Reflow mecánico
+
+                if (isSuccess) {
+                    icon.innerText = "🏪🏷️";
+                    title.innerText = titleText;
+                    title.className = "font-toon text-3xl md:text-4xl text-store-success mb-3 uppercase drop-shadow-sm";
+                    card.classList.add('border-t-store-success');
+                    modal.dataset.action = "next";
+                } else {
+                    icon.innerText = "❌💨";
+                    title.innerText = titleText;
+                    title.className = "font-toon text-3xl md:text-4xl text-store-error mb-3 uppercase drop-shadow-sm";
+                    card.classList.add('border-t-store-error');
+                    modal.dataset.action = "retry";
+                }
+
+                reason.innerHTML = reasonText;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                card.classList.add('animate__bounceIn');
+            }
+
+            window.closeFeedback = function() {
+                const modal = document.getElementById('feedback-modal');
+                const action = modal.dataset.action;
+
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+
+                if (lives <= 0) {
+                    endGame(false);
+                } else if (action === "next" && completedItemsCount >= 8) {
+                    endGame(true); // Ganó al completar todos los sustantivos (Son 8)
+                } else {
+                    // Cargar el siguiente bloque
+                    loadLevel();
+                }
+            };
+
+            function endGame(victory) {
+                const res = document.getElementById('screen-result');
+                const card = document.getElementById('result-card');
+                
+                card.classList.remove('border-t-store-success', 'border-t-store-error');
+
+                if (victory) {
+                    document.getElementById('result-icon').innerText = "🏆🏪🏵️";
+                    document.getElementById('result-title').innerText = "¡Tienda Organizada!";
+                    document.getElementById('result-title').className = "font-toon text-4xl md:text-6xl text-store-success mb-6 uppercase drop-shadow-sm";
+                    document.getElementById('result-msg').innerHTML = `¡Impresionante, Pequeño Ayudante! Lograste organizar y clasificar semánticamente todos los nombres del almacén. ¡Tu lógica ortográfica es asombrosa!`;
+                    card.classList.add('border-t-store-success');
+                } else {
+                    document.getElementById('result-icon').innerText = "🏚️⚠️";
+                    document.getElementById('result-title').innerText = "¡Tienda Clausurada!";
+                    document.getElementById('result-title').className = "font-toon text-4xl md:text-6xl text-store-error mb-6 uppercase drop-shadow-sm";
+                    document.getElementById('result-msg').innerHTML = "Has cometido demasiados errores organizando la mercancía y la tienda cerró por desorden. ¡Repasa el manual e inténtalo de nuevo!";
+                    card.classList.add('border-t-store-error');
+                }
+
+                res.classList.remove('hidden');
+                res.classList.add('flex');
+            }
+
+            window.exitGame = function() {
+                if(confirm("¿Deseas salir del juego? Perderás tu progreso actual.")) {
+                    currentLevel = 0;
+                    isProcessing = false;
+                    window.showScreen('screen-start');
+                }
+            };
+
+            function createStars(x, y) {
+                const container = document.getElementById('recurso-wp-tienda');
+                const rect = container.getBoundingClientRect();
+                const localX = x - rect.left;
+                const localY = y - rect.top;
+
+                for (let i = 0; i < 4; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'sparkle-note';
+                    star.innerText = '⭐';
+                    star.style.left = `${localX + (Math.random() * 30 - 15) - 10}px`;
+                    star.style.top = `${localY + (Math.random() * 30 - 15) - 15}px`;
+                    
+                    container.appendChild(star);
+                    setTimeout(() => star.remove(), 1200);
+                }
+            }
+
+            function shuffleArray(array) {
+                let arr = [...array];
+                for (let i = arr.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+                return arr;
+            }
+
+        });
+    </script>
+</body>
+</html>

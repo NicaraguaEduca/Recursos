@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>El Escudo Digital - Seguridad en Internet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Ajuste de escala global para pantallas móviles */
+        html {
+            font-size: 90%;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #e0f2fe; /* Fondo azul cielo muy suave */
+            background-image: 
+                radial-gradient(#bae6fd 4px, transparent 4px),
+                radial-gradient(#bae6fd 4px, transparent 4px);
+            background-size: 60px 60px;
+            background-position: 0 0, 30px 30px;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            overflow-y: auto;
+            margin: 0;
+            padding: 0;
+            touch-action: pan-y;
+        }
+
+        /* --- Animaciones Divertidas --- */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+        .floating { animation: float 3s ease-in-out infinite; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px) rotate(-2deg); }
+            40%, 80% { transform: translateX(10px) rotate(2deg); }
+        }
+        .shake { animation: shake 0.4s ease-in-out; }
+
+        @keyframes popIn {
+            0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+            70% { transform: scale(1.1) rotate(5deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .pop-in { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        @keyframes shieldBlock {
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.3); filter: brightness(1.3) drop-shadow(0 0 20px #38bdf8); }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
+        .shield-block { animation: shieldBlock 0.5s ease-out forwards; }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
+            50% { box-shadow: 0 0 20px 10px rgba(56, 189, 248, 0.7); }
+        }
+        .glow-active { animation: pulseGlow 1.5s infinite; }
+
+        /* Partículas de celebración */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            animation: flyUp 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            z-index: 9999;
+        }
+        @keyframes flyUp {
+            0% { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-150px) scale(1.8) rotate(360deg); opacity: 0; }
+        }
+
+        /* Ocultar barra de scroll para estética */
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Botones 3D de Acción */
+        .btn-accion {
+            transition: all 0.15s ease;
+        }
+        .btn-accion:active {
+            transform: translateY(8px); /* Hundir botón 3D */
+            box-shadow: 0 0px 0px transparent !important;
+        }
+    </style>
+</head>
+<body class="flex flex-col relative text-gray-800 select-none">
+
+    <!-- ================= PANTALLA DE INICIO (Vibrante) ================= -->
+    <div id="pantalla-inicio" class="absolute inset-0 z-50 flex flex-col items-center justify-start lg:justify-center p-4 sm:p-6 pt-12 lg:pt-6 text-center bg-gradient-to-br from-cyan-400 via-sky-400 to-blue-500 transition-opacity duration-500 overflow-y-auto">
+        
+        <div class="bg-white text-blue-700 rounded-full px-6 py-2 mb-6 text-xs md:text-sm font-black tracking-widest shadow-[0_4px_0_rgba(0,0,0,0.1)] shrink-0 max-w-full leading-tight text-center uppercase">
+            Tecnología y Uso Seguro • 2º Grado
+        </div>
+        
+        <h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight flex flex-col items-center justify-center shrink-0 drop-shadow-lg w-full text-white">
+            <span class="py-1">El Escudo</span>
+            <span class="py-1 flex items-center justify-center gap-3 flex-wrap text-yellow-300">Digital <span class="pop-in inline-block floating drop-shadow-xl">🛡️</span></span>
+        </h1>
+
+        <div class="w-full max-w-2xl bg-white p-6 md:p-8 lg:p-10 rounded-[3rem] shadow-2xl border-8 border-sky-200 mb-8 transform transition-transform duration-300 shrink-0 relative overflow-hidden">
+            <h2 class="text-2xl md:text-3xl lg:text-4xl font-black text-sky-600 mb-4 flex items-center justify-center gap-3">
+                <span class="animate-bounce">🌐</span> ¡Ciudadanos Seguros!
+            </h2>
+            <p class="text-lg md:text-xl lg:text-2xl text-gray-600 leading-snug font-bold">
+                Internet es genial para aprender y jugar, pero también hay trampas y extraños.<br><br>
+                Usa nuestra <span class="text-blue-500 font-black">Tableta Simulada</span>. Si ves un sitio seguro, dale clic en <b>Entrar ✅</b>. Si ves un peligro o algo sospechoso, ¡activa tu <b>Escudo Digital 🛡️</b> para bloquearlo!
+            </p>
+        </div>
+        
+        <button onclick="iniciarJuego()" class="shrink-0 mb-8 group relative inline-flex items-center justify-center px-10 lg:px-14 py-4 lg:py-6 text-2xl lg:text-3xl font-black text-blue-900 bg-yellow-400 border-4 border-yellow-300 rounded-full overflow-hidden shadow-[0_10px_0_#ca8a04] active:shadow-[0_0px_0_#ca8a04] active:translate-y-[10px] transition-all">
+            <span class="relative flex items-center gap-3">¡Proteger la Tableta! <span class="text-3xl lg:text-4xl group-hover:animate-spin">🚀</span></span>
+        </button>
+    </div>
+
+    <!-- ================= PANTALLA DEL JUEGO ================= -->
+    <div id="pantalla-juego" class="hidden flex flex-col w-full min-h-screen pb-36 lg:pb-6">
+        
+        <!-- Cabecera de Progreso -->
+        <div class="w-full flex justify-between items-center bg-white/95 p-3 md:p-5 shadow-lg border-b-4 border-sky-300 z-40 sticky top-0 rounded-b-2xl lg:rounded-none">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl md:text-4xl bg-sky-100 p-2 rounded-2xl shadow-inner border-2 border-sky-200">🛡️</span>
+                <h2 class="text-lg md:text-2xl font-black text-sky-800 leading-none">Misiones de Seguridad</h2>
+            </div>
+            <div class="flex flex-col items-end">
+                <span class="text-[10px] md:text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Nivel Seguro</span>
+                <span id="contador-progreso" class="bg-sky-500 px-4 md:px-5 py-1 md:py-1.5 rounded-full text-white font-black border-2 border-sky-600 text-sm md:text-lg shadow-sm">0 / 5 ⭐</span>
+            </div>
+        </div>
+
+        <!-- Área Principal -->
+        <div class="flex-1 w-full flex flex-col items-center justify-center p-4 mt-2 lg:mt-6 overflow-visible relative z-10">
+            
+            <div class="text-lg md:text-2xl font-black text-sky-900 text-center mb-4 lg:mb-6 bg-white/90 px-8 py-3 rounded-full border-4 border-sky-200 shadow-sm shrink-0 uppercase tracking-wide">
+                ¿Qué harás con esta página?
+            </div>
+
+            <!-- LA TABLETA SIMULADA 3D (Carcasa tipo juguete) -->
+            <div class="w-full max-w-[500px] bg-sky-400 rounded-[3rem] md:rounded-[4rem] p-4 md:p-6 shadow-[0_15px_0_#0284c7,0_25px_50px_-12px_rgba(0,0,0,0.5)] border-4 border-sky-300 flex flex-col relative shrink-0">
+                
+                <!-- Lente de Cámara Frontal -->
+                <div class="w-5 h-5 bg-slate-900 rounded-full absolute top-2 md:top-3 left-1/2 transform -translate-x-1/2 border-2 border-slate-700 shadow-inner"></div>
+
+                <!-- Pantalla interior de la tableta -->
+                <div class="flex-1 bg-white rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex flex-col relative min-h-[350px] md:min-h-[450px] border-8 border-slate-800 mt-2 md:mt-4 shadow-inner">
+                    
+                    <!-- Barra de estado superior (Hora, batería, wifi) -->
+                    <div class="bg-slate-800 w-full px-5 py-1.5 flex justify-between items-center text-xs md:text-sm font-bold text-white shrink-0">
+                        <span id="hora-tableta">10:00 AM</span>
+                        <div class="flex gap-2">
+                            <span>📶</span>
+                            <span>🔋 100%</span>
+                        </div>
+                    </div>
+
+                    <!-- Barra de navegador falsa -->
+                    <div class="bg-slate-100 w-full px-3 py-2.5 border-b-2 border-slate-200 flex items-center gap-2 shrink-0 shadow-sm">
+                        <span class="text-slate-400 bg-white p-1 rounded-full shadow-sm text-sm">🔒</span>
+                        <div class="bg-white flex-1 rounded-full px-4 py-1.5 text-xs md:text-sm font-bold text-slate-500 border-2 border-slate-200 truncate shadow-inner" id="url-tableta">
+                            www.sitio-seguro.com
+                        </div>
+                    </div>
+
+                    <!-- Contenido de la Web o Notificación -->
+                    <div class="flex-1 flex flex-col items-center justify-center p-5 text-center relative overflow-hidden" id="contenido-tableta">
+                        <!-- El contenido (Emoji y Texto) se inyecta por JS -->
+                    </div>
+
+                    <!-- Pantalla de bloqueo rojo de virus -->
+                    <div id="pantalla-bloqueada" class="hidden absolute inset-0 bg-red-600/95 z-30 flex flex-col items-center justify-center backdrop-blur-md transition-all duration-300">
+                        <div class="text-7xl md:text-8xl mb-4 filter drop-shadow-xl pop-in">🛡️</div>
+                        <h2 class="text-3xl md:text-4xl font-black text-white uppercase tracking-widest pop-in" style="animation-delay: 0.1s;">¡BLOQUEADO!</h2>
+                        <p class="text-red-100 font-bold mt-2 text-lg md:text-xl pop-in" style="animation-delay: 0.2s;">Peligro evitado</p>
+                    </div>
+
+                    <!-- Pantalla verde de sitio seguro -->
+                    <div id="pantalla-segura" class="hidden absolute inset-0 bg-green-500/95 z-30 flex flex-col items-center justify-center backdrop-blur-md transition-all duration-300">
+                        <div class="text-7xl md:text-8xl mb-4 filter drop-shadow-xl pop-in">✅</div>
+                        <h2 class="text-3xl md:text-4xl font-black text-white uppercase tracking-widest pop-in" style="animation-delay: 0.1s;">¡SEGURO!</h2>
+                        <p class="text-green-100 font-bold mt-2 text-lg md:text-xl pop-in" style="animation-delay: 0.2s;">Navegación protegida</p>
+                    </div>
+
+                </div>
+
+                <!-- Botón de inicio gigante de la tableta -->
+                <div class="w-14 h-14 md:w-16 md:h-16 bg-white/30 rounded-full mx-auto mt-4 md:mt-5 border-4 border-sky-200/50 shadow-inner flex items-center justify-center shrink-0">
+                    <div class="w-6 h-6 border-4 border-white/50 rounded-md"></div>
+                </div>
+            </div>
+
+            <!-- BOTONES DE ACCIÓN 3D (Bajo la tableta) -->
+            <div class="flex w-full max-w-[500px] gap-4 md:gap-6 mt-8 shrink-0 z-20">
+                <button id="btn-bloquear" onclick="evaluarSitio(false)" class="btn-accion flex-1 bg-blue-500 text-white rounded-[2rem] py-4 md:py-5 px-2 flex flex-col items-center justify-center shadow-[0_8px_0_#1e3a8a] border-4 border-blue-400 group">
+                    <span class="text-4xl md:text-5xl mb-2 floating drop-shadow-md">🛡️</span>
+                    <span class="font-black text-sm md:text-base uppercase tracking-widest">Usar Escudo<br>(Bloquear)</span>
+                </button>
+
+                <button id="btn-entrar" onclick="evaluarSitio(true)" class="btn-accion flex-1 bg-green-500 text-white rounded-[2rem] py-4 md:py-5 px-2 flex flex-col items-center justify-center shadow-[0_8px_0_#14532d] border-4 border-green-400 group">
+                    <span class="text-4xl md:text-5xl mb-2 drop-shadow-md group-hover:scale-110 transition-transform">✅</span>
+                    <span class="font-black text-sm md:text-base uppercase tracking-widest">Sitio Seguro<br>(Entrar)</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= PANEL DE RETROALIMENTACIÓN INFERIOR (Comic Bubble) ================= -->
+    <div id="burbuja-pedagogica" class="fixed bottom-0 left-0 w-full bg-white border-t-[10px] border-sky-400 shadow-[0_-20px_50px_rgba(0,0,0,0.2)] z-[100] transform translate-y-full transition-transform duration-500 flex flex-col md:flex-row items-center justify-between p-6 md:px-10 md:py-8 rounded-t-[3rem] md:rounded-t-[4rem]">
+        <div class="flex items-center gap-4 md:gap-6 w-full md:w-3/4 mb-4 md:mb-0">
+            <div class="relative shrink-0">
+                <span id="burbuja-icono" class="text-6xl md:text-7xl select-none font-bold block bg-sky-100 p-2 rounded-full border-4 border-sky-200">🦉</span>
+            </div>
+            <div>
+                <h3 id="burbuja-titulo" class="text-2xl md:text-4xl font-black text-sky-600 mb-1 md:mb-2 select-none leading-none">Título</h3>
+                <p id="burbuja-mensaje" class="text-base md:text-2xl font-bold text-gray-700 leading-snug select-none">Mensaje...</p>
+            </div>
+        </div>
+        <div id="burbuja-boton-container" class="w-full md:w-auto shrink-0 flex justify-end">
+            <!-- Botón dinámico inyectado por JS -->
+        </div>
+    </div>
+
+    <!-- ================= PANTALLA FINAL ================= -->
+    <div id="pantalla-final" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-gradient-to-br from-blue-600 via-sky-500 to-cyan-400 backdrop-blur-md transition-opacity duration-500 overflow-y-auto">
+        <div class="flex gap-4 sm:gap-6 justify-center text-7xl sm:text-8xl md:text-[10rem] mb-6 sm:mb-10 floating select-none mt-8 shrink-0 drop-shadow-2xl">
+            <span>🛡️</span>
+            <span>🏆</span>
+            <span>🌐</span>
+        </div>
+
+        <h1 class="text-5xl sm:text-6xl md:text-8xl font-black mb-4 sm:mb-8 leading-tight flex flex-col items-center justify-center gap-2 shrink-0 text-white drop-shadow-lg">
+            <span class="py-1">¡CIUDADANO</span>
+            <span class="text-yellow-300 py-1">DIGITAL SEGURO!</span>
+        </h1>
+        <p class="text-xl sm:text-2xl md:text-4xl text-sky-100 max-w-4xl mb-10 sm:mb-12 font-bold leading-relaxed shrink-0">
+            Has demostrado que sabes diferenciar entre los sitios divertidos y las trampas de internet.<br>
+            ¡Recuerda mantener siempre activo tu Escudo Digital y pedir ayuda a un adulto si algo te asusta! 🦸‍♀️🦸‍♂️
+        </p>
+        
+        <button onclick="reiniciarJuego()" class="shrink-0 mb-8 group relative inline-flex items-center justify-center px-10 sm:px-12 lg:px-16 py-5 sm:py-6 lg:py-8 text-2xl sm:text-3xl lg:text-4xl font-black text-blue-900 bg-yellow-400 border-4 border-yellow-300 rounded-full overflow-hidden shadow-[0_10px_0_#ca8a04] active:shadow-[0_0px_0_#ca8a04] active:translate-y-[10px] transition-all">
+            <span class="relative flex items-center gap-3">Jugar otra vez <span class="text-4xl sm:text-5xl group-hover:rotate-180 transition-transform duration-500">🔄</span></span>
+        </button>
+    </div>
+
+    <!-- ================= LÓGICA DEL JUEGO ================= -->
+    <script>
+        // --- BASE DE DATOS DE SITUACIONES DE NAVEGACIÓN ---
+        const misiones = [
+            {
+                id: 1,
+                url: "www.premios-falsos-gratis.com",
+                titulo: "¡Felicidades! Ganaste un celular",
+                descripcion: "Haz clic aquí ahora mismo para reclamar 1000 monedas gratis en tu juego favorito.",
+                emoji: "🎁",
+                esSeguro: false,
+                claseBg: "bg-yellow-100",
+                explicacionExito: "¡Excelente uso del escudo! Los premios gratis que aparecen de la nada en internet son trampas para robar datos o meter virus. 🛡️",
+                explicacionError: "¡Cuidado! Nunca hagas clic en premios sorpresa. Suelen ser engaños de personas malas para robar información o dañar tu tableta. ¡Usa tu escudo la próxima vez! 🚫"
+            },
+            {
+                id: 2,
+                url: "www.escuela-matematicas.edu",
+                titulo: "Juegos Educativos Espaciales",
+                descripcion: "Bienvenido al portal de matemáticas. Resuelve las sumas para hacer volar el cohete.",
+                emoji: "🚀",
+                esSeguro: true,
+                claseBg: "bg-indigo-100",
+                explicacionExito: "¡Súper seguro! Las páginas educativas y los juegos de la escuela están hechos para que aprendas de forma divertida y sin riesgos. 📚✅",
+                explicacionError: "¡Espera! Este sitio es bueno. Los juegos de matemáticas y escuela no tienen virus ni extraños, puedes entrar con confianza. 🚀"
+            },
+            {
+                id: 3,
+                url: "www.chat-con-extraños.net",
+                titulo: "UsuarioDesconocido99 dice:",
+                descripcion: "Hola, me llamo Juan y tengo 7 años como tú. ¿Me envías una foto de tu cara para ser amigos?",
+                emoji: "👤",
+                esSeguro: false,
+                claseBg: "bg-red-50",
+                explicacionExito: "¡Fantástico! Bloqueaste a un desconocido. NUNCA compartas fotos ni tu nombre con personas que conoces solo por internet, aunque digan ser niños. 🛑🛡️",
+                explicacionError: "¡Peligro! En internet, las personas pueden mentir sobre quiénes son. Jamás envíes fotos tuyas a desconocidos. Siempre avisa a tus papás. 📸🚫"
+            },
+            {
+                id: 4,
+                url: "www.videos-de-animalitos.com",
+                titulo: "Canal de Mascotas Divertidas",
+                descripcion: "Video de un perrito intentando atrapar su cola y un gatito tocando el piano.",
+                emoji: "🐶",
+                esSeguro: true,
+                claseBg: "bg-green-100",
+                explicacionExito: "¡A navegar! Ver videos graciosos de animalitos en canales para niños es muy divertido y completamente seguro. 🐈✅",
+                explicacionError: "¡Uy! Este sitio no era malo. Los videos de perritos y gatitos en plataformas seguras para niños son geniales para divertirte. 🐾"
+            },
+            {
+                id: 5,
+                url: "www.descarga-juegos-virus.com",
+                titulo: "¡ALERTA ROJA DE VIRUS!",
+                descripcion: "Tu tableta tiene 50 virus peligrosos. Descarga esta aplicación MÁGICA RÁPIDO para limpiarla o se apagará para siempre.",
+                emoji: "⚠️",
+                esSeguro: false,
+                claseBg: "bg-orange-100",
+                explicacionExito: "¡Excelente protección! Esos letreros mienten para asustarte y lograr que descargues programas malos de verdad. ¡Hiciste muy bien en ignorarlo! 🛡️💻",
+                explicacionError: "¡Tranquilo! Los anuncios que asustan con 'alertas rojas' mienten. Solo quieren asustarte para que descargues virus. La próxima vez, bloquea y avisa a un adulto. ⚠️🛑"
+            }
+        ];
+
+        let nivelActual = 0;
+        let bloqueandoAccion = false;
+        let callbackContinuar = null;
+
+        // Referencias DOM
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const pantallaJuego = document.getElementById('pantalla-juego');
+        const pantallaFinal = document.getElementById('pantalla-final');
+        
+        const urlTableta = document.getElementById('url-tableta');
+        const contenidoTableta = document.getElementById('contenido-tableta');
+        const pantallaBloqueada = document.getElementById('pantalla-bloqueada');
+        const pantallaSegura = document.getElementById('pantalla-segura');
+        const horaTableta = document.getElementById('hora-tableta');
+        
+        const contadorProgreso = document.getElementById('contador-progreso');
+        const burbujaPedagogica = document.getElementById('burbuja-pedagogica');
+        
+        const btnBloquear = document.getElementById('btn-bloquear');
+        const btnEntrar = document.getElementById('btn-entrar');
+
+        // --- INICIALIZACIÓN ---
+
+        function iniciarJuego() {
+            pantallaInicio.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaInicio.classList.add('hidden');
+                pantallaInicio.classList.remove('opacity-0');
+                pantallaJuego.classList.remove('hidden');
+                
+                nivelActual = 0;
+                bloqueandoAccion = false;
+                callbackContinuar = null;
+                
+                // Reloj tableta
+                const ahora = new Date();
+                let horas = ahora.getHours();
+                let minutos = ahora.getMinutes();
+                let ampm = horas >= 12 ? 'PM' : 'AM';
+                horas = horas % 12;
+                horas = horas ? horas : 12;
+                minutos = minutos < 10 ? '0'+minutos : minutos;
+                horaTableta.innerText = horas + ':' + minutos + ' ' + ampm;
+
+                cargarNivel();
+            }, 500);
+        }
+
+        function reiniciarJuego() {
+            pantallaFinal.classList.add('opacity-0');
+            setTimeout(() => {
+                window.location.reload(); 
+            }, 300);
+        }
+
+        // --- CARGAR NUEVO NIVEL ---
+
+        function cargarNivel() {
+            if (nivelActual >= misiones.length) {
+                finalizarJuego();
+                return;
+            }
+
+            bloqueandoAccion = false;
+            ocultarBurbujaPedagogica();
+
+            // Limpiar pantallas superpuestas de la tableta
+            pantallaBloqueada.classList.add('hidden');
+            pantallaSegura.classList.add('hidden');
+            pantallaBloqueada.classList.remove('opacity-0');
+            pantallaSegura.classList.remove('opacity-0');
+
+            const m = misiones[nivelActual];
+            contadorProgreso.innerText = `${nivelActual} / ${misiones.length} ⭐`;
+
+            // Construir la página en la tableta
+            urlTableta.innerText = m.url;
+            contenidoTableta.className = `flex-1 flex flex-col items-center justify-center p-6 text-center relative overflow-hidden transition-colors duration-500 ${m.claseBg}`;
+            
+            contenidoTableta.innerHTML = `
+                <div class="text-8xl md:text-9xl mb-4 drop-shadow-xl pop-in select-none">${m.emoji}</div>
+                <h3 class="text-2xl md:text-3xl font-black text-gray-800 leading-tight mb-3 z-10">${m.titulo}</h3>
+                <p class="text-base md:text-lg font-bold text-gray-700 leading-snug z-10 px-4">${m.descripcion}</p>
+            `;
+            
+            // Efectos especiales extra por nivel
+            if (m.esSeguro === false) {
+                contenidoTableta.querySelector('h3').classList.add('text-red-700');
+            } else {
+                contenidoTableta.querySelector('h3').classList.add('text-blue-700');
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- EVALUACIÓN Y RETROALIMENTACIÓN ---
+
+        function evaluarSitio(intentoEntrar) {
+            if (bloqueandoAccion) return;
+            bloqueandoAccion = true;
+
+            const m = misiones[nivelActual];
+            const acierto = (m.esSeguro === intentoEntrar);
+
+            if (intentoEntrar) {
+                // Presionó ENTRAR
+                if (acierto) {
+                    pantallaSegura.classList.remove('hidden');
+                    crearDestellos(btnEntrar.getBoundingClientRect());
+                    
+                    lanzarFeedback(true, m.explicacionExito, "border-green-400 text-green-600", "¡Súper Ciudadano Digital! ✅");
+                } else {
+                    pantallaBloqueada.classList.remove('hidden');
+                    pantallaBloqueada.querySelector('h2').innerText = "¡PELIGRO!";
+                    pantallaBloqueada.querySelector('p').innerText = "Casi caes en la trampa";
+                    document.querySelector('.w-full.max-w-\\[500px\\].bg-sky-400').classList.add('shake');
+                    
+                    lanzarFeedback(false, m.explicacionError, "border-red-400 text-red-600", "¡Alerta Roja! ⚠️");
+                }
+            } else {
+                // Presionó BLOQUEAR (Escudo)
+                if (acierto) {
+                    pantallaBloqueada.classList.remove('hidden');
+                    pantallaBloqueada.querySelector('h2').innerText = "¡BLOQUEADO!";
+                    pantallaBloqueada.querySelector('p').innerText = "Peligro evitado con éxito";
+                    
+                    btnBloquear.classList.add('shield-block');
+                    crearDestellos(btnBloquear.getBoundingClientRect());
+
+                    lanzarFeedback(true, m.explicacionExito, "border-sky-400 text-sky-600", "¡Escudo de Hierro! 🛡️✨");
+                } else {
+                    document.querySelector('.w-full.max-w-\\[500px\\].bg-sky-400').classList.add('shake');
+                    lanzarFeedback(false, m.explicacionError, "border-blue-400 text-blue-600", "¡Espera un segundo! 🤔");
+                }
+            }
+
+            setTimeout(() => {
+                document.querySelector('.w-full.max-w-\\[500px\\].bg-sky-400').classList.remove('shake');
+                btnBloquear.classList.remove('shield-block');
+            }, 600);
+        }
+
+        // --- BURBUJA DE RETROALIMENTACIÓN INFERIOR ---
+
+        function lanzarFeedback(esExito, mensaje, clasesColor, titulo) {
+            const colorBorde = clasesColor.split(' ')[0];
+            const colorTexto = clasesColor.split(' ')[1];
+
+            burbujaPedagogica.className = `fixed bottom-0 left-0 w-full bg-white border-t-[10px] ${colorBorde} shadow-[0_-20px_50px_rgba(0,0,0,0.3)] z-[100] transform translate-y-0 transition-transform duration-500 flex flex-col md:flex-row items-center justify-between p-6 md:px-10 md:py-8 rounded-t-[3rem] md:rounded-t-[4rem]`;
+            
+            // Búho interactivo según situación
+            let icono = "🦉";
+            let bgIcono = "bg-slate-100 border-slate-200";
+            if(esExito) {
+                icono = colorTexto.includes('sky') ? '🛡️' : '✅';
+                bgIcono = colorTexto.includes('sky') ? 'bg-sky-100 border-sky-200' : 'bg-green-100 border-green-200';
+            } else {
+                icono = colorTexto.includes('red') ? '⚠️' : '🤔';
+                bgIcono = colorTexto.includes('red') ? 'bg-red-100 border-red-200' : 'bg-blue-100 border-blue-200';
+            }
+
+            const contenedorIcono = document.getElementById('burbuja-icono');
+            contenedorIcono.innerText = icono;
+            contenedorIcono.className = `text-6xl md:text-7xl select-none font-bold block ${bgIcono} p-3 rounded-full border-4`;
+            
+            document.getElementById('burbuja-titulo').className = `text-2xl md:text-4xl font-black ${colorTexto} mb-1 md:mb-2 select-none leading-none`;
+            document.getElementById('burbuja-titulo').innerText = titulo;
+            document.getElementById('burbuja-mensaje').innerHTML = mensaje;
+
+            const btnContainer = document.getElementById('burbuja-boton-container');
+
+            if (esExito) {
+                callbackContinuar = () => {
+                    nivelActual++;
+                    cargarNivel();
+                };
+                burbujaPedagogica.style.pointerEvents = 'auto';
+                
+                let bgGradient = colorTexto.includes('sky') ? 'from-sky-400 to-blue-600' : 'from-green-400 to-emerald-600';
+                let shadowColor = colorTexto.includes('sky') ? 'shadow-[0_8px_0_#1d4ed8]' : 'shadow-[0_8px_0_#047857]';
+                
+                btnContainer.innerHTML = `
+                    <button onclick="ejecutarContinuar()" class="px-8 md:px-12 py-4 md:py-5 bg-gradient-to-r ${bgGradient} text-white font-black text-lg md:text-2xl rounded-full ${shadowColor} active:translate-y-2 active:shadow-[0_0px_0_transparent] transition-all flex items-center gap-2 select-none w-full md:w-auto mt-4 md:mt-0">
+                        Siguiente Misión <span class="text-2xl md:text-3xl">➡️</span>
+                    </button>
+                `;
+            } else {
+                callbackContinuar = null;
+                burbujaPedagogica.style.pointerEvents = 'none';
+                btnContainer.innerHTML = '';
+                
+                setTimeout(() => {
+                    ocultarBurbujaPedagogica();
+                    // Fade out de las pantallas falsas
+                    pantallaBloqueada.classList.add('opacity-0');
+                    pantallaSegura.classList.add('opacity-0');
+                    setTimeout(() => {
+                        pantallaBloqueada.classList.add('hidden');
+                        pantallaSegura.classList.add('hidden');
+                        bloqueandoAccion = false;
+                    }, 300);
+                }, 6000);
+            }
+        }
+
+        function ocultarBurbujaPedagogica() {
+            burbujaPedagogica.classList.remove('translate-y-0');
+            burbujaPedagogica.classList.add('translate-y-full');
+        }
+
+        function ejecutarContinuar() {
+            ocultarBurbujaPedagogica();
+            if (callbackContinuar) {
+                const cb = callbackContinuar;
+                callbackContinuar = null;
+                cb();
+            }
+        }
+
+        // --- EFECTOS VISUALES ---
+
+        function crearDestellos(rect) {
+            const emojis = ['⭐', '✨', '🛡️', '✅', '💙', '🚀'];
+            const container = document.body;
+
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                const posX = rect.left + (rect.width / 2) + (Math.random() * 100 - 50);
+                const posY = rect.top + (rect.height / 2) - 20;
+                
+                p.style.left = `${posX}px`;
+                p.style.top = `${posY}px`;
+                p.style.fontSize = `${Math.random() * 20 + 25}px`; 
+                p.style.animationDelay = `${Math.random() * 0.2}s`;
+                
+                container.appendChild(p);
+                setTimeout(() => p.remove(), 1500);
+            }
+        }
+
+        function finalizarJuego() {
+            pantallaJuego.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaJuego.classList.add('hidden');
+                pantallaFinal.classList.remove('hidden');
+                setTimeout(() => pantallaFinal.classList.remove('opacity-0'), 50);
+                
+                // Celebración final gigante
+                for (let i = 0; i < 6; i++) {
+                    setTimeout(() => {
+                        const fakeRect = { left: window.innerWidth / 2 - 50, width: 100, top: window.innerHeight / 2 - 50, height: 100 };
+                        crearDestellos(fakeRect);
+                    }, i * 200);
+                }
+            }, 500);
+        }
+
+        // --- CARGA INICIAL ---
+        document.addEventListener('DOMContentLoaded', () => {
+            pantallaInicio.classList.remove('hidden');
+            setTimeout(() => {
+                pantallaInicio.classList.remove('opacity-0');
+            }, 50);
+        });
+
+    </script>
+</body>
+</html> 

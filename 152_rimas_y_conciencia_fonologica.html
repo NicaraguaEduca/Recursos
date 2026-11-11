@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Piano de las Rimas - Conciencia Fonológica</title>
+    
+    <!-- Fuentes Google: 'Chewy' (Divertida infantil) y 'Nunito' (Lectura 1er grado) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA DE TAILWIND -->
+    <script>
+        window.tailwind = {
+            config: {
+                important: '#recurso-wp-piano',
+                corePlugins: { preflight: false },
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            toon: ['Chewy', 'cursive'],
+                            body: ['Nunito', 'sans-serif'],
+                        },
+                        colors: {
+                            music: {
+                                dark: '#2e1065',      /* Morado oscuro */
+                                purple: '#7e22ce',    /* Morado vibrante */
+                                pink: '#ec4899',      /* Rosa */
+                                blue: '#3b82f6',      /* Azul */
+                                cyan: '#06b6d4',      /* Celeste */
+                                green: '#10b981',     /* Verde */
+                                yellow: '#facc15',    /* Amarillo */
+                                orange: '#f97316',    /* Naranja */
+                                red: '#ef4444'        /* Rojo */
+                            }
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* =========================================================
+           MICRO-RESET LOCAL
+           ========================================================= */
+        #recurso-wp-piano * { box-sizing: border-box; border-width: 0; border-style: solid; border-color: currentColor; line-height: normal; }
+        #recurso-wp-piano h1, #recurso-wp-piano h2, #recurso-wp-piano h3, #recurso-wp-piano p, #recurso-wp-piano span { margin: 0; padding: 0; }
+        #recurso-wp-piano button { background-color: transparent; cursor: pointer; padding: 0; font-family: inherit; }
+
+        /* =========================================================
+           ESTILOS PANTALLA COMPLETA & FONDO INFANTIL MUSICAL
+           ========================================================= */
+        #recurso-wp-piano {
+            font-family: 'Nunito', sans-serif;
+            background-color: #fdf4ff; /* Fondo rosado muy suave */
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(236, 72, 153, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 50% 50%, rgba(250, 204, 21, 0.1) 0%, transparent 40%);
+            color: #2e1065;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Paneles Infantiles Redondeados */
+        #recurso-wp-piano .kid-panel {
+            background-color: #ffffff;
+            border: 6px solid #7e22ce;
+            border-radius: 2rem;
+            box-shadow: 0 10px 25px rgba(126, 34, 206, 0.2), 0 8px 0px #7e22ce;
+            position: relative;
+        }
+
+        #recurso-wp-piano .kid-btn {
+            border: 4px solid #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 6px 0px rgba(0,0,0,0.2);
+            transition: all 0.15s ease;
+            font-family: 'Chewy', cursive;
+            letter-spacing: 2px;
+            font-size: 1.5rem;
+        }
+        #recurso-wp-piano .kid-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0px rgba(0,0,0,0.3);
+        }
+        #recurso-wp-piano .kid-btn:active:not(:disabled) {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0px rgba(0,0,0,0.2);
+        }
+
+        /* =========================================================
+           LAS TECLAS DEL PIANO (Móvil y Escritorio Adaptativo)
+           ========================================================= */
+        .piano-container {
+            display: flex;
+            flex-wrap: wrap; /* Importante para que bajen de línea en móvil */
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            border-radius: 1.5rem;
+            background-color: #334155;
+            border: 8px solid #1e293b;
+            box-shadow: inset 0 10px 20px rgba(0,0,0,0.5), 0 15px 30px rgba(0,0,0,0.3);
+        }
+        
+        .piano-key {
+            background-color: #ffffff;
+            border: 4px solid #cbd5e1;
+            border-bottom: 12px solid #94a3b8;
+            border-radius: 12px;
+            /* Medidas fluidas para adaptarse a celulares pequeños y pantallas grandes */
+            width: clamp(90px, 30vw, 150px);
+            height: clamp(120px, 22vh, 230px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 4px;
+            cursor: pointer;
+            transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        @media (min-width: 768px) {
+            .piano-container {
+                gap: 15px;
+                padding: 20px;
+                border-radius: 2rem;
+            }
+            .piano-key {
+                border-radius: 12px 12px 24px 24px;
+                padding: 15px 10px;
+                width: clamp(110px, 20vw, 160px);
+                height: clamp(160px, 25vh, 250px);
+            }
+        }
+
+        /* Colores vivos en la punta de la tecla para diferenciar */
+        .piano-key::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 20px;
+            border-radius: 0 0 8px 8px;
+            opacity: 0.8;
+        }
+        @media (min-width: 768px) {
+            .piano-key::after { border-radius: 0 0 20px 20px; height: 30px; }
+        }
+
+        /* Variaciones de color de tecla */
+        .key-c1::after { background-color: #ef4444; }
+        .key-c2::after { background-color: #f97316; }
+        .key-c3::after { background-color: #facc15; }
+        .key-c4::after { background-color: #10b981; }
+        .key-c5::after { background-color: #0ea5e9; }
+        .key-c6::after { background-color: #8b5cf6; }
+        .key-c7::after { background-color: #ec4899; }
+        .key-c8::after { background-color: #14b8a6; }
+
+        /* Estados de la Tecla */
+        .piano-key:hover:not(.locked) {
+            background-color: #f8fafc;
+            transform: translateY(-2px);
+        }
+        
+        .piano-key.active {
+            transform: translateY(12px) scale(0.98);
+            border-bottom-width: 4px;
+            background-color: #fef08a; /* Amarillo cuando la tocan */
+            border-color: #eab308;
+            box-shadow: 0 0px 10px rgba(234, 179, 8, 0.8);
+        }
+
+        .piano-key.locked {
+            transform: translateY(8px);
+            border-bottom-width: 6px;
+            background-color: #d1fae5; /* Verde cuando hacen pareja */
+            border-color: #10b981;
+            pointer-events: none;
+            box-shadow: 0 0px 20px rgba(16, 185, 129, 0.6);
+            animation: pulseSuccess 1s;
+        }
+
+        @keyframes pulseSuccess {
+            0% { transform: translateY(8px) scale(1); }
+            50% { transform: translateY(8px) scale(1.05); background-color: #a7f3d0; }
+            100% { transform: translateY(8px) scale(1); }
+        }
+
+        .shake-error { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+
+        /* Pantallas SPA */
+        #recurso-wp-piano .screen {
+            display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; position: absolute; top: 0; left: 0; overflow-y: auto; overflow-x: hidden; z-index: 10;
+        }
+        #recurso-wp-piano .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-piano .screen.active {
+            display: flex;
+            animation: bounceInUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+        }
+        @keyframes bounceInUp {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Notas musicales flotantes */
+        .note-float {
+            position: absolute;
+            font-size: 2rem;
+            color: #7e22ce;
+            pointer-events: none;
+            animation: floatUp 2s ease-out forwards;
+            z-index: 100;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-100px) scale(1.5) rotate(20deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-piano">
+
+        <!-- Decoración Musical de Fondo -->
+        <div class="absolute top-10 left-10 text-[4rem] md:text-[6rem] opacity-20 transform -rotate-12 animate-pulse pointer-events-none">🎵</div>
+        <div class="absolute bottom-10 right-10 text-[5rem] md:text-[8rem] opacity-20 transform rotate-12 animate-pulse pointer-events-none" style="animation-delay: 1s;">🎶</div>
+
+        <!-- ==============================================
+             PANTALLA 1: INICIO
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="kid-panel p-8 md:p-14 max-w-3xl w-full mx-4 flex flex-col items-center">
+                
+                <div class="text-[5rem] md:text-[8rem] mb-2 animate__animated animate__tada animate__infinite">🎹</div>
+                
+                <h2 class="text-sm md:text-lg text-white font-body font-black mb-4 uppercase bg-music-purple inline-block px-6 py-2 rounded-full shadow-md tracking-widest">
+                    Lenguaje - 1er Grado
+                </h2>
+                
+                <h1 class="text-5xl md:text-7xl lg:text-[6rem] font-toon text-music-pink leading-none drop-shadow-md mb-6">
+                    El Piano <br><span class="text-music-blue">de las Rimas</span>
+                </h1>
+                
+                <p class="text-lg md:text-2xl text-gray-700 font-bold mb-8 px-2 leading-relaxed">
+                    ¡Abre bien tus orejitas! 👂 Vamos a escuchar palabras. Tu misión es tocar las teclas que <strong class="text-music-purple text-2xl">suenan igual al final</strong>.
+                </p>
+                
+                <button onclick="openTheory()" class="kid-btn bg-music-yellow text-music-dark text-2xl md:text-4xl px-12 py-4 w-full md:w-auto">
+                    ¿CÓMO JUGAR? 🤔
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: TEORÍA Y REGLAS (Audición)
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center">
+            <div class="kid-panel p-6 md:p-12 max-w-4xl w-full text-center my-auto">
+                <h2 class="text-4xl md:text-6xl font-toon text-music-purple mb-6 uppercase drop-shadow-sm">
+                    ¿Qué es una Rima?
+                </h2>
+                <p class="text-lg md:text-2xl text-gray-700 font-bold mb-8">
+                    Las rimas son palabras que son como hermanas gemelas al final: <strong class="text-music-pink">¡Terminan con el mismo sonido!</strong>
+                </p>
+                
+                <div class="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 mb-10">
+                    
+                    <div class="bg-blue-50 p-6 rounded-3xl border-4 border-music-blue shadow-lg flex flex-col items-center">
+                        <span class="text-[5rem] mb-2">🐱</span>
+                        <h3 class="font-toon text-3xl text-music-blue uppercase tracking-wider">GA<span class="text-music-pink">TO</span></h3>
+                    </div>
+
+                    <div class="text-5xl md:text-7xl font-black text-gray-300">=</div>
+
+                    <div class="bg-blue-50 p-6 rounded-3xl border-4 border-music-blue shadow-lg flex flex-col items-center">
+                        <span class="text-[5rem] mb-2">🦆</span>
+                        <h3 class="font-toon text-3xl text-music-blue uppercase tracking-wider">PA<span class="text-music-pink">TO</span></h3>
+                    </div>
+
+                </div>
+
+                <div class="bg-yellow-100 border-4 border-music-yellow p-4 rounded-2xl mb-8">
+                    <p class="text-xl md:text-2xl font-bold text-music-dark">
+                        <span class="text-3xl">🔊</span> En este juego, <strong class="text-music-purple">el piano hablará</strong>. ¡Escucha con atención y junta las parejas que rimen!
+                    </p>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="playBeep(); stopVoice(); showScreen('screen-start')" class="kid-btn bg-gray-200 text-gray-700 px-8 py-4 text-xl">
+                        ⬅ VOLVER
+                    </button>
+                    <button onclick="playBeep(); stopVoice(); startGame()" class="kid-btn bg-music-green text-white text-2xl md:text-3xl px-12 py-4">
+                        ¡TOCAR EL PIANO! 🎵
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: EL JUEGO (Piano Interactivo)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start p-0 bg-transparent relative">
+            
+            <!-- Barra Superior (Nivel y Salida) -->
+            <div class="w-full bg-white border-b-4 border-gray-300 p-2 md:p-3 flex justify-between items-center z-30 shrink-0 shadow-md">
+                <div class="flex items-center gap-3 px-2 md:px-4">
+                    <div class="bg-music-purple text-white w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center text-xl md:text-3xl font-toon shadow-inner">
+                        <span id="level-display">1</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] md:text-xs text-gray-500 font-black uppercase tracking-widest leading-none mb-1">Nivel</span>
+                        <span class="font-toon text-xl md:text-3xl text-music-dark leading-none">Concierto</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <button onclick="playBeep(); exitGame()" class="kid-btn bg-music-red text-white p-2 border-2 border-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 md:h-8 md:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Área del Piano (Con Pizarra Dinámica) -->
+            <div class="w-full flex-grow flex flex-col items-center justify-start md:justify-center p-2 md:p-4 relative overflow-y-auto overflow-x-hidden">
+                
+                <!-- PIZARRA DE INSTRUCCIONES / RETROALIMENTACIÓN -->
+                <div class="min-h-[70px] md:min-h-[90px] w-full flex items-center justify-center mb-4 md:mb-6 mt-2 shrink-0 px-2">
+                    <h3 id="instruction-title" class="font-toon text-lg sm:text-xl md:text-4xl lg:text-5xl text-music-dark text-center drop-shadow-md bg-white/90 px-4 py-2 md:px-8 md:py-3 rounded-full border-4 border-white shadow-lg transition-colors duration-300 w-full md:w-auto max-w-4xl break-words leading-tight">
+                        Toca una tecla para escuchar 👂
+                    </h3>
+                </div>
+
+                <!-- Contenedor de las Teclas -->
+                <div id="piano-board" class="piano-container w-full max-w-6xl">
+                    <!-- Las teclas se inyectan por JS -->
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (Victoria)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex-col items-center justify-center p-6 text-center bg-music-dark/95 backdrop-blur-sm">
+            <div id="result-card" class="kid-panel p-8 md:p-14 max-w-2xl w-full animate__animated animate__zoomIn text-center border-t-8 border-t-music-yellow">
+                <div class="text-[6rem] md:text-[8rem] mb-4 animate-bounce">🏆🎵</div>
+                <h2 id="result-title" class="font-toon text-5xl md:text-7xl text-music-yellow mb-4 uppercase drop-shadow-[0_2px_2px_#000]">
+                    ¡Gran Músico!
+                </h2>
+                <p id="result-msg" class="text-xl md:text-3xl text-gray-700 mb-10 font-bold leading-relaxed">
+                    Tus oídos son increíbles. Has encontrado todas las rimas y tocado una hermosa melodía.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="playBeep(); exitGame()" class="kid-btn bg-gray-200 text-gray-700 px-8 py-4 text-xl">
+                        SALIR DEL TEATRO
+                    </button>
+                    <button onclick="playBeep(); startGame()" class="kid-btn bg-music-cyan text-white text-2xl md:text-3xl px-12 py-4">
+                        TOCAR OTRA VEZ 🔄
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO Y AUDIO TTS (TEXT-TO-SPEECH)
+         ============================================== -->
+    <script>
+        // --- 1. SINTETIZADOR DE AUDIO (Notas musicales) ---
+        let audioCtx = null;
+        function initAudio() {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+            } catch (e) {}
+        }
+        document.body.addEventListener('click', initAudio, { once: true });
+
+        function playBeep(freq = 600, duration = 0.1, type = "sine") {
+            try {
+                if (audioCtx && audioCtx.state !== 'suspended') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + duration);
+                }
+            } catch (e) {}
+        }
+
+        function playSuccessChord() {
+            playBeep(523.25, 0.15); // Do
+            setTimeout(() => playBeep(659.25, 0.15), 100); // Mi
+            setTimeout(() => playBeep(783.99, 0.3), 200);  // Sol
+        }
+        function playErrorSound() {
+            playBeep(200, 0.3, "sawtooth"); 
+        }
+
+        // --- 2. MOTOR DE VOZ (SpeechSynthesis) ---
+        function speakPhrase(text, cancelPrevious = true) {
+            if (cancelPrevious) window.speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'es-ES'; // Español
+            utter.rate = 0.85; // Pausado para primer grado
+            utter.pitch = 1.2; // Tono amigable
+            window.speechSynthesis.speak(utter);
+        }
+
+        function stopVoice() {
+            window.speechSynthesis.cancel();
+        }
+
+        function openTheory() {
+            playBeep();
+            showScreen('screen-theory');
+            speakPhrase("Las rimas son palabras que son como hermanas gemelas al final: ¡Terminan con el mismo sonido! Por ejemplo: gato, con pato. En este juego, el piano hablará. ¡Escucha con atención y junta las parejas que rimen!");
+        }
+
+        // --- 3. BASE DE DATOS DE RIMAS ---
+        const rhymesDatabase = [
+            { pairId: 1, w1: "Gato", e1: "🐱", w2: "Pato", e2: "🦆" },
+            { pairId: 2, w1: "Luna", e1: "🌙", w2: "Cuna", e2: "🛏️" },
+            { pairId: 3, w1: "Fresa", e1: "🍓", w2: "Mesa", e2: "🪑" },
+            { pairId: 4, w1: "Botón", e1: "🔘", w2: "Ratón", e2: "🐭" },
+            { pairId: 5, w1: "Hueso", e1: "🦴", w2: "Queso", e2: "🧀" },
+            { pairId: 6, w1: "Oso", e1: "🐻", w2: "Pozo", e2: "🕳️" },
+            { pairId: 7, w1: "Campana", e1: "🔔", w2: "Manzana", e2: "🍎" },
+            { pairId: 8, w1: "Niña", e1: "👧", w2: "Piña", e2: "🍍" },
+            { pairId: 9, w1: "Sol", e1: "☀️", w2: "Caracol", e2: "🐌" },
+            { pairId: 10, w1: "Ventana", e1: "🪟", w2: "Rana", e2: "🐸" }
+        ];
+
+        const pianoNotes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
+        const colorClasses = ['key-c1', 'key-c2', 'key-c3', 'key-c4', 'key-c5', 'key-c6', 'key-c7', 'key-c8'];
+
+        // --- 4. ESTADO DEL JUEGO ---
+        let currentLevelIndex = 0; // 0 = Nivel 1 (2 pares), 1 = Nivel 2 (3 pares), 2 = Nivel 3 (4 pares)
+        const levelConfigs = [2, 3, 4]; 
+        
+        let boardKeys = [];
+        let firstSelection = null;
+        let secondSelection = null;
+        let isProcessing = false;
+        let pairsFound = 0;
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function shuffleArray(arr) {
+            let array = [...arr];
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // --- 5. CONTROL DE LA PIZARRA DE INSTRUCCIONES ---
+        function setInstruction(text, type = 'default') {
+            const el = document.getElementById('instruction-title');
+            el.innerText = text;
+            el.className = "font-toon text-lg sm:text-xl md:text-3xl lg:text-4xl text-center drop-shadow-md px-4 py-2 md:px-8 md:py-3 rounded-full border-4 border-white shadow-lg transition-colors duration-300 w-full md:w-auto max-w-4xl break-words leading-tight animate__animated";
+            
+            // Reiniciar animación
+            el.classList.remove('animate__headShake', 'animate__pulse');
+            void el.offsetWidth; 
+
+            if (type === 'default') {
+                el.classList.add('bg-white/90', 'text-music-dark');
+            } else if (type === 'search') {
+                el.classList.add('bg-blue-100', 'text-music-blue', 'animate__pulse');
+            } else if (type === 'success') {
+                el.classList.add('bg-green-100', 'text-music-green', 'animate__pulse');
+            } else if (type === 'error') {
+                el.classList.add('bg-red-100', 'text-music-red', 'animate__headShake');
+            }
+        }
+
+        function startGame() {
+            currentLevelIndex = 0;
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('flex');
+            showScreen('screen-game');
+            loadLevel();
+        }
+
+        function loadLevel() {
+            if (currentLevelIndex >= levelConfigs.length) {
+                endGame();
+                return;
+            }
+
+            document.getElementById('level-display').innerText = currentLevelIndex + 1;
+            setInstruction("Toca una tecla para escuchar 👂", 'default');
+            
+            isProcessing = false;
+            firstSelection = null;
+            secondSelection = null;
+            pairsFound = 0;
+
+            const pairsToPick = levelConfigs[currentLevelIndex];
+            const selectedPairs = shuffleArray(rhymesDatabase).slice(0, pairsToPick);
+            
+            boardKeys = [];
+            selectedPairs.forEach(pair => {
+                boardKeys.push({ id: `${pair.pairId}_A`, pairId: pair.pairId, word: pair.w1, emoji: pair.e1 });
+                boardKeys.push({ id: `${pair.pairId}_B`, pairId: pair.pairId, word: pair.w2, emoji: pair.e2 });
+            });
+
+            boardKeys = shuffleArray(boardKeys);
+            renderPiano();
+        }
+
+        function renderPiano() {
+            const container = document.getElementById('piano-board');
+            container.innerHTML = '';
+
+            boardKeys.forEach((keyData, index) => {
+                const btn = document.createElement('button');
+                
+                const colorClass = colorClasses[index % colorClasses.length];
+                const noteFreq = pianoNotes[index % pianoNotes.length];
+                
+                btn.className = `piano-key ${colorClass} animate__animated animate__fadeInUp`;
+                btn.style.animationDelay = `${index * 0.05}s`;
+                btn.id = `key-${index}`;
+                
+                // Texto y diseño adaptativo con break-words para que palabras como "CARACOL" quepan
+                btn.innerHTML = `
+                    <div class="text-[2.5rem] sm:text-[3rem] md:text-[4rem] drop-shadow-sm mt-1 md:mt-2 shrink-0">${keyData.emoji}</div>
+                    <div class="font-body font-black text-sm sm:text-base md:text-xl lg:text-2xl text-gray-800 uppercase tracking-widest mb-4 md:mb-6 px-1 text-center w-full break-words leading-tight">${keyData.word}</div>
+                `;
+
+                btn.onclick = (e) => handleKeyClick(keyData, index, btn, noteFreq, e);
+                container.appendChild(btn);
+            });
+        }
+
+        function handleKeyClick(keyData, index, btnElement, noteFreq, e) {
+            if (isProcessing || btnElement.classList.contains('locked') || btnElement.classList.contains('active')) {
+                return;
+            }
+
+            playBeep(noteFreq, 0.2);
+            createFloatingNote(e.clientX, e.clientY);
+            btnElement.classList.add('active');
+
+            if (!firstSelection) {
+                // PRIMER CLIC: Solo dice la palabra
+                firstSelection = { data: keyData, btn: btnElement };
+                setInstruction(`¡Busca la pareja de ${keyData.word}! 🔎`, 'search');
+                speakPhrase(keyData.word, true);
+                
+            } else {
+                // SEGUNDO CLIC: Evalúa y habla
+                secondSelection = { data: keyData, btn: btnElement };
+                isProcessing = true;
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            const w1 = firstSelection.data.word;
+            const w2 = secondSelection.data.word;
+            const isMatch = firstSelection.data.pairId === secondSelection.data.pairId;
+
+            if (isMatch) {
+                // ¡Riman!
+                setInstruction(`¡Genial! ${w1} y ${w2} riman ✨`, 'success');
+                speakPhrase(`${w2}... ¡Genial! ${w1} rima con ${w2}.`, true);
+                
+                setTimeout(() => {
+                    playSuccessChord();
+                    firstSelection.btn.classList.remove('active');
+                    secondSelection.btn.classList.remove('active');
+                    firstSelection.btn.classList.add('locked');
+                    secondSelection.btn.classList.add('locked');
+                    
+                    pairsFound++;
+                    resetSelection();
+
+                    if (pairsFound === levelConfigs[currentLevelIndex]) {
+                        setTimeout(() => {
+                            currentLevelIndex++;
+                            loadLevel();
+                        }, 2500); // Dar tiempo a que el audio termine antes de cargar nivel
+                    } else {
+                        setTimeout(() => {
+                            if(!isProcessing && pairsFound < levelConfigs[currentLevelIndex]) {
+                                setInstruction("Toca otra tecla para seguir 👂", 'default');
+                            }
+                        }, 2500);
+                    }
+                }, 500);
+
+            } else {
+                // No riman
+                setInstruction(`¡Ups! "${w1}" y "${w2}" no riman ❌`, 'error');
+                speakPhrase(`${w2}... Ups. ${w1} y ${w2} no riman.`, true);
+                
+                firstSelection.btn.classList.add('shake-error');
+                secondSelection.btn.classList.add('shake-error');
+
+                // Damos 3 segundos para que el niño pueda leer y escuchar la explicación antes de ocultar
+                setTimeout(() => {
+                    playErrorSound();
+                    
+                    firstSelection.btn.classList.remove('shake-error', 'active');
+                    secondSelection.btn.classList.remove('shake-error', 'active');
+                    
+                    setInstruction("Intenta con otras teclas 👂", 'default');
+                    resetSelection();
+                }, 3000); 
+            }
+        }
+
+        function resetSelection() {
+            firstSelection = null;
+            secondSelection = null;
+            isProcessing = false;
+        }
+
+        function createFloatingNote(x, y) {
+            const container = document.getElementById('recurso-wp-piano');
+            const rect = container.getBoundingClientRect();
+            const localX = x - rect.left;
+            const localY = y - rect.top;
+
+            const note = document.createElement('div');
+            note.className = 'note-float';
+            note.innerText = Math.random() > 0.5 ? '🎵' : '🎶';
+            note.style.left = `${localX - 20}px`;
+            note.style.top = `${localY - 30}px`;
+            
+            container.appendChild(note);
+            setTimeout(() => note.remove(), 2000);
+        }
+
+        function endGame() {
+            const res = document.getElementById('screen-result');
+            res.classList.remove('hidden');
+            res.classList.add('flex');
+            playSuccessChord();
+            setTimeout(playSuccessChord, 300);
+        }
+
+        function exitGame() {
+            window.speechSynthesis.cancel();
+            currentLevelIndex = 0;
+            isProcessing = false;
+            showScreen('screen-start');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1º Primaria | Decorando el Árbol</title>
+    <!-- Tipografía infantil Fredoka -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS para diseño moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --primary: #47B5FF;
+            --success: #198754;
+            --warning: #FFD93D;
+            --error: #FF6B6B;
+            --purple: #810CA8;
+            --trunk: #8B5E3C;
+            --canopy: #2D6A4F;
+        }
+
+        * {
+            font-family: 'Fredoka', sans-serif;
+            user-select: none;
+            touch-action: none; /* Previene el scroll involuntario al arrastrar en móviles */
+        }
+
+        body {
+            background-color: #EAF6F6;
+            background-image: 
+                radial-gradient(#D3E0EA 2px, transparent 2px),
+                radial-gradient(#D3E0EA 2px, transparent 2px);
+            background-size: 32px 32px;
+            background-position: 0 0, 16px 16px;
+        }
+
+        /* --- PANTALLA DE BIENVENIDA --- */
+        .welcome-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #F3F8FF;
+            background-image: 
+                radial-gradient(var(--warning) 1.5px, transparent 1.5px),
+                radial-gradient(var(--primary) 1.5px, transparent 1.5px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: all 0.5s ease;
+        }
+
+        .welcome-card {
+            background: white;
+            border: 6px solid var(--primary);
+            border-radius: 30px;
+            padding: 35px;
+            max-width: 650px;
+            width: 100%;
+            box-shadow: 0 20px 0px rgba(71, 181, 255, 0.15);
+            text-align: center;
+            animation: bounceIn 0.8s ease;
+        }
+
+        .btn-start {
+            font-size: 1.6rem;
+            font-weight: 700;
+            padding: 15px 45px;
+            background: #25C685;
+            color: white;
+            border: 4px solid #1E9E6A;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 0px #15724C;
+            transition: all 0.1s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-start:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0px #15724C;
+        }
+
+        /* --- ANIMACIONES Y ESTADOS DE ARRASTRE --- */
+        .draggable-item {
+            cursor: grab;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
+        }
+
+        .draggable-item:active {
+            cursor: grabbing;
+            transform: scale(1.15);
+            z-index: 50;
+        }
+
+        .drop-zone-active {
+            animation: pulse-glow 1.5s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            from {
+                border-color: rgba(71, 181, 255, 0.4);
+                box-shadow: 0 0 10px rgba(71, 181, 255, 0.2);
+            }
+            to {
+                border-color: rgba(71, 181, 255, 1);
+                box-shadow: 0 0 25px rgba(71, 181, 255, 0.6);
+            }
+        }
+
+        /* --- ANIMACIÓN DE APARICIÓN --- */
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.03); }
+            70% { transform: scale(0.97); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .pop-effect {
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+        }
+
+        /* --- FEEDBACK VISUAL DE ERROR --- */
+        @keyframes shake-side {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+        .shake {
+            animation: shake-side 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-height-screen flex flex-col items-center p-4">
+
+    <!-- Pantalla Inicial de Presentación y Objetivos -->
+    <div class="welcome-overlay" id="welcomeScreen">
+        <div class="welcome-card">
+            <span class="bg-indigo-600 text-white px-5 py-2 rounded-full font-bold text-sm tracking-wider uppercase inline-block mb-4">
+                🎒 1º de Primaria
+            </span>
+            <h1 class="text-4xl font-bold text-gray-800 mb-4 text-shadow" style="text-shadow: 3px 3px 0px var(--warning);">
+                Decorando el Árbol 🎄✨
+            </h1>
+            
+            <div class="welcome-info text-left bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl p-5 mb-6">
+                <div class="mb-3 text-lg text-gray-600">
+                    <strong>Contenido Académico:</strong> <span class="text-indigo-600 font-semibold">Orientación Espacial</span>
+                </div>
+                <div class="mb-3 text-lg text-gray-600">
+                    <strong>Conceptos Clave:</strong> Comprensión espacial de <span class="text-indigo-600 font-semibold">Arriba y Abajo</span>.
+                </div>
+                <div class="border-t border-gray-200 pt-4 mt-4 text-gray-600 text-md">
+                    <strong>🎯 Objetivo del Recurso:</strong> <br>
+                    Ayudar a los niños a consolidar los conceptos espaciales "Arriba" y "Abajo" mediante una tarea lúdica guiada por audio. Deberán colocar las esferas mágicas en las ramas (arriba) y los regalos sorpresa en el suelo (abajo).
+                </div>
+            </div>
+
+            <button class="btn-start" onclick="startGame()">
+                ¡Comenzar a Decorar! 🎄🚀
+            </button>
+        </div>
+    </div>
+
+    <!-- Cabecera Pedagógica -->
+    <div class="bg-white border-3 border-purple-700 rounded-2xl px-6 py-2 flex gap-4 items-center justify-center shadow-md mb-6 max-w-4xl w-full border-2 border-indigo-500">
+        <span class="bg-indigo-600 text-white px-4 py-1 rounded-full font-bold text-xs uppercase">
+            1º de Primaria
+        </span>
+        <div class="text-gray-700 font-bold text-sm sm:text-base">
+            Contenido: <span class="text-indigo-600">Orientación Espacial - Arriba / Abajo</span>
+        </div>
+    </div>
+
+    <header class="text-center mb-4">
+        <h1 class="text-3xl sm:text-4xl font-bold text-gray-800" style="text-shadow: 2px 2px 0px var(--warning);">
+            Decorando el Árbol 🎄
+        </h1>
+    </header>
+
+    <!-- Contenedor de la Mascota y Guía de Audio -->
+    <div class="flex flex-col sm:flex-row items-center gap-4 bg-white rounded-3xl p-4 shadow-md border-3 border-indigo-200 max-w-2xl w-full mb-6 relative">
+        <div class="text-5xl animate-bounce">🦉</div>
+        <div class="flex-1 text-center sm:text-left">
+            <p class="text-gray-500 text-xs font-bold uppercase tracking-wider">Instrucción del Búho Sabio</p>
+            <p id="instructionText" class="text-gray-800 text-lg font-semibold mt-1">
+                ¡Hola! Haz clic en el botón de la bocina para escuchar mi instrucción.
+            </p>
+        </div>
+        <button onclick="repeatInstruction()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-800 p-4 rounded-full shadow-md font-bold text-2xl active:scale-95 transition-transform flex items-center justify-center" title="Repetir instrucción">
+            🔊
+        </button>
+    </div>
+
+    <!-- Escenario Principal del Juego -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 max-w-5xl w-full flex-1 items-stretch mb-6">
+        
+        <!-- Contenedor del Inventario (Juguetero) -->
+        <div class="md:col-span-4 bg-white rounded-3xl p-4 shadow-md border-2 border-gray-100 flex flex-col justify-between min-h-[250px] md:min-h-0">
+            <div>
+                <h3 class="text-gray-700 font-bold text-center border-b pb-2 mb-4">🎁 Caja de Adornos</h3>
+                <div id="toybox" class="grid grid-cols-2 gap-4 justify-items-center py-2">
+                    <!-- Los elementos se generan dinámicamente -->
+                </div>
+            </div>
+            <p class="text-xs text-center text-gray-400 mt-4">¡Mantén presionado y arrastra el adorno correcto hasta su lugar!</p>
+        </div>
+
+        <!-- El Árbol y las Zonas de Caída -->
+        <div class="md:col-span-8 bg-sky-100 rounded-3xl p-6 shadow-md border-2 border-sky-200 relative overflow-hidden flex flex-col items-center justify-center min-h-[450px]">
+            <!-- Fondo de nubes decorativas -->
+            <div class="absolute top-8 left-8 text-white opacity-40 text-4xl">☁️</div>
+            <div class="absolute top-16 right-12 text-white opacity-40 text-4xl">☁️</div>
+            
+            <!-- Zona de Caída Superior (ARRIBA) -->
+            <div id="zone-arriba" class="absolute top-4 left-1/2 -translate-x-1/2 w-[85%] h-[48%] border-4 border-dashed border-sky-300 rounded-3xl flex items-center justify-center z-20 pointer-events-none transition-all duration-300">
+                <span class="text-sky-400/80 font-bold tracking-widest text-lg absolute top-2 bg-sky-100/90 px-3 py-1 rounded-full uppercase">
+                    ARRIBA (Ramas) 🌲
+                </span>
+            </div>
+
+            <!-- Contenedor Maestro del Árbol (Coordenadas unificadas para colocación exacta) -->
+            <div id="tree-container" class="w-[280px] sm:w-[340px] h-[360px] relative mt-12 z-10 pointer-events-none">
+                <!-- Gráfico del Árbol (SVG Hermoso) -->
+                <svg viewBox="0 0 100 120" class="w-full h-full drop-shadow-xl absolute inset-0">
+                    <!-- Tronco -->
+                    <rect x="44" y="85" width="12" height="30" fill="var(--trunk)" rx="3" />
+                    <!-- Sombra del suelo -->
+                    <ellipse cx="50" cy="112" rx="25" ry="4" fill="#1B4D3E" opacity="0.2" />
+                    <!-- Copa de Árbol Triangular (Nivel 3 - Abajo) -->
+                    <polygon points="15,90 85,90 50,45" fill="var(--canopy)" />
+                    <!-- Copa de Árbol Triangular (Nivel 2 - Centro) -->
+                    <polygon points="20,65 80,65 50,25" fill="#317A57" />
+                    <!-- Copa de Árbol Triangular (Nivel 1 - Arriba) -->
+                    <polygon points="25,40 75,40 50,5" fill="#388E64" />
+                    <!-- Estrella en la punta -->
+                    <polygon points="50,1 52,5 57,5 53,8 55,13 50,10 45,13 47,8 43,5 48,5" fill="var(--warning)" />
+                </svg>
+                <!-- Capa para decoraciones ubicadas con precisión matemática -->
+                <div id="placed-decorations" class="absolute inset-0 w-full h-full"></div>
+            </div>
+
+            <!-- Zona de Caída Inferior (ABAJO) -->
+            <div id="zone-abajo" class="absolute bottom-4 left-1/2 -translate-x-1/2 w-[85%] h-[40%] border-4 border-dashed border-sky-300 rounded-3xl flex items-center justify-center z-20 pointer-events-none transition-all duration-300">
+                <span class="text-sky-400/80 font-bold tracking-widest text-lg absolute bottom-2 bg-sky-100/90 px-3 py-1 rounded-full uppercase">
+                    ABAJO (Suelo) 🎁
+                </span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Indicadores de Progreso -->
+    <div id="levelDots" class="flex gap-3 mb-6">
+        <div class="w-4 h-4 rounded-full bg-gray-300 border-2 border-white shadow active"></div>
+        <div class="w-4 h-4 rounded-full bg-gray-300 border-2 border-white shadow"></div>
+        <div class="w-4 h-4 rounded-full bg-gray-300 border-2 border-white shadow"></div>
+        <div class="w-4 h-4 rounded-full bg-gray-300 border-2 border-white shadow"></div>
+        <div class="w-4 h-4 rounded-full bg-gray-300 border-2 border-white shadow"></div>
+    </div>
+
+    <!-- Pantalla de Éxito Final -->
+    <div class="celebration" id="celebrationScreen">
+        <div class="celebration-box max-w-md w-full">
+            <h2 class="text-4xl font-bold text-green-700 mb-2" style="text-shadow: 2px 2px 0px var(--warning);">
+                ¡Árbol Decorado! 🎄🏆
+            </h2>
+            <p class="text-lg text-gray-600 mb-6">
+                ¡Eres un experto en el espacio! Colocaste todo arriba y abajo de forma fantástica.
+            </p>
+            <button class="btn-restart" onclick="restartGame()">
+                ¡Decorar otro árbol! 🔄
+            </button>
+        </div>
+    </div>
+
+    <!-- CSS Adicional de la pantalla de victoria -->
+    <style>
+        .celebration {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            z-index: 110;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            animation: fadeIn 0.5s ease forwards;
+            padding: 20px;
+        }
+
+        .celebration-box {
+            text-align: center;
+            background: white;
+            padding: 45px 30px;
+            border-radius: 35px;
+            border: 6px solid #25C685;
+            box-shadow: 0 20px 0px rgba(0,0,0,0.08);
+            animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .btn-restart {
+            font-size: 1.5rem;
+            font-weight: 700;
+            padding: 14px 40px;
+            background: var(--warning);
+            border: 4px solid #e6c21f;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 0px #ccac1b;
+            transition: all 0.1s ease;
+        }
+
+        .btn-restart:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0px #ccac1b;
+        }
+    </style>
+
+    <script>
+        // --- Sintetizador de Sonido (Web Audio API) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'success') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime); // A4
+                osc.frequency.setValueAtTime(554.37, audioCtx.currentTime + 0.1); // C#5
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.2); // E5
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.3); // A5
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'error') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(120, audioCtx.currentTime + 0.25);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.25);
+            } else if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(450, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.06);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.06);
+            }
+        }
+
+        // --- Definición del Banco de Objetos de Juego (Esferas y Regalos) ---
+        const gameItems = [
+            { id: "esfera-roja", type: "arriba", name: "Esfera Roja", emoji: "🔴" },
+            { id: "regalo-azul", type: "abajo", name: "Regalo Azul", emoji: "🎁" },
+            { id: "esfera-amarilla", type: "arriba", name: "Esfera Amarilla", emoji: "🟡" },
+            { id: "regalo-sorpresa", type: "abajo", name: "Regalo Rosa", emoji: "💝" },
+            { id: "esfera-azul", type: "arriba", name: "Esfera Azul", emoji: "🔵" }
+        ];
+
+        // Ubicaciones de anclaje exactas calculadas en base al contenedor del árbol
+        const itemSlots = {
+            "esfera-roja": { left: "34%", top: "42%" },      // Rama izquierda
+            "esfera-amarilla": { left: "64%", top: "56%" },  // Rama derecha baja
+            "esfera-azul": { left: "50%", top: "25%" },      // Rama superior centro
+            "regalo-azul": { left: "25%", top: "86%" },      // Suelo a la izquierda del tronco
+            "regalo-sorpresa": { left: "72%", top: "86%" }   // Suelo a la derecha del tronco
+        };
+
+        // --- Definición de Pasos/Instrucciones de Audio ---
+        const levels = [
+            {
+                itemId: "esfera-roja",
+                audioText: "¡Coloca la esfera de color rojo ARRIBA en el árbol!",
+                zoneTarget: "zone-arriba"
+            },
+            {
+                itemId: "regalo-azul",
+                audioText: "¡Lleva el regalo azul ABAJO del árbol!",
+                zoneTarget: "zone-abajo"
+            },
+            {
+                itemId: "esfera-amarilla",
+                audioText: "¡Pon la esfera amarilla ARRIBA en las ramas verdes!",
+                zoneTarget: "zone-arriba"
+            },
+            {
+                itemId: "regalo-sorpresa",
+                audioText: "¡Coloca el regalo sorpresa de corazón ABAJO del árbol!",
+                zoneTarget: "zone-abajo"
+            },
+            {
+                itemId: "esfera-azul",
+                audioText: "¡Pon la última esfera de color azul ARRIBA en el árbol!",
+                zoneTarget: "zone-arriba"
+            }
+        ];
+
+        let currentStepIndex = 0;
+        let activeDragElement = null;
+        let dragOffset = { x: 0, y: 0 };
+        let dragStartPos = { x: 0, y: 0 };
+
+        // --- Inicialización del Juego ---
+        function startGame() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            playSound('click');
+            
+            const welcome = document.getElementById('welcomeScreen');
+            welcome.style.opacity = '0';
+            welcome.style.pointerEvents = 'none';
+            setTimeout(() => {
+                welcome.style.display = 'none';
+            }, 500);
+
+            initGame();
+        }
+
+        function initGame() {
+            currentStepIndex = 0;
+            
+            // Vaciar las decoraciones colocadas anteriormente de forma limpia
+            const placedDecorations = document.getElementById('placed-decorations');
+            if (placedDecorations) {
+                placedDecorations.innerHTML = '';
+            }
+
+            // Generar todos los juguetes/adornos de vuelta al "Juguetero"
+            const toybox = document.getElementById('toybox');
+            toybox.innerHTML = '';
+
+            gameItems.forEach(item => {
+                const el = document.createElement('div');
+                el.id = item.id;
+                el.className = 'draggable-item w-20 h-20 bg-gray-50 hover:bg-yellow-50 rounded-2xl border-4 border-gray-200 hover:border-yellow-300 shadow flex flex-col items-center justify-center p-1 relative';
+                el.style.touchAction = 'none';
+                el.innerHTML = `
+                    <span class="text-3xl">${item.emoji}</span>
+                    <span class="text-[10px] text-gray-400 font-bold uppercase mt-1 text-center">${item.name}</span>
+                `;
+                
+                // Conectar eventos Pointer para arrastre seguro en móviles/escritorio
+                el.addEventListener('pointerdown', handlePointerDown);
+                
+                toybox.appendChild(el);
+            });
+
+            loadStep();
+        }
+
+        // --- Cargar Paso Académico Actual ---
+        function loadStep() {
+            // Actualizar dots de nivel
+            const dots = document.querySelectorAll('#levelDots div');
+            dots.forEach((dot, idx) => {
+                dot.className = 'w-4 h-4 rounded-full border-2 border-white shadow';
+                if (idx === currentStepIndex) {
+                    dot.classList.add('bg-indigo-600', 'scale-125');
+                } else if (idx < currentStepIndex) {
+                    dot.classList.add('bg-green-500');
+                } else {
+                    dot.classList.add('bg-gray-300');
+                }
+            });
+
+            // Resaltar la zona de caída objetivo de forma lúdica
+            document.getElementById('zone-arriba').classList.remove('drop-zone-active');
+            document.getElementById('zone-abajo').classList.remove('drop-zone-active');
+            
+            const currentLevel = levels[currentStepIndex];
+            const targetZoneId = currentLevel.zoneTarget;
+            document.getElementById(targetZoneId).classList.add('drop-zone-active');
+
+            // Actualizar cuadro de texto del búho
+            document.getElementById('instructionText').textContent = currentLevel.audioText;
+
+            // Reproducir instrucción de voz
+            speakInstruction(currentLevel.audioText);
+        }
+
+        // Sintetizador de Voz Nativo (Pausado para niños)
+        function speakInstruction(text) {
+            if ('speechSynthesis' in window) {
+                // Cancelar cualquier discurso previo para evitar colas
+                window.speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'es-ES';
+                utterance.rate = 0.85; // Habla ligeramente lenta e infantil
+                utterance.pitch = 1.2; // Tono de voz amigable/agudo
+
+                // Buscar específicamente una voz en español si está disponible
+                const voices = window.speechSynthesis.getVoices();
+                const esVoice = voices.find(v => v.lang.startsWith('es'));
+                if (esVoice) utterance.voice = esVoice;
+
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function repeatInstruction() {
+            playSound('click');
+            const currentLevel = levels[currentStepIndex];
+            speakInstruction(currentLevel.audioText);
+        }
+
+        // --- Motor de Arrastre Adaptivo con Pointer Events (Touch & Mouse) ---
+        function handlePointerDown(e) {
+            e.preventDefault();
+            activeDragElement = e.currentTarget;
+            
+            // Registrar posición original para vuelos de retorno de error
+            const rect = activeDragElement.getBoundingClientRect();
+            dragStartPos = {
+                left: activeDragElement.style.left || 'auto',
+                top: activeDragElement.style.top || 'auto',
+                position: activeDragElement.style.position || 'static'
+            };
+
+            // Convertir elemento a absolute para moverlo libremente por la pantalla
+            activeDragElement.style.width = `${rect.width}px`;
+            activeDragElement.style.height = `${rect.height}px`;
+            activeDragElement.style.position = 'fixed';
+            activeDragElement.style.left = `${rect.left}px`;
+            activeDragElement.style.top = `${rect.top}px`;
+            activeDragElement.style.zIndex = '1000';
+
+            // Calcular desfase del puntero respecto al centro del objeto
+            dragOffset = {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+
+            // Escuchar eventos globales para seguimiento de arrastre
+            document.addEventListener('pointermove', handlePointerMove);
+            document.addEventListener('pointerup', handlePointerUp);
+        }
+
+        function handlePointerMove(e) {
+            if (!activeDragElement) return;
+            
+            // Actualizar posición del elemento arrastrado
+            activeDragElement.style.left = `${e.clientX - dragOffset.x}px`;
+            activeDragElement.style.top = `${e.clientY - dragOffset.y}px`;
+        }
+
+        function handlePointerUp(e) {
+            if (!activeDragElement) return;
+
+            document.removeEventListener('pointermove', handlePointerMove);
+            document.removeEventListener('pointerup', handlePointerUp);
+
+            const elem = activeDragElement;
+            activeDragElement = null;
+
+            // Encontrar la zona del árbol bajo el puntero
+            const currentLevel = levels[currentStepIndex];
+            const targetZoneElement = document.getElementById(currentLevel.zoneTarget);
+            const zoneRect = targetZoneElement.getBoundingClientRect();
+
+            // Calcular punto de soltado (centro del adorno)
+            const elemRect = elem.getBoundingClientRect();
+            const elemCenterX = elemRect.left + elemRect.width / 2;
+            const elemCenterY = elemRect.top + elemRect.height / 2;
+
+            // Verificar si el adorno se soltó dentro de los límites de la zona correcta
+            const isInsideTargetZone = (
+                elemCenterX >= zoneRect.left &&
+                elemCenterX <= zoneRect.right &&
+                elemCenterY >= zoneRect.top &&
+                elemCenterY <= zoneRect.bottom
+            );
+
+            // Verificar si es el elemento requerido por el nivel
+            const isCorrectItem = (elem.id === currentLevel.itemId);
+
+            if (isInsideTargetZone && isCorrectItem) {
+                // ¡Acierto de Orientación Espacial!
+                playSound('success');
+                placeItemPermanently(elem, currentLevel.zoneTarget);
+                advanceStep();
+            } else {
+                // Fallo (Se soltó en la zona equivocada o no era el adorno pedido)
+                playSound('error');
+                elem.classList.add('shake');
+                
+                // Mostrar pista interactiva en el búho
+                const zoneHint = currentLevel.zoneTarget === 'zone-arriba' ? "ARRIBA (en las ramas)" : "ABAJO (en el suelo)";
+                document.getElementById('instructionText').textContent = `¡Uy! Recuerda que este adorno va ${zoneHint}. ¡Inténtalo de nuevo! 🦉`;
+                speakInstruction(`Inténtalo de nuevo. Recuerda colocarlo ${zoneHint === 'ARRIBA (en las ramas)' ? 'arriba del árbol' : 'abajo del árbol'}`);
+
+                setTimeout(() => {
+                    elem.classList.remove('shake');
+                }, 500);
+
+                // Retornar suavemente al juguetero lateral
+                resetElementToBox(elem);
+            }
+        }
+
+        // Fijar el adorno de forma permanente en la ubicación exacta del árbol
+        function placeItemPermanently(elem, zoneId) {
+            const placedContainer = document.getElementById('placed-decorations');
+            const itemData = gameItems.find(item => item.id === elem.id);
+            const slot = itemSlots[elem.id];
+
+            // Crear elemento fijo
+            const placedEl = document.createElement('div');
+            placedEl.className = 'absolute text-4xl pop-effect drop-shadow-md z-30';
+            placedEl.textContent = itemData.emoji;
+
+            // Aplicar coordenadas exactas predefinidas del mapa
+            placedEl.style.left = slot.left;
+            placedEl.style.top = slot.top;
+            placedEl.style.transform = 'translate(-50%, -50%)';
+
+            placedContainer.appendChild(placedEl);
+
+            // Eliminar el adorno original del panel de selección
+            elem.remove();
+        }
+
+        // Retornar elemento al juguetero lateral de forma limpia
+        function resetElementToBox(elem) {
+            elem.style.position = dragStartPos.position;
+            elem.style.left = dragStartPos.left;
+            elem.style.top = dragStartPos.top;
+            elem.style.width = 'auto';
+            elem.style.height = 'auto';
+            elem.style.zIndex = '10';
+        }
+
+        // Avanzar el flujo del juego
+        function advanceStep() {
+            currentStepIndex++;
+            if (currentStepIndex < levels.length) {
+                setTimeout(loadStep, 1500);
+            } else {
+                // Fin del juego: Árbol decorado por completo
+                setTimeout(() => {
+                    document.getElementById('celebrationScreen').style.display = 'flex';
+                    speakInstruction("¡Felicidades! ¡Decoraste todo el árbol muy bien!");
+                }, 1000);
+            }
+        }
+
+        function restartGame() {
+            playSound('click');
+            document.getElementById('celebrationScreen').style.display = 'none';
+            initGame();
+        }
+
+        // Asegurar la carga de voces antes del inicio del juego
+        window.speechSynthesis.onvoiceschanged = function() {
+            // Se pre-cargan en segundo plano
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detective de Significados: La Verdad Oculta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Montserrat:wght@400;700&display=swap');
+
+        :root {
+            --sepia: #f4ecd8;
+            --noir: #2c2c2c;
+            --accent-red: #991b1b;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--noir);
+            color: var(--sepia);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .detective-font { font-family: 'Special Elite', cursive; }
+
+        .case-folder {
+            background-color: var(--sepia);
+            color: #3d2b1f;
+            box-shadow: 20px 20px 0px rgba(0,0,0,0.5);
+            background-image: radial-gradient(#d1c7ac 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .dialog-bubble {
+            background: white;
+            color: black;
+            border-radius: 20px;
+            position: relative;
+            box-shadow: 5px 5px 0px #b91c1c;
+        }
+
+        .dialog-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50px;
+            border-width: 15px 15px 0;
+            border-style: solid;
+            border-color: white transparent;
+        }
+
+        .option-card {
+            border: 2px solid #3d2b1f;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .option-card:hover {
+            background-color: #3d2b1f;
+            color: var(--sepia);
+            transform: translateX(10px);
+        }
+
+        .evidence-stamp {
+            border: 4px double var(--accent-red);
+            color: var(--accent-red);
+            transform: rotate(-15px);
+            font-weight: 900;
+            padding: 5px 15px;
+            display: inline-block;
+        }
+
+        #character-sprite {
+            transition: all 0.5s ease;
+        }
+
+        /* Estilo para simular máquina de escribir */
+        .typewriter-text {
+            overflow: hidden;
+            border-right: .15em solid orange;
+            white-space: nowrap;
+            margin: 0 auto;
+            letter-spacing: .15em;
+            animation: typing 3.5s steps(40, end), blink-caret .75s step-end infinite;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center p-4">
+
+    <!-- Pantalla Inicial -->
+    <div id="start-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black p-6 text-center">
+        <h1 class="detective-font text-6xl text-red-700 mb-4 animate__animated animate__fadeInDown">DETECTIVE DE SIGNIFICADOS</h1>
+        <p class="detective-font text-2xl text-gray-400 mb-8 max-w-2xl">
+            "En este trabajo, lo más importante no es lo que la gente dice, sino lo que intenta ocultar."
+        </p>
+        <div class="case-folder p-8 rounded-sm rotate-2 hover:rotate-0 transition-transform cursor-pointer" onclick="startCase()">
+            <span class="detective-font text-3xl font-bold">ABRIR EXPEDIENTE: Caso #042</span>
+        </div>
+    </div>
+
+    <!-- Pantalla de Juego -->
+    <div id="game-screen" class="hidden w-full max-w-5xl h-[90vh] flex flex-col gap-6">
+        
+        <!-- Cabecera de Progreso -->
+        <div class="flex justify-between items-center px-4">
+            <div class="detective-font text-xl">Deducciones correctas: <span id="score" class="text-red-500">0</span>/5</div>
+            <div class="evidence-stamp text-xl uppercase">Confidencial</div>
+        </div>
+
+        <div class="flex-grow flex flex-col lg:flex-row gap-6 overflow-hidden">
+            
+            <!-- Escena del Sospechoso -->
+            <div class="w-full lg:w-1/2 flex flex-col items-center justify-end relative bg-gray-800 rounded-3xl p-6 border-b-8 border-gray-900 shadow-inner">
+                <div id="dialog-container" class="absolute top-10 left-10 right-10 z-10 animate__animated animate__fadeIn">
+                    <div class="dialog-bubble p-6">
+                        <p id="character-name" class="font-bold text-red-700 uppercase text-xs mb-1">Sospechoso</p>
+                        <p id="character-dialogue" class="text-lg md:text-xl italic font-serif leading-tight">
+                            "No sé de qué me hablas. Ese jarrón siempre ha estado roto... además, yo ni siquiera estaba en la sala cuando 'supuestamente' se cayó."
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Personaje SVG Adaptable -->
+                <div id="character-img" class="w-64 h-64 md:w-80 md:h-80 flex items-end">
+                    <svg id="svg-character" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="100" cy="60" r="40" fill="#e0ac69" />
+                        <path d="M60 100 Q100 80 140 100 L160 200 L40 200 Z" fill="#444" />
+                        <rect x="80" y="50" width="10" height="5" fill="#000" id="eye-l" />
+                        <rect x="110" y="50" width="10" height="5" fill="#000" id="eye-r" />
+                        <path d="M90 85 Q100 80 110 85" stroke="black" fill="none" stroke-width="2" id="mouth" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Panel de Deducción (Opciones) -->
+            <div class="w-full lg:w-1/2 case-folder p-6 md:p-8 flex flex-col gap-4 overflow-y-auto">
+                <h3 class="detective-font text-2xl font-bold border-b-2 border-black/20 pb-2 mb-2">Análisis de Intención:</h3>
+                <p class="text-sm uppercase tracking-widest text-gray-600 font-bold mb-2">¿Cuál es la verdad oculta tras estas palabras?</p>
+                
+                <div id="options-container" class="flex flex-col gap-3">
+                    <!-- Opciones se cargan aquí -->
+                </div>
+
+                <div id="feedback-panel" class="mt-4 p-4 rounded border-2 border-dashed border-gray-400 hidden animate__animated animate__fadeIn">
+                    <p id="feedback-text" class="italic"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pantalla Final -->
+    <div id="end-screen" class="hidden fixed inset-0 z-[60] flex flex-col items-center justify-center bg-zinc-900 p-6 text-center">
+        <div class="case-folder p-10 max-w-2xl animate__animated animate__jackInTheBox">
+            <h2 id="end-title" class="detective-font text-5xl mb-6">REPORTE FINAL</h2>
+            <p id="end-summary" class="text-xl mb-8 font-serif leading-relaxed"></p>
+            <button onclick="location.reload()" class="bg-red-800 text-white px-8 py-3 rounded shadow-lg hover:bg-red-700 transition font-bold uppercase tracking-widest">Cerrar Expediente</button>
+        </div>
+    </div>
+
+    <script>
+        const cases = [
+            {
+                name: "Sr. Martínez (El vecino)",
+                dialogue: "—Oh, claro que vi a alguien corriendo por el jardín. Pero mis gafas estaban en la cocina y, bueno... ya sabes que a mi edad uno ve sombras donde no las hay.",
+                options: [
+                    { text: "El Sr. Martínez tiene mala memoria por su edad.", correct: false, reason: "Esto es literal, no una inferencia de su intención." },
+                    { text: "El Sr. Martínez vio algo importante pero tiene miedo de involucrarse.", correct: true, reason: "Al mencionar las gafas y las sombras, está creando una excusa para no declarar lo que realmente vio." },
+                    { text: "El Sr. Martínez quiere invitar al detective a la cocina.", correct: false, reason: "No hay pistas que sugieran esto." }
+                ],
+                mood: "nervous"
+            },
+            {
+                name: "Clara (La mejor amiga)",
+                dialogue: "—¿Que si me gusta el regalo de Ana? Es... interesante. Muy original. Nunca habría imaginado que alguien elegiría un color así para una bufanda.",
+                options: [
+                    { text: "A Clara le encanta el regalo por ser original.", correct: false, reason: "Literalmente dice 'interesante', pero el tono sugiere otra cosa." },
+                    { text: "Clara piensa que el color de la bufanda es el más bonito del mundo.", correct: false, reason: "Sus palabras sugieren extrañeza, no admiración." },
+                    { text: "A Clara no le gusta el regalo, pero no quiere ser grosera.", correct: true, reason: "Usa palabras neutras como 'interesante' y 'original' para evitar decir que le parece feo." }
+                ],
+                mood: "awkward"
+            },
+            {
+                name: "Tomás (El hermano menor)",
+                dialogue: "—No, no tengo hambre. Solo estaba mirando la caja de galletas para ver si... eh... si el diseño de la tapa había cambiado desde ayer.",
+                options: [
+                    { text: "Tomás es un experto en diseño de cajas.", correct: false, reason: "Es una excusa poco creíble." },
+                    { text: "Tomás estaba intentando sacar una galleta a escondidas.", correct: true, reason: "Su excusa es tan absurda que delata que lo atraparon haciendo algo que no debía." },
+                    { text: "A Tomás le preocupa que la caja esté sucia.", correct: false, reason: "No menciona la limpieza en su diálogo." }
+                ],
+                mood: "guilty"
+            },
+            {
+                name: "Dra. Varela",
+                dialogue: "—Su proyecto de ciencias es... ambicioso. Requiere una cantidad de tiempo que, honestamente, no estoy segura de que hayamos calculado bien.",
+                options: [
+                    { text: "La doctora piensa que el proyecto va a ser un éxito total mañana.", correct: false, reason: "Su duda sobre el tiempo sugiere lo contrario." },
+                    { text: "La doctora cree que el proyecto es demasiado difícil para el tiempo disponible.", correct: true, reason: "Al decir 'ambicioso' y dudar del cálculo del tiempo, está advirtiendo de un posible fracaso." },
+                    { text: "La doctora quiere que trabajen más horas por la noche.", correct: false, reason: "Infiere una orden que no está necesariamente en su crítica técnica." }
+                ],
+                mood: "serious"
+            },
+            {
+                name: "Hugo (El sospechoso)",
+                dialogue: "—Vaya, qué coincidencia encontrarte aquí en la biblioteca a las diez de la noche, justo frente a la sección de libros prohibidos...",
+                options: [
+                    { text: "Hugo está feliz de ver a su amigo.", correct: false, reason: "El contexto de 'libros prohibidos' y la hora le dan un tono de sospecha." },
+                    { text: "Hugo está sugiriendo que el otro está haciendo algo indebido.", correct: true, reason: "Usa la ironía de la 'coincidencia' para señalar que el otro sospechoso está en un lugar prohibido." },
+                    { text: "Hugo quiere que le recomienden un libro.", correct: false, reason: "No hay ninguna petición de lectura en su frase." }
+                ],
+                mood: "suspicious"
+            }
+        ];
+
+        let currentCase = 0;
+        let score = 0;
+
+        function startCase() {
+            document.getElementById('start-screen').classList.add('animate__fadeOut');
+            setTimeout(() => {
+                document.getElementById('start-screen').classList.add('hidden');
+                document.getElementById('game-screen').classList.remove('hidden');
+                loadCase();
+            }, 500);
+        }
+
+        function loadCase() {
+            if (currentCase >= cases.length) {
+                showEnd();
+                return;
+            }
+
+            const data = cases[currentCase];
+            document.getElementById('character-name').innerText = data.name;
+            document.getElementById('character-dialogue').innerText = data.dialogue;
+            
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            data.options.forEach((opt, idx) => {
+                const card = document.createElement('div');
+                card.className = 'option-card p-4 rounded bg-white/50 detective-font text-lg animate__animated animate__fadeInRight';
+                card.style.animationDelay = `${idx * 0.2}s`;
+                card.innerText = opt.text;
+                card.onclick = () => selectOption(idx);
+                container.appendChild(card);
+            });
+
+            updateCharacterMood(data.mood);
+            document.getElementById('feedback-panel').classList.add('hidden');
+        }
+
+        function updateCharacterMood(mood) {
+            const mouth = document.getElementById('mouth');
+            const eyeL = document.getElementById('eye-l');
+            const eyeR = document.getElementById('eye-r');
+            
+            if (mood === "nervous") {
+                mouth.setAttribute('d', 'M90 85 Q100 95 110 85');
+                eyeL.setAttribute('height', '2');
+                eyeR.setAttribute('height', '2');
+            } else if (mood === "guilty") {
+                mouth.setAttribute('d', 'M95 85 L105 85');
+                eyeL.setAttribute('transform', 'rotate(10 80 50)');
+                eyeR.setAttribute('transform', 'rotate(-10 110 50)');
+            } else if (mood === "suspicious") {
+                mouth.setAttribute('d', 'M90 85 Q100 80 115 80');
+                eyeL.setAttribute('height', '8');
+                eyeR.setAttribute('height', '2');
+            } else {
+                mouth.setAttribute('d', 'M90 85 Q100 85 110 85');
+                eyeL.setAttribute('height', '5');
+                eyeR.setAttribute('height', '5');
+            }
+        }
+
+        function selectOption(idx) {
+            const data = cases[currentCase];
+            const option = data.options[idx];
+            const feedbackPanel = document.getElementById('feedback-panel');
+            const feedbackText = document.getElementById('feedback-text');
+            
+            feedbackPanel.classList.remove('hidden', 'bg-green-100', 'bg-red-100', 'text-green-800', 'text-red-800');
+            
+            if (option.correct) {
+                score++;
+                document.getElementById('score').innerText = score;
+                feedbackPanel.classList.add('bg-green-100', 'text-green-800');
+                feedbackText.innerHTML = `<strong>¡CORRECTO!</strong> ${option.reason}`;
+                setTimeout(() => {
+                    currentCase++;
+                    loadCase();
+                }, 2500);
+            } else {
+                feedbackPanel.classList.add('bg-red-100', 'text-red-800');
+                feedbackText.innerHTML = `<strong>PISTA FALLIDA:</strong> ${option.reason}`;
+            }
+        }
+
+        function showEnd() {
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('end-screen').classList.remove('hidden');
+            
+            const summary = document.getElementById('end-summary');
+            if (score >= 4) {
+                summary.innerText = `Increíble trabajo, Detective. Has demostrado una capacidad excepcional para leer entre líneas. Ninguna verdad oculta está a salvo de tu mirada crítica. Lograste ${score} de ${cases.length} deducciones correctas.`;
+            } else {
+                summary.innerText = `Buen intento. Has resuelto ${score} de ${cases.length} casos, pero algunos sospechosos lograron engañarte con sus palabras. Recuerda: lo que la gente elige NO decir es tan importante como lo que dice.`;
+            }
+        }
+    </script>
+</body>
+</html>

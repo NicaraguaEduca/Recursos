@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Detective de Intenciones 🔍</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Public+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --detective-blue: #1e293b;
+            --accent-yellow: #facc15;
+            --screen-green: #22c55e;
+            --danger-red: #ef4444;
+            --joy-pink: #f472b6;
+            --worry-orange: #fb923c;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Public Sans', sans-serif; }
+        h1, h2, h3, .btn-main { font-family: 'Unbounded', sans-serif; text-transform: uppercase; }
+
+        body {
+            background: var(--detective-blue);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            color: white;
+        }
+
+        .navbar {
+            height: 60px;
+            background: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            border-bottom: 4px solid var(--accent-yellow);
+            flex-shrink: 0;
+        }
+
+        .pantalla {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(10px, 3vw, 20px);
+            position: relative;
+        }
+
+        /* --- INTERFAZ DE COMPUTADORA --- */
+        .pc-monitor {
+            background: #334155;
+            width: 100%;
+            max-width: 850px;
+            border-radius: 20px;
+            padding: 15px;
+            border: 8px solid #475569;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            max-height: 80vh;
+        }
+
+        .email-header {
+            background: #1e293b;
+            padding: 10px 20px;
+            border-radius: 10px 10px 0 0;
+            border-bottom: 2px solid var(--accent-yellow);
+            font-size: 0.9rem;
+        }
+
+        .email-body {
+            background: #f8fafc;
+            color: #1e293b;
+            padding: clamp(15px, 4vw, 30px);
+            min-height: 180px;
+            font-size: clamp(1rem, 2.2vw, 1.3rem);
+            line-height: 1.5;
+            border-radius: 0 0 10px 10px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* --- BOTONES DE EMOCIÓN --- */
+        .folder-zone {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(10px, 3vw, 20px);
+            width: 100%;
+            max-width: 850px;
+            margin-top: 25px;
+        }
+
+        .btn-folder {
+            padding: 15px;
+            border-radius: 15px;
+            border: 4px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            text-align: center;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-enojo { background: #450a0a; color: #fecaca; }
+        .btn-enojo:hover { background: var(--danger-red); color: white; transform: translateY(-5px); border-color: white; }
+        
+        .btn-alegria { background: #064e3b; color: #d1fae5; }
+        .btn-alegria:hover { background: var(--screen-green); color: white; transform: translateY(-5px); border-color: white; }
+
+        .btn-preocupacion { background: #431407; color: #ffedd5; }
+        .btn-preocupacion:hover { background: var(--worry-orange); color: white; transform: translateY(-5px); border-color: white; }
+
+        .btn-main {
+            background: var(--accent-yellow);
+            color: var(--detective-blue);
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #a16207;
+        }
+
+        /* --- ANIMACIONES --- */
+        .shake-pc { animation: shake 0.4s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 850px) {
+            body { overflow-y: auto; height: auto; }
+            .pantalla { height: auto; min-height: 100vh; justify-content: flex-start; padding: 15px; }
+            .folder-zone { grid-template-columns: 1fr; }
+            .pc-monitor { max-height: none; }
+            .email-body { min-height: 150px; }
+            .btn-folder { flex-direction: row; justify-content: center; padding: 12px; }
+        }
+    </style>
+</head>
+<body x-data="detectiveApp()">
+
+    <nav class="navbar">
+        <div style="font-weight: 900; color: var(--accent-yellow);">🔍 AGENCIA DE INFERENCIAS</div>
+        <div style="background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 20px; font-weight: 800; font-size: 0.8rem;">
+            CASOS RESUELTOS: <span x-text="indice"></span>/5
+        </div>
+    </nav>
+
+    <main class="pantalla" x-show="paso === 'inicio'">
+        <div style="font-size: 5rem;">🕵️‍♂️</div>
+        <h1 style="color: var(--accent-yellow); margin-top: 15px;">DETECTIVE DE INTENCIONES</h1>
+        
+        <div style="background: rgba(255,255,255,0.05); padding: 25px; border-radius: 20px; border: 2px solid var(--accent-yellow); max-width: 650px; margin: 25px 0;">
+            <p><b>📚 MATERIA:</b> Lengua (Comprensión Inferencial).</p>
+            <p><b>🎯 OBJETIVO:</b> Deducir el estado de ánimo del remitente mediante pistas textuales.</p>
+            <p><b>🧒 GRADO:</b> 4º a 6º de Primaria.</p>
+            <hr style="margin: 15px 0; border: none; border-top: 1px solid rgba(255,255,255,0.1);">
+            <p style="font-size: 1.1rem; line-height: 1.4;">¡Atención, agente! Han llegado correos misteriosos. Debes leer entre líneas y descubrir cómo se siente el remitente antes de que se acabe el tiempo.</p>
+        </div>
+
+        <button class="btn-main" @click="paso = 'juego'">ACEPTAR EL CASO</button>
+    </main>
+
+    <main class="pantalla" x-show="paso === 'juego'" x-transition>
+        <div class="pc-monitor" id="monitor">
+            <div class="email-header">
+                <p><b>De:</b> <span x-text="casos[indice].remitente"></span></p>
+                <p><b>Asunto:</b> <span x-text="casos[indice].asunto"></span></p>
+            </div>
+            <div class="email-body" id="email-text">
+                <span x-text="casos[indice].mensaje"></span>
+            </div>
+        </div>
+
+        <div class="folder-zone">
+            <div class="btn-folder btn-alegria" @click="analizar('alegre')">
+                <span style="font-size: 2rem;">😊</span>
+                <span style="font-weight: 900;">ALEGRÍA</span>
+            </div>
+            <div class="btn-folder btn-preocupacion" @click="analizar('preocupado')">
+                <span style="font-size: 2rem;">😟</span>
+                <span style="font-weight: 900;">PREOCUPACIÓN</span>
+            </div>
+            <div class="btn-folder btn-enojo" @click="analizar('enojado')">
+                <span style="font-size: 2rem;">😡</span>
+                <span style="font-weight: 900;">ENOJO</span>
+            </div>
+        </div>
+
+        <div id="pista-feedback" style="margin-top: 20px; font-weight: 800; text-align: center; min-height: 30px;"></div>
+    </main>
+
+    <main class="pantalla" x-show="paso === 'fin'">
+        <div style="text-align: center;">
+            <div style="font-size: 6rem;">🎖️</div>
+            <h1 style="color: var(--accent-yellow); font-size: 3rem;">CASO CERRADO</h1>
+            <p style="font-size: 1.3rem; margin: 20px 0;">¡Excelente trabajo, detective!<br>Has demostrado que nada se escapa a tu lectura.</p>
+            <button class="btn-main" @click="location.reload()">NUEVA INVESTIGACIÓN</button>
+        </div>
+    </main>
+
+    <script>
+        function detectiveApp() {
+            return {
+                paso: 'inicio',
+                indice: 0,
+                casos: [
+                    { 
+                        remitente: "Tío Carlos", 
+                        asunto: "¡ADIVINA!", 
+                        mensaje: "¡No puedo creerlo! Acabo de ver los resultados del sorteo y tengo los números ganadores. ¡Voy volando a tu casa para celebrar con pizza! 🎉✨", 
+                        tipo: "alegre",
+                        pista: "Usa signos de exclamación y palabras como 'celebrar' y 'ganadores'."
+                    },
+                    { 
+                        remitente: "Entrenador Luis", 
+                        asunto: "Llegada tarde", 
+                        mensaje: "¿Dónde estás? Llevamos 20 minutos esperando. Te dije claramente que la puntualidad es obligatoria para el equipo. ¡No es la primera vez que pasa!", 
+                        tipo: "enojado",
+                        pista: "Preguntas directas, mayúsculas y frases como 'claramente' y 'no es la primera vez'."
+                    },
+                    { 
+                        remitente: "Mamá", 
+                        asunto: "¿Has visto las llaves?", 
+                        mensaje: "Hijo, no las encuentro por ningún lado. He buscado en la cocina, en la sala y nada. Por favor, llámame apenas leas esto, necesito salir urgente.", 
+                        tipo: "preocupado",
+                        pista: "Repite que no encuentra algo y pide que llames 'apenas leas esto' con 'urgente'."
+                    },
+                    { 
+                        remitente: "Sofía", 
+                        asunto: "¡SORPRESA!", 
+                        mensaje: "¡Me aceptaron en el curso de pintura que tanto quería! Estoy saltando de emoción por toda la habitación. ¡Mañana mismo empiezo!", 
+                        tipo: "alegre",
+                        pista: "Menciona 'emoción' y 'saltando' con muchos signos de exclamación."
+                    },
+                    { 
+                        remitente: "Abuelo", 
+                        asunto: "El perrito", 
+                        mensaje: "Firulais no ha querido comer nada hoy y está muy decaído. ¿Crees que deberíamos llevarlo al veterinario ahora mismo? No sé qué hacer.", 
+                        tipo: "preocupado",
+                        pista: "Usa frases como 'no sé qué hacer' y propone ir al médico de inmediato."
+                    }
+                ],
+                analizar(seleccion) {
+                    const monitor = document.getElementById('monitor');
+                    const fb = document.getElementById('pista-feedback');
+                    const correcta = this.casos[this.indice].tipo;
+
+                    if (seleccion === correcta) {
+                        fb.innerText = "¡ANÁLISIS CORRECTO! " + this.casos[this.indice].pista;
+                        fb.style.color = "var(--screen-green)";
+                        
+                        gsap.to("#monitor", { 
+                            scale: 1.02, 
+                            borderColor: "var(--screen-green)", 
+                            duration: 0.2, 
+                            yoyo: true, 
+                            repeat: 1 
+                        });
+
+                        setTimeout(() => {
+                            fb.innerText = "";
+                            this.indice++;
+                            if (this.indice >= this.casos.length) {
+                                confetti({ particleCount: 150, spread: 70 });
+                                this.paso = 'fin';
+                            }
+                        }, 2500);
+                    } else {
+                        monitor.classList.add('shake-pc');
+                        fb.innerText = "⚠️ Error en la deducción. Analiza mejor las pistas textuales.";
+                        fb.style.color = "var(--danger-red)";
+                        
+                        setTimeout(() => {
+                            monitor.classList.remove('shake-pc');
+                            fb.innerText = "";
+                        }, 1000);
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

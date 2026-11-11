@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Interruptor de Nombres - Uso de Mayúsculas</title>
+    
+    <!-- Fuentes Google: Fredoka One (Infantil Toon) y Quicksand (Lectura clara) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA PARA WORDPRESS -->
+    <script>
+        window.tailwind = {
+            config: {
+                important: '#recurso-wp-interruptor',
+                corePlugins: { preflight: false },
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            toon: ['"Fredoka One"', 'cursive'],
+                            body: ['Quicksand', 'sans-serif'],
+                        },
+                        colors: {
+                            panel: {
+                                dark: '#1e1b4b',     /* Fondo azul índigo para excelente contraste y amabilidad */
+                                gray: '#1e293b',     /* Gris pizarra oscuro para tarjetas de palabras */
+                                steel: '#4b5563',    /* Gris medio para bordes */
+                                neonCyan: '#22d3ee', /* Celeste neón brillante */
+                                neonGold: '#fbbf24', /* Dorado encendido */
+                                neonGreen: '#10b981',/* Éxito */
+                                neonRed: '#f43f5e'   /* Error */
+                            }
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* =========================================================
+           MICRO-RESET LOCAL
+           ========================================================= */
+        #recurso-wp-interruptor * { box-sizing: border-box; border-width: 0; border-style: solid; border-color: currentColor; line-height: normal; }
+        #recurso-wp-interruptor h1, #recurso-wp-interruptor h2, #recurso-wp-interruptor h3, #recurso-wp-interruptor p, #recurso-wp-interruptor span, #recurso-wp-interruptor div { margin: 0; padding: 0; }
+        #recurso-wp-interruptor button { background-color: transparent; cursor: pointer; padding: 0; font-family: inherit; }
+
+        /* =========================================================
+           ESTILOS GENERALES (Pantalla Completa)
+           ========================================================= */
+        #recurso-wp-interruptor {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #1e1b4b; /* Fondo azul místico para niños */
+            background-image: 
+                radial-gradient(rgba(34, 211, 238, 0.15) 2px, transparent 2px);
+            background-size: 30px 30px;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Paneles estilo Tablero Eléctrico Retro */
+        #recurso-wp-interruptor .electric-panel {
+            background-color: #0f172a;
+            border: 5px solid #fbbf24; /* Borde dorado de alto contraste */
+            border-radius: 2rem;
+            box-shadow: 10px 10px 0px #000, inset 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        #recurso-wp-interruptor .electric-btn {
+            border: 4px solid #000;
+            border-radius: 1.25rem;
+            box-shadow: 4px 4px 0px #000;
+            transition: all 0.15s ease-out;
+            font-family: 'Fredoka One', cursive;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        #recurso-wp-interruptor .electric-btn:hover:not(:disabled) {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #000;
+        }
+        #recurso-wp-interruptor .electric-btn:active:not(:disabled) {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px #000;
+        }
+
+        /* Módulos de Palabras */
+        .word-pod {
+            background-color: #0f172a; /* Fondo oscuro sólido para albergar las letras */
+            border: 3px solid #4b5563;  /* Borde claro visible */
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.9);
+            transition: all 0.3s ease;
+        }
+
+        /* Interruptores / Focos Táctiles */
+        .switch-bulb {
+            width: clamp(40px, 10vw, 55px);
+            height: clamp(40px, 10vw, 55px);
+            border-radius: 50%;
+            background-color: #374151; /* Gris oscuro para el estado apagado */
+            border: 3px solid #94a3b8; /* Borde plateado brillante de alto contraste */
+            box-shadow: inset 0 3px 5px rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Fredoka One', cursive;
+            font-size: clamp(1.2rem, 3.5vw, 1.8rem);
+            color: #ffffff; /* Texto blanco puro en apagado para legibilidad total */
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            user-select: none;
+        }
+
+        /* Estado Encendido (Letras en BLANCO PURO con sombra y Brillo Dorado Intenso) */
+        .switch-bulb.on {
+            background-color: #fde047; /* Amarillo oro brillante */
+            border-color: #eab308;     /* Borde amarillo oscuro */
+            color: #ffffff;            /* CORRECCIÓN: Letra en blanco brillante */
+            text-shadow: 2px 2px 0px #854d0e, -1px -1px 0px #854d0e, 1px -1px 0px #854d0e, -1px 1px 0px #854d0e; /* Borde oscuro para máxima definición */
+            box-shadow: 
+                0 0 20px #fbbf24, 
+                0 0 40px rgba(250, 204, 21, 0.6),
+                inset 0 -3px 5px rgba(0,0,0,0.1);
+            transform: scale(1.1) translateY(-2px);
+        }
+
+        /* Animación del Tablero */
+        .shake-impact { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-3px, 0, 0); }
+            20%, 80% { transform: translate3d(5px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
+        /* Chispas místicas flotantes */
+        .sparkle-particle {
+            position: absolute;
+            font-size: 1.5rem;
+            color: #fbbf24;
+            pointer-events: none;
+            animation: sparkleFly 1s ease-out forwards;
+            z-index: 100;
+        }
+        @keyframes sparkleFly {
+            0% { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-60px) scale(1.2) rotate(45deg); opacity: 0; }
+        }
+
+        /* Pantallas SPA */
+        #recurso-wp-interruptor .screen {
+            display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; position: absolute; top: 0; left: 0; overflow-y: auto; overflow-x: hidden; z-index: 10;
+        }
+        #recurso-wp-interruptor .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-interruptor .screen.active {
+            display: flex;
+            animation: bounceInUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+        }
+        @keyframes bounceInUp {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-interruptor">
+
+        <!-- Decoraciones de fondo de alta tecnología retro -->
+        <div class="absolute top-10 left-10 text-[6rem] opacity-10 pointer-events-none transform -rotate-12 select-none">💡</div>
+        <div class="absolute bottom-10 right-10 text-[8rem] opacity-10 pointer-events-none transform rotate-12 select-none">🔌</div>
+
+        <!-- ==============================================
+             PANTALLA 1: PORTADA PRINCIPAL
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="electric-panel p-8 md:p-14 max-w-3xl w-full mx-4 flex flex-col items-center transform -rotate-1 relative overflow-hidden">
+                <div class="text-[5rem] md:text-[8rem] mb-2 animate__animated animate__pulse animate__infinite">💡🎛️</div>
+                
+                <h2 class="text-xs md:text-sm text-black font-body font-black mb-4 uppercase bg-panel-neonGold inline-block px-6 py-2 border-4 border-black rounded-full rotate-2 shadow-[4px_4px_0_#000]">
+                    Expresión Escrita - 2do Grado
+                </h2>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-toon text-white leading-none uppercase mb-6 drop-shadow-[2px_2px_0_#0f172a]">
+                    El Interruptor <br><span class="text-panel-neonCyan">de Nombres</span>
+                </h1>
+                <p class="text-base md:text-xl text-gray-300 font-bold mb-8 px-2 leading-relaxed">
+                    ¡La central de ortografía está apagada! Ayúdanos a encender las mayúsculas de los <strong class="text-panel-neonRed uppercase">nombres propios</strong> para que pase la corriente eléctrica.
+                </p>
+                <button onclick="window.openInstructions()" class="electric-btn bg-panel-neonGold text-black text-xl md:text-3xl px-12 py-5 w-full md:w-auto">
+                    ¿CÓMO ACTIVAR ESCUDOS? 📜
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: TEORÍA NARRADA
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center">
+            <div class="electric-panel p-6 md:p-10 max-w-5xl w-full text-center my-auto">
+                <h2 class="text-3xl md:text-5xl font-toon text-panel-neonGold mb-6 uppercase border-b-4 border-dashed border-gray-600 pb-2">
+                    Leyes de la Mayúscula
+                </h2>
+                
+                <p class="text-lg md:text-2xl text-gray-300 font-bold mb-8 max-w-4xl mx-auto leading-relaxed">
+                    Solo encenderemos los focos para las letras que sean muy especiales. ¿Cuáles son?
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 text-left">
+                    <!-- Ley 1 -->
+                    <div class="bg-slate-800 p-5 rounded-3xl border-4 border-black shadow-[4px_4px_0_#000] flex flex-col items-center text-center">
+                        <span class="text-4xl mb-2">🚦</span>
+                        <h3 class="font-toon text-2xl text-panel-neonCyan uppercase">1. Al Iniciar</h3>
+                        <p class="text-sm text-gray-300 font-bold mt-1 leading-snug">La primera palabra de TODAS las oraciones siempre empieza con Mayúscula.</p>
+                        <span class="bg-white border-2 border-black rounded-lg px-4 py-1 text-lg font-toon mt-3 text-panel-dark">¡<strong class="text-panel-neonRed">E</strong>l sol brilla!</span>
+                    </div>
+                    <!-- Ley 2 -->
+                    <div class="bg-slate-800 p-5 rounded-3xl border-4 border-black shadow-[4px_4px_0_#000] flex flex-col items-center text-center">
+                        <span class="text-4xl mb-2">🏷️</span>
+                        <h3 class="font-toon text-2xl text-panel-neonGold uppercase">2. Nombres Propios</h3>
+                        <p class="text-sm text-gray-300 font-bold mt-1 leading-snug">Los nombres reales de personas, mascotas o lugares (ciudades, países, ríos).</p>
+                        <span class="bg-white border-2 border-black rounded-lg px-4 py-1 text-lg font-toon mt-3 text-panel-dark">¡<strong class="text-panel-neonRed">P</strong>ablo viaja a <strong class="text-panel-neonRed">R</strong>oma!</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button onclick="window.playBeep(); window.stopVoice(); window.showScreen('screen-start')" class="electric-btn bg-gray-200 text-black font-toon px-6 py-3 text-lg">
+                        ⬅ VOLVER
+                    </button>
+                    <button onclick="window.playBeep(); window.stopVoice(); window.startGame()" class="electric-btn bg-panel-neonGreen text-white font-toon text-xl md:text-2xl px-10 py-3">
+                        ¡A LA CENTRAL! ⚡
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: EL JUEGO (Tablero de Circuitos)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start p-0 bg-transparent">
+            
+            <!-- HUD Superior -->
+            <div class="w-full bg-white border-b-4 border-black p-2 md:p-3 flex justify-between items-center z-30 shrink-0 shadow-lg cursor-default">
+                <div class="flex items-center gap-3 px-2 md:px-4">
+                    <div class="bg-panel-gray text-white w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-xl font-toon border-2 border-black shadow-inner">
+                        <span id="level-display">1</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-[9px] md:text-[10px] text-gray-500 font-black uppercase tracking-widest leading-none mb-1">Rutas Conectadas</span>
+                        <span class="font-toon text-lg md:text-xl text-panel-dark leading-none"><span id="score-display">0</span>/4</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 pr-2">
+                    <div class="flex flex-col text-right">
+                        <span class="text-[9px] md:text-[10px] text-gray-500 font-black uppercase tracking-widest leading-none mb-1">Fusibles (Vidas)</span>
+                        <span id="lives-display" class="text-base md:text-xl tracking-widest mt-1 text-panel-dark font-black">❤️ ❤️ ❤️</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tablero de Circuitos de Oraciones (Adaptativo) -->
+            <div class="w-full flex-grow flex flex-col items-center justify-around p-4 md:p-8 relative max-w-6xl mx-auto">
+                
+                <!-- Pizarra de Instrucciones Dinámica (Fondo negro sólido, texto celeste neón) -->
+                <div class="bg-black text-panel-neonCyan font-toon text-xs md:text-xl px-6 py-3 rounded-full border-2 border-panel-neonCyan shadow-md z-30 text-center uppercase tracking-widest animate-pulse">
+                    Enciende los interruptores para aplicar Mayúsculas 💡
+                </div>
+
+                <!-- EL CIRCUITO CENTRAL (La Oración descompuesta en módulos) -->
+                <div id="circuit-board" class="w-full flex flex-wrap justify-center gap-3 md:gap-5 py-4 px-2 select-none">
+                    <!-- Se inyecta por JS -->
+                </div>
+
+                <!-- Botón Palanca de Energía -->
+                <div class="w-full max-w-xl shrink-0">
+                    <button onclick="window.validateCircuit()" class="electric-btn bg-panel-neonGreen text-black font-toon text-xl md:text-3xl w-full py-4 flex items-center justify-center gap-3 shadow-[6px_6px_0_#000] hover:scale-105 active:scale-95">
+                        ⚡ COMPROBAR CIRCUITO
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ==============================================
+             MODAL DE FEEDBACK (Cortocircuito o Carga Exitosa)
+             ============================================== -->
+        <div id="feedback-modal" class="hidden absolute inset-0 z-[60] flex-col items-center justify-center bg-black/95 p-4 text-center backdrop-blur-sm">
+            <div id="feedback-card" class="electric-panel p-6 md:p-10 max-w-xl w-full animate__animated text-center border-t-8">
+                <div id="feedback-icon" class="text-[5rem] mb-2 drop-shadow-md">💡</div>
+                <h3 id="feedback-title" class="font-toon text-2xl md:text-3xl text-black mb-4 uppercase">Título</h3>
+                <div class="bg-gray-100 p-4 rounded-xl border-4 border-dashed border-gray-300 mb-6">
+                    <p id="feedback-reason" class="text-sm md:text-base font-bold text-gray-700 leading-relaxed"></p>
+                </div>
+                <button onclick="window.playBeep(); window.closeFeedback()" id="btn-continue" class="electric-btn bg-panel-neonGold text-black text-base md:text-xl px-10 py-3 w-full">
+                    Siguiente Circuito ➡
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (Victoria)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex flex-col items-center justify-center p-6 text-center bg-slate-950 bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.15)_0%,rgba(0,0,0,0.9)_100%)]">
+            <div id="result-card" class="electric-panel p-8 md:p-14 max-w-2xl w-full animate__animated animate__zoomIn text-center z-10 border-t-[12px] border-t-panel-neonGreen">
+                <div id="result-icon" class="text-[5rem] md:text-[6rem] mb-4 drop-shadow-md">🔌🎉</div>
+                <h2 id="result-title" class="font-toon text-3xl md:text-5xl text-panel-neonGreen mb-4 uppercase leading-none">¡Central Encendida!</h2>
+                <p id="result-msg" class="text-sm md:text-xl text-gray-700 mb-8 font-bold leading-relaxed max-w-lg mx-auto py-4 border-y-2 border-gray-200">
+                    ¡Gran trabajo, electricista de las palabras! Has iluminado todos los circuitos correctamente usando las mayúsculas en las leyes ortográficas.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="window.exitGame()" class="electric-btn bg-gray-200 text-black px-8 py-3 text-lg">
+                        VOLVER AL INICIO
+                    </button>
+                    <button onclick="window.playBeep(); window.startGame()" class="electric-btn bg-panel-neonGold text-black text-xl md:text-2xl px-10 py-3">
+                        NUEVO DESAFÍO 🔄
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO DIRECTAMENTE ASOCIADA AL ÁMBITO GLOBAL DE LA VENTANA
+         ============================================== -->
+    <script>
+        // 1. VARIABLES GLOBALES DE ESTADO
+        let audioCtx = null;
+        let score = 0;
+        let lives = 3;
+        let currentLevel = 0;
+        let isProcessing = false;
+        let gameQueue = [];
+        let currentSentenceObj = null;
+
+        // Inicializador del sintetizador de audio
+        function initAudio() {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+            } catch (e) {}
+        }
+        document.addEventListener('click', initAudio, { once: true });
+        document.addEventListener('touchstart', initAudio, { once: true });
+
+        function playTone(freq, duration, type, vol) {
+            try {
+                initAudio();
+                if (audioCtx && audioCtx.state !== 'suspended') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + duration);
+                }
+            } catch (e) {}
+        }
+
+        // Bindeado de funciones globales directamente a window
+        window.playBeep = function() { 
+            playTone(600, 0.1, "sine", 0.05); 
+        };
+        
+        function playSuccess() { 
+            playTone(523.25, 0.1, "sine", 0.1); 
+            setTimeout(() => playTone(659.25, 0.1, "sine", 0.1), 100); 
+            setTimeout(() => playTone(783.99, 0.2, "sine", 0.1), 200); 
+        }
+        
+        function playError() { 
+            playTone(200, 0.4, "sawtooth", 0.1); 
+        }
+        
+        function playToggle() { 
+            playTone(450, 0.05, "triangle", 0.08); 
+        }
+
+        // 2. MOTOR DE VOZ TEXT-TO-SPEECH SEGURO (Bypass si no está disponible)
+        function speakPhrase(text, cancelPrevious = true) {
+            if (!('speechSynthesis' in window)) return;
+            try {
+                if (cancelPrevious) window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(text);
+                utter.lang = 'es-ES'; 
+                utter.rate = 0.85; // Voz pausada para niños de 2do
+                utter.pitch = 1.2; 
+                window.speechSynthesis.speak(utter);
+            } catch (e) {}
+        }
+
+        window.stopVoice = function() {
+            if ('speechSynthesis' in window) {
+                try {
+                    window.speechSynthesis.cancel();
+                } catch (e) {}
+            }
+        };
+
+        window.openInstructions = function() {
+            window.playBeep();
+            window.showScreen('screen-theory');
+            speakPhrase("Leyes de la Mayúscula. Solo encenderemos los focos para las letras que sean muy especiales. Primero: la primera letra de todas las oraciones siempre empieza con Mayúscula. Segundo: los nombres reales de personas, mascotas o lugares siempre llevan Mayúscula.");
+        };
+
+        // 3. BASE DE DATOS DE ORACIONES (Módulos de Circuitos)
+        const sentencesDatabase = [
+            {
+                words: [
+                    { initial: "m", rest: "i", isCapRequired: true, hint: "Es el inicio de la oración. ¡Debe ir con mayúscula!" },
+                    { initial: "a", rest: "migo", isCapRequired: false, hint: "'amigo' es un sustantivo común." },
+                    { initial: "p", rest: "ablo", isCapRequired: true, hint: "'Pablo' es un nombre de persona (nombre propio)." },
+                    { initial: "v", rest: "iaja", isCapRequired: false, hint: "'viaja' es un verbo." },
+                    { initial: "a", rest: "", isCapRequired: false, hint: "'a' es una preposición." },
+                    { initial: "r", rest: "oma.", isCapRequired: true, hint: "'Roma' es una ciudad muy importante (nombre propio)." }
+                ],
+                explanation: "La oración correcta es: <strong>'Mi amigo Pablo viaja a Roma.'</strong> <br><br> • <strong>Mi:</strong> Inicio de la oración. <br>• <strong>Pablo:</strong> Nombre de persona. <br>• <strong>Roma:</strong> Nombre de lugar."
+            },
+            {
+                words: [
+                    { initial: "e", rest: "l", isCapRequired: true, hint: "Es el inicio de la oración. ¡Debe ir con mayúscula!" },
+                    { initial: "p", rest: "erro", isCapRequired: false, hint: "'perro' es un sustantivo común de un animal." },
+                    { initial: "d", rest: "e", isCapRequired: false, hint: "'de' es un conector." },
+                    { initial: "s", rest: "ofía", isCapRequired: true, hint: "'Sofía' es un nombre de persona (nombre propio)." },
+                    { initial: "s", rest: "e", isCapRequired: false, hint: "'se' es un pronombre." },
+                    { initial: "l", rest: "lama", isCapRequired: false, hint: "'llama' es un verbo." },
+                    { initial: "t", rest: "oby.", isCapRequired: true, hint: "'Toby' es el nombre propio de la mascota." }
+                ],
+                explanation: "La oración correcta es: <strong>'El perro de Sofía se llama Toby.'</strong> <br><br> • <strong>El:</strong> Inicio de la oración. <br>• <strong>Sofía:</strong> Nombre propio de persona. <br>• <strong>Toby:</strong> Nombre propio de animal."
+            },
+            {
+                words: [
+                    { initial: "e", rest: "n", isCapRequired: true, hint: "Es el inicio de la oración. ¡Debe ir con mayúscula!" },
+                    { initial: "e", rest: "spaña", isCapRequired: true, hint: "'España' es el nombre propio de un país." },
+                    { initial: "v", rest: "ive", isCapRequired: false, hint: "'vive' es un verbo." },
+                    { initial: "m", rest: "i", isCapRequired: false, hint: "'mi' es un adjetivo posesivo." },
+                    { initial: "t", rest: "ía", isCapRequired: false, hint: "'tía' es un sustantivo común de parentesco." },
+                    { initial: "c", rest: "armen.", isCapRequired: true, hint: "'Carmen' es un nombre propio de persona." }
+                ],
+                explanation: "La oración correcta es: <strong>'En España vive mi tía Carmen.'</strong> <br><br> • <strong>En:</strong> Inicio de la oración. <br>• <strong>España:</strong> Nombre propio de un país. <br>• <strong>Carmen:</strong> Nombre propio de persona."
+            },
+            {
+                words: [
+                    { initial: "l", rest: "os", isCapRequired: true, hint: "Es el inicio de la oración. ¡Debe ir con mayúscula!" },
+                    { initial: "g", rest: "atos", isCapRequired: false, hint: "'gatos' es un sustantivo común." },
+                    { initial: "d", rest: "e", isCapRequired: false, hint: "'de' es un conector." },
+                    { initial: "l", rest: "uisa", isCapRequired: true, hint: "'Luisa' es un nombre propio de persona." },
+                    { initial: "d", rest: "uermen", isCapRequired: false, hint: "'duermen' es un verbo." },
+                    { initial: "m", rest: "ucho.", isCapRequired: false, hint: "'mucho' es un adverbio." }
+                ],
+                explanation: "La oración correcta es: <strong>'Los gatos de Luisa duermen mucho.'</strong> <br><br> • <strong>Los:</strong> Inicio de la oración. <br>• <strong>Luisa:</strong> Nombre propio de persona."
+            }
+        ];
+
+        // 4. SISTEMA DE NAVEGACIÓN Y CARGA DE PANTALLAS
+        window.showScreen = function(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        };
+
+        window.startGame = function() {
+            score = 0;
+            lives = 3;
+            currentLevel = 0;
+            isProcessing = false;
+            
+            gameQueue = shuffleArray([...sentencesDatabase]);
+            
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('flex');
+            
+            updateUI();
+            window.showScreen('screen-game');
+            loadLevel();
+        };
+
+        function updateUI() {
+            document.getElementById('score-display').innerText = score;
+            document.getElementById('level-display').innerText = currentLevel + 1;
+            
+            let hearts = "";
+            for(let i=0; i<3; i++) hearts += i < lives ? "❤️ " : "❌ ";
+            document.getElementById('lives-display').innerText = hearts;
+        }
+
+        function shuffleArray(arr) {
+            let array = [...arr];
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // --- CARGAR CIRCUITO DE ORACIÓN ---
+        function loadLevel() {
+            if (currentLevel >= gameQueue.length) {
+                setTimeout(() => endGame(true), 800);
+                return;
+            }
+
+            currentSentenceObj = gameQueue[currentLevel];
+            isProcessing = false;
+
+            const board = document.getElementById('circuit-board');
+            board.innerHTML = '';
+
+            // Generar los módulos de palabras de forma dinámica
+            currentSentenceObj.words.forEach((word, idx) => {
+                const pod = document.createElement('div');
+                pod.className = 'word-pod flex items-center p-4 rounded-2xl gap-3 animate__animated animate__zoomIn';
+                pod.style.animationDelay = `${idx * 0.05}s`;
+
+                // Botón Interruptor
+                const bulb = document.createElement('button');
+                bulb.className = 'switch-bulb';
+                bulb.id = `bulb-${idx}`;
+                bulb.innerText = word.initial; // Inicia en minúscula
+                
+                // Atributo personalizado para guardar estado
+                bulb.dataset.isOn = "false";
+                
+                // Acción de Toggle al hacer clic
+                bulb.onclick = () => toggleBulb(bulb, word.initial);
+
+                // Texto restante de la palabra (Fuerte contraste en blanco puro)
+                const restSpan = document.createElement('span');
+                restSpan.className = 'text-2xl sm:text-3xl md:text-4xl font-body font-black text-white';
+                restSpan.innerText = word.rest;
+
+                pod.appendChild(bulb);
+                pod.appendChild(restSpan);
+                board.appendChild(pod);
+            });
+
+            // Narrar entrada
+            setTimeout(() => {
+                speakPhrase(`Oración número ${currentLevel + 1}. Analiza las palabras en el tablero y enciende los interruptores necesarios.`);
+            }, 800);
+        }
+
+        // --- MANEJO DEL TOOGLE DE FOCO ---
+        function toggleBulb(bulbElement, lowercaseLetter) {
+            if (isProcessing) return;
+            playToggle();
+
+            const isOn = bulbElement.dataset.isOn === "true";
+
+            if (isOn) {
+                // APAGAR (Vuelve a minúscula)
+                bulbElement.dataset.isOn = "false";
+                bulbElement.classList.remove('on');
+                // Remover sombras y bordes específicos del estado encendido
+                bulbElement.style.textShadow = "none";
+                bulbElement.innerText = lowercaseLetter;
+                createSparks(bulbElement, false);
+            } else {
+                // ENCENDER (Cambia a MAYÚSCULA y se aplica sombra negra para legibilidad sobre fondo amarillo)
+                bulbElement.dataset.isOn = "true";
+                bulbElement.classList.add('on');
+                // Sombra de texto para destacar la letra blanca sobre el foco amarillo
+                bulbElement.style.textShadow = "2px 2px 0px #854d0e, -1px -1px 0px #854d0e, 1px -1px 0px #854d0e, -1px 1px 0px #854d0e";
+                bulbElement.innerText = lowercaseLetter.toUpperCase();
+                createSparks(bulbElement, true);
+            }
+        }
+
+        // Creación de chispitas estéticas al encender/apagar
+        function createSparks(element, isTurningOn) {
+            const container = document.getElementById('recurso-wp-interruptor');
+            const rect = element.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            
+            const localX = rect.left + (rect.width / 2) - containerRect.left;
+            const localY = rect.top + (rect.height / 2) - containerRect.top;
+            
+            for (let i = 0; i < (isTurningOn ? 10 : 4); i++) {
+                const p = document.createElement('div');
+                p.className = 'sparkle-particle';
+                p.innerText = isTurningOn ? '✨' : '💨';
+                p.style.left = `${localX}px`;
+                p.style.top = `${localY}px`;
+                
+                const angle = Math.random() * Math.PI * 2;
+                const dist = Math.random() * 50 + 20;
+                p.style.setProperty('--tx', `${Math.cos(angle) * dist}px`);
+                p.style.setProperty('--ty', `${Math.sin(angle) * dist}px`);
+                
+                container.appendChild(p);
+                setTimeout(() => p.remove(), 1000);
+            }
+        }
+
+        // --- VALIDAR COMBINACIÓN DE ENERGÍA ---
+        window.validateCircuit = function() {
+            if (isProcessing || !currentSentenceObj) return;
+            isProcessing = true;
+
+            window.stopVoice();
+
+            let hasErrors = false;
+            let firstErrorData = null;
+
+            // Comparar cada interruptor con los requerimientos lógicos
+            currentSentenceObj.words.forEach((word, idx) => {
+                const bulb = document.getElementById(`bulb-${idx}`);
+                const isBulbOn = bulb.dataset.isOn === "true";
+
+                if (isBulbOn !== word.isCapRequired) {
+                    hasErrors = true;
+                    if (!firstErrorData) {
+                        firstErrorData = {
+                            wordText: word.initial + word.rest,
+                            hint: word.hint,
+                            element: bulb.parentElement
+                        };
+                    }
+                }
+            });
+
+            const circuitBoard = document.getElementById('circuit-board');
+
+            if (!hasErrors) {
+                // CIRCUITO PERFECTO (Acierto)
+                playSuccess();
+                score++;
+                updateUI();
+
+                // Brillo verde global en los módulos
+                document.querySelectorAll('.word-pod').forEach(p => {
+                    p.style.borderColor = '#10b981';
+                    p.style.boxShadow = '0 0 15px #10b981';
+                });
+
+                setTimeout(() => {
+                    showFeedback(true, "¡Energía Conectada! ⚡✅", currentSentenceObj.explanation);
+                }, 800);
+
+            } else {
+                // CORTOCIRCUITO (Error)
+                playError();
+                lives--;
+                updateUI();
+
+                // Animación de cortocircuito
+                circuitBoard.classList.add('shake');
+                document.querySelectorAll('.word-pod').forEach(p => {
+                    p.style.borderColor = '#f43f5e';
+                    p.style.boxShadow = '0 0 15px #f43f5e';
+                });
+
+                // Resaltar la palabra específica del error
+                if (firstErrorData && firstErrorData.element) {
+                    firstErrorData.element.classList.add('animate__animated', 'animate__flash');
+                }
+
+                speakPhrase(`¡Cortocircuito! Hay un error en la conexión. Revisa las reglas.`);
+
+                setTimeout(() => {
+                    circuitBoard.classList.remove('shake');
+                    if (firstErrorData && firstErrorData.element) {
+                        firstErrorData.element.classList.remove('animate__animated', 'animate__flash');
+                    }
+                    
+                    // Restablecer colores de alto contraste para seguir intentándolo
+                    document.querySelectorAll('.word-pod').forEach(p => {
+                        p.style.borderColor = '#475569';
+                        p.style.boxShadow = 'none';
+                    });
+
+                    showFeedback(false, "¡Cortocircuito! 💥🔌", `<strong>Falla detectada en la palabra:</strong> "${firstErrorData.wordText}"<br><br><strong>Pista de la central:</strong> ${firstErrorData.hint}`);
+                }, 1000);
+            }
+        };
+
+        // --- FEEDBACK Y MODALES ---
+        function showFeedback(isSuccess, titleText, reasonText) {
+            const modal = document.getElementById('feedback-modal');
+            const card = document.getElementById('feedback-card');
+            const icon = document.getElementById('feedback-icon');
+            const title = document.getElementById('feedback-title');
+            const reason = document.getElementById('feedback-reason');
+
+            card.classList.remove('animate__bounceIn', 'border-panel-neonGreen', 'border-panel-neonRed');
+            void card.offsetWidth;
+
+            if (isSuccess) {
+                icon.innerText = "⚡💡";
+                title.innerText = titleText;
+                title.className = "font-toon text-2xl md:text-4xl text-panel-neonGreen mb-3 uppercase";
+                card.classList.add('border-panel-neonGreen');
+                modal.dataset.action = "next";
+            } else {
+                icon.innerText = "🔌💥";
+                title.innerText = titleText;
+                title.className = "font-toon text-2xl md:text-4xl text-panel-neonRed mb-3 uppercase";
+                card.classList.add('border-panel-neonRed');
+                modal.dataset.action = "retry";
+            }
+
+            reason.innerHTML = reasonText;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            card.classList.add('animate__bounceIn');
+        }
+
+        window.closeFeedback = function() {
+            const modal = document.getElementById('feedback-modal');
+            const action = modal.dataset.action;
+
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            
+            if (lives <= 0) {
+                endGame(false);
+            } else if (action === "next") {
+                currentLevel++;
+                loadLevel();
+            } else {
+                isProcessing = false; // Permitir que siga tocando los interruptores
+            }
+        };
+
+        // --- FIN DE PARTIDA ---
+        function endGame(victory) {
+            const screenResult = document.getElementById('screen-result');
+            const title = document.getElementById('result-title');
+            const msg = document.getElementById('result-msg');
+            const icon = document.getElementById('result-icon');
+            const card = document.getElementById('result-card');
+            
+            card.classList.remove('border-t-panel-neonGreen', 'border-t-panel-neonRed');
+
+            if (victory) {
+                icon.innerText = "👑🔌";
+                title.innerText = "¡Central Encendida!";
+                title.className = "font-toon text-3xl md:text-5xl text-panel-neonGreen mb-4 uppercase";
+                msg.innerHTML = `¡Felicidades, Pequeño Ingeniero! Has encendido con éxito la corriente de los ${score} circuitos ortográficos. ¡Las mayúsculas funcionan perfectamente!`;
+                card.classList.add('border-t-panel-neonGreen');
+                speakPhrase("¡Felicidades! Has completado todos los circuitos de la central.");
+            } else {
+                icon.innerText = "💥🪫";
+                title.innerText = "¡Fusibles Rotos!";
+                title.className = "font-toon text-3xl md:text-5xl text-panel-neonRed mb-4 uppercase";
+                msg.innerHTML = "La central de energía se ha sobrecargado por demasiados cortocircuitos. ¡Vuelve a leer el manual de reglas y repárala!";
+                card.classList.add('border-t-panel-neonRed');
+                speakPhrase("La central de energía se ha sobrecargado. ¡Vuelve a intentarlo!");
+            }
+
+            screenResult.classList.remove('hidden');
+            screenResult.classList.add('flex');
+        }
+
+        window.exitGame = function() {
+            window.stopVoice();
+            currentLevel = 0;
+            isProcessing = false;
+            window.showScreen('screen-start');
+        };
+    </script>
+</body>
+</html>

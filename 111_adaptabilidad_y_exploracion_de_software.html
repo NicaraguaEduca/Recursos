@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Explorador Digital: Misión Adaptabilidad 🚀</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700&family=Public+Sans:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --fondo: #0f172a;
+            --tarjeta: #1e293b;
+            --brillo: #22d3ee;
+            --exito: #22c55e;
+            --error: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Public Sans', sans-serif; }
+        body { background: var(--fondo); color: white; height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
+
+        /* --- PANTALLAS --- */
+        .pantalla-completa {
+            position: fixed; inset: 0; background: var(--fondo);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 100; padding: 20px;
+        }
+
+        .caja-info {
+            background: var(--tarjeta); padding: 30px; border-radius: 30px;
+            border: 3px solid var(--brillo); max-width: 500px; width: 100%; text-align: center;
+        }
+
+        .ficha-tecnica {
+            background: rgba(34, 211, 238, 0.1); border: 1px solid var(--brillo);
+            padding: 15px; border-radius: 15px; margin: 20px 0; text-align: left;
+        }
+
+        .ficha-header { font-family: 'Unbounded'; font-size: 0.7rem; color: var(--brillo); margin-bottom: 5px; text-transform: uppercase; }
+        .ficha-texto { font-size: 0.9rem; font-weight: 700; line-height: 1.3; color: white; }
+
+        .btn-inicio {
+            padding: 20px; border-radius: 50px; border: none; background: var(--brillo);
+            color: var(--fondo); font-family: 'Unbounded'; font-weight: 900; cursor: pointer; width: 100%;
+        }
+
+        /* --- INTERFAZ DEL JUEGO --- */
+        .header-juego { padding: 15px; text-align: center; border-bottom: 1px solid #334155; width: 100%; }
+        .pista-contenedor { background: white; color: #1e293b; padding: 20px; border-radius: 20px; margin: 15px; width: 90%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        
+        .grid-iconos {
+            flex: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+            padding: 10px 20px; width: 100%; max-width: 500px;
+        }
+
+        .tarjeta-icono {
+            background: var(--tarjeta); border: 2px solid #334155; border-radius: 20px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s;
+        }
+        .tarjeta-icono:hover { border-color: var(--brillo); background: #26334d; }
+        
+        .emoji { font-size: 2.5rem; margin-bottom: 5px; }
+        .label { font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; }
+
+        /* --- MODAL DE FEEDBACK (APRENDIZAJE) --- */
+        .modal-eureka {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: white; color: #1e293b; padding: 30px; border-radius: 25px;
+            width: 90%; max-width: 400px; z-index: 200; text-align: center;
+            box-shadow: 0 0 0 100vh rgba(15, 23, 42, 0.9);
+        }
+
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body x-data="gameLogic()">
+
+    <template x-if="fase === 'inicio'">
+        <div class="pantalla-completa">
+            <div class="caja-info">
+                <h1 style="font-family: 'Unbounded'; color: var(--brillo); font-size: 1.4rem;">MISION: EXPLORADOR</h1>
+                
+                <div class="ficha-tecnica">
+                    <div class="ficha-header">🎯 Objetivo de Aprendizaje</div>
+                    <div class="ficha-texto">
+                        Aprenderás a <b>identificar herramientas</b> en entornos nuevos usando la lógica, preparándote para usar cualquier software profesional.
+                    </div>
+                </div>
+
+                <div style="text-align: left; font-size: 0.8rem; color: #94a3b8; margin-bottom: 25px;">
+                    <p>📍 <b>Contenido:</b> Habilidades de Adaptabilidad Digital.</p>
+                    <p>🎓 <b>Grado:</b> 4to - 6to de Primaria.</p>
+                </div>
+
+                <button @click="fase = 'jugando'" class="btn-inicio">ACEPTAR DESAFÍO</button>
+            </div>
+        </div>
+    </template>
+
+    <header class="header-juego">
+        <h2 style="font-size: 0.8rem; color: var(--brillo); font-family: 'Unbounded';">SISTEMA OPERATIVO v2.0</h2>
+        <div style="font-size: 0.6rem; margin-top: 5px;">PROGRESO: <span x-text="paso + 1"></span> / 6</div>
+    </header>
+
+    <div class="pista-contenedor">
+        <div style="font-size: 0.6rem; color: #64748b; margin-bottom: 5px; font-weight: 900;">INSTRUCCIÓN DEL SISTEMA:</div>
+        <div style="font-size: 1.1rem; font-weight: 700; line-height: 1.2;" x-text="misionActual.pista"></div>
+    </div>
+
+    <div class="grid-iconos">
+        <template x-for="item in opciones" :key="item.id">
+            <div class="tarjeta-icono" @click="validar(item.id)">
+                <span class="emoji" x-text="item.emoji"></span>
+                <span class="label" x-text="item.nombre"></span>
+            </div>
+        </template>
+    </div>
+
+    <template x-if="mostrandoEureka">
+        <div class="modal-eureka">
+            <div style="font-size: 3rem; margin-bottom: 10px;">💡</div>
+            <h3 style="font-family: 'Unbounded'; font-size: 1rem; margin-bottom: 10px;">¡ASÍ SE HACE!</h3>
+            <p style="font-size: 0.9rem; margin-bottom: 20px; color: #475569;" x-text="misionActual.explicacion"></p>
+            <button @click="siguienteMision()" class="btn-inicio" style="padding: 15px;">SIGUIENTE RETO</button>
+        </div>
+    </template>
+
+    <template x-if="fase === 'final'">
+        <div class="pantalla-completa">
+            <div class="caja-info" style="border-color: var(--exito);">
+                <div style="font-size: 4rem;">🏅</div>
+                <h2 style="font-family: 'Unbounded'; color: var(--exito); margin: 15px 0;">¡ADAPTABILIDAD LOGRADA!</h2>
+                <p style="font-size: 0.9rem; color: #cbd5e1; margin-bottom: 20px;">
+                    Has demostrado que puedes entender un software nuevo observando sus funciones. ¡Eres un experto explorador!
+                </p>
+                <button @click="reiniciar()" class="btn-inicio" style="background: #22c55e;">REPETIR ENTRENAMIENTO</button>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        function gameLogic() {
+            return {
+                fase: 'inicio',
+                paso: 0,
+                mostrandoEureka: false,
+                misiones: [
+                    { 
+                        pista: "Quiero hacer un dibujo a mano alzada para mi proyecto.", 
+                        correcta: "pincel",
+                        explicacion: "El PINCEL es el icono universal para crear trazos libres en casi todos los programas creativos."
+                    },
+                    { 
+                        pista: "Hay un error en mi diseño, necesito quitar esa parte de la pantalla.", 
+                        correcta: "borrador",
+                        explicacion: "El BORRADOR o GOMA sirve para eliminar partes específicas de lo que estás haciendo."
+                    },
+                    { 
+                        pista: "Las letras son muy pequeñas, necesito acercarme para ver mejor.", 
+                        correcta: "lupa",
+                        explicacion: "La LUPA representa el ZOOM: permite acercar o alejar la vista del área de trabajo."
+                    },
+                    { 
+                        pista: "Terminé mi trabajo y quiero que se guarde en la memoria.", 
+                        correcta: "disco",
+                        explicacion: "El DISQUETE es el icono clásico para GUARDAR archivos, aunque hoy usemos memorias USB o la nube."
+                    },
+                    { 
+                        pista: "Tengo archivos viejos que ya no sirven y ocupan mucho espacio.", 
+                        correcta: "basura",
+                        explicacion: "El CESTO DE BASURA permite ELIMINAR definitivamente los elementos que ya no son útiles."
+                    },
+                    { 
+                        pista: "Quiero cambiar el idioma y el fondo de este programa.", 
+                        correcta: "ajustes",
+                        explicacion: "Los ENGRANAJES representan los AJUSTES o CONFIGURACIÓN del sistema."
+                    }
+                ],
+                opciones: [
+                    { id: "pincel", emoji: "🖌️", nombre: "Trazo Libre" },
+                    { id: "borrador", emoji: "🧽", nombre: "Limpiar" },
+                    { id: "lupa", emoji: "🔍", nombre: "Zoom / Ver" },
+                    { id: "disco", emoji: "💾", nombre: "Guardar" },
+                    { id: "basura", emoji: "🗑️", nombre: "Eliminar" },
+                    { id: "ajustes", emoji: "⚙️", nombre: "Opciones" }
+                ],
+                get misionActual() { return this.misiones[this.paso]; },
+                validar(id) {
+                    if (id === this.misionActual.correcta) {
+                        confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+                        this.mostrandoEureka = true;
+                    } else {
+                        document.body.style.backgroundColor = "#450a0a";
+                        setTimeout(() => document.body.style.backgroundColor = "#0f172a", 250);
+                    }
+                },
+                siguienteMision() {
+                    this.mostrandoEureka = false;
+                    if (this.paso < this.misiones.length - 1) {
+                        this.paso++;
+                    } else {
+                        this.fase = 'final';
+                        confetti({ particleCount: 200, spread: 100 });
+                    }
+                },
+                reiniciar() { this.paso = 0; this.fase = 'inicio'; this.mostrandoEureka = false; }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academia de Escritores: El Escenario</title>
+    
+    <!-- Scripts Externos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- CONFIGURACIÓN BLINDADA PARA WORDPRESS -->
+    <script>
+        tailwind.config = {
+            important: '#recurso-wp-escenario', /* Fuerza Tailwind solo en este contenedor */
+            corePlugins: {
+                preflight: false, /* Evita que Tailwind rompa el tema de WP */
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@400;600;700;900&display=swap');
+
+        /* =========================================================
+           MICRO-RESET LOCAL: Protege el recurso del tema de WP
+           ========================================================= */
+        #recurso-wp-escenario * {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: currentColor;
+            line-height: normal;
+        }
+        #recurso-wp-escenario h1, 
+        #recurso-wp-escenario h2, 
+        #recurso-wp-escenario h3, 
+        #recurso-wp-escenario h4, 
+        #recurso-wp-escenario p, 
+        #recurso-wp-escenario span {
+            margin: 0; padding: 0;
+        }
+        #recurso-wp-escenario button {
+            background-color: transparent; background-image: none; cursor: pointer; padding: 0; font-family: inherit;
+        }
+
+        /* =========================================================
+           ESTILOS PANTALLA COMPLETA & ALTO CONTRASTE (Datashow)
+           ========================================================= */
+        #recurso-wp-escenario {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #5b21b6; /* Fondo Violeta Vibrante */
+            background-image: 
+                linear-gradient(45deg, #4c1d95 25%, transparent 25%, transparent 75%, #4c1d95 75%, #4c1d95),
+                linear-gradient(45deg, #4c1d95 25%, transparent 25%, transparent 75%, #4c1d95 75%, #4c1d95);
+            background-size: 60px 60px;
+            background-position: 0 0, 30px 30px;
+            color: #1e293b;
+            display: flex;
+            flex-direction: column;
+            
+            /* TRUCO WP: Forzar ancho y alto de pantalla completa */
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        #recurso-wp-escenario h1, 
+        #recurso-wp-escenario h2 { 
+            font-family: 'Fredoka One', cursive; 
+            letter-spacing: 1px;
+        }
+
+        /* Clases Neo-Pop / Alto Contraste */
+        #recurso-wp-escenario .neo-box {
+            border: 4px solid #000;
+            box-shadow: 8px 8px 0px #000;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        #recurso-wp-escenario .neo-box:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 10px 10px 0px #000;
+        }
+        
+        #recurso-wp-escenario .neo-btn {
+            border: 4px solid #000;
+            box-shadow: 4px 4px 0px #000;
+            transition: all 0.1s;
+        }
+        #recurso-wp-escenario .neo-btn:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px #000;
+        }
+
+        /* Estructura de contenido */
+        #recurso-wp-escenario .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2vh 5vw;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        #recurso-wp-escenario .content-area::-webkit-scrollbar { display: none; }
+        #recurso-wp-escenario .content-area { -ms-overflow-style: none; scrollbar-width: none; }
+
+        #recurso-wp-escenario .page-content {
+            display: none;
+            width: 100%;
+            max-width: 1200px;
+            animation: fadeIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin: auto 0;
+        }
+        #recurso-wp-escenario .page-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* Barra de Navegación */
+        #recurso-wp-escenario .nav-bar {
+            height: 80px;
+            min-height: 80px;
+            background: #0f172a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 5vw;
+            border-top: 4px solid #000;
+            z-index: 20;
+        }
+
+        #recurso-wp-escenario .progress-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #475569;
+            border: 2px solid #000;
+            transition: all 0.3s;
+        }
+        #recurso-wp-escenario .progress-dot.active {
+            background: #fde047; /* Amarillo brillante */
+            transform: scale(1.5);
+            box-shadow: 0 0 10px #fde047;
+        }
+
+        /* Lupa (Intacta, colores ajustados al contraste) */
+        #recurso-wp-escenario .scene-frame {
+            position: relative;
+            width: 100%;
+            height: 45vh;
+            max-height: 500px;
+            border-radius: 1rem;
+            overflow: hidden;
+            cursor: crosshair;
+            border: 6px solid #000;
+            box-shadow: 10px 10px 0px #000;
+            background-color: #fff;
+        }
+        #recurso-wp-escenario .magnifier {
+            width: 180px;
+            height: 180px;
+            border: 6px solid #fde047;
+            border-radius: 50%;
+            position: absolute;
+            pointer-events: none;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.6), inset 0 0 20px rgba(0,0,0,0.5);
+            display: none;
+            z-index: 40;
+        }
+
+        #recurso-wp-escenario .confetti {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            border: 2px solid #000;
+            animation: fall 3s linear infinite;
+            z-index: 60;
+        }
+        @keyframes fall {
+            to { transform: translateY(100vh) rotate(720deg); }
+        }
+
+        /* Tipografía responsiva */
+        #recurso-wp-escenario .responsive-text { font-size: clamp(1rem, 2.5vh, 1.5rem); }
+        #recurso-wp-escenario .responsive-title { font-size: clamp(2.5rem, 6vh, 5rem); text-shadow: 4px 4px 0px #000; }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <!-- ==============================================
+         CONTENEDOR WP-SHIELD FULLSCREEN
+         ============================================== -->
+    <div id="recurso-wp-escenario">
+
+        <div class="content-area">
+            
+            <!-- PÁGINA 1: PORTADA -->
+            <div id="page-1" class="page-content active">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center bg-white p-8 md:p-12 rounded-[2rem] neo-box mx-4">
+                    <div class="text-center md:text-left">
+                        <span class="bg-yellow-400 text-black px-6 py-2 border-2 border-black font-black text-sm md:text-base mb-6 inline-block tracking-widest uppercase shadow-[2px_2px_0_#000]">Academia de Escritores</span>
+                        <h1 class="responsive-title text-white leading-none mb-6">
+                            Misión:<br><span class="text-pink-500">El Escenario</span>
+                        </h1>
+                        <div class="space-y-6">
+                            <div class="flex gap-4 items-start text-left bg-cyan-100 p-4 border-2 border-black rounded-xl">
+                                <div class="p-2 bg-cyan-400 border-2 border-black rounded-lg text-black shrink-0"><i data-lucide="target" class="w-6 h-6 md:w-8 md:h-8"></i></div>
+                                <p class="responsive-text text-black font-bold"><strong>Meta de hoy:</strong> Aprenderás a construir mundos tan reales que tus lectores podrán olerlos, tocarlos y sentirlos.</p>
+                            </div>
+                            <div class="flex gap-4 items-start text-left bg-lime-100 p-4 border-2 border-black rounded-xl">
+                                <div class="p-2 bg-lime-400 border-2 border-black rounded-lg text-black shrink-0"><i data-lucide="award" class="w-6 h-6 md:w-8 md:h-8"></i></div>
+                                <p class="responsive-text text-black font-bold"><strong>Nivel:</strong> Entrenamiento de Arquitectos Narrativos (Grados 3º a 6º).</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-center mt-6 md:mt-0">
+                        <img src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=800" alt="Máquina de escribir antigua" class="rounded-xl border-4 border-black w-full max-w-xs md:max-w-md transform rotate-3 shadow-[10px_10px_0_#000] hover:rotate-0 transition-transform duration-300">
+                    </div>
+                </div>
+            </div>
+
+            <!-- PÁGINA 2: DEFINICIÓN -->
+            <div id="page-2" class="page-content text-center">
+                <h2 class="text-5xl md:text-7xl text-yellow-400 mb-8 drop-shadow-[4px_4px_0_#000]">¿Qué es el Escenario?</h2>
+                <div class="max-w-5xl mx-auto px-4">
+                    <div class="bg-pink-500 p-8 md:p-12 rounded-[2rem] neo-box mb-10 transform -rotate-1">
+                        <p class="text-2xl md:text-4xl text-white font-black leading-relaxed text-shadow-[2px_2px_0_#000]">
+                            "Es el lugar y el tiempo donde ocurre la magia. Sin un buen escenario, los personajes no tendrían suelo donde pisar."
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-10">
+                        <div class="bg-cyan-400 p-8 rounded-2xl neo-box flex flex-col items-center">
+                            <div class="bg-white border-4 border-black text-black p-4 rounded-xl mb-4 shadow-[4px_4px_0_#000]"><i data-lucide="map-pin" class="w-10 h-10"></i></div>
+                            <h3 class="font-black text-3xl md:text-4xl mb-3 uppercase text-black">Espacio</h3>
+                            <p class="text-black font-bold text-lg md:text-xl">El lugar físico donde están los personajes.</p>
+                        </div>
+                        <div class="bg-lime-400 p-8 rounded-2xl neo-box flex flex-col items-center">
+                            <div class="bg-white border-4 border-black text-black p-4 rounded-xl mb-4 shadow-[4px_4px_0_#000]"><i data-lucide="clock" class="w-10 h-10"></i></div>
+                            <h3 class="font-black text-3xl md:text-4xl mb-3 uppercase text-black">Tiempo</h3>
+                            <p class="text-black font-bold text-lg md:text-xl">El momento histórico o la hora del día.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PÁGINA 3: LOS 3 PILARES -->
+            <div id="page-3" class="page-content">
+                <h2 class="text-5xl md:text-7xl text-center mb-10 text-white drop-shadow-[4px_4px_0_#000]">Los 3 Pilares del Escenario</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 h-full px-4 max-w-6xl mx-auto">
+                    <!-- Pilar 1 -->
+                    <div class="bg-yellow-400 p-8 rounded-3xl neo-box text-center flex flex-col justify-between">
+                        <div>
+                            <div class="bg-black w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-yellow-400 border-4 border-white shadow-[4px_4px_0_#fff]"><i data-lucide="building" class="w-10 h-10"></i></div>
+                            <h4 class="font-black text-3xl mb-4 text-black uppercase">Mundos Reales</h4>
+                            <p class="text-black font-bold text-lg md:text-xl">Ciudades, bosques o tu propia habitación. ¡Usa tus sentidos para describirlos!</p>
+                        </div>
+                    </div>
+                    <!-- Pilar 2 -->
+                    <div class="bg-pink-500 p-8 rounded-3xl neo-box text-center flex flex-col justify-between transform md:-translate-y-4">
+                        <div>
+                            <div class="bg-black w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-pink-500 border-4 border-white shadow-[4px_4px_0_#fff]"><i data-lucide="wand-2" class="w-10 h-10"></i></div>
+                            <h4 class="font-black text-3xl mb-4 text-black uppercase">Fantasía</h4>
+                            <p class="text-black font-bold text-lg md:text-xl">Donde las leyes de la física no existen. ¡Tu imaginación es el único límite!</p>
+                        </div>
+                    </div>
+                    <!-- Pilar 3 -->
+                    <div class="bg-cyan-400 p-8 rounded-3xl neo-box text-center flex flex-col justify-between">
+                        <div>
+                            <div class="bg-black w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-cyan-400 border-4 border-white shadow-[4px_4px_0_#fff]"><i data-lucide="cloud-sun" class="w-10 h-10"></i></div>
+                            <h4 class="font-black text-3xl mb-4 text-black uppercase">Atmósfera</h4>
+                            <p class="text-black font-bold text-lg md:text-xl">El sentimiento del lugar: ¿Es acogedor, aterrador, o lleno de energía?</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PÁGINA 4: LUPA INTERACTIVA -->
+            <div id="page-4" class="page-content text-center px-4">
+                <h2 class="text-4xl md:text-6xl mb-6 text-yellow-400 drop-shadow-[4px_4px_0_#000]">Explora con el Ojo del Escritor</h2>
+                <div class="max-w-5xl mx-auto w-full">
+                    <div class="scene-frame" id="scene-frame">
+                        <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1200" alt="Paisaje con castillo" class="w-full h-full object-cover">
+                        <div id="mag" class="magnifier"></div>
+                        <!-- Hotspots Mejorados al Contraste -->
+                        <div class="absolute w-12 h-12 rounded-full border-4 border-black bg-yellow-400 animate-pulse cursor-pointer shadow-[0_0_15px_#fde047]" style="top:20%; left:45%" onclick="showInfo('🏰 EL CASTILLO: Sus torres tocan las nubes, ocultando secretos de antiguos reyes.')"></div>
+                        <div class="absolute w-12 h-12 rounded-full border-4 border-black bg-pink-500 animate-pulse cursor-pointer shadow-[0_0_15px_#ec4899]" style="top:65%; left:25%" onclick="showInfo('💧 EL AGUA: Tan cristalina que puedes ver las piedras de colores en el fondo.')"></div>
+                        <div class="absolute w-12 h-12 rounded-full border-4 border-black bg-cyan-400 animate-pulse cursor-pointer shadow-[0_0_15px_#22d3ee]" style="top:50%; left:75%" onclick="showInfo('🌲 EL BOSQUE: Las ramas parecen susurrar nombres cuando el viento las mueve.')"></div>
+                    </div>
+                    <div id="info-box" class="mt-8 p-6 bg-white border-4 border-black neo-box rounded-2xl text-xl md:text-3xl font-black text-black min-h-[100px] flex items-center justify-center transition-colors duration-300">
+                        ¡Toca los puntos brillantes para descubrir detalles sensoriales!
+                    </div>
+                </div>
+            </div>
+
+            <!-- PÁGINA 5: GENERADOR -->
+            <div id="page-5" class="page-content text-center px-4">
+                <h2 class="text-5xl md:text-7xl mb-8 text-white drop-shadow-[4px_4px_0_#000]">Generador de Mundos</h2>
+                <div class="max-w-4xl mx-auto bg-black p-8 md:p-14 rounded-3xl neo-box">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+                        <div class="bg-cyan-400 p-6 rounded-xl border-4 border-white">
+                            <p class="text-black text-sm md:text-base font-black mb-3 uppercase tracking-widest bg-white inline-block px-3 py-1 rounded border-2 border-black">¿DÓNDE?</p>
+                            <p id="res-1" class="text-black font-black text-2xl md:text-3xl mt-2 leading-tight">---</p>
+                        </div>
+                        <div class="bg-pink-500 p-6 rounded-xl border-4 border-white">
+                            <p class="text-black text-sm md:text-base font-black mb-3 uppercase tracking-widest bg-white inline-block px-3 py-1 rounded border-2 border-black">¿CUÁNDO?</p>
+                            <p id="res-2" class="text-white font-black text-2xl md:text-3xl mt-2 leading-tight">---</p>
+                        </div>
+                        <div class="bg-lime-400 p-6 rounded-xl border-4 border-white">
+                            <p class="text-black text-sm md:text-base font-black mb-3 uppercase tracking-widest bg-white inline-block px-3 py-1 rounded border-2 border-black">SENTIMIENTO</p>
+                            <p id="res-3" class="text-black font-black text-2xl md:text-3xl mt-2 leading-tight">---</p>
+                        </div>
+                    </div>
+                    <button onclick="rollMagic()" class="neo-btn w-full bg-yellow-400 text-black py-5 rounded-2xl font-black text-2xl md:text-4xl uppercase flex items-center justify-center gap-4">
+                        <i data-lucide="dices" class="w-8 h-8 md:w-10 md:h-10"></i> ¡LANZAR DADOS MÁGICOS!
+                    </button>
+                </div>
+                <p class="mt-8 text-yellow-300 font-bold text-lg md:text-2xl bg-black/50 inline-block px-6 py-2 rounded-full border-2 border-yellow-300">Cada combinación es una nueva historia por escribir.</p>
+            </div>
+
+            <!-- PÁGINA 6: FINAL -->
+            <div id="page-6" class="page-content text-center relative px-4">
+                <div id="confetti-box" class="absolute inset-0 pointer-events-none overflow-hidden z-50"></div>
+                <div class="max-w-3xl mx-auto bg-white p-10 md:p-16 rounded-[3rem] neo-box relative z-10 transform rotate-1">
+                    <div class="w-24 h-24 md:w-32 md:h-32 bg-lime-400 border-4 border-black rounded-full flex items-center justify-center mx-auto mb-8 text-black shadow-[6px_6px_0_#000] animate-bounce">
+                        <i data-lucide="check" class="w-12 h-12 md:w-16 md:h-16"></i>
+                    </div>
+                    <h2 class="text-5xl md:text-7xl text-black mb-4 font-black uppercase">¡Misión Cumplida!</h2>
+                    <p class="text-xl md:text-3xl text-gray-700 font-bold mb-8">Ahora tienes las herramientas para ser un gran arquitecto narrativo.</p>
+                    <div class="bg-yellow-400 p-8 rounded-2xl mb-10 border-4 border-black shadow-[4px_4px_0_#000] transform -rotate-1">
+                        <p class="text-black font-black italic text-2xl md:text-3xl leading-tight">"Un escritor es un explorador que crea sus propios mapas."</p>
+                    </div>
+                    <button onclick="goToPage(1)" class="neo-btn bg-cyan-400 text-black font-black text-xl md:text-3xl px-10 py-4 rounded-xl flex items-center justify-center gap-3 mx-auto uppercase">
+                        <i data-lucide="refresh-cw" class="w-8 h-8"></i> COMENZAR DE NUEVO
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- NAVEGACIÓN INFERIOR NEO-POP -->
+        <div class="nav-bar">
+            <button id="prev" onclick="goToPage(currentPage - 1)" class="neo-btn bg-white text-black font-black text-sm md:text-xl px-4 py-2 md:px-8 md:py-3 rounded-lg flex items-center gap-2">
+                <i data-lucide="chevron-left" class="w-5 h-5 md:w-8 md:h-8"></i> <span class="hidden sm:inline">ANTERIOR</span>
+            </button>
+            
+            <div class="flex gap-3 md:gap-5">
+                <div class="progress-dot active" data-p="1"></div>
+                <div class="progress-dot" data-p="2"></div>
+                <div class="progress-dot" data-p="3"></div>
+                <div class="progress-dot" data-p="4"></div>
+                <div class="progress-dot" data-p="5"></div>
+                <div class="progress-dot" data-p="6"></div>
+            </div>
+
+            <button id="next" onclick="goToPage(currentPage + 1)" class="neo-btn bg-yellow-400 text-black font-black text-sm md:text-xl px-4 py-2 md:px-8 md:py-3 rounded-lg flex items-center gap-2">
+                <span class="hidden sm:inline">SIGUIENTE</span> <i data-lucide="chevron-right" class="w-5 h-5 md:w-8 md:h-8"></i>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT DEL RECURSO -->
+    <script>
+        let currentPage = 1;
+        const total = 6;
+
+        const dataEscenario = {
+            places: ["Mansión Encantada", "Base Espacial", "Bosque de Dulces", "Ciudad Sumergida", "Templo Perdido", "Colegio Mágico", "Isla Flotante"],
+            times: ["Año 4000", "Medianoche", "Siglo de Oro", "Eclipse Solar", "Navidad", "Primer día de clase", "Al Amanecer"],
+            moods: ["Misterioso", "Alegre", "Aterrador", "Heroico", "Triste", "Mágico", "Caótico"]
+        };
+
+        function goToPage(n) {
+            if (n < 1 || n > total) return;
+            
+            const container = document.getElementById('recurso-wp-escenario');
+            
+            container.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            container.querySelectorAll('.progress-dot').forEach(d => d.classList.remove('active'));
+            
+            currentPage = n;
+            container.querySelector(`#page-${n}`).classList.add('active');
+            container.querySelector(`[data-p="${n}"]`).classList.add('active');
+
+            const prevBtn = container.querySelector('#prev');
+            const nextBtn = container.querySelector('#next');
+            
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === total;
+            
+            // Ajuste visual para botones deshabilitados en estilo neo
+            if(prevBtn.disabled) prevBtn.style.opacity = "0.5"; else prevBtn.style.opacity = "1";
+            if(nextBtn.disabled) nextBtn.style.opacity = "0.5"; else nextBtn.style.opacity = "1";
+
+            if (currentPage === 4) setupMag();
+            if (currentPage === 6) makeConfetti();
+            
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        function showInfo(txt) {
+            const box = document.getElementById('info-box');
+            box.innerText = txt;
+            box.classList.add('bg-yellow-400');
+            box.classList.remove('bg-white');
+            setTimeout(() => {
+                box.classList.remove('bg-yellow-400');
+                box.classList.add('bg-white');
+            }, 300);
+        }
+
+        function rollMagic() {
+            const res1 = document.getElementById('res-1');
+            const res2 = document.getElementById('res-2');
+            const res3 = document.getElementById('res-3');
+
+            res1.innerText = dataEscenario.places[Math.floor(Math.random() * dataEscenario.places.length)];
+            res2.innerText = dataEscenario.times[Math.floor(Math.random() * dataEscenario.times.length)];
+            res3.innerText = dataEscenario.moods[Math.floor(Math.random() * dataEscenario.moods.length)];
+        }
+
+        function setupMag() {
+            const frame = document.getElementById('scene-frame');
+            const mag = document.getElementById('mag');
+            
+            const handleMove = (e) => {
+                mag.style.display = 'block';
+                const r = frame.getBoundingClientRect();
+                
+                // Soporte seguro para WP y pantallas táctiles
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                
+                const x = clientX - r.left;
+                const y = clientY - r.top;
+                
+                if(x >= 0 && x <= r.width && y >= 0 && y <= r.height) {
+                    mag.style.left = `${x - 90}px`;
+                    mag.style.top = `${y - 90}px`;
+                } else {
+                    mag.style.display = 'none';
+                }
+            };
+
+            frame.addEventListener('mousemove', handleMove);
+            frame.addEventListener('touchmove', (e) => { 
+                e.preventDefault(); // Evita que la página haga scroll al usar la lupa
+                handleMove(e); 
+            }, { passive: false });
+            
+            frame.addEventListener('mouseleave', () => mag.style.display = 'none');
+            frame.addEventListener('touchend', () => mag.style.display = 'none');
+        }
+
+        function makeConfetti() {
+            const container = document.getElementById('confetti-box');
+            container.innerHTML = '';
+            const colors = ['#fde047', '#22d3ee', '#ec4899', '#a3e635', '#ffffff'];
+            for(let i=0; i<60; i++) {
+                const c = document.createElement('div');
+                c.className = 'confetti';
+                c.style.left = Math.random() * 100 + '%';
+                c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                c.style.animationDelay = Math.random() * 2 + 's';
+                c.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                container.appendChild(c);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+            rollMagic();
+            goToPage(1); // Inicializa botones y estados
+        });
+    </script>
+</body>
+</html>

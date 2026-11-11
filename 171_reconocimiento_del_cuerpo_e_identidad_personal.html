@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Espejo Mágico - 1º Primaria</title>
+    <!-- Tipografía divertida e infantil -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS para diseño rápido y hermoso -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Fredoka', 'sans-serif'],
+                    },
+                    colors: {
+                        magic: {
+                            100: '#EBF4FF',
+                            200: '#93C5FD',
+                            500: '#3B82F6',
+                            600: '#2563EB',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #F0F4FF;
+            background-image: radial-gradient(#D1E2FF 2px, transparent 2px);
+            background-size: 30px 30px;
+        }
+        /* Sombras estilo caricatura / gomosas */
+        .gummy-shadow {
+            box-shadow: 0 8px 0px rgba(0, 0, 0, 0.1);
+        }
+        .gummy-shadow-primary {
+            box-shadow: 0 8px 0px #1D4ED8;
+        }
+        .gummy-shadow-success {
+            box-shadow: 0 8px 0px #15803D;
+        }
+        .gummy-shadow-warning {
+            box-shadow: 0 8px 0px #C2410C;
+        }
+        .active-part {
+            filter: drop-shadow(0px 0px 12px #3B82F6);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .active-part:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-4 md:p-6">
+
+    <!-- PANTALLA INICIAL (BIENVENIDA) -->
+    <div id="welcome-screen" class="fixed inset-0 bg-[#E0ECFF] z-50 flex items-center justify-center p-4">
+        <div class="bg-white border-8 border-blue-500 rounded-3xl p-6 md:p-8 max-w-2xl w-full text-center gummy-shadow">
+            <span class="bg-blue-600 text-white font-bold px-4 py-2 rounded-full text-sm uppercase tracking-wider">
+                🎒 Ciencias Naturales • 1º Primaria
+            </span>
+            <h1 class="text-3xl md:text-5xl font-bold text-gray-800 mt-4 mb-2 text-blue-600" style="text-shadow: 3px 3px 0px #FDE047;">
+                Mi Espejo Mágico 🪞✨
+            </h1>
+            <p class="text-xl text-gray-600 font-semibold mb-6">Contenido: El Cuerpo Humano y sus partes</p>
+            
+            <div class="bg-blue-50 border-2 border-dashed border-blue-300 rounded-2xl p-4 text-left mb-6">
+                <p class="text-gray-700 font-semibold text-lg mb-2">🎯 Objetivo de la actividad:</p>
+                <p class="text-gray-600 text-base leading-relaxed">
+                    Identificar y reconocer las partes principales del cuerpo (cabeza, tronco y extremidades) y comprender sus funciones mediante la interacción directa con un avatar dinámico y narraciones explicativas.
+                </p>
+            </div>
+
+            <button onclick="startPresentation()" class="bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-2xl px-8 py-4 rounded-full border-4 border-emerald-600 gummy-shadow-success transition transform active:translate-y-1">
+                ¡Empezar Presentación! 🚀
+            </button>
+        </div>
+    </div>
+
+    <!-- CABECERA CURRICULAR -->
+    <header class="w-full max-w-4xl bg-white border-4 border-blue-500 rounded-2xl p-3 flex flex-wrap items-center justify-between gummy-shadow mb-4">
+        <div class="flex items-center gap-3">
+            <span class="bg-blue-600 text-white text-xs md:text-sm font-bold px-3 py-1 rounded-full uppercase">1º Primaria</span>
+            <span class="text-gray-700 font-bold text-xs md:text-base">Ciencias Naturales: <span class="text-blue-600">El Cuerpo Humano</span></span>
+        </div>
+        <div class="text-gray-500 font-bold text-sm mt-1 md:mt-0" id="slide-indicator">Diapositiva 1 de 5</div>
+    </header>
+
+    <!-- ÁREA PRINCIPAL DE CONTENIDO (CONTENEDOR DE DIAPOSITIVAS) -->
+    <main class="w-full max-w-4xl bg-white border-4 border-gray-200 rounded-3xl p-6 flex-grow flex flex-col justify-center items-center gummy-shadow relative min-h-[450px]">
+        
+        <!-- DIAPOSITIVA 1: INTRODUCCIÓN -->
+        <div id="slide-1" class="slide flex flex-col items-center text-center max-w-2xl animate-[fadeIn_0.5s_ease-out]">
+            <span class="text-6xl mb-4">👋👦👧</span>
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">¡Bienvenidos a nuestro Espejo!</h2>
+            <p class="text-lg md:text-xl text-gray-600 leading-relaxed">
+                Hoy vamos a descubrir el increíble templo en el que vivimos: <strong class="text-blue-500">¡Nuestro propio cuerpo!</strong> Aprenderemos las partes principales que nos permiten correr, pensar, abrazar y saltar.
+            </p>
+            <p class="text-md text-gray-500 mt-4 font-semibold italic">Usa las flechas de abajo para avanzar paso a paso.</p>
+        </div>
+
+        <!-- DIAPOSITIVA 2: EXPLICACIÓN DE CABEZA Y TRONCO -->
+        <div id="slide-2" class="slide hidden flex-col items-center text-center max-w-3xl animate-[fadeIn_0.5s_ease-out]">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">La Cabeza y el Tronco 🧠❤️</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mt-2">
+                <!-- Tarjeta Cabeza -->
+                <div class="bg-amber-50 border-4 border-amber-400 rounded-2xl p-4 gummy-shadow">
+                    <span class="text-5xl">🧠🗣️</span>
+                    <h3 class="text-xl font-bold text-amber-800 mt-2">La Cabeza</h3>
+                    <p class="text-gray-600 mt-2 text-sm leading-relaxed">
+                        ¡Está arriba de todo! Adentro tiene el cerebro para pensar. También tiene nuestros ojos, oídos, nariz y boca para sentir el mundo.
+                    </p>
+                </div>
+                <!-- Tarjeta Tronco -->
+                <div class="bg-rose-50 border-4 border-rose-400 rounded-2xl p-4 gummy-shadow">
+                    <span class="text-5xl">❤️🛡️</span>
+                    <h3 class="text-xl font-bold text-rose-800 mt-2">El Tronco</h3>
+                    <p class="text-gray-600 mt-2 text-sm leading-relaxed">
+                        ¡El centro de nuestro cuerpo! Conecta todo y protege órganos muy importantes como el corazón, que late feliz, y los pulmones para respirar.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 3: EXPLICACIÓN DE LAS EXTREMIDADES -->
+        <div id="slide-3" class="slide hidden flex-col items-center text-center max-w-3xl animate-[fadeIn_0.5s_ease-out]">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">Nuestras Extremidades 💪🦵</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mt-2">
+                <!-- Tarjeta Extremidades Superiores -->
+                <div class="bg-indigo-50 border-4 border-indigo-400 rounded-2xl p-4 gummy-shadow">
+                    <span class="text-5xl">✍️🎨</span>
+                    <h3 class="text-xl font-bold text-indigo-800 mt-2">Extremidades Superiores</h3>
+                    <p class="text-gray-600 mt-2 text-sm leading-relaxed">
+                        Son nuestros <strong class="text-indigo-600">brazos y manos</strong>. Nos sirven para agarrar objetos, dibujar, escribir, jugar y dar los mejores abrazos.
+                    </p>
+                </div>
+                <!-- Tarjeta Extremidades Inferiores -->
+                <div class="bg-emerald-50 border-4 border-emerald-400 rounded-2xl p-4 gummy-shadow">
+                    <span class="text-5xl">🏃‍♂️⚽</span>
+                    <h3 class="text-xl font-bold text-emerald-800 mt-2">Extremidades Inferiores</h3>
+                    <p class="text-gray-600 mt-2 text-sm leading-relaxed">
+                        Son nuestras <strong class="text-emerald-600">piernas y pies</strong>. Soportan todo nuestro peso y nos permiten correr, saltar, caminar e ir a donde queramos.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 4: EL ESPEJO MÁGICO INTERACTIVO -->
+        <div id="slide-4" class="slide hidden flex-col items-center w-full animate-[fadeIn_0.5s_ease-out]">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">¡Toca el Espejo Mágico! 🪞</h2>
+            <p class="text-sm md:text-base text-gray-500 font-semibold mb-4 text-center">Toca cualquier parte del avatar para escuchar su nombre y función principal.</p>
+
+            <div class="flex flex-col md:flex-row items-center justify-around w-full gap-6">
+                <!-- Contenedor del Espejo con el Avatar en SVG -->
+                <div class="relative w-52 h-72 md:w-64 md:h-80 bg-gradient-to-b from-sky-200 to-blue-300 rounded-full border-8 border-amber-300 p-2 shadow-inner flex justify-center items-center">
+                    
+                    <svg viewBox="0 0 200 250" class="w-full h-full">
+                        <!-- Cabeza -->
+                        <g id="part-cabeza" class="active-part" onclick="touchBodyPart('cabeza')">
+                            <circle cx="100" cy="55" r="28" fill="#FCE3CC" />
+                            <circle cx="100" cy="55" r="28" fill="#FDBA74" opacity="0" id="glow-cabeza" />
+                            <!-- Pelo -->
+                            <path d="M 72 52 C 72 30, 128 30, 128 52 C 120 40, 80 40, 72 52" fill="#78350F" />
+                            <!-- Ojos -->
+                            <circle cx="90" cy="54" r="3" fill="#1F2937" />
+                            <circle cx="110" cy="54" r="3" fill="#1F2937" />
+                            <!-- Sonrisa -->
+                            <path d="M 92 65 Q 100 72 108 65" stroke="#1F2937" stroke-width="2.5" fill="none" stroke-linecap="round" />
+                        </g>
+
+                        <!-- Tronco -->
+                        <g id="part-tronco" class="active-part" onclick="touchBodyPart('tronco')">
+                            <!-- Cuello -->
+                            <rect x="94" y="80" width="12" height="15" fill="#FCE3CC" />
+                            <!-- Torso / Playera -->
+                            <path d="M 70 92 L 130 92 L 125 150 L 75 150 Z" fill="#EF4444" />
+                            <path d="M 70 92 L 130 92 L 125 150 L 75 150 Z" fill="#F87171" opacity="0" id="glow-tronco" />
+                            <!-- Estrella decorativa en playera -->
+                            <polygon points="100,105 103,112 110,112 105,116 107,123 100,119 93,123 95,116 90,112 97,112" fill="#FCD34D" />
+                        </g>
+
+                        <!-- Extremidades Superiores (Brazos) -->
+                        <g id="part-superiores" class="active-part" onclick="touchBodyPart('superiores')">
+                            <!-- Brazo Izquierdo -->
+                            <path d="M 70 92 L 45 125 L 53 130 L 74 102 Z" fill="#FCE3CC" stroke="#EF4444" stroke-width="1" />
+                            <!-- Brazo Derecho -->
+                            <path d="M 130 92 L 155 125 L 147 130 L 126 102 Z" fill="#FCE3CC" stroke="#EF4444" stroke-width="1" />
+                            <!-- Indicador de brillo para brazos -->
+                            <path d="M 70 92 L 45 125 L 53 130 L 74 102 Z M 130 92 L 155 125 L 147 130 L 126 102 Z" fill="#60A5FA" opacity="0" id="glow-superiores" />
+                        </g>
+
+                        <!-- Extremidades Inferiores (Piernas) -->
+                        <g id="part-inferiores" class="active-part" onclick="touchBodyPart('inferiores')">
+                            <!-- Pierna Izquierda -->
+                            <rect x="78" y="150" width="16" height="60" fill="#3B82F6" />
+                            <rect x="74" y="210" width="22" height="10" rx="4" fill="#1F2937" />
+                            <!-- Pierna Derecha -->
+                            <rect x="106" y="150" width="16" height="60" fill="#3B82F6" />
+                            <rect x="104" y="210" width="22" height="10" rx="4" fill="#1F2937" />
+                            <!-- Indicador de brillo para piernas -->
+                            <rect x="74" y="150" width="52" height="70" fill="#34D399" opacity="0" id="glow-inferiores" />
+                        </g>
+                    </svg>
+
+                </div>
+
+                <!-- Cuadro de texto interactivo del espejo -->
+                <div class="bg-blue-50 border-4 border-blue-400 rounded-3xl p-5 max-w-sm w-full gummy-shadow text-center min-h-[160px] flex flex-col justify-center items-center">
+                    <div id="mirror-instruction" class="text-gray-500 font-semibold text-lg">
+                        👈 ¡Toca una parte del niño en el espejo para escuchar su explicación!
+                    </div>
+                    <div id="mirror-info" class="hidden">
+                        <h3 id="mirror-part-title" class="text-2xl font-bold text-blue-600 mb-2">Parte</h3>
+                        <p id="mirror-part-desc" class="text-gray-700 text-base font-medium">Descripción</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 5: ACTIVIDADES DE COMPROBACIÓN -->
+        <div id="slide-5" class="slide hidden flex-col items-center w-full max-w-2xl animate-[fadeIn_0.5s_ease-out]">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">¡Retos de Comprobación! 🧠🎯</h2>
+            
+            <div class="flex flex-col gap-6 w-full">
+                <!-- Reto 1 -->
+                <div class="bg-indigo-50 border-4 border-indigo-400 rounded-2xl p-5 gummy-shadow relative">
+                    <p class="text-lg font-bold text-gray-800 mb-3">1. ¿Qué parte del cuerpo usamos principalmente para escribir y dibujar?</p>
+                    <div class="grid grid-cols-3 gap-3">
+                        <button onclick="checkQuestion(1, 'cabeza', this)" class="bg-white border-2 border-indigo-300 py-3 rounded-xl font-bold text-base text-gray-700 active:scale-95 transition">Cabeza 🗣️</button>
+                        <button onclick="checkQuestion(1, 'superiores', this)" class="bg-white border-2 border-indigo-300 py-3 rounded-xl font-bold text-base text-gray-700 active:scale-95 transition">Manos ✍️</button>
+                        <button onclick="checkQuestion(1, 'inferiores', this)" class="bg-white border-2 border-indigo-300 py-3 rounded-xl font-bold text-base text-gray-700 active:scale-95 transition">Piernas 🏃‍♂️</button>
+                    </div>
+                    <div id="feedback-q1" class="mt-3 text-center font-bold text-lg hidden"></div>
+                </div>
+
+                <!-- Reto 2 -->
+                <div class="bg-emerald-50 border-4 border-emerald-400 rounded-2xl p-5 gummy-shadow relative">
+                    <p class="text-lg font-bold text-gray-800 mb-3">2. ¿Dónde se encuentra nuestro cerebro para poder pensar?</p>
+                    <div class="grid grid-cols-3 gap-3">
+                        <button onclick="checkQuestion(2, 'cabeza', this)" class="bg-white border-2 border-emerald-300 py-3 rounded-xl font-bold text-base text-gray-700 active:scale-95 transition">Cabeza </button>
+                        <button onclick="checkQuestion(2, 'tronco', this)" class="bg-white border-2 border-emerald-300 py-3 rounded-xl font-bold text-base text-gray-700 active:scale-95 transition">Tronco </button>
+                        <button onclick="checkQuestion(2, 'inferiores', this)" class="bg-white border-2 border-emerald-300 py-3 rounded-xl font-bold text-base text-gray-700 active:scale-95 transition">Piernas </button>
+                    </div>
+                    <div id="feedback-q2" class="mt-3 text-center font-bold text-lg hidden"></div>
+                </div>
+            </div>
+
+            <!-- Botón Volver a Comenzar -->
+            <button onclick="changeSlide('restart')" class="mt-8 bg-blue-500 hover:bg-blue-400 text-white font-bold text-xl px-8 py-3 rounded-full border-4 border-blue-600 gummy-shadow-primary transition transform active:translate-y-1">
+                🔄 Volver a comenzar
+            </button>
+        </div>
+
+    </main>
+
+    <!-- BARRA DE NAVEGACIÓN INFERIOR -->
+    <footer class="w-full max-w-4xl flex items-center justify-between mt-4">
+        <button id="btn-prev" onclick="changeSlide('prev')" class="bg-amber-500 hover:bg-amber-400 text-white font-bold px-6 py-3 rounded-2xl border-4 border-amber-600 gummy-shadow-warning transition transform active:translate-y-1 flex items-center gap-2 opacity-50 cursor-not-allowed" disabled>
+            ⬅️ Atrás
+        </button>
+        
+        <button id="btn-next" onclick="changeSlide('next')" class="bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-6 py-3 rounded-2xl border-4 border-emerald-600 gummy-shadow-success transition transform active:translate-y-1 flex items-center gap-2">
+            Siguiente ➡️
+        </button>
+    </footer>
+
+    <!-- LÓGICA DE CONTROL EN JAVASCRIPT -->
+    <script>
+        // --- Estado General de la Presentación ---
+        let currentSlide = 1;
+        const totalSlides = 5;
+
+        // --- Sintetizador de Sonido (Web Audio API) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'success') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+                osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.4);
+            } else if (type === 'error') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(110, audioCtx.currentTime + 0.25);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.25);
+            } else if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
+            }
+        }
+
+        // --- Navegación de Diapositivas ---
+        function changeSlide(direction) {
+            playSound('click');
+
+            // Caso especial: Reiniciar presentación
+            if (direction === 'restart') {
+                currentSlide = 1;
+                resetEvaluation();
+                resetMirror();
+            } else if (direction === 'next') {
+                if (currentSlide < totalSlides) {
+                    currentSlide++;
+                }
+            } else if (direction === 'prev') {
+                if (currentSlide > 1) {
+                    currentSlide--;
+                }
+            }
+
+            // Ocultar todas las diapositivas
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.add('hidden');
+                slide.classList.remove('flex');
+            });
+
+            // Mostrar la diapositiva actual
+            const activeSlide = document.getElementById(`slide-${currentSlide}`);
+            activeSlide.classList.remove('hidden');
+            activeSlide.classList.add('flex');
+
+            // Actualizar interfaz del pie de página
+            document.getElementById('slide-indicator').textContent = `Diapositiva ${currentSlide} de ${totalSlides}`;
+
+            // Control de botones de navegación
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
+
+            if (currentSlide === 1) {
+                btnPrev.disabled = true;
+                btnPrev.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                btnPrev.disabled = false;
+                btnPrev.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            if (currentSlide === totalSlides) {
+                btnNext.disabled = true;
+                btnNext.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                btnNext.disabled = false;
+                btnNext.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function startPresentation() {
+            playSound('click');
+            const overlay = document.getElementById('welcome-screen');
+            overlay.classList.add('opacity-0');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 500);
+
+            // Forzar carga de voces del sintetizador
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.getVoices();
+            }
+        }
+
+        // --- Lógica del Espejo Mágico (Diapositiva 4) ---
+        const bodyPartsData = {
+            cabeza: {
+                title: "Cabeza 🧠🗣️",
+                desc: "Es la parte más alta del cuerpo. ¡Contiene tu cerebro para pensar, además de tus ojos, oídos, nariz y boca para sentir el mundo!",
+                speech: "La cabeza. Es la parte más alta de tu cuerpo. Adentro tiene el cerebro para pensar, sentir y soñar."
+            },
+            tronco: {
+                title: "El Tronco ❤️🛡️",
+                desc: "Es el centro de tu cuerpo. Protege tus órganos internos como el corazón, los pulmones y el estómago.",
+                speech: "El tronco. Es la parte central de nuestro cuerpo. Protege el corazón que late y los pulmones que respiran."
+            },
+            superiores: {
+                title: "Brazos y Manos 💪✍️",
+                desc: "Son tus extremidades superiores. Te permiten escribir, comer, pintar, aplaudir y dar muchos abrazos.",
+                speech: "Las extremidades superiores son los brazos y manos. Sirven para abrazar, dibujar y jugar."
+            },
+            inferiores: {
+                title: "Piernas y Pies 🦵🏃‍♂️",
+                desc: "Son tus extremidades inferiores. Te sirven para mantenerte firme, caminar, correr y saltar muy alto.",
+                speech: "Las extremidades inferiores son tus piernas y pies. Te permiten correr, saltar y explorar el mundo."
+            }
+        };
+
+        function touchBodyPart(partKey) {
+            playSound('click');
+
+            // Apagar todos los brillos
+            document.getElementById('glow-cabeza').setAttribute('opacity', '0');
+            document.getElementById('glow-tronco').setAttribute('opacity', '0');
+            document.getElementById('glow-superiores').setAttribute('opacity', '0');
+            document.getElementById('glow-inferiores').setAttribute('opacity', '0');
+
+            // Encender brillo del elemento actual
+            const glowElem = document.getElementById(`glow-${partKey}`);
+            if (glowElem) {
+                glowElem.setAttribute('opacity', '0.4');
+            }
+
+            // Actualizar burbuja de texto
+            const infoBox = document.getElementById('mirror-info');
+            const instructionBox = document.getElementById('mirror-instruction');
+            const titleElem = document.getElementById('mirror-part-title');
+            const descElem = document.getElementById('mirror-part-desc');
+
+            instructionBox.classList.add('hidden');
+            infoBox.classList.remove('hidden');
+
+            const part = bodyPartsData[partKey];
+            titleElem.textContent = part.title;
+            descElem.textContent = part.desc;
+
+            // Narración asistida por voz (SpeechSynthesis)
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Detener cualquier lectura previa
+                const utterance = new SpeechSynthesisUtterance(part.speech);
+                utterance.lang = 'es-ES';
+                utterance.rate = 1.0; // Velocidad cómoda infantil
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function resetMirror() {
+            // Apagar brillos
+            document.getElementById('glow-cabeza').setAttribute('opacity', '0');
+            document.getElementById('glow-tronco').setAttribute('opacity', '0');
+            document.getElementById('glow-superiores').setAttribute('opacity', '0');
+            document.getElementById('glow-inferiores').setAttribute('opacity', '0');
+
+            document.getElementById('mirror-info').classList.add('hidden');
+            document.getElementById('mirror-instruction').classList.remove('hidden');
+        }
+
+        // --- Lógica de Preguntas y Evaluación (Diapositiva 5) ---
+        function checkQuestion(questionNumber, selectedValue, buttonElem) {
+            let isCorrect = false;
+            let feedbackId = `feedback-q${questionNumber}`;
+            let feedbackElem = document.getElementById(feedbackId);
+
+            if (questionNumber === 1) {
+                if (selectedValue === 'superiores') isCorrect = true;
+            } else if (questionNumber === 2) {
+                if (selectedValue === 'cabeza') isCorrect = true;
+            }
+
+            // Deshabilitar todos los botones de esa pregunta para que no re-seleccionen
+            const parentRow = buttonElem.parentElement;
+            parentRow.querySelectorAll('button').forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('opacity-50');
+            });
+
+            feedbackElem.classList.remove('hidden');
+
+            if (isCorrect) {
+                playSound('success');
+                buttonElem.classList.remove('bg-white', 'border-indigo-300', 'border-emerald-300');
+                buttonElem.classList.add('bg-emerald-500', 'text-white', 'border-emerald-600', 'opacity-100');
+                feedbackElem.textContent = "¡Excelente! 🌟 ¡Es correcto!";
+                feedbackElem.className = "mt-3 text-center font-bold text-lg text-emerald-600";
+            } else {
+                playSound('error');
+                buttonElem.classList.remove('bg-white', 'border-indigo-300', 'border-emerald-300');
+                buttonElem.classList.add('bg-red-500', 'text-white', 'border-red-600', 'opacity-100');
+                feedbackElem.textContent = "¡Uy! Intenta recordar su función principal 🤔";
+                feedbackElem.className = "mt-3 text-center font-bold text-lg text-red-600";
+            }
+        }
+
+        function resetEvaluation() {
+            // Habilitar todos los botones de las preguntas
+            document.querySelectorAll('#slide-5 button').forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'bg-emerald-500', 'bg-red-500', 'text-white', 'border-emerald-600', 'border-red-600');
+                if (btn.closest('.bg-indigo-50')) {
+                    btn.classList.add('bg-white', 'border-2', 'border-indigo-300', 'text-gray-700');
+                } else if (btn.closest('.bg-emerald-50')) {
+                    btn.classList.add('bg-white', 'border-2', 'border-emerald-300', 'text-gray-700');
+                }
+            });
+
+            // Ocultar explicaciones de feedback
+            document.getElementById('feedback-q1').classList.add('hidden');
+            document.getElementById('feedback-q2').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Científico en Acción - El Método Científico</title>
+    
+    <!-- Fuentes Google: Share Tech Mono (Laboratorio) y Nunito (Lectura) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA DE TAILWIND -->
+    <script>
+        window.tailwind = {
+            config: {
+                important: '#recurso-wp-cientifico',
+                corePlugins: { preflight: false },
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            tech: ['"Share Tech Mono"', 'monospace'],
+                            body: ['Nunito', 'sans-serif'],
+                        },
+                        colors: {
+                            lab: {
+                                dark: '#020617',      /* Slate 950 */
+                                panel: '#0f172a',     /* Slate 900 */
+                                cyan: '#06b6d4',      /* Cian brillante */
+                                green: '#10b981',     /* Verde éxito */
+                                red: '#ef4444',       /* Rojo error */
+                                yellow: '#eab308',    /* Amarillo */
+                                purple: '#8b5cf6'     /* Morado */
+                            }
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* MICRO-RESET LOCAL */
+        #recurso-wp-cientifico * { box-sizing: border-box; border-width: 0; border-style: solid; border-color: currentColor; line-height: normal; }
+        #recurso-wp-cientifico h1, #recurso-wp-cientifico h2, #recurso-wp-cientifico h3, #recurso-wp-cientifico p, #recurso-wp-cientifico span { margin: 0; padding: 0; }
+        #recurso-wp-cientifico button { background-color: transparent; cursor: pointer; padding: 0; font-family: inherit; }
+
+        /* ESTILOS PANTALLA COMPLETA & TECH */
+        #recurso-wp-cientifico {
+            font-family: 'Nunito', sans-serif;
+            background-color: #020617; 
+            /* Patrón de plano técnico */
+            background-image: 
+                linear-gradient(rgba(6, 182, 212, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6, 182, 212, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Paneles Científicos */
+        #recurso-wp-cientifico .tech-panel {
+            background-color: rgba(15, 23, 42, 0.95);
+            border: 2px solid #06b6d4;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.2), inset 0 0 10px rgba(6, 182, 212, 0.1);
+            position: relative;
+        }
+
+        #recurso-wp-cientifico .tech-btn {
+            background: #0f172a;
+            border: 2px solid #06b6d4;
+            color: #06b6d4;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(6, 182, 212, 0.3);
+            transition: all 0.2s ease-out;
+            text-transform: uppercase;
+            font-family: 'Share Tech Mono', monospace;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+        #recurso-wp-cientifico .tech-btn:hover:not(:disabled) {
+            background: rgba(6, 182, 212, 0.2);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.6);
+            transform: translateY(-2px);
+        }
+        #recurso-wp-cientifico .tech-btn:active:not(:disabled) {
+            transform: translateY(2px);
+            box-shadow: 0 0 5px rgba(6, 182, 212, 0.4);
+        }
+        #recurso-wp-cientifico .tech-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-color: #475569;
+            color: #475569;
+            box-shadow: none !important;
+            transform: none !important;
+            background: #0f172a !important;
+        }
+
+        /* Tarjetas del Método Científico */
+        .step-card {
+            background: #1e293b;
+            border: 2px solid #94a3b8;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+        }
+        .step-card:hover:not(.used) {
+            border-color: #eab308;
+            background: #334155;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(234, 179, 8, 0.3);
+        }
+        .step-card.used {
+            opacity: 0.3;
+            pointer-events: none;
+            filter: grayscale(100%);
+            transform: scale(0.98);
+        }
+
+        /* Slots del Secuenciador */
+        .seq-slot {
+            background: rgba(0,0,0,0.5);
+            border: 2px dashed #475569;
+            border-radius: 8px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .seq-slot.filled {
+            border-style: solid;
+            border-color: #06b6d4;
+            background: rgba(6, 182, 212, 0.1);
+            cursor: pointer;
+        }
+        .seq-slot.filled:hover {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+        .seq-slot.filled:hover::after {
+            content: '❌ Quitar';
+            position: absolute;
+            color: #ef4444;
+            font-weight: bold;
+            background: #0f172a;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            z-index: 20;
+        }
+
+        /* Animaciones para SPA */
+        #recurso-wp-cientifico .screen {
+            display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; position: absolute; top: 0; left: 0; overflow-y: auto; overflow-x: hidden; z-index: 10;
+        }
+        #recurso-wp-cientifico .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-cientifico .screen.active {
+            display: flex;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .shake-error { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-4px, 0, 0); }
+            20%, 80% { transform: translate3d(6px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
+        /* Decoración de Tubo de Ensayo */
+        .beaker {
+            animation: floatBeaker 3s ease-in-out infinite;
+        }
+        @keyframes floatBeaker {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); filter: drop-shadow(0 0 15px #10b981); }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-cientifico">
+
+        <!-- ==============================================
+             PANTALLA 1: INICIO
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="tech-panel p-8 md:p-14 max-w-3xl w-full mx-4 flex flex-col items-center">
+                <div class="text-[5rem] md:text-[8rem] mb-4 beaker drop-shadow-[0_0_20px_rgba(16,185,129,0.5)]">🧪</div>
+                
+                <h2 class="text-xs md:text-sm text-lab-cyan font-tech mb-4 uppercase bg-lab-cyan/10 inline-block px-4 py-2 border border-lab-cyan rounded">
+                    CIENCIAS NATURALES - 5/6to GRADO
+                </h2>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-tech text-white leading-none uppercase drop-shadow-[0_0_10px_rgba(6,182,212,0.5)] mb-6 font-bold">
+                    Científico <br><span class="text-lab-green">en Acción</span>
+                </h1>
+                <p class="text-lg md:text-2xl text-gray-300 font-bold mb-8 px-2 leading-relaxed font-body max-w-xl">
+                    Para descubrir los secretos del universo, los científicos usan un mapa paso a paso llamado <strong class="text-lab-yellow">MÉTODO CIENTÍFICO</strong>. ¡Ponte la bata de laboratorio!
+                </p>
+                <button id="btn-to-theory" class="tech-btn text-xl md:text-3xl px-12 py-4 w-full md:w-auto">
+                    INICIAR INVESTIGACIÓN ▶
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: TEORÍA Y REGLAS
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center">
+            <div class="tech-panel p-6 md:p-10 max-w-5xl w-full text-center my-auto">
+                <h2 class="text-3xl md:text-5xl font-tech text-white mb-6 uppercase border-b border-lab-cyan/30 pb-4">
+                    Los 5 Pasos del Método
+                </h2>
+                <p class="text-base md:text-lg text-gray-300 mb-8 font-body max-w-3xl mx-auto">
+                    Todo descubrimiento sigue una secuencia lógica estricta. Repasa el orden de estos 5 pasos antes de enfrentarte a los casos reales:
+                </p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-10 text-left">
+                    <div class="bg-slate-800 p-4 rounded-lg border border-slate-600 flex flex-col items-center text-center">
+                        <div class="text-4xl mb-2">👁️</div>
+                        <h3 class="font-tech text-lg text-lab-cyan uppercase mb-1 font-bold">1. Observación</h3>
+                        <p class="text-xs text-gray-400 font-body">Ver algo curioso que te hace hacer una pregunta.</p>
+                    </div>
+                    <div class="bg-slate-800 p-4 rounded-lg border border-slate-600 flex flex-col items-center text-center">
+                        <div class="text-4xl mb-2">💡</div>
+                        <h3 class="font-tech text-lg text-lab-yellow uppercase mb-1 font-bold">2. Hipótesis</h3>
+                        <p class="text-xs text-gray-400 font-body">Dar una posible respuesta o suposición al problema.</p>
+                    </div>
+                    <div class="bg-slate-800 p-4 rounded-lg border border-slate-600 flex flex-col items-center text-center">
+                        <div class="text-4xl mb-2">🧪</div>
+                        <h3 class="font-tech text-lg text-lab-green uppercase mb-1 font-bold">3. Experimento</h3>
+                        <p class="text-xs text-gray-400 font-body">Hacer una prueba real para ver si tu idea era cierta.</p>
+                    </div>
+                    <div class="bg-slate-800 p-4 rounded-lg border border-slate-600 flex flex-col items-center text-center">
+                        <div class="text-4xl mb-2">📊</div>
+                        <h3 class="font-tech text-lg text-lab-purple uppercase mb-1 font-bold">4. Análisis</h3>
+                        <p class="text-xs text-gray-400 font-body">Revisar los datos y números que te dio el experimento.</p>
+                    </div>
+                    <div class="bg-slate-800 p-4 rounded-lg border border-slate-600 flex flex-col items-center text-center sm:col-span-2 lg:col-span-1">
+                        <div class="text-4xl mb-2">✅</div>
+                        <h3 class="font-tech text-lg text-white uppercase mb-1 font-bold">5. Conclusión</h3>
+                        <p class="text-xs text-gray-400 font-body">Decir la verdad final y compartir el descubrimiento.</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button id="btn-back-start" class="tech-btn border-gray-500 text-gray-400 hover:bg-gray-800 hover:text-white px-8 py-3 text-lg md:text-xl">
+                        ⬅ VOLVER
+                    </button>
+                    <button id="btn-to-case" class="tech-btn border-lab-green text-lab-green hover:shadow-[0_0_15px_#10b981] text-xl md:text-2xl px-10 py-3">
+                        ABRIR CASO DE ESTUDIO 📂
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: CASO DE ESTUDIO (Lectura)
+             ============================================== -->
+        <div id="screen-case" class="screen justify-start md:justify-center">
+            <div class="tech-panel p-6 md:p-10 max-w-4xl w-full my-auto border-lab-yellow shadow-[0_0_20px_rgba(234,179,8,0.2)] relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-lab-yellow text-black font-tech font-bold px-4 py-1 rounded-bl-lg uppercase text-sm">
+                    Registro Confidencial
+                </div>
+                
+                <h2 class="text-2xl md:text-4xl font-tech text-lab-yellow mb-4 uppercase flex items-center gap-3">
+                    <span class="text-4xl">📹</span> Registro Visual: <span id="case-title">El Misterio</span>
+                </h2>
+                
+                <div class="bg-black/60 border border-gray-700 rounded-xl p-6 mb-8 mt-4 relative">
+                    <!-- Icono de "Play" para simular un visor de video -->
+                    <div class="absolute -top-4 left-4 bg-red-600 text-white font-tech text-xs px-2 py-1 rounded animate-pulse">REC ●</div>
+                    <p id="case-story" class="text-base md:text-xl text-gray-200 font-body leading-relaxed text-justify"></p>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-between items-center">
+                    <p class="text-sm text-gray-400 font-tech">Analiza lo sucedido. Ahora tendrás que secuenciar los pasos.</p>
+                    <button id="btn-to-game" class="tech-btn border-lab-cyan text-white bg-lab-cyan hover:bg-cyan-600 hover:text-white text-lg md:text-xl px-8 py-3">
+                        IR AL SECUENCIADOR ⚙️
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 4: EL JUEGO (Secuenciador Lógico)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start p-0 bg-transparent">
+            
+            <!-- Barra Superior (Objetivo) -->
+            <div class="w-full bg-lab-panel border-b border-lab-cyan p-3 md:p-4 flex justify-between items-center z-30 shrink-0 shadow-[0_4px_15px_rgba(0,0,0,0.5)]">
+                <div class="flex items-center gap-3 px-2 md:px-4">
+                    <span class="text-3xl md:text-4xl drop-shadow-[0_0_10px_#06b6d4]">🧬</span>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] md:text-xs text-gray-400 font-tech uppercase leading-none mb-1">Caso <span id="level-indicator">1/3</span>:</span>
+                        <span id="game-case-title" class="font-tech text-lg md:text-2xl text-white leading-none font-bold">Título</span>
+                    </div>
+                </div>
+
+                <button id="btn-exit" class="bg-red-900/40 border border-red-500 text-red-400 hover:bg-red-500 hover:text-white transition-colors p-2 rounded-lg ml-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Área Principal -->
+            <div class="w-full flex-grow flex flex-col md:flex-row gap-4 p-4 md:p-6 overflow-hidden relative">
+                
+                <!-- PANEL IZQUIERDO: Slots de la Secuencia -->
+                <div class="w-full md:w-5/12 tech-panel p-4 md:p-6 flex flex-col h-[50%] md:h-full shrink-0">
+                    <h3 class="font-tech text-lab-cyan text-lg md:text-xl uppercase border-b border-lab-cyan/30 pb-2 mb-4 font-bold">
+                        🔬 Secuenciador Lógico
+                    </h3>
+                    
+                    <div class="flex-grow flex flex-col gap-2 md:gap-3 overflow-y-auto pr-2" id="program-queue">
+                        <!-- Generados por JS. Tendrán los iconos correspondientes a los 5 pasos -->
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-gray-700 shrink-0">
+                        <button id="btn-execute" class="tech-btn w-full py-3 md:py-4 text-lg md:text-xl flex items-center justify-center gap-2 tracking-widest" disabled>
+                            ✅ VERIFICAR SECUENCIA
+                        </button>
+                    </div>
+                </div>
+
+                <!-- PANEL DERECHO: Banco de Tarjetas Desordenadas -->
+                <div class="w-full md:w-7/12 flex flex-col relative h-[50%] md:h-full bg-slate-900 border-2 border-slate-700 rounded-xl p-4 md:p-6 shadow-inner">
+                    <h3 class="font-tech text-gray-300 text-base md:text-lg uppercase mb-2">📋 Acciones del Científico:</h3>
+                    <p class="text-xs md:text-sm text-lab-yellow font-body mb-4 bg-lab-yellow/10 p-2 rounded border border-lab-yellow/30">
+                        Toca las tarjetas en el orden correcto del Método Científico (Observar -> Suponer -> Experimentar -> Analizar -> Concluir).
+                    </p>
+                    
+                    <div id="cards-bank" class="flex flex-col gap-3 overflow-y-auto pr-2 pb-2 flex-grow">
+                        <!-- Las tarjetas desordenadas se inyectan aquí -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ==============================================
+             MODAL DE FEEDBACK (Error / Acierto)
+             ============================================== -->
+        <div id="feedback-modal" class="hidden absolute inset-0 z-[60] flex-col items-center justify-center bg-black/90 p-4 text-center backdrop-blur-md">
+            <div id="feedback-card" class="tech-panel p-6 md:p-12 max-w-xl w-full text-center border-t-[8px]">
+                <div id="feedback-icon" class="text-[5rem] md:text-[6rem] mb-2 drop-shadow-md"></div>
+                <h3 id="feedback-title" class="font-tech font-bold text-2xl md:text-4xl mb-4 uppercase tracking-widest leading-tight"></h3>
+                <div class="bg-black/50 p-4 rounded-xl border border-gray-600 mb-6">
+                    <p id="feedback-reason" class="text-base md:text-lg font-bold text-gray-200 leading-relaxed font-body"></p>
+                </div>
+                <button id="btn-continue-feedback" class="tech-btn text-white font-tech text-lg md:text-2xl px-8 py-4 w-full uppercase">
+                    Botón
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (Victoria)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex-col items-center justify-center p-6 text-center bg-lab-dark">
+            <div class="tech-panel p-8 md:p-16 max-w-4xl w-full text-center z-10 border-t-[10px] border-t-lab-green shadow-[0_0_50px_rgba(16,185,129,0.3)]">
+                <div class="text-[6rem] md:text-[8rem] mb-6 animate__animated animate__tada drop-shadow-lg">👨‍🔬🏅</div>
+                <h2 class="font-tech font-bold text-4xl md:text-6xl text-lab-green mb-6 uppercase drop-shadow-[0_2px_2px_#000]">¡Investigación Exitosa!</h2>
+                <p class="text-lg md:text-2xl text-gray-300 mb-10 font-bold leading-relaxed font-body max-w-2xl mx-auto">
+                    Has demostrado ser un científico riguroso. Ordenaste cada proceso utilizando el Método Científico a la perfección. ¡La ciencia no tiene secretos para ti!
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-6 justify-center">
+                    <button id="btn-end-home" class="tech-btn bg-slate-800 text-white font-tech px-8 py-4 text-xl border-slate-600">
+                        SALIR DEL LABORATORIO
+                    </button>
+                    <button id="btn-end-retry" class="tech-btn border-lab-cyan text-lab-cyan font-tech text-xl md:text-2xl px-10 py-4">
+                        NUEVOS CASOS 🔄
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO (MÉTODO CIENTÍFICO)
+         ============================================== -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- AUDIO SINTETIZADO SEGURO ---
+            let audioCtx = null;
+            function initAudio() {
+                try {
+                    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                } catch (e) {}
+            }
+            document.body.addEventListener('click', initAudio, { once: true });
+
+            function playBeep(freq = 600, duration = 0.1, type = "sine") {
+                try {
+                    if (audioCtx && audioCtx.state !== 'suspended') {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = type;
+                        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + duration);
+                    }
+                } catch (e) {}
+            }
+
+            function playBlip() { playBeep(900, 0.05, "square"); }
+            function playSuccess() { playBeep(523.25, 0.1); setTimeout(() => playBeep(659.25, 0.1), 100); setTimeout(() => playBeep(783.99, 0.3), 200); }
+            function playError() { playBeep(200, 0.3, "sawtooth"); setTimeout(() => playBeep(150, 0.4, "sawtooth"), 150); }
+
+            function shuffleArray(arr) {
+                let array = [...arr];
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            // --- BASE DE DATOS DE CASOS CLÍNICOS ---
+            const stepIcons = [
+                { title: "Observación", icon: "👁️", color: "text-lab-cyan" },
+                { title: "Hipótesis", icon: "💡", color: "text-lab-yellow" },
+                { title: "Experimento", icon: "🧪", color: "text-lab-green" },
+                { title: "Análisis", icon: "📊", color: "text-lab-purple" },
+                { title: "Conclusión", icon: "✅", color: "text-white" }
+            ];
+
+            const casesData = [
+                {
+                    id: 1,
+                    title: "El Hielo Misterioso",
+                    story: "Juanita estaba caminando por su calle en invierno. Notó que su vecino, el señor Tomás, estaba arrojando puñados de sal sobre la acera congelada. Minutos después, el hielo en esa zona comenzó a derretirse mucho más rápido que el hielo en la acera de Juanita.",
+                    steps: [
+                        { step: 1, text: "Juanita nota que el hielo con sal se derrite más rápido que el hielo normal." },
+                        { step: 2, text: "Juanita piensa: 'Creo que la sal hace que el hielo se derrita más rápidamente que el agua sola'." },
+                        { step: 3, text: "Coloca dos cubos de hielo en platos separados. A uno le echa sal y al otro no. Usa un cronómetro." },
+                        { step: 4, text: "Revisa su cronómetro y anota que el cubo con sal se hizo agua en 5 minutos, y el otro en 15 minutos." },
+                        { step: 5, text: "Juanita confirma que la sal acelera el derretimiento y se lo cuenta a su profesor." }
+                    ]
+                },
+                {
+                    id: 2,
+                    title: "La Planta Marchita",
+                    story: "Carlos tiene dos plantas idénticas en su habitación. Las riega la misma cantidad de días. Sin embargo, la planta que está cerca de su computadora está fuerte y verde, mientras que la planta que dejó encerrada dentro del armario oscuro está perdiendo sus hojas y se ve marchita.",
+                    steps: [
+                        { step: 1, text: "Carlos ve que la planta del armario está marchita, pero la de la mesa está sana." },
+                        { step: 2, text: "Carlos supone: 'La planta del armario se está muriendo porque le falta luz solar'." },
+                        { step: 3, text: "Compra dos plantas nuevas. Pone una al sol y la otra en una caja oscura durante una semana." },
+                        { step: 4, text: "Anota en su cuaderno que la planta en la caja perdió color, mientras que la del sol creció 2 cm." },
+                        { step: 5, text: "Carlos determina que las plantas necesitan luz solar obligatoria para vivir." }
+                    ]
+                },
+                {
+                    id: 3,
+                    title: "El Globo Mágico",
+                    story: "Sofía estaba ayudando a su papá a limpiar la cocina. Por accidente, dejó caer una cucharada de bicarbonato de sodio dentro de una botella que tenía vinagre. Para que no se derramara, tapó rápido la botella con un globo desinflado. Para su sorpresa, ¡el globo comenzó a inflarse solo!",
+                    steps: [
+                        { step: 1, text: "Sofía observa que al mezclar vinagre y bicarbonato, el globo se infla solo." },
+                        { step: 2, text: "Sofía se pregunta y supone: 'La mezcla de estos dos polvos crea un gas que empuja el globo'." },
+                        { step: 3, text: "Prepara tres botellas. A una le pone agua, a otra solo vinagre y a la tercera vinagre con bicarbonato. Les pone globos." },
+                        { step: 4, text: "Observa y escribe que solo la tercera botella produjo burbujas y llenó el globo de aire." },
+                        { step: 5, text: "Sofía comprueba que la mezcla genera una reacción química con gas y lo anota en su reporte." }
+                    ]
+                },
+                {
+                    id: 4,
+                    title: "La Manzana Oxidada",
+                    story: "Mateo dejó la mitad de una manzana sobre la mesa y, al volver unas horas después, notó que se había vuelto de color marrón. Sin embargo, la otra mitad que guardó en el refrigerador con unas gotas de jugo de limón seguía perfecta.",
+                    steps: [
+                        { step: 1, text: "Mateo nota que la manzana al aire libre se vuelve marrón, pero la del limón no." },
+                        { step: 2, text: "Mateo supone: 'El jugo de limón evita que la manzana cambie de color al tocar el aire'." },
+                        { step: 3, text: "Corta una manzana en trozos: a uno le pone limón, a otro agua, y otro lo deja solo." },
+                        { step: 4, text: "Observa que solo el trozo con limón mantuvo su color original después de dos horas." },
+                        { step: 5, text: "Confirma que el ácido del limón protege a la manzana de la oxidación." }
+                    ]
+                },
+                {
+                    id: 5,
+                    title: "El Coche Acelerado",
+                    story: "Ana y su hermano jugaban a lanzar carritos de juguete por una rampa de madera. Ana notó que cuando ponía un par de libros grandes debajo de la rampa para hacerla más empinada, el carrito llegaba mucho más lejos en la sala.",
+                    steps: [
+                        { step: 1, text: "Ana ve que el carrito llega más lejos si la rampa está más inclinada." },
+                        { step: 2, text: "Ana hipotetiza: 'A mayor altura de la rampa, el carrito alcanzará mayor velocidad y distancia'." },
+                        { step: 3, text: "Lanza el carrito desde tres alturas diferentes, midiendo la distancia con una regla." },
+                        { step: 4, text: "Anota que a 10 cm llegó a 1 metro, y a 20 cm de altura llegó a 2 metros de distancia." },
+                        { step: 5, text: "Determina que la altura de la rampa aumenta directamente la distancia recorrida." }
+                    ]
+                },
+                {
+                    id: 6,
+                    title: "Las Hormigas Dulces",
+                    story: "Durante un picnic de verano, Leo dejó caer accidentalmente un trozo de pan y un poco de mermelada en el pasto. Minutos después, notó que decenas de hormigas rodeaban la mermelada, pero ignoraban casi por completo el pan.",
+                    steps: [
+                        { step: 1, text: "Leo nota que las hormigas prefieren la mermelada en lugar del trozo de pan." },
+                        { step: 2, text: "Leo supone: 'Las hormigas prefieren rastrear los alimentos que son dulces'." },
+                        { step: 3, text: "Coloca en el pasto tres tapas: una con azúcar, otra con sal y otra con harina." },
+                        { step: 4, text: "Ve y registra que 30 hormigas fueron al azúcar, cero a la sal y dos a la harina." },
+                        { step: 5, text: "Concluye que las hormigas rastrean y prefieren activamente el azúcar." }
+                    ]
+                },
+                {
+                    id: 7,
+                    title: "El Huevo Flotante",
+                    story: "Martín estaba ayudando a cocinar cuando vio que un huevo crudo se hundía hasta el fondo en un vaso de agua normal. Su mamá, con una sonrisa, le dijo que probara agregando un poco de 'magia blanca' (mucha sal) al agua.",
+                    steps: [
+                        { step: 1, text: "Martín observa que un huevo fresco se hunde rápidamente en el agua dulce." },
+                        { step: 2, text: "Martín piensa: 'Si agrego suficiente sal al agua, el huevo flotará en la superficie'." },
+                        { step: 3, text: "Llena dos vasos con agua, a uno le añade 5 cucharadas de sal, y coloca un huevo en cada uno." },
+                        { step: 4, text: "Registra que en el vaso de agua dulce el huevo se hunde, y en el salado flota." },
+                        { step: 5, text: "Afirma que la sal hace que el agua sea más densa, permitiendo que el huevo flote." }
+                    ]
+                }
+            ];
+
+            let currentLevel = 0;
+            let currentCase = null;
+            let programQueue = []; // array de objetos step {step: 1, text: "..."}
+            let isExecuting = false;
+            let currentShuffledSteps = [];
+
+            // --- NAVEGACIÓN ---
+            function showScreen(id) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+            }
+
+            function startGame() {
+                currentLevel = 0;
+                document.getElementById('screen-result').classList.add('hidden');
+                document.getElementById('screen-result').classList.remove('flex');
+                
+                loadLevel();
+            }
+
+            function loadLevel() {
+                if (currentLevel >= casesData.length) {
+                    endGame();
+                    return;
+                }
+
+                currentCase = casesData[currentLevel];
+                programQueue = [];
+                isExecuting = false;
+
+                // UI de la Pantalla del Caso
+                document.getElementById('case-title').innerText = currentCase.title;
+                document.getElementById('case-story').innerText = currentCase.story;
+                
+                // UI de la Pantalla de Juego
+                document.getElementById('level-indicator').innerText = `${currentLevel + 1}/${casesData.length}`;
+                document.getElementById('game-case-title').innerText = currentCase.title;
+
+                // Preparar las tarjetas desordenadas
+                currentShuffledSteps = shuffleArray(currentCase.steps);
+                renderCardsBank();
+                updateQueueUI();
+
+                // Mostrar primero el caso para lectura
+                showScreen('screen-case');
+            }
+
+            // --- RENDERIZADO DE UI ---
+            function renderCardsBank() {
+                const bankContainer = document.getElementById('cards-bank');
+                bankContainer.innerHTML = '';
+                
+                currentShuffledSteps.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'step-card font-body text-white';
+                    card.id = `card-${item.step}`;
+                    
+                    // Identificador visual neutral para las cartas sueltas
+                    card.innerHTML = `
+                        <div class="text-xl bg-slate-700 w-8 h-8 rounded-full flex items-center justify-center shrink-0 border border-slate-500 text-gray-300 shadow-inner">
+                            ?
+                        </div>
+                        <span class="text-sm md:text-base leading-snug">${item.text}</span>
+                    `;
+                    card.onclick = () => handleCardClick(item);
+                    bankContainer.appendChild(card);
+                });
+            }
+
+            function updateQueueUI() {
+                const queueContainer = document.getElementById('program-queue');
+                const btnExecute = document.getElementById('btn-execute');
+                
+                queueContainer.innerHTML = '';
+
+                for (let i = 0; i < 5; i++) {
+                    const slot = document.createElement('div');
+                    const iconData = stepIcons[i]; // El icono que corresponde a esta posición lógica
+                    
+                    if (i < programQueue.length) {
+                        const addedItem = programQueue[i];
+                        slot.className = "seq-slot filled flex-col md:flex-row p-3 gap-3 font-body text-white text-sm md:text-base shadow-sm";
+                        slot.innerHTML = `
+                            <div class="flex items-center gap-2 md:gap-3 w-full">
+                                <div class="text-2xl md:text-3xl shrink-0 ${iconData.color} drop-shadow-md bg-slate-900 p-2 rounded-lg border border-slate-700">
+                                    ${iconData.icon}
+                                </div>
+                                <div class="flex flex-col text-left">
+                                    <span class="font-tech text-xs ${iconData.color} uppercase tracking-widest leading-none mb-1">${i+1}. ${iconData.title}</span>
+                                    <span class="leading-snug text-gray-200">${addedItem.text}</span>
+                                </div>
+                            </div>
+                        `;
+                        slot.onclick = () => handleSlotClick(i);
+                    } else {
+                        slot.className = "seq-slot text-gray-500 font-tech text-xs md:text-sm tracking-widest uppercase flex-col gap-2 opacity-50";
+                        slot.innerHTML = `
+                            <span class="text-2xl">${iconData.icon}</span>
+                            Paso ${i+1}: [${iconData.title}]
+                        `;
+                    }
+                    queueContainer.appendChild(slot);
+                }
+
+                // Activar verificación si están los 5 llenos
+                if (programQueue.length === 5) {
+                    btnExecute.disabled = false;
+                    btnExecute.classList.add('bg-lab-green/20', 'border-lab-green', 'text-lab-green', 'shadow-[0_0_15px_rgba(16,185,129,0.5)]');
+                } else {
+                    btnExecute.disabled = true;
+                    btnExecute.classList.remove('bg-lab-green/20', 'border-lab-green', 'text-lab-green', 'shadow-[0_0_15px_rgba(16,185,129,0.5)]');
+                }
+            }
+
+            // --- LÓGICA DE PROGRAMACIÓN (SECUENCIA) ---
+            function handleCardClick(itemData) {
+                if (isExecuting) return;
+                
+                if (programQueue.length < 5) {
+                    playBlip();
+                    programQueue.push(itemData);
+                    document.getElementById(`card-${itemData.step}`).classList.add('used');
+                    updateQueueUI();
+                }
+            }
+
+            function handleSlotClick(index) {
+                if (isExecuting) return;
+                
+                if (index < programQueue.length) {
+                    playBlip();
+                    const removedItem = programQueue.splice(index, 1)[0];
+                    document.getElementById(`card-${removedItem.step}`).classList.remove('used');
+                    updateQueueUI();
+                }
+            }
+
+            // --- EJECUCIÓN Y VALIDACIÓN ---
+            function verifySequence() {
+                if (isExecuting) return;
+                isExecuting = true;
+                document.getElementById('btn-execute').disabled = true;
+
+                // Validar el orden: Los ID 'step' de la tarjeta deben coincidir con la posición (1, 2, 3, 4, 5)
+                let isCorrect = true;
+                let errorStep = -1;
+
+                for (let i = 0; i < programQueue.length; i++) {
+                    if (programQueue[i].step !== (i + 1)) {
+                        isCorrect = false;
+                        errorStep = i + 1; // El paso lógico donde se equivocó
+                        break;
+                    }
+                }
+
+                if (isCorrect) {
+                    playSuccess();
+                    setTimeout(() => {
+                        showModal(true, "¡Secuencia Científica Correcta! 🧬", "Ordenaste perfectamente el Método Científico. La investigación fue un éxito.");
+                    }, 500);
+                } else {
+                    playError();
+                    
+                    const queueBox = document.getElementById('program-queue');
+                    queueBox.classList.add('shake-error');
+                    
+                    setTimeout(() => {
+                        queueBox.classList.remove('shake-error');
+                        // Formatear feedback
+                        const logicName = stepIcons[errorStep-1].title;
+                        showModal(false, "¡Falla en el Procedimiento! ⚠️", `Colocaste una acción incorrecta en la etapa de <strong>${logicName}</strong>. Recuerda el orden lógico de una investigación.`);
+                    }, 500);
+                }
+            }
+
+            // --- FEEDBACK & MODALES ---
+            function showModal(isSuccess, titleText, reasonText) {
+                const modal = document.getElementById('feedback-modal');
+                const card = document.getElementById('feedback-card');
+                const btn = document.getElementById('btn-continue-feedback');
+                
+                card.classList.remove('border-t-lab-red', 'border-t-lab-green', 'animate__fadeInDown');
+                void card.offsetWidth;
+
+                document.getElementById('feedback-icon').innerText = isSuccess ? "✅" : "🔬❌";
+                document.getElementById('feedback-title').innerText = titleText;
+                document.getElementById('feedback-title').className = isSuccess 
+                    ? "font-tech font-bold text-2xl md:text-4xl mb-4 uppercase tracking-widest leading-tight text-lab-green" 
+                    : "font-tech font-bold text-2xl md:text-4xl mb-4 uppercase tracking-widest leading-tight text-lab-red";
+                
+                document.getElementById('feedback-reason').innerHTML = reasonText;
+                
+                if (isSuccess) {
+                    card.classList.add('border-t-lab-green');
+                    btn.className = "tech-btn bg-lab-green/20 border-lab-green text-lab-green font-tech font-bold text-lg md:text-xl px-8 py-4 w-full shadow-[0_0_15px_rgba(16,185,129,0.4)]";
+                    btn.innerText = "SIGUIENTE CASO ➡";
+                    btn.onclick = () => { closeModal(); currentLevel++; loadLevel(); };
+                } else {
+                    card.classList.add('border-t-lab-red');
+                    btn.className = "tech-btn bg-lab-panel border-lab-red text-white font-tech font-bold text-lg md:text-xl px-8 py-4 w-full shadow-[0_0_15px_rgba(239,68,68,0.4)]";
+                    btn.innerText = "REORDENAR SECUENCIA 🔄";
+                    btn.onclick = () => { 
+                        closeModal(); 
+                        isExecuting = false; 
+                        // Regresamos todas las cartas y vaciamos el array
+                        programQueue.forEach(item => {
+                            document.getElementById(`card-${item.step}`).classList.remove('used');
+                        });
+                        programQueue = [];
+                        updateQueueUI();
+                    };
+                }
+
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                card.classList.add('animate__fadeInDown');
+            }
+
+            function closeModal() {
+                document.getElementById('feedback-modal').classList.add('hidden');
+                document.getElementById('feedback-modal').classList.remove('flex');
+            }
+
+            function endGame() {
+                document.getElementById('screen-result').classList.remove('hidden');
+                document.getElementById('screen-result').classList.add('flex');
+            }
+
+            // --- ASIGNACIÓN DE EVENTOS PRINCIPALES ---
+            document.getElementById('btn-to-theory').addEventListener('click', () => { playBlip(); showScreen('screen-theory'); });
+            document.getElementById('btn-back-start').addEventListener('click', () => { playBlip(); showScreen('screen-start'); });
+            document.getElementById('btn-to-case').addEventListener('click', () => { playBlip(); startGame(); });
+            document.getElementById('btn-to-game').addEventListener('click', () => { playBlip(); showScreen('screen-game'); });
+            
+            document.getElementById('btn-exit').addEventListener('click', () => { playBlip(); showScreen('screen-start'); });
+            document.getElementById('btn-execute').addEventListener('click', verifySequence);
+            
+            document.getElementById('btn-end-home').addEventListener('click', () => { playBlip(); showScreen('screen-start'); });
+            document.getElementById('btn-end-retry').addEventListener('click', () => { playBlip(); startGame(); });
+
+        });
+    </script>
+</body>
+</html>

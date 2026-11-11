@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Detectives de Errores - Depuración Básica</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Bloqueamos el scroll a nivel de body para una experiencia de App de consola */
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f5f3ff; /* Lavanda súper suave y amigable */
+            background-image: 
+                radial-gradient(#ddd6fe 3px, transparent 3px),
+                radial-gradient(#ddd6fe 3px, transparent 3px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            height: 100dvh;
+            width: 100vw;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            touch-action: none;
+        }
+
+        /* Maquetación Fija y Adaptativa */
+        .game-layout {
+            display: grid;
+            grid-template-columns: 100%;
+            grid-template-rows: auto 1fr;
+            gap: 0.5rem;
+            width: 100%;
+            height: 100%;
+            padding: 0.5rem;
+            box-sizing: border-box;
+        }
+
+        .header-section {
+            grid-row: 1 / 2;
+        }
+
+        .content-section {
+            grid-row: 2 / 3;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            overflow: visible; 
+        }
+
+        /* Distribución de las 3 tarjetas de la secuencia */
+        .secuencia-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            width: 100%;
+            flex: 1.2;
+        }
+
+        /* Panel interactivo de preguntas y controles */
+        .panel-preguntas {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 0.75rem;
+            border: 3px solid #ddd6fe;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            flex: 0.8;
+            overflow: hidden;
+        }
+
+        /* --- VISTA WEB/ESCRITORIO --- */
+        @media (min-width: 1024px) {
+            .game-layout {
+                grid-template-columns: 60% 40%;
+                grid-template-rows: auto 1fr;
+                gap: 1.5rem;
+                padding: 1.5rem;
+            }
+            .header-section {
+                grid-column: 1 / 3;
+            }
+            .content-section {
+                grid-column: 1 / 2;
+                grid-row: 2 / 3;
+                flex-direction: column;
+            }
+            .secuencia-container {
+                gap: 1rem;
+            }
+            .panel-preguntas {
+                grid-column: 2 / 3;
+                grid-row: 2 / 3;
+                border-radius: 2.5rem;
+                border-width: 4px;
+                padding: 1.5rem;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        /* Tarjetas de Secuencia */
+        .tarjeta-paso {
+            background: white;
+            border-radius: 1.25rem;
+            border: 4px solid #e2e8f0;
+            padding: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+        .tarjeta-paso:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+        }
+
+        /* Estados de respuesta de la tarjeta */
+        .paso-correcto {
+            border-color: #22c55e !important;
+            background-color: #f0fdf4 !important;
+        }
+        .paso-error-detectado {
+            border-color: #ef4444 !important;
+            background-color: #fef2f2 !important;
+        }
+
+        /* Animaciones infantiles */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(1.5deg); }
+        }
+        .floating {
+            animation: float 3.5s ease-in-out infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+        .shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            80% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop-in {
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes pulseOwl {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+        .pulse-owl {
+            animation: pulseOwl 2.5s infinite ease-in-out;
+        }
+
+        /* Partículas de celebración */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            animation: flyUp 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            z-index: 9999;
+        }
+        @keyframes flyUp {
+            0% { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-120px) scale(1.6) rotate(180deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="flex flex-col relative text-gray-800 select-none">
+
+    <!-- ================= PANTALLA DE INICIO ================= -->
+    <div id="pantalla-inicio" class="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-violet-50/95 backdrop-blur-md transition-opacity duration-500">
+        <div class="bg-violet-600 text-white rounded-full px-6 py-2 mb-4 text-xl md:text-2xl font-black tracking-widest shadow-md border-4 border-violet-700">
+            PENSAMIENTO COMPUTACIONAL • 2º GRADO
+        </div>
+        
+        <h1 class="text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-normal flex flex-wrap items-center justify-center gap-4 py-2">
+            <span class="text-transparent bg-clip-text bg-gradient-to-b from-purple-600 to-indigo-800">Detectives de Errores</span>
+            <span class="pop-in inline-block" style="animation-delay: 0.2s;">🔎</span>
+        </h1>
+
+        <div class="max-w-2xl bg-white p-8 lg:p-10 rounded-[3rem] shadow-2xl border-8 border-violet-300 mb-8 transform transition-transform duration-300">
+            <h2 class="text-3xl md:text-4xl font-black text-purple-600 mb-4 flex items-center justify-center gap-3">
+                <span>🦉</span> ¿Qué es un Bug?
+            </h2>
+            <p class="text-2xl md:text-3xl text-gray-700 leading-snug font-bold">
+                En programación, un <b>"Bug"</b> es un error de lógica. <br>
+                Usa tu lupa para examinar los 3 pasos de las actividades. Toca el cuadro que tenga un error o que esté fuera de orden. ¡A depurar!
+            </p>
+        </div>
+        <button onclick="iniciarJuego()" class="group relative inline-flex items-center justify-center px-12 lg:px-16 py-6 lg:py-8 text-3xl lg:text-4xl font-black text-white bg-green-500 rounded-full overflow-hidden shadow-[0_10px_0_#15803d] active:shadow-[0_0px_0_#15803d] active:translate-y-2 transition-all">
+            <span class="relative flex items-center gap-3">¡INICIAR CASO! <span class="text-4xl group-hover:animate-bounce">🕵️‍♂️</span></span>
+        </button>
+    </div>
+
+    <!-- ================= PANTALLA DEL JUEGO ================= -->
+    <div id="pantalla-juego" class="hidden game-layout">
+        
+        <!-- Cabecera de Progreso -->
+        <div class="header-section w-full flex justify-between items-center bg-white/95 p-3 md:p-4 shadow-md border-b-4 border-purple-200 z-20 shrink-0 sticky top-0">
+            <div class="flex items-center gap-2 md:gap-3">
+                <span class="text-2xl md:text-3xl bg-purple-100 p-1.5 md:p-2 rounded-full shadow-inner">🔎</span>
+                <h2 class="text-xl md:text-2xl font-black text-purple-800 leading-none">Misiones de Depuración</h2>
+            </div>
+            <div class="flex flex-col items-end">
+                <span class="text-[10px] md:text-xs font-black text-gray-400 uppercase tracking-wider">Casos Resueltos</span>
+                <span id="contador-progreso" class="bg-purple-100 px-4 py-1 rounded-full text-purple-700 font-black border-2 border-purple-200 text-sm md:text-lg shadow-sm">0 / 5 ⭐</span>
+            </div>
+        </div>
+
+        <!-- Área de Contenido Principal -->
+        <div class="content-section">
+            
+            <h3 class="text-lg md:text-2xl font-black text-purple-950 text-center bg-purple-100/80 py-2.5 px-6 rounded-2xl border border-purple-200 shrink-0">
+                Caso: <span id="nombre-caso" class="text-indigo-700">Cargando...</span>
+            </h3>
+
+            <!-- Contenedor de las 3 Tarjetas de Secuencia -->
+            <div id="secuencia-container" class="secuencia-container">
+                <!-- Se inyectan las 3 tarjetas por JS -->
+            </div>
+
+        </div>
+
+        <!-- Panel de Preguntas y Controles (Derecha en Escritorio) -->
+        <div class="panel-preguntas">
+            
+            <div class="text-center w-full flex-1 flex flex-col justify-center items-center py-2">
+                <span class="text-5xl md:text-6xl pulse-owl mb-2">🦉🔎</span>
+                <h4 class="text-xl md:text-2xl font-black text-purple-900 mb-2 uppercase tracking-wider leading-none">Tu Lupa de Detective</h4>
+                <p class="text-base md:text-lg font-bold text-gray-500 leading-tight max-w-sm">
+                    Observa los dibujos y lee bien cada paso. <br>
+                    <span class="text-indigo-600 font-extrabold">Haz clic directamente sobre el paso que es un error lógico</span> para depurarlo.
+                </p>
+            </div>
+
+            <!-- Indicador o Guía Rápida Inferior -->
+            <div class="text-center text-xs md:text-sm font-black text-purple-700/80 bg-purple-50 py-3 px-2 rounded-2xl border border-purple-100 shadow-inner w-full shrink-0 select-none">
+                💡 Los pasos deben tener sentido. ¡Piensa qué se hace primero y qué no encaja!
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= PANEL DE RETROALIMENTACIÓN INFERIOR (NUNCA TAPA NADA) ================= -->
+    <div id="burbuja-pedagogica" class="fixed bottom-0 left-0 w-full bg-white border-t-8 border-purple-400 shadow-[0_-15px_40px_rgba(0,0,0,0.15)] z-[100] transform translate-y-full transition-transform duration-500 flex flex-col md:flex-row items-center justify-between p-4 md:px-8 md:py-6 rounded-t-2xl md:rounded-none">
+        <div class="flex items-center gap-4 w-full md:w-3/4 mb-4 md:mb-0">
+            <span id="burbuja-icono" class="text-5xl md:text-6xl pulse-owl shrink-0 select-none font-bold">🦉</span>
+            <div>
+                <h3 id="burbuja-titulo" class="text-2xl md:text-3xl font-black text-purple-600 mb-1 select-none leading-none">Título</h3>
+                <p id="burbuja-mensaje" class="text-lg md:text-xl font-bold text-gray-700 leading-snug select-none">Mensaje...</p>
+            </div>
+        </div>
+        <div id="burbuja-boton-container" class="w-full md:w-auto shrink-0 flex justify-end">
+            <!-- Botón dinámico de continuar inyectado por JS -->
+        </div>
+    </div>
+
+    <!-- ================= PANTALLA FINAL ================= -->
+    <div id="pantalla-final" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-white/95 backdrop-blur-md transition-opacity duration-500 select-none overflow-hidden">
+        
+        <div class="flex gap-6 justify-center text-8xl md:text-9xl mb-8 floating">
+            <span>🕵️‍♂️</span>
+            <span>🏆</span>
+            <span>👾</span>
+        </div>
+
+        <h1 class="text-5xl md:text-7xl font-black mb-6 leading-normal flex flex-col items-center justify-center gap-1">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-800 py-1">¡SÚPER INSPECTOR!</span>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-800 py-1">DE ERRORES</span>
+        </h1>
+        <p class="text-2xl md:text-4xl text-gray-700 max-w-2xl mb-10 font-bold leading-relaxed">
+            ¡Has solucionado todos los "Bugs" del juego con mucha lógica e inteligencia! 🌟
+        </p>
+        
+        <button onclick="reiniciarJuego()" class="group relative inline-flex items-center justify-center px-12 lg:px-16 py-6 lg:py-8 text-3xl lg:text-4xl font-black text-white bg-blue-500 rounded-full overflow-hidden shadow-[0_10px_0_#1e3a8a] active:shadow-[0_0px_0_#1e3a8a] active:translate-y-2 transition-all">
+            <span class="relative flex items-center gap-3">Jugar otra vez <span class="text-4xl">🔄</span></span>
+        </button>
+    </div>
+
+    <!-- ================= LÓGICA DEL JUEGO ================= -->
+    <script>
+        // --- BASE DE DATOS DE CASOS (5 Niveles - Emojis únicos 100% compatibles) ---
+        const nivelesData = [
+            {
+                id: 1,
+                nombre: "Preparar la Mochila 🎒",
+                pasos: [
+                    { id: 1, titulo: "Paso 1", texto: "Meter los cuadernos en la mochila abierta.", emoji: "📓", esError: false, feedback: "¡Paso Lógico! Es correcto guardar primero los útiles grandes." },
+                    { id: 2, titulo: "Paso 2", texto: "Cerrar la cremallera de la mochila.", emoji: "🎒", esError: false, feedback: "¡Paso Lógico! Cerrar la mochila protege tus cosas para ir a la escuela." },
+                    { id: 3, titulo: "Paso 3", texto: "¡Intentar meter el lápiz en la mochila cerrada!", emoji: "✏️", esError: true, feedback: "¡ERROR ENCONTRADO! No puedes meter el lápiz si ya cerraste la mochila. Tienes que meterlo antes. ¡Bien depurado! ✏️🔥" }
+                ]
+            },
+            {
+                id: 2,
+                nombre: "Lavarse las Manos 🧼",
+                pasos: [
+                    { id: 1, titulo: "Paso 1", texto: "Ponerse jabón en las manos para limpiarlas.", emoji: "🧼", esError: false, feedback: "¡Paso Lógico! El jabón es el primer paso para eliminar la suciedad." },
+                    { id: 2, titulo: "Paso 2", texto: "¡Secarse las manos llenas de jabón con papel!", emoji: "🧻", esError: true, feedback: "¡ERROR ENCONTRADO! ¡Te vas a secar con el jabón puesto! Falta enjuagarse con agua primero. ¡Excelente detective! 🧻💦" },
+                    { id: 3, titulo: "Paso 3", texto: "Enjuagarse las manos con agua limpia.", emoji: "🚰", esError: false, feedback: "¡Paso Lógico! El agua retira el jabón para dejar las manos perfectas." }
+                ]
+            },
+            {
+                id: 3,
+                nombre: "Hacer un Dibujo 🎨",
+                pasos: [
+                    { id: 1, titulo: "Paso 1", texto: "¡Pintar el dibujo con los crayones de colores!", emoji: "🖍️", esError: true, feedback: "¡ERROR ENCONTRADO! No puedes pintar si todavía no has dibujado nada en el papel. ¡Gran lógica! 🖍️🔥" },
+                    { id: 2, titulo: "Paso 2", texto: "Dibujar la figura con lápiz en el papel.", emoji: "📝", esError: false, feedback: "¡Paso Lógico! Trazar el dibujo con el lápiz es siempre el paso principal." },
+                    { id: 3, titulo: "Paso 3", texto: "Colgar el dibujo terminado en un bonito cuadro.", emoji: "🖼️", esError: false, feedback: "¡Paso Lógico! Una vez terminado y pintado, es momento de exhibir tu arte." }
+                ]
+            },
+            {
+                id: 4,
+                nombre: "Comer Cereal 🥣",
+                pasos: [
+                    { id: 1, titulo: "Paso 1", texto: "Servir la leche y el cereal en el tazón.", emoji: "🥣", esError: false, feedback: "¡Paso Lógico! El tazón está servido y listo para un delicioso desayuno." },
+                    { id: 2, titulo: "Paso 2", texto: "¡Lavar el tazón con la esponja antes de comer!", emoji: "🧽", esError: true, feedback: "¡ERROR ENCONTRADO! ¡Vas a mojar de jabón tu comida! El tazón se lava hasta que te hayas comido el cereal. ¡Perfecto! 🧽🥛" },
+                    { id: 3, titulo: "Paso 3", texto: "Comer el cereal usando una cuchara.", emoji: "🥄", esError: false, feedback: "¡Paso Lógico! La cuchara es la herramienta perfecta para comer el cereal con leche." }
+                ]
+            },
+            {
+                id: 5,
+                nombre: "Lavarse los Dientes 🪥",
+                pasos: [
+                    { id: 1, titulo: "Paso 1", texto: "Poner pasta de dientes en el cepillo.", emoji: "🪥", esError: false, feedback: "¡Paso Lógico! Preparar el cepillo con pasta es correcto para empezar." },
+                    { id: 2, titulo: "Paso 2", texto: "Cepillarse los dientes para dejarlos muy limpios.", emoji: "😬", esError: false, feedback: "¡Paso Lógico! Frotar con el cepillo elimina todas las caries." },
+                    { id: 3, titulo: "Paso 3", texto: "¡Masticar un dulce mientras te cepillas!", emoji: "🍬", esError: true, feedback: "¡ERROR ENCONTRADO! ¡Los dulces ensucian los dientes que estás intentando limpiar! No tiene sentido. ¡Has ganado el juego! 🍬🦷" }
+                ]
+            }
+        ];
+
+        let nivelActual = 0;
+        let bloqueandoAccion = false;
+        let callbackContinuar = null;
+
+        // Referencias DOM
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const pantallaJuego = document.getElementById('pantalla-juego');
+        const pantallaFinal = document.getElementById('pantalla-final');
+        const contadorProgreso = document.getElementById('contador-progreso');
+        const burbujaPedagogica = document.getElementById('burbuja-pedagogica');
+        
+        const nombreCaso = document.getElementById('nombre-caso');
+        const secuenciaContainer = document.getElementById('secuencia-container');
+
+        // --- INICIALIZACIÓN ---
+
+        function iniciarJuego() {
+            pantallaInicio.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaInicio.classList.add('hidden');
+                pantallaInicio.classList.remove('opacity-0');
+                pantallaJuego.classList.remove('hidden');
+                
+                nivelActual = 0;
+                bloqueandoAccion = false;
+                callbackContinuar = null;
+                
+                cargarNivel();
+            }, 500);
+        }
+
+        function reiniciarJuego() {
+            pantallaFinal.classList.add('opacity-0');
+            setTimeout(() => window.location.reload(), 300);
+        }
+
+        // --- CARGAR NUEVO CASO ---
+
+        function cargarNivel() {
+            if (nivelActual >= nivelesData.length) {
+                finalizarJuego();
+                return;
+            }
+
+            bloqueandoAccion = false;
+            ocultarBurbujaPedagogica();
+
+            const c = nivelesData[nivelActual];
+            nombreCaso.innerText = c.nombre;
+            contadorProgreso.innerText = `${nivelActual} / ${nivelesData.length} ⭐`;
+
+            // Construir las 3 tarjetas de la secuencia en el contenedor
+            secuenciaContainer.innerHTML = '';
+            c.pasos.forEach(p => {
+                const card = document.createElement('div');
+                card.id = `card-step-${p.id}`;
+                card.className = "tarjeta-paso pop-in shadow-sm select-none";
+                card.dataset.id = p.id;
+
+                // Emoji único y gigante garantizado
+                card.innerHTML = `
+                    <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-[10px] md:text-xs font-extrabold absolute top-2 left-2 uppercase tracking-wider z-20">${p.titulo}</span>
+                    
+                    <div class="w-full flex-1 flex items-center justify-center p-3 my-5 overflow-visible">
+                        <span class="text-7xl md:text-8xl lg:text-9xl filter drop-shadow-md floating select-none">${p.emoji}</span>
+                    </div>
+
+                    <div class="text-[11px] md:text-base font-bold text-center text-gray-700 leading-snug px-2 border-t border-slate-100 pt-3 w-full z-20">${p.texto}</div>
+                `;
+
+                card.addEventListener('pointerdown', () => interactuarConTarjeta(p, card));
+                secuenciaContainer.appendChild(card);
+            });
+        }
+
+        // --- INTERACCIÓN Y JUICIO LÓGICO ---
+
+        function interactuarConTarjeta(paso, cardDOM) {
+            if (bloqueandoAccion) return;
+
+            if (paso.esError) {
+                // ¡Acierto! Encontró el error de lógica (bug)
+                bloqueandoAccion = true;
+                desactivarTarjetas();
+
+                // Estilo exitoso de depuración
+                cardDOM.className = "tarjeta-paso paso-error-detectado shadow-md scale-102 transition-all";
+
+                // Lluvia de estrellas/paz
+                crearDestellos(cardDOM.getBoundingClientRect());
+
+                lanzarBurbujaPedagogica(
+                    true,
+                    "👾",
+                    "¡Bug Solucionado! 🕵️‍♂️🔥",
+                    paso.feedback,
+                    "border-green-400 text-green-700",
+                    () => {
+                        nivelActual++;
+                        cargarNivel();
+                    }
+                );
+
+            } else {
+                // Selección incorrecta (Este paso sí tiene lógica)
+                bloqueandoAccion = true;
+                desactivarTarjetas();
+
+                cardDOM.classList.add('shake');
+                cardDOM.className = "tarjeta-paso paso-correcto shadow-sm";
+
+                lanzarBurbujaPedagogica(
+                    false,
+                    "🦉",
+                    "¡Este paso sí es Lógico!",
+                    paso.feedback + " ¡Busca en otro cuadro el paso que es un error o que está fuera de orden!",
+                    "border-purple-400 text-purple-700"
+                );
+
+                setTimeout(() => {
+                    cardDOM.classList.remove('shake');
+                    cardDOM.className = "tarjeta-paso shadow-sm";
+                    bloqueandoAccion = false;
+                    activarTarjetas();
+                }, 5500);
+            }
+        }
+
+        function desactivarTarjetas() {
+            document.querySelectorAll('.tarjeta-paso').forEach(card => {
+                card.style.pointerEvents = "none";
+                if (!card.classList.contains('paso-error-detectado') && !card.classList.contains('paso-correcto')) {
+                    card.style.opacity = "0.5";
+                }
+            });
+        }
+
+        function activarTarjetas() {
+            document.querySelectorAll('.tarjeta-paso').forEach(card => {
+                card.style.pointerEvents = "auto";
+                card.style.opacity = "1";
+                card.className = "tarjeta-paso shadow-sm select-none";
+            });
+        }
+
+        // --- BURBUJA DE RETROALIMENTACIÓN INFERIOR ---
+
+        function lanzarBurbujaPedagogica(esExito, icono, titulo, mensaje, clasesColor, callback = null) {
+            const colorBorde = clasesColor.split(' ')[0];
+            const colorTexto = clasesColor.split(' ')[1];
+
+            burbujaPedagogica.className = `fixed bottom-0 left-0 w-full bg-white border-t-8 ${colorBorde} shadow-[0_-15px_40px_rgba(0,0,0,0.2)] z-[100] transform translate-y-0 transition-transform duration-500 flex flex-col md:flex-row items-center justify-between p-4 md:px-8 md:py-6 rounded-t-2xl md:rounded-none`;
+            
+            document.getElementById('burbuja-icono').innerText = icono;
+            document.getElementById('burbuja-titulo').className = `text-2xl md:text-3xl font-black ${colorTexto} mb-0.5 select-none leading-none`;
+            document.getElementById('burbuja-titulo').innerText = titulo;
+            document.getElementById('burbuja-mensaje').innerHTML = mensaje;
+
+            const btnContainer = document.getElementById('burbuja-boton-container');
+
+            if (esExito) {
+                callbackContinuar = callback;
+                burbujaPedagogica.style.pointerEvents = 'auto';
+                btnContainer.innerHTML = `
+                    <button onclick="ejecutarContinuar()" class="px-8 py-3.5 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-black text-xl rounded-full shadow-lg hover:from-purple-600 hover:to-indigo-700 active:scale-95 transition-all animate-bounce select-none w-full md:w-auto mt-3 md:mt-0">
+                        Siguiente Caso ➡️
+                    </button>
+                `;
+            } else {
+                callbackContinuar = null;
+                burbujaPedagogica.style.pointerEvents = 'none';
+                btnContainer.innerHTML = '';
+                setTimeout(() => {
+                    if(!callbackContinuar) ocultarBurbujaPedagogica();
+                }, 5500);
+            }
+        }
+
+        function ocultarBurbujaPedagogica() {
+            burbujaPedagogica.classList.remove('translate-y-0');
+            burbujaPedagogica.classList.add('translate-y-full');
+        }
+
+        function ejecutarContinuar() {
+            ocultarBurbujaPedagogica();
+            if (callbackContinuar) {
+                const cb = callbackContinuar;
+                callbackContinuar = null;
+                cb();
+            }
+        }
+
+        // --- EFECTOS VISUALES GIGANTES ---
+
+        function crearDestellos(rect) {
+            const emojis = ['⭐', '✨', '💖', '🔎', '👾', '🌈'];
+            const container = document.body;
+
+            for (let i = 0; i < 15; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                const posX = rect.left + (rect.width / 2) + (Math.random() * 80 - 40);
+                const posY = rect.top + (rect.height / 2);
+                
+                p.style.left = `${posX}px`;
+                p.style.top = `${posY}px`;
+                p.style.fontSize = `${Math.random() * 20 + 25}px`; 
+                p.style.animationDelay = `${Math.random() * 0.2}s`;
+                
+                container.appendChild(p);
+                setTimeout(() => p.remove(), 1500);
+            }
+        }
+
+        function finalizarJuego() {
+            pantallaJuego.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaJuego.classList.add('hidden');
+                pantallaFinal.classList.remove('hidden');
+                setTimeout(() => pantallaFinal.classList.remove('opacity-0'), 50);
+                
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        const fakeRect = { left: window.innerWidth / 2 - 50, width: 100, top: window.innerHeight / 2 - 100, height: 100 };
+                        crearDestellos(fakeRect);
+                    }, i * 250);
+                }
+            }, 500);
+        }
+
+        // --- CARGA INICIAL ---
+        document.addEventListener('DOMContentLoaded', () => {
+            pantallaInicio.classList.remove('hidden');
+            setTimeout(() => {
+                pantallaInicio.classList.remove('opacity-0');
+            }, 50);
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escudo de Argumentos - Expresión Oral</title>
+    
+    <!-- Fuentes Google: Luckiest Guy (Títulos) y Quicksand (Lectura) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Quicksand:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA PARA WORDPRESS -->
+    <script>
+        tailwind.config = {
+            important: '#recurso-wp-escudo',
+            corePlugins: {
+                preflight: false,
+            },
+            theme: {
+                extend: {
+                    fontFamily: {
+                        epic: ['Luckiest Guy', 'cursive'],
+                        body: ['Quicksand', 'sans-serif'],
+                    },
+                    colors: {
+                        knight: {
+                            dark: '#0f172a',      
+                            blue: '#1e3a8a',      
+                            gold: '#fbbf24',      
+                            goldDark: '#b45309',  
+                            red: '#b91c1c',       
+                            steel: '#94a3b8'      
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* =========================================================
+           MICRO-RESET LOCAL: Protege el recurso del tema de WP
+           ========================================================= */
+        #recurso-wp-escudo * {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: currentColor;
+            line-height: normal;
+        }
+        #recurso-wp-escudo h1, #recurso-wp-escudo h2, #recurso-wp-escudo h3, #recurso-wp-escudo p, #recurso-wp-escudo span, #recurso-wp-escudo div {
+            margin: 0; padding: 0;
+        }
+        #recurso-wp-escudo button {
+            background-color: transparent; background-image: none; cursor: pointer; padding: 0; font-family: inherit;
+        }
+
+        /* =========================================================
+           ESTILOS PANTALLA COMPLETA & ESCALADOS
+           ========================================================= */
+        #recurso-wp-escudo {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #0f172a; 
+            background-image: radial-gradient(#1e293b 2px, transparent 2px);
+            background-size: 30px 30px;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Paneles Estilo Fantasía Épica */
+        #recurso-wp-escudo .epic-panel {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 4px solid #fbbf24;
+            border-radius: 16px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.8), inset 0 0 15px rgba(251, 191, 36, 0.2);
+            position: relative;
+        }
+
+        #recurso-wp-escudo .epic-btn {
+            background: linear-gradient(to bottom, #fbbf24, #d97706);
+            border: 4px solid #fff;
+            color: #450a0a;
+            border-radius: 12px;
+            box-shadow: 0 6px 0 #b45309, 0 10px 15px rgba(0,0,0,0.4);
+            transition: transform 0.1s, box-shadow 0.1s;
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.4);
+        }
+        #recurso-wp-escudo .epic-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #b45309, 0 15px 20px rgba(0,0,0,0.5);
+        }
+        #recurso-wp-escudo .epic-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #b45309, 0 5px 8px rgba(0,0,0,0.3);
+        }
+
+        /* Opciones de Escudo */
+        #recurso-wp-escudo .shield-option {
+            background: #1e293b;
+            border: 3px solid #94a3b8;
+            border-radius: 1rem;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 #475569;
+        }
+        #recurso-wp-escudo .shield-option:hover {
+            border-color: #fbbf24;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #d97706;
+            background: #334155;
+        }
+        #recurso-wp-escudo .shield-option:active {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0 #d97706;
+        }
+
+        /* Burbujas de Chat de Debate */
+        .chat-rival {
+            background: #7f1d1d;
+            border: 3px solid #f87171;
+            border-radius: 16px 16px 16px 0;
+            position: relative;
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.5);
+        }
+        .chat-player {
+            background: #1e3a8a;
+            border: 3px solid #60a5fa;
+            border-radius: 16px 16px 0 16px;
+            position: relative;
+            box-shadow: -4px 4px 10px rgba(0,0,0,0.5);
+        }
+
+        /* Pantallas SPA */
+        #recurso-wp-escudo .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            position: absolute;
+            top: 0; left: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        #recurso-wp-escudo .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-escudo .screen.active {
+            display: flex;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .shake-impact { animation: shakeImpact 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shakeImpact {
+            10%, 90% { transform: translate3d(-5px, 0, 0) rotate(-2deg); }
+            20%, 80% { transform: translate3d(10px, 0, 0) rotate(2deg); }
+            30%, 50%, 70% { transform: translate3d(-15px, 0, 0) rotate(-4deg); }
+            40%, 60% { transform: translate3d(15px, 0, 0) rotate(4deg); }
+        }
+
+        /* Partículas de destello */
+        .spark {
+            position: absolute;
+            background: #fbbf24;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: spark-fly 0.6s ease-out forwards;
+            z-index: 100;
+        }
+        @keyframes spark-fly {
+            0% { transform: scale(1) translate(0, 0); opacity: 1; }
+            100% { transform: scale(0) translate(var(--tx), var(--ty)); opacity: 0; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-escudo">
+
+        <!-- ==============================================
+             PANTALLA 1: INICIO
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="epic-panel p-6 md:p-10 max-w-2xl w-full mx-4 transform -rotate-1 text-center flex flex-col items-center">
+                <div class="text-[4rem] md:text-[6rem] mb-2 animate__animated animate__pulse animate__infinite drop-shadow-lg">🛡️</div>
+                <h2 class="text-xs md:text-sm text-knight-gold font-bold mb-3 uppercase tracking-[0.2em] bg-black/50 px-4 py-1 rounded-full border border-knight-gold">
+                    Expresión Oral - 6to Grado
+                </h2>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-epic text-white mt-2 mb-4 leading-none drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] tracking-wider">
+                    Escudo de <br><span class="text-knight-gold drop-shadow-[0_0_10px_rgba(251,191,36,0.6)]">Argumentos</span>
+                </h1>
+                <p class="text-base md:text-xl text-gray-300 mb-6 font-bold px-2 leading-relaxed">
+                    Para ganar un debate no basta con gritar más fuerte. Debes defender tus ideas usando las herramientas correctas. ¡Prepárate para la arena!
+                </p>
+                <button onclick="showScreen('screen-theory')" class="epic-btn font-epic text-xl md:text-3xl px-8 py-3 w-full md:w-auto tracking-wider">
+                    ENTRAR A LA ARENA ⚔️
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: TEORÍA Y REGLAS
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center">
+            <div class="epic-panel p-5 md:p-8 max-w-4xl w-full text-center my-auto">
+                <h2 class="text-2xl md:text-4xl font-epic text-knight-gold mb-6 tracking-widest border-b-2 border-knight-gold/30 pb-3 drop-shadow-md">
+                    LA ARMADURA DEL DEBATE
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6 text-left">
+                    
+                    <!-- Tarjeta OPINIÓN (Débil) -->
+                    <div class="bg-slate-800 p-4 md:p-6 rounded-2xl border-4 border-slate-600 shadow-lg">
+                        <div class="flex items-center gap-3 mb-3 border-b-2 border-slate-600 pb-3">
+                            <div class="bg-slate-700 text-white p-2 rounded-full text-3xl shadow-inner">📄</div>
+                            <h3 class="text-xl md:text-2xl font-epic text-gray-300 uppercase tracking-widest">Escudo de Papel</h3>
+                        </div>
+                        <p class="text-sm md:text-base text-gray-300 font-bold mb-3 leading-snug">
+                            Defenderte solo con <strong>tu opinión personal o tus gustos</strong>. Es muy débil y fácil de destruir por tu rival.
+                        </p>
+                        <div class="bg-slate-900 p-2 md:p-3 rounded-lg border border-slate-700 text-red-400 font-bold text-sm">
+                            "Los videojuegos son buenos porque a mí me divierten mucho." (Débil)
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta DATOS (Fuerte) -->
+                    <div class="bg-knight-blue p-4 md:p-6 rounded-2xl border-4 border-knight-gold shadow-lg transform md:-translate-y-2">
+                        <div class="flex items-center gap-3 mb-3 border-b-2 border-blue-800 pb-3">
+                            <div class="bg-blue-900 text-white p-2 rounded-full text-3xl shadow-inner">🛡️</div>
+                            <h3 class="text-xl md:text-2xl font-epic text-knight-gold uppercase tracking-widest">Escudo de Hierro</h3>
+                        </div>
+                        <p class="text-sm md:text-base text-white font-bold mb-3 leading-snug">
+                            Defenderte usando <strong>hechos, estudios, citas de expertos o estadísticas</strong>. ¡Es invencible!
+                        </p>
+                        <div class="bg-black/40 p-2 md:p-3 rounded-lg border border-knight-gold/50 text-green-400 font-bold text-sm">
+                            "Según expertos, jugar 1 hora mejora los reflejos." (Fuerte)
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button onclick="showScreen('screen-start')" class="bg-slate-800 border-2 border-slate-600 text-white font-bold px-6 py-3 rounded-xl text-base uppercase hover:bg-slate-700 transition">
+                        ⬅ RETIRADA
+                    </button>
+                    <button onclick="startGame()" class="epic-btn font-epic text-lg md:text-2xl px-8 py-3 uppercase">
+                        ¡LISTO PARA EL DUELO! 🎯
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: EL JUEGO (Arena de Debate)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start p-0 relative overflow-hidden bg-slate-900">
+            
+            <!-- HUD Superior -->
+            <div class="w-full bg-black/80 p-2 md:p-3 flex justify-between items-center z-30 border-b-4 border-knight-gold shrink-0">
+                <div class="flex items-center gap-3 px-2 md:px-4">
+                    <div class="text-2xl md:text-3xl drop-shadow-[0_0_8px_#fbbf24]">🏆</div>
+                    <div class="flex flex-col">
+                        <span class="text-[9px] md:text-xs text-gray-400 font-bold uppercase tracking-widest leading-none mb-1">Puntos de Defensa</span>
+                        <span class="font-epic text-xl md:text-2xl text-knight-gold leading-none tracking-wider"><span id="score-display">0</span><span class="text-gray-500 text-lg">/5</span></span>
+                    </div>
+                </div>
+
+                <button onclick="exitGame()" class="bg-red-900/50 border-2 border-red-500 text-red-300 hover:bg-red-600 hover:text-white transition-colors p-1 md:p-2 rounded-lg mr-2 md:mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Escenario: Chat de Debate -->
+            <div class="flex-grow w-full max-w-4xl mx-auto flex flex-col p-3 md:p-5 overflow-hidden">
+                
+                <!-- Historial del Debate (Ataque y Tu Postura) -->
+                <div class="flex-grow flex flex-col gap-3 md:gap-4 justify-center">
+                    
+                    <!-- Ataque del Rival -->
+                    <div class="flex flex-col items-start w-full md:w-3/4 animate__animated animate__fadeInLeft">
+                        <span class="text-red-400 font-bold text-xs uppercase tracking-widest mb-1 ml-2">El Rival ataca:</span>
+                        <div class="chat-rival p-3 md:p-5">
+                            <p id="rival-text" class="text-white font-bold text-base md:text-xl leading-snug"></p>
+                        </div>
+                    </div>
+
+                    <!-- Tu Postura -->
+                    <div class="flex flex-col items-end w-full md:w-3/4 self-end animate__animated animate__fadeInRight animate__delay-1s">
+                        <span class="text-blue-400 font-bold text-xs uppercase tracking-widest mb-1 mr-2">Tu postura:</span>
+                        <div class="chat-player p-3 md:p-5">
+                            <p id="player-stance" class="text-white font-bold text-base md:text-xl leading-snug"></p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Opciones (Selección de Escudo) -->
+                <div class="w-full mt-4 bg-slate-800 p-3 md:p-5 rounded-2xl border-4 border-slate-600 shadow-[0_-8px_15px_rgba(0,0,0,0.5)] z-20 shrink-0">
+                    <h3 class="font-epic text-knight-gold text-base md:text-lg uppercase mb-3 text-center tracking-widest">¡Elige una prueba para defenderte!</h3>
+                    
+                    <div id="options-container" class="flex flex-col gap-2 md:gap-3">
+                        <!-- Botones de opciones inyectados por JS -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ==============================================
+             MODAL DE FEEDBACK (Impacto)
+             ============================================== -->
+        <div id="feedback-modal" class="hidden absolute inset-0 z-[60] flex-col items-center justify-center bg-black/90 p-4 text-center backdrop-blur-md">
+            <div id="feedback-card" class="epic-panel p-6 md:p-10 max-w-xl w-full animate__animated text-center border-t-[8px]">
+                <div id="feedback-icon" class="text-[4rem] md:text-[6rem] mb-2 leading-none drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">🛡️✨</div>
+                <h3 id="feedback-title" class="font-epic text-3xl md:text-4xl text-white mb-3 uppercase tracking-widest drop-shadow-[0_2px_2px_rgba(0,0,0,1)]">Título</h3>
+                <div class="bg-black/50 p-4 md:p-5 rounded-xl border border-gray-600 mb-6">
+                    <p id="feedback-reason" class="text-base md:text-lg font-bold text-gray-200 leading-snug"></p>
+                </div>
+                <button onclick="closeFeedback()" class="epic-btn font-epic text-lg md:text-xl px-8 py-3 uppercase w-full">
+                    Siguiente Asalto
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (Resultados)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex flex-col items-center justify-center p-6 text-center bg-knight-dark">
+            <div id="result-card" class="epic-panel p-8 md:p-12 max-w-2xl w-full animate__animated animate__zoomIn text-center z-10 border-t-[8px] border-knight-gold">
+                <div id="result-icon" class="text-[5rem] md:text-[7rem] mb-4 drop-shadow-[0_0_20px_rgba(251,191,36,0.6)]">🏆🏰</div>
+                <h2 id="result-title" class="font-epic text-3xl md:text-5xl lg:text-6xl text-knight-gold mb-4 uppercase drop-shadow-[0_3px_3px_rgba(0,0,0,1)] tracking-widest">
+                    ¡Defensa Invicta!
+                </h2>
+                <p id="result-msg" class="text-lg md:text-xl text-white mb-8 font-bold leading-relaxed">
+                    Mensaje final.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button onclick="exitGame()" class="bg-slate-800 text-white font-bold border-2 border-slate-600 hover:bg-slate-700 px-6 py-3 rounded-xl text-base uppercase transition-colors">
+                        SALIR DEL CASTILLO
+                    </button>
+                    <button onclick="startGame()" class="epic-btn font-epic text-xl md:text-2xl px-8 py-3 uppercase tracking-widest">
+                        NUEVO TORNEO 🔄
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO
+         ============================================== -->
+    <script>
+        const debateScenarios = [
+            {
+                rival: "Los videojuegos de acción son malos para los niños.",
+                stance: "No siempre, también tienen beneficios si se usan bien.",
+                options: [
+                    { text: "Un estudio de la Universidad de Oxford demostró que mejoran los reflejos y la resolución de problemas.", correct: true, type: "Escudo de Hierro", reason: "Citar un estudio de una universidad es un HECHO comprobable y un argumento sólido." },
+                    { text: "A mí me gustan mucho y no me hacen ningún daño.", correct: false, type: "Escudo de Papel", reason: "Es solo tu experiencia personal. No sirve para convencer a alguien en un debate formal." },
+                    { text: "Las consolas de videojuegos son cada vez más caras.", correct: false, type: "Escudo Roto", reason: "Este es un dato irrelevante que no tiene nada que ver con el tema de la salud." }
+                ]
+            },
+            {
+                rival: "Deberíamos eliminar la tarea escolar por completo.",
+                stance: "La tarea es necesaria, pero con moderación.",
+                options: [
+                    { text: "Nadie quiere hacer tarea porque es muy aburrida.", correct: false, type: "Escudo de Papel", reason: "Decir que es 'aburrida' es una OPINIÓN, no un argumento válido." },
+                    { text: "Según expertos en educación, repasar en casa ayuda a retener un 40% más la información.", correct: true, type: "Escudo de Hierro", reason: "Utilizar el porcentaje de retención respaldado por expertos le da peso y fuerza a tu postura." },
+                    { text: "Las mochilas de la escuela pesan mucho.", correct: false, type: "Escudo Roto", reason: "Es cierto, pero no defiende el propósito de si la tarea sirve o no para aprender." }
+                ]
+            },
+            {
+                rival: "En la escuela deberían vender comida rápida todos los días.",
+                stance: "Deben priorizar opciones más saludables.",
+                options: [
+                    { text: "Las manzanas y las peras saben mejor que las papas fritas.", correct: false, type: "Escudo de Papel", reason: "El sabor es subjetivo (una opinión). A otras personas les sabrá mejor la comida rápida." },
+                    { text: "La Organización Mundial de la Salud advierte que el exceso de grasas afecta la energía y concentración en clases.", correct: true, type: "Escudo de Hierro", reason: "Respaldar tu argumento con una Organización Mundial lo hace indiscutible." },
+                    { text: "El director de la escuela prefiere comer ensaladas.", correct: false, type: "Escudo Roto", reason: "Los gustos del director no son un argumento de salud para todos los estudiantes." }
+                ]
+            },
+            {
+                rival: "Los animales salvajes están mejor en los zoológicos.",
+                stance: "Los animales deberían vivir libres o en reservas naturales.",
+                options: [
+                    { text: "Biólogos indican que muchos animales en cautiverio sufren estrés crónico y viven menos años.", correct: true, type: "Escudo de Hierro", reason: "Este es un DATO científico comprobado que ataca directamente el argumento del rival." },
+                    { text: "A mí me da mucha tristeza ver a los leones encerrados.", correct: false, type: "Escudo de Papel", reason: "Tus sentimientos son válidos, pero en un debate necesitas pruebas, no solo emociones." },
+                    { text: "La entrada al zoológico de la ciudad cuesta 10 dólares.", correct: false, type: "Escudo Roto", reason: "El precio de la entrada no tiene relación con el bienestar de los animales." }
+                ]
+            },
+            {
+                rival: "Deberían prohibir el uso de celulares en el aula.",
+                stance: "Pueden ser útiles si se usan como herramienta de aprendizaje.",
+                options: [
+                    { text: "Es que yo me aburro mucho si no puedo revisar mi teléfono.", correct: false, type: "Escudo de Papel", reason: "Este argumento es una excusa personal que debilita tu postura." },
+                    { text: "Los celulares más nuevos tienen cámaras increíbles.", correct: false, type: "Escudo Roto", reason: "Tener buena cámara no justifica su uso para fines educativos." },
+                    { text: "Una encuesta reciente mostró que el 70% de los profesores usan apps interactivas en el celular para evaluar.", correct: true, type: "Escudo de Hierro", reason: "Usar estadísticas y mostrar su uso pedagógico real defiende perfectamente tu punto." }
+                ]
+            }
+        ];
+
+        let currentScenarioIndex = 0;
+        let score = 0;
+        let isProcessing = false;
+        let gameQueue = [];
+
+        const rivalText = document.getElementById('rival-text');
+        const playerStance = document.getElementById('player-stance');
+        const optionsContainer = document.getElementById('options-container');
+
+        function showScreen(screenId) {
+            const container = document.getElementById('recurso-wp-escudo');
+            container.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function shuffleArray(arr) {
+            let array = [...arr];
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startGame() {
+            score = 0;
+            isProcessing = false;
+            gameQueue = shuffleArray(debateScenarios).slice(0, 5); 
+            
+            updateUI();
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('flex');
+            
+            showScreen('screen-game');
+            loadScenario();
+        }
+
+        function updateUI() {
+            document.getElementById('score-display').innerText = score;
+        }
+
+        function loadScenario() {
+            if (gameQueue.length === 0) {
+                setTimeout(() => endGame(), 500);
+                return;
+            }
+
+            const data = gameQueue.shift();
+            isProcessing = false;
+
+            rivalText.parentElement.parentElement.classList.remove('animate__fadeInLeft');
+            playerStance.parentElement.parentElement.classList.remove('animate__fadeInRight');
+            void rivalText.offsetWidth; 
+            rivalText.parentElement.parentElement.classList.add('animate__fadeInLeft');
+            playerStance.parentElement.parentElement.classList.add('animate__fadeInRight');
+
+            rivalText.innerText = `"${data.rival}"`;
+            playerStance.innerText = `"${data.stance}"`;
+
+            optionsContainer.innerHTML = '';
+            const shuffledOptions = shuffleArray(data.options);
+
+            shuffledOptions.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'shield-option p-2 md:p-3 w-full text-left flex items-start gap-2 md:gap-3 animate__animated animate__fadeInUp';
+                btn.style.animationDelay = `${idx * 0.1}s`;
+                
+                btn.innerHTML = `
+                    <div class="text-xl md:text-2xl bg-slate-700 rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center shrink-0 border-2 border-slate-500 text-white">
+                        🛡️
+                    </div>
+                    <span class="text-xs md:text-sm lg:text-base font-bold text-gray-200 mt-1 leading-tight">${opt.text}</span>
+                `;
+                
+                btn.onclick = (e) => handleChoice(opt, btn, e);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function handleChoice(option, btnElement, e) {
+            if (isProcessing) return;
+            isProcessing = true;
+
+            btnElement.classList.add('bg-slate-600', 'border-knight-gold');
+
+            if (option.correct) {
+                score++;
+                updateUI();
+                createSparks(e.clientX, e.clientY);
+                
+                setTimeout(() => {
+                    showFeedback(true, `¡${option.type}!`, option.reason);
+                }, 500);
+
+            } else {
+                btnElement.classList.add('shake-impact', 'border-red-500', 'bg-red-900/30');
+                
+                setTimeout(() => {
+                    showFeedback(false, `¡${option.type}!`, option.reason);
+                }, 800);
+            }
+        }
+
+        function createSparks(x, y) {
+            const container = document.getElementById('recurso-wp-escudo');
+            const rect = container.getBoundingClientRect();
+            const localX = x - rect.left;
+            const localY = y - rect.top;
+
+            for (let i = 0; i < 15; i++) {
+                const spark = document.createElement('div');
+                spark.className = 'spark';
+                
+                const size = Math.random() * 8 + 4;
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 100 + 30;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+                
+                spark.style.width = `${size}px`;
+                spark.style.height = `${size}px`;
+                spark.style.left = `${localX}px`;
+                spark.style.top = `${localY}px`;
+                spark.style.setProperty('--tx', `${tx}px`);
+                spark.style.setProperty('--ty', `${ty}px`);
+                
+                container.appendChild(spark);
+                setTimeout(() => spark.remove(), 600);
+            }
+        }
+
+        function showFeedback(isSuccess, titleText, reasonText) {
+            const modal = document.getElementById('feedback-modal');
+            const card = document.getElementById('feedback-card');
+            const icon = document.getElementById('feedback-icon');
+            const title = document.getElementById('feedback-title');
+            const reason = document.getElementById('feedback-reason');
+
+            card.classList.remove('animate__bounceIn', 'border-green-500', 'border-red-500');
+            void card.offsetWidth;
+
+            if (isSuccess) {
+                icon.innerText = "🛡️✨";
+                title.innerHTML = `${titleText}`;
+                title.className = "font-epic text-3xl md:text-5xl mb-3 uppercase tracking-widest drop-shadow-[0_2px_2px_rgba(0,0,0,1)] text-green-400";
+                card.classList.add('border-green-500');
+            } else {
+                icon.innerText = "💥💔";
+                title.innerHTML = `${titleText}`;
+                title.className = "font-epic text-3xl md:text-5xl mb-3 uppercase tracking-widest drop-shadow-[0_2px_2px_rgba(0,0,0,1)] text-red-500";
+                card.classList.add('border-red-500');
+            }
+
+            reason.innerHTML = reasonText;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            card.classList.add('animate__bounceIn');
+        }
+
+        function closeFeedback() {
+            const modal = document.getElementById('feedback-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            
+            loadScenario();
+        }
+
+        function endGame() {
+            const screenResult = document.getElementById('screen-result');
+            const title = document.getElementById('result-title');
+            const msg = document.getElementById('result-msg');
+            const icon = document.getElementById('result-icon');
+            
+            if (score >= 4) {
+                icon.innerText = "🏆🛡️";
+                title.innerText = "¡Defensa Invicta!";
+                title.className = "font-epic text-3xl md:text-5xl lg:text-6xl text-knight-gold mb-4 uppercase drop-shadow-[0_3px_3px_rgba(0,0,0,1)] tracking-widest";
+                msg.innerText = "¡Felicidades Paladín! Sabes elegir perfectamente citas y datos concretos para darle peso a tus argumentos.";
+            } else {
+                icon.innerText = "⚔️📚";
+                title.innerText = "¡Escudos Rotos!";
+                title.className = "font-epic text-3xl md:text-5xl lg:text-6xl text-white mb-4 uppercase drop-shadow-[0_3px_3px_rgba(0,0,0,1)] tracking-widest";
+                msg.innerText = "Tus argumentos se basaron mucho en opiniones personales. Recuerda: para ganar un debate necesitas datos reales y comprobables.";
+            }
+
+            screenResult.classList.remove('hidden');
+            screenResult.classList.add('flex');
+        }
+
+        function exitGame() {
+            score = 0;
+            isProcessing = false;
+            gameQueue = [];
+            showScreen('screen-start');
+        }
+    </script>
+</body>
+</html>

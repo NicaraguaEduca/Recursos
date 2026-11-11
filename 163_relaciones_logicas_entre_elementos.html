@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1º Primaria | El Enlace Lógico</title>
+    <!-- Tipografía infantil Fredoka -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #4D96FF;
+            --success: #6BCB77;
+            --error: #FF6B6B;
+            --warning: #FFD93D;
+            --purple: #9B72CF;
+            --bg: #F9FAFC;
+            --card-border: #E2E8F0;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Fredoka', sans-serif;
+            user-select: none;
+        }
+
+        /* Pantalla de Bienvenida / Entrada */
+        .welcome-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(var(--warning) 1.5px, transparent 1.5px),
+                radial-gradient(var(--primary) 1.5px, transparent 1.5px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: all 0.5s ease;
+        }
+
+        .welcome-card {
+            background: white;
+            border: 6px solid var(--primary);
+            border-radius: 30px;
+            padding: 40px;
+            max-width: 650px;
+            width: 100%;
+            box-shadow: 0 20px 0px rgba(77, 150, 255, 0.15);
+            text-align: center;
+            animation: bounceIn 0.8s ease;
+        }
+
+        .welcome-badge-grade {
+            background-color: var(--purple);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: inline-block;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .welcome-title {
+            color: #2D3748;
+            font-size: 2.8rem;
+            margin: 0 0 20px 0;
+            text-shadow: 3px 3px 0px var(--warning);
+            line-height: 1.1;
+        }
+
+        .welcome-info {
+            background: #F7FAFC;
+            border: 2px dashed #CBD5E0;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .welcome-info-item {
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+            color: #4A5568;
+        }
+
+        .welcome-info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .welcome-info-item strong {
+            color: #2D3748;
+        }
+
+        .welcome-info-item span {
+            color: var(--purple);
+            font-weight: 600;
+        }
+
+        .btn-start {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            padding: 16px 50px;
+            background: var(--success);
+            color: white;
+            border: 4px solid #57b363;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 0px #44964e;
+            transition: all 0.1s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 0px #44964e;
+        }
+
+        .btn-start:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0px #44964e;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(var(--warning) 1.5px, transparent 1.5px),
+                radial-gradient(var(--primary) 1.5px, transparent 1.5px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Cabecera Pedagógica Obligatoria */
+        .academic-header {
+            background: white;
+            border: 3px solid var(--purple);
+            border-radius: 20px;
+            padding: 10px 25px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 0px rgba(155, 114, 207, 0.15);
+            margin-bottom: 25px;
+            max-width: 800px;
+            width: 100%;
+            animation: bounceIn 0.8s ease;
+        }
+
+        .academic-badge {
+            background-color: var(--purple);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .academic-content {
+            font-size: 1.1rem;
+            color: #4A5568;
+            font-weight: 600;
+        }
+
+        .academic-content span {
+            color: var(--purple);
+            font-weight: 700;
+        }
+
+        /* Título Principal */
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            animation: bounceIn 1s ease;
+        }
+
+        h1 {
+            color: #2D3748;
+            font-size: 2.6rem;
+            margin: 0 0 10px 0;
+            text-shadow: 3px 3px 0px var(--warning);
+        }
+
+        p.instruccion {
+            color: #4A5568;
+            font-size: 1.3rem;
+            background: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: 0 8px 0px rgba(0,0,0,0.05);
+            display: inline-block;
+            margin: 0;
+            border: 3px solid var(--primary);
+        }
+
+        /* Contenedor del Juego */
+        .game-container {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 850px;
+            margin-top: 20px;
+            gap: 120px; 
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            flex: 1;
+            z-index: 2;
+        }
+
+        /* Tarjetas de elementos */
+        .card {
+            background: white;
+            border: 4px solid var(--card-border);
+            border-radius: 20px;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            box-shadow: 0 8px 0px var(--card-border);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 0px rgba(0,0,0,0.08);
+            border-color: var(--primary);
+        }
+
+        .card.selected {
+            border-color: var(--primary);
+            background-color: #EBF8FF;
+            transform: scale(1.05);
+            box-shadow: 0 8px 0px var(--primary);
+        }
+
+        .card.matched {
+            border-color: var(--success);
+            background-color: #F0FDF4;
+            box-shadow: 0 6px 0px var(--success);
+            cursor: default;
+            transform: none;
+        }
+
+        .card.error-flash {
+            animation: shake 0.5s ease;
+            border-color: var(--error);
+            box-shadow: 0 8px 0px var(--error);
+        }
+
+        .emoji {
+            font-size: 2.8rem;
+            filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.1));
+        }
+
+        .text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #2D3748;
+        }
+
+        /* Conectores Visuales */
+        .dot {
+            width: 18px;
+            height: 18px;
+            background-color: #CBD5E0;
+            border: 3px solid white;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+
+        .column-left .dot { right: -9px; }
+        .column-right .dot { left: -9px; }
+        
+        .card.selected .dot { background-color: var(--primary); transform: translateY(-50%) scale(1.3); }
+        .card.matched .dot { background-color: var(--success); }
+
+        /* Lienzo SVG */
+        svg.lines-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        line {
+            stroke-width: 6;
+            stroke-linecap: round;
+            transition: stroke 0.3s ease;
+        }
+
+        /* Pantalla de Éxito */
+        .celebration {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.92);
+            z-index: 10;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .celebration-box {
+            text-align: center;
+            background: white;
+            padding: 40px 60px;
+            border-radius: 30px;
+            border: 6px solid var(--success);
+            box-shadow: 0 20px 0px rgba(0,0,0,0.1);
+            animation: popUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .celebration h2 {
+            font-size: 3.8rem;
+            color: #1A5235;
+            margin: 0 0 10px 0;
+            text-shadow: 2px 2px 0px var(--success);
+        }
+
+        .btn-restart {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            padding: 14px 40px;
+            background: var(--warning);
+            border: 4px solid #e6c21f;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 0px #ccac1b;
+            margin-top: 25px;
+            transition: all 0.1s ease;
+        }
+
+        .btn-restart:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0px #ccac1b;
+        }
+
+        /* Animaciones */
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.03); }
+            70% { transform: scale(0.97); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+        @keyframes popUp {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; } to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Pantalla Inicial de Presentación y Objetivos -->
+    <div class="welcome-overlay" id="welcomeScreen">
+        <div class="welcome-card">
+            <span class="welcome-badge-grade">🎒 1º de Primaria</span>
+            <h1 class="welcome-title">¡El Enlace Lógico! 🧠✨</h1>
+            
+            <div class="welcome-info">
+                <div class="welcome-info-item">
+                    <strong>Contenido Académico:</strong> <span>Relación de Objetos y Funciones</span>
+                </div>
+                <div class="welcome-info-item">
+                    <strong>Habilidad Clave:</strong> Asociación funcional inmediata de elementos cotidianos.
+                </div>
+                <div class="welcome-info-item" style="border-top: 1px solid #E2E8F0; padding-top: 12px; margin-top: 12px;">
+                    <strong>🎯 Objetivo del Recurso:</strong> <br>
+                    Ayudar a los niños y niñas a identificar de forma lógica cómo se relacionan los objetos cotidianos con su entorno, herramientas complementarias o funciones de uso diario, reforzando el razonamiento temprano y la categorización cognitiva.
+                </div>
+            </div>
+
+            <button class="btn-start" onclick="startGame()">
+                ¡Comenzar Desafío! 🚀
+            </button>
+        </div>
+    </div>
+
+    <!-- Cabecera Pedagógica -->
+    <div class="academic-header">
+        <span class="academic-badge">1º de Primaria</span>
+        <div class="academic-content">Contenido: <span>Relación de Objetos y Funciones</span></div>
+    </div>
+
+    <header>
+        <h1>¡El Enlace Lógico! 🧠✨</h1>
+        <p class="instruccion">🔍 Une cada objeto de la izquierda con su pareja ideal a la derecha</p>
+    </header>
+
+    <div class="game-container" id="gameContainer">
+        <!-- Lienzo para trazar las conexiones -->
+        <svg class="lines-container" id="svgContainer"></svg>
+
+        <!-- Columna Izquierda: Orígenes -->
+        <div class="column column-left" id="colLeft">
+            <!-- Se generará dinámicamente con JS para permitir aleatoriedad -->
+        </div>
+
+        <!-- Columna Derecha: Destinos -->
+        <div class="column column-right" id="colRight">
+            <!-- Se generará dinámicamente con JS para permitir aleatoriedad -->
+        </div>
+    </div>
+
+    <!-- Pantalla de Victoria -->
+    <div class="celebration" id="celebrationScreen">
+        <div class="celebration-box">
+            <h2>¡Súper Campeón! 🏆🌟</h2>
+            <p style="font-size: 1.6rem; color: #4A5568; margin: 0;">¡Has resuelto todos los enlaces lógicos de forma genial!</p>
+            <button class="btn-restart" onclick="resetGame()">¡Jugar otra vez!</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Sintetizador de Sonido (Web Audio API) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Iniciar el juego eliminando la pantalla de bienvenida
+        function startGame() {
+            // Desbloquear AudioContext para evitar bloqueos del navegador
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            playSound('click');
+            
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            welcomeScreen.style.opacity = '0';
+            welcomeScreen.style.pointerEvents = 'none';
+            
+            setTimeout(() => {
+                welcomeScreen.style.display = 'none';
+            }, 500);
+
+            // Inicializar el juego con los elementos ordenados aleatoriamente
+            initGame();
+        }
+
+        function playSound(type) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'success') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.08); // E5
+                osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.16); // G5
+                osc.frequency.setValueAtTime(1046.50, audioCtx.currentTime + 0.24); // C6
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(120, audioCtx.currentTime + 0.25);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.25);
+            } else if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(450, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.06);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.06);
+            }
+        }
+
+        // --- Datos del Ejercicio ---
+        const dataset = [
+            { id: "lapiz", emojiA: "✏️", textA: "Lápiz", emojiB: "📝", textB: "Cuaderno" },
+            { id: "mochila", emojiA: "🎒", textA: "Mochila", emojiB: "🏫", textB: "Escuela" },
+            { id: "cepillo", emojiA: "🪥", textA: "Cepillo", emojiB: "🦷", textB: "Dientes" },
+            { id: "pincel", emojiA: "🎨", textA: "Pincel", emojiB: "🖼️", textB: "Cuadro" },
+            { id: "paraguas", emojiA: "🌂", textA: "Paraguas", emojiB: "🌧️", textB: "Lluvia" }
+        ];
+
+        let selectedOriginCard = null;
+        let activePairs = []; 
+
+        // Auxiliar para desordenar
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        // --- Renderizado Inicial ---
+        function initGame() {
+            const colLeft = document.getElementById('colLeft');
+            const colRight = document.getElementById('colRight');
+            colLeft.innerHTML = '';
+            colRight.innerHTML = '';
+
+            // Copiamos y desordenamos de forma independiente para que no coincidan en línea recta
+            const leftData = shuffle([...dataset]);
+            const rightData = shuffle([...dataset]);
+
+            // Crear Columna Izquierda
+            leftData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.setAttribute('data-id', item.id);
+                card.onclick = () => selectOrigin(card);
+                card.innerHTML = `
+                    <span class="emoji">${item.emojiA}</span>
+                    <span class="text">${item.textA}</span>
+                    <div class="dot"></div>
+                `;
+                colLeft.appendChild(card);
+            });
+
+            // Crear Columna Derecha
+            rightData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.setAttribute('data-target', item.id);
+                card.onclick = () => selectDestination(card);
+                card.innerHTML = `
+                    <div class="dot"></div>
+                    <span class="emoji">${item.emojiB}</span>
+                    <span class="text">${item.textB}</span>
+                `;
+                colRight.appendChild(card);
+            });
+        }
+
+        // --- Interacción del Juego ---
+        function selectOrigin(card) {
+            if (card.classList.contains('matched')) return;
+            playSound('click');
+
+            document.querySelectorAll('.column-left .card').forEach(c => c.classList.remove('selected'));
+            
+            selectedOriginCard = card;
+            card.classList.add('selected');
+        }
+
+        function selectDestination(destinationCard) {
+            if (!selectedOriginCard || destinationCard.classList.contains('matched')) return;
+
+            const originId = selectedOriginCard.getAttribute('data-id');
+            const targetId = destinationCard.getAttribute('data-target');
+
+            if (originId === targetId) {
+                // Acierto
+                playSound('success');
+                
+                selectedOriginCard.classList.remove('selected');
+                selectedOriginCard.classList.add('matched');
+                destinationCard.classList.add('matched');
+
+                // Trazar la línea
+                drawLine(selectedOriginCard, destinationCard, '#6BCB77');
+
+                activePairs.push({ origin: selectedOriginCard, target: destinationCard });
+                selectedOriginCard = null;
+
+                checkWinCondition();
+            } else {
+                // Error
+                playSound('error');
+                destinationCard.classList.add('error-flash');
+                selectedOriginCard.classList.add('error-flash');
+
+                const tempOrigin = selectedOriginCard;
+                setTimeout(() => {
+                    destinationCard.classList.remove('error-flash');
+                    tempOrigin.classList.remove('error-flash');
+                    tempOrigin.classList.remove('selected');
+                }, 500);
+                selectedOriginCard = null;
+            }
+        }
+
+        // --- Motor de Líneas Responsivas SVG ---
+        function drawLine(elemA, elemB, color) {
+            const svg = document.getElementById('svgContainer');
+            const containerRect = document.getElementById('gameContainer').getBoundingClientRect();
+            
+            const dotA = elemA.querySelector('.dot').getBoundingClientRect();
+            const dotB = elemB.querySelector('.dot').getBoundingClientRect();
+
+            const x1 = dotA.left + (dotA.width / 2) - containerRect.left;
+            const y1 = dotA.top + (dotA.height / 2) - containerRect.top;
+            const x2 = dotB.left + (dotB.width / 2) - containerRect.left;
+            const y2 = dotB.top + (dotB.height / 2) - containerRect.top;
+
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', x1);
+            line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2);
+            line.setAttribute('y2', y2);
+            line.setAttribute('stroke', color);
+            
+            svg.appendChild(line);
+        }
+
+        // Redibujado automático al cambiar el tamaño de ventana
+        window.addEventListener('resize', () => {
+            const svg = document.getElementById('svgContainer');
+            svg.innerHTML = '';
+            activePairs.forEach(pair => {
+                drawLine(pair.origin, pair.target, '#6BCB77');
+            });
+        });
+
+        function checkWinCondition() {
+            if (activePairs.length === dataset.length) {
+                setTimeout(() => {
+                    document.getElementById('celebrationScreen').style.display = 'flex';
+                }, 600);
+            }
+        }
+
+        function resetGame() {
+            activePairs = [];
+            selectedOriginCard = null;
+            document.getElementById('svgContainer').innerHTML = '';
+            document.getElementById('celebrationScreen').style.display = 'none';
+            initGame();
+        }
+
+        // Arrancar juego por primera vez - Ya no auto-inicializa en el fondo
+        // para garantizar que las posiciones SVG se calculen al mostrar la pantalla de juego real
+    </script>
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Aventura de Gotita</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #f0f9ff;
+            overflow: hidden;
+        }
+
+        h1, h2 {
+            font-family: 'Fredoka One', cursive;
+        }
+
+        .slide-container {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Animaciones para el laboratorio */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        @keyframes vibrate {
+            0% { transform: translate(0,0); }
+            25% { transform: translate(2px, 2px); }
+            50% { transform: translate(-2px, -2px); }
+            75% { transform: translate(2px, -2px); }
+            100% { transform: translate(0,0); }
+        }
+
+        @keyframes crazy-bounce {
+            0%, 100% { transform: translate(0,0) scale(1); }
+            20% { transform: translate(40px, -60px) scale(1.2); }
+            40% { transform: translate(-50px, 20px) scale(0.8); }
+            60% { transform: translate(30px, 50px) scale(1.1); }
+            80% { transform: translate(-20px, -40px) scale(0.9); }
+        }
+
+        .state-frozen { filter: drop-shadow(0 0 10px #7dd3fc); animation: none !important; }
+        .state-calm { animation: float 3s infinite ease-in-out; }
+        .state-boiling { animation: crazy-bounce 0.4s infinite linear; }
+
+        .steam-particle {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: rise 1.5s infinite linear;
+        }
+
+        @keyframes rise {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-200px) scale(2); opacity: 0; }
+        }
+
+        .btn-nav {
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 #1e40af;
+        }
+        .btn-nav:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #1e40af;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen">
+
+    <!-- Barra de Progreso Superior -->
+    <div class="w-full h-3 bg-blue-100 flex">
+        <div id="progress-bar" class="h-full bg-blue-500 transition-all duration-700" style="width: 16.6%"></div>
+    </div>
+
+    <!-- Contenedor Principal de Slides -->
+    <main id="main-slider" class="slide-container flex flex-row h-full w-[600%]">
+        
+        <!-- PÁGINA 1: BIENVENIDA -->
+        <section class="w-[16.666%] h-full flex flex-col items-center justify-center p-8 bg-gradient-to-b from-blue-50 to-blue-200">
+            <div class="max-w-3xl text-center">
+                <div class="mb-8 inline-block animate-bounce">
+                    <svg viewBox="0 0 100 100" class="w-40 h-40">
+                        <path d="M50 15 Q75 45 75 65 A25 25 0 0 1 25 65 Q25 45 50 15" fill="#3b82f6" />
+                        <circle cx="40" cy="60" r="4" fill="white" />
+                        <circle cx="60" cy="60" r="4" fill="white" />
+                        <path d="M 40 72 Q 50 80 60 72" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" />
+                    </svg>
+                </div>
+                <h1 class="text-5xl text-blue-800 mb-6 uppercase">¡Hola Científico!</h1>
+                <p class="text-2xl text-blue-700 mb-10 font-medium">
+                    Soy <b>Gotita</b>. Hoy vamos a jugar con la temperatura para ver cómo cambio de forma.
+                </p>
+                <button onclick="nextPage()" class="btn-nav px-12 py-5 bg-blue-600 text-white text-2xl rounded-full font-bold">
+                    ¡Comenzar Viaje! 🚀
+                </button>
+            </div>
+        </section>
+
+        <!-- PÁGINA 2: EL ESTADO SÓLIDO -->
+        <section class="w-[16.666%] h-full flex flex-col items-center justify-center p-8 bg-cyan-50">
+            <div class="max-w-4xl grid md:grid-cols-2 gap-12 items-center">
+                <div class="bg-white p-8 rounded-3xl shadow-xl border-b-8 border-cyan-200">
+                    <h2 class="text-4xl text-cyan-600 mb-4">❄️ 1. ¡Qué Frío!</h2>
+                    <p class="text-xl text-slate-700 mb-4 leading-relaxed">
+                        Cuando la temperatura baja de <b>0°C</b>, me convierto en <b>Hielo</b>. 
+                    </p>
+                    <p class="text-lg text-slate-600 italic">
+                        Mis moléculas están tan juntas que no se pueden mover. ¡Soy muy dura!
+                    </p>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="bg-cyan-100 p-8 rounded-2xl border-4 border-cyan-400">
+                        <span class="text-8xl">🧊</span>
+                    </div>
+                    <span class="mt-4 text-cyan-700 font-bold text-xl uppercase tracking-widest">Sólido</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- PÁGINA 3: EL ESTADO LÍQUIDO -->
+        <section class="w-[16.666%] h-full flex flex-col items-center justify-center p-8 bg-blue-50">
+            <div class="max-w-4xl grid md:grid-cols-2 gap-12 items-center">
+                <div class="order-2 md:order-1 flex flex-col items-center">
+                    <div class="bg-blue-100 p-8 rounded-2xl border-4 border-blue-400">
+                        <span class="text-8xl animate-bounce">💧</span>
+                    </div>
+                    <span class="mt-4 text-blue-700 font-bold text-xl uppercase tracking-widest">Líquido</span>
+                </div>
+                <div class="order-1 md:order-2 bg-white p-8 rounded-3xl shadow-xl border-b-8 border-blue-200">
+                    <h2 class="text-4xl text-blue-600 mb-4">🌊 2. ¡A Fluir!</h2>
+                    <p class="text-xl text-slate-700 mb-4 leading-relaxed">
+                        Entre los <b>1°C y 99°C</b>, soy agua líquida. Es como más me gusta estar.
+                    </p>
+                    <p class="text-lg text-slate-600 italic">
+                        Puedo moverme, saltar y tomar la forma de cualquier vaso o piscina.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PÁGINA 4: EL ESTADO GASEOSO -->
+        <section class="w-[16.666%] h-full flex flex-col items-center justify-center p-8 bg-orange-50">
+            <div class="max-w-4xl grid md:grid-cols-2 gap-12 items-center">
+                <div class="bg-white p-8 rounded-3xl shadow-xl border-b-8 border-orange-200">
+                    <h2 class="text-4xl text-orange-600 mb-4">☁️ 3. ¡A Volar!</h2>
+                    <p class="text-xl text-slate-700 mb-4 leading-relaxed">
+                        A los <b>100°C</b> empiezo a hervir y me convierto en <b>Vapor</b>.
+                    </p>
+                    <p class="text-lg text-slate-600 italic">
+                        Mis moléculas tienen tanta energía que salen disparadas hacia el cielo.
+                    </p>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="bg-orange-100 p-8 rounded-2xl border-4 border-orange-400 relative overflow-hidden h-40 w-40 flex items-center justify-center">
+                        <span class="text-7xl opacity-40">☁️</span>
+                        <div id="steam-p4" class="absolute inset-0"></div>
+                    </div>
+                    <span class="mt-4 text-orange-700 font-bold text-xl uppercase tracking-widest">Gaseoso</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- PÁGINA 5: LABORATORIO FINAL -->
+        <section class="w-[16.666%] h-full flex flex-col items-center justify-center p-4 md:p-8 bg-slate-900 text-white">
+            <div class="text-center mb-4">
+                <h2 class="text-3xl text-blue-400 uppercase tracking-tighter">🔬 Laboratorio de Gotita</h2>
+                <p class="text-slate-400 text-sm">¡Mueve el termómetro para ver la reacción!</p>
+            </div>
+
+            <div class="w-full max-w-2xl bg-slate-800 rounded-[2.5rem] p-6 md:p-8 border-4 border-slate-700 shadow-2xl">
+                
+                <!-- Display de Temperatura -->
+                <div class="flex justify-between items-end mb-6">
+                    <div class="flex flex-col">
+                        <span class="text-slate-500 uppercase text-[10px] font-bold tracking-widest">TERMÓMETRO</span>
+                        <span id="lab-temp" class="text-5xl font-black text-blue-400 tracking-tighter">20°C</span>
+                    </div>
+                    <div id="lab-state" class="px-5 py-1.5 bg-blue-600 rounded-full text-sm font-black shadow-lg uppercase">
+                        LÍQUIDO
+                    </div>
+                </div>
+
+                <!-- Slider -->
+                <div class="relative mb-10">
+                    <input type="range" id="lab-slider" min="-20" max="120" value="20" 
+                           class="w-full h-4 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                </div>
+
+                <!-- Cámara de Visualización -->
+                <div id="lab-chamber" class="h-56 rounded-3xl relative flex items-center justify-center overflow-hidden transition-colors duration-500 bg-blue-900/20 border-2 border-slate-700">
+                    <div id="gotita-emoji" class="text-9xl z-10 transition-all duration-300">💧</div>
+                    <div id="lab-particles" class="absolute inset-0 pointer-events-none"></div>
+                </div>
+
+                <p id="lab-desc" class="text-center mt-6 text-blue-200 font-medium italic text-sm">
+                    "Me muevo feliz porque el agua está templada"
+                </p>
+            </div>
+        </section>
+
+        <!-- PÁGINA 6: PANTALLA FINAL -->
+        <section class="w-[16.666%] h-full flex flex-col items-center justify-center p-8 bg-gradient-to-br from-indigo-900 via-blue-900 to-slate-900 text-white">
+            <div class="text-center max-w-2xl">
+                <div class="mb-8 text-8xl">🎓</div>
+                <h1 class="text-5xl mb-6 text-blue-300">¡Felicidades, Científico!</h1>
+                <p class="text-2xl text-blue-100 mb-10 leading-relaxed">
+                    Has aprendido cómo el calor y el frío cambian los estados del agua. ¡Ahora eres un experto en moléculas!
+                </p>
+                <div class="flex flex-col md:flex-row gap-4 justify-center">
+                    <button onclick="resetApp()" class="btn-nav px-8 py-4 bg-white text-blue-900 rounded-2xl font-bold text-xl">
+                        🔄 Volver a jugar
+                    </button>
+                    <div class="px-8 py-4 bg-blue-500 rounded-2xl font-bold text-xl shadow-lg flex items-center justify-center">
+                        ⭐⭐⭐⭐⭐
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Barra de Navegación -->
+    <nav id="bottom-nav" class="fixed bottom-0 left-0 w-full p-6 flex justify-between items-center bg-white/90 backdrop-blur-sm border-t border-slate-200 transition-transform duration-300">
+        <button id="btn-prev" onclick="prevPage()" class="btn-nav px-6 py-3 bg-slate-400 text-white rounded-xl font-bold opacity-0 pointer-events-none">
+            Atrás
+        </button>
+        <div id="page-num" class="text-slate-400 font-bold text-sm uppercase tracking-widest">Página 1 de 6</div>
+        <button id="btn-next" onclick="nextPage()" class="btn-nav px-6 py-3 bg-blue-600 text-white rounded-xl font-bold">
+            Siguiente ➡️
+        </button>
+    </nav>
+
+    <script>
+        let currentPage = 0;
+        const totalPages = 6;
+        const slider = document.getElementById('main-slider');
+        const progressBar = document.getElementById('progress-bar');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        const pageNum = document.getElementById('page-num');
+        const bottomNav = document.getElementById('bottom-nav');
+
+        // Referencias del Laboratorio
+        const labSlider = document.getElementById('lab-slider');
+        const labTemp = document.getElementById('lab-temp');
+        const labState = document.getElementById('lab-state');
+        const labChamber = document.getElementById('lab-chamber');
+        const gotita = document.getElementById('gotita-emoji');
+        const labDesc = document.getElementById('lab-desc');
+        const labParticles = document.getElementById('lab-particles');
+
+        function updateNav() {
+            // Animación de desplazamiento (ahora son 6 páginas, 16.66% cada una)
+            slider.style.transform = `translateX(-${currentPage * 16.666}%)`;
+            
+            // Progreso
+            progressBar.style.width = `${((currentPage + 1) / totalPages) * 100}%`;
+            
+            // Texto de página
+            pageNum.innerText = `Página ${currentPage + 1} de ${totalPages}`;
+
+            // Visibilidad de controles
+            btnPrev.style.opacity = (currentPage === 0) ? '0' : '1';
+            btnPrev.style.pointerEvents = (currentPage === 0) ? 'none' : 'auto';
+            
+            // Cambiar texto botón "Siguiente"
+            if (currentPage === totalPages - 2) {
+                btnNext.innerText = "¡Terminar! ✨";
+            } else if (currentPage === totalPages - 1) {
+                // Ocultar nav en la pantalla final para que sea más limpia
+                bottomNav.style.transform = 'translateY(100%)';
+            } else {
+                btnNext.innerText = "Siguiente ➡️";
+                bottomNav.style.transform = 'translateY(0)';
+            }
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages - 1) {
+                currentPage++;
+                updateNav();
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 0) {
+                currentPage--;
+                updateNav();
+            }
+        }
+
+        function resetApp() {
+            currentPage = 0;
+            updateNav();
+            labSlider.value = 20;
+            labSlider.dispatchEvent(new Event('input'));
+        }
+
+        // Sistema de Partículas (Vapor)
+        function createSteam(container) {
+            const s = document.createElement('div');
+            s.className = 'steam-particle w-6 h-6 bg-white/40';
+            s.style.left = Math.random() * 80 + 10 + '%';
+            s.style.bottom = '20%';
+            container.appendChild(s);
+            setTimeout(() => s.remove(), 1500);
+        }
+
+        // Lógica del Laboratorio
+        labSlider.addEventListener('input', (e) => {
+            const t = parseInt(e.target.value);
+            labTemp.innerText = t + "°C";
+
+            // Resetear estilos base del emoji
+            gotita.className = "text-9xl z-10 transition-all duration-300";
+            gotita.style.animation = "";
+
+            if (t <= 0) {
+                labState.innerText = "SÓLIDO (HIELO)";
+                labState.style.backgroundColor = "#0ea5e9";
+                labChamber.style.backgroundColor = "rgba(186, 230, 253, 0.2)";
+                gotita.innerText = "🧊";
+                gotita.classList.add('state-frozen');
+                labDesc.innerText = "¡Brrr! Estoy congelada y no me puedo mover.";
+                labTemp.style.color = "#7dd3fc";
+            } else if (t < 100) {
+                labState.innerText = "LÍQUIDO (AGUA)";
+                labState.style.backgroundColor = "#2563eb";
+                labChamber.style.backgroundColor = "rgba(37, 99, 235, 0.1)";
+                gotita.innerText = "💧";
+                
+                if (t > 70) {
+                    const speed = (100 - t) / 30; // Más rápido cuanto más cerca de 100
+                    gotita.style.animation = `vibrate ${Math.max(0.05, speed)}s infinite linear`;
+                    labDesc.innerText = "¡Empiezo a tener mucho calor! Mis moléculas vibran.";
+                    labTemp.style.color = "#fb923c";
+                } else {
+                    gotita.classList.add('state-calm');
+                    labDesc.innerText = "Me muevo feliz porque el agua está templada.";
+                    labTemp.style.color = "#60a5fa";
+                }
+            } else {
+                labState.innerText = "GAS (VAPOR)";
+                labState.style.backgroundColor = "#f97316";
+                labChamber.style.backgroundColor = "rgba(249, 115, 22, 0.1)";
+                gotita.innerText = "💨";
+                gotita.classList.add('state-boiling');
+                labDesc.innerText = "¡AUXILIO! ¡Hay tanta energía que estoy volando!";
+                labTemp.style.color = "#f87171";
+            }
+        });
+
+        // Bucle de efectos visuales
+        setInterval(() => {
+            if (currentPage === 3) createSteam(document.getElementById('steam-p4'));
+            if (currentPage === 4 && parseInt(labSlider.value) >= 100) createSteam(labParticles);
+        }, 250);
+
+        // Inicialización
+        updateNav();
+        labSlider.dispatchEvent(new Event('input'));
+    </script>
+</body>
+</html>

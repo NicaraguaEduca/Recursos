@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Semáforo de Acciones - 1º Grado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f0f9ff;
+            background-image: radial-gradient(#bae6fd 2px, transparent 2px);
+            background-size: 30px 30px;
+            overflow: hidden;
+            touch-action: none; /* Evita el scroll al arrastrar en móviles */
+        }
+
+        /* Animaciones */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+        .shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.2); }
+            50% { box-shadow: 0 0 40px rgba(255, 255, 255, 0.8); }
+        }
+
+        .luz-activa {
+            filter: brightness(1.3);
+            animation: pulseGlow 1.5s infinite;
+        }
+
+        /* Estilos de la tarjeta arrastrable */
+        .tarjeta-accion {
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            transition: transform 0.1s;
+        }
+        .tarjeta-accion:active {
+            cursor: grabbing;
+        }
+
+        /* Partículas de celebración */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: fall linear forwards;
+            z-index: 100;
+        }
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Efecto de hover en las cartas de selección */
+        .card-hover:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+<body class="w-screen h-screen flex items-center justify-center text-gray-800 relative">
+
+    <!-- ================= PANTALLA DE INICIO ================= -->
+    <div id="pantalla-inicio" class="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-white/90 backdrop-blur-sm transition-opacity duration-500">
+        
+        <div class="bg-blue-100 rounded-full px-6 py-2 mb-4 font-bold text-blue-600 tracking-wider">
+            CIENCIAS SOCIALES • 1º GRADO
+        </div>
+        
+        <h1 class="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500 mb-6 drop-shadow-sm">
+            Semáforo de Convivencia
+        </h1>
+        
+        <div class="max-w-2xl bg-white p-8 rounded-3xl shadow-2xl border-4 border-yellow-300 mb-8 transform hover:scale-105 transition-transform duration-300">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4 flex items-center justify-center gap-3">
+                <span>🎯</span> Nuestro Objetivo
+            </h2>
+            <p class="text-xl text-gray-600 leading-relaxed font-semibold">
+                Aprender a diferenciar entre las acciones que nos ayudan a convivir en armonía y las que nos perjudican en diferentes lugares.<br><br>
+                <span class="text-blue-500">¡Prepárate para jugar!</span>
+            </p>
+            <div class="flex justify-center gap-4 mt-6 text-4xl">
+                <span>🛑</span>
+                <span>➡️</span>
+                <span>✅</span>
+            </div>
+        </div>
+
+        <button onclick="mostrarSeleccion()" class="group relative inline-flex items-center justify-center px-10 py-5 text-2xl font-bold text-white bg-green-500 rounded-full overflow-hidden shadow-[0_8px_0_#16a34a] active:shadow-[0_0px_0_#16a34a] active:translate-y-2 transition-all">
+            <span class="absolute inset-0 w-full h-full -mt-1 rounded-lg opacity-30 bg-gradient-to-b from-transparent via-transparent to-black"></span>
+            <span class="relative flex items-center gap-2">Comenzar <span class="text-3xl group-hover:animate-bounce">🚀</span></span>
+        </button>
+    </div>
+
+    <!-- ================= PANTALLA DE SELECCIÓN ================= -->
+    <div id="pantalla-seleccion" class="hidden absolute inset-0 z-40 flex flex-col items-center justify-center p-6 text-center bg-white/95 backdrop-blur-md transition-opacity duration-500">
+        <h2 class="text-4xl md:text-6xl font-black text-blue-600 mb-2">¿Dónde vamos a jugar?</h2>
+        <p class="text-xl text-gray-600 font-bold mb-10">Elige un lugar para empezar a clasificar las acciones</p>
+        
+        <div class="flex flex-col md:flex-row gap-6 md:gap-10">
+            
+            <!-- Opción Colegio -->
+            <div onclick="iniciarJuego('colegio')" class="card-hover cursor-pointer bg-yellow-100 border-4 border-yellow-400 p-8 rounded-[2rem] flex flex-col items-center justify-center w-64 transition-all duration-300 shadow-lg relative">
+                <div class="absolute -top-5 -right-5 bg-yellow-400 text-white font-black rounded-full w-12 h-12 flex items-center justify-center text-xl shadow-md border-2 border-white">1</div>
+                <span class="text-7xl mb-4 drop-shadow-md">🏫</span>
+                <h3 class="text-2xl font-black text-yellow-800">En el Colegio</h3>
+            </div>
+
+            <!-- Opción Casa -->
+            <div onclick="iniciarJuego('casa')" class="card-hover cursor-pointer bg-green-100 border-4 border-green-400 p-8 rounded-[2rem] flex flex-col items-center justify-center w-64 transition-all duration-300 shadow-lg relative">
+                <div class="absolute -top-5 -right-5 bg-green-400 text-white font-black rounded-full w-12 h-12 flex items-center justify-center text-xl shadow-md border-2 border-white">2</div>
+                <span class="text-7xl mb-4 drop-shadow-md">🏠</span>
+                <h3 class="text-2xl font-black text-green-800">En la Casa</h3>
+            </div>
+
+            <!-- Opción Supermercado -->
+            <div onclick="iniciarJuego('super')" class="card-hover cursor-pointer bg-purple-100 border-4 border-purple-400 p-8 rounded-[2rem] flex flex-col items-center justify-center w-64 transition-all duration-300 shadow-lg relative">
+                <div class="absolute -top-5 -right-5 bg-purple-400 text-white font-black rounded-full w-12 h-12 flex items-center justify-center text-xl shadow-md border-2 border-white">3</div>
+                <span class="text-7xl mb-4 drop-shadow-md">🛒</span>
+                <h3 class="text-2xl font-black text-purple-800">En el Súper</h3>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= PANTALLA DEL JUEGO ================= -->
+    <div id="pantalla-juego" class="hidden absolute inset-0 z-10 flex flex-col items-center p-4 md:p-8">
+        
+        <!-- Cabecera / Progreso -->
+        <div class="w-full max-w-5xl flex justify-between items-center bg-white/90 rounded-2xl p-4 shadow-sm border-2 border-blue-100 z-20 mb-2 md:mb-8">
+            <div class="flex items-center gap-4">
+                <button onclick="mostrarSeleccion()" class="bg-gray-200 hover:bg-gray-300 rounded-full w-10 h-10 flex items-center justify-center text-xl transition-colors">🔙</button>
+                <h2 id="titulo-escenario" class="text-2xl md:text-3xl font-bold text-blue-600">Lugar</h2>
+            </div>
+            <div class="flex items-center gap-2 text-xl font-bold text-gray-600">
+                <span id="contador-progreso" class="bg-yellow-300 px-5 py-2 rounded-full text-yellow-900 border-2 border-yellow-400 shadow-inner">0 / 8</span>
+            </div>
+        </div>
+
+        <!-- Contenedor Principal Distribuido (3 Columnas en Desktop) -->
+        <div class="flex-1 w-full max-w-6xl flex flex-col md:flex-row items-center justify-center md:justify-between gap-6 md:gap-10 relative">
+
+            <!-- Columna Izquierda (Instrucciones) -->
+            <div class="hidden md:flex flex-col items-center justify-center w-1/4 z-10">
+                <div class="bg-white/80 backdrop-blur-sm p-6 rounded-3xl border-2 border-dashed border-blue-300 shadow-md text-center animate-pulse">
+                    <span class="text-5xl mb-3 block text-blue-400">⬅️</span>
+                    <p class="text-lg font-bold text-blue-800">Arrastra la acción a la luz correcta del semáforo.</p>
+                </div>
+            </div>
+
+            <!-- Columna Central (Semáforo) -->
+            <div class="w-full md:w-1/3 flex flex-col items-center justify-center relative z-20">
+                
+                <!-- Burbuja de Feedback Mejorada -->
+                <div id="mensaje-feedback" class="absolute -top-24 md:-top-32 bg-white px-6 py-4 rounded-3xl shadow-2xl border-4 opacity-0 transition-all duration-300 z-50 text-center flex flex-col justify-center items-center w-[280px] md:w-[350px] transform scale-90 pointer-events-none">
+                    <!-- El contenido se inyectará por JS -->
+                </div>
+
+                <!-- Semáforo -->
+                <div class="bg-gray-800 p-6 rounded-[4rem] flex flex-col gap-8 shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-4 border-gray-900 relative">
+                    
+                    <!-- Luz Roja (Mal comportamiento) -->
+                    <div id="zona-roja" class="w-32 h-32 md:w-40 md:h-40 rounded-full bg-red-600 opacity-50 border-8 border-gray-900 shadow-inner flex flex-col items-center justify-center transition-all duration-300" data-tipo="mala">
+                        <span class="text-5xl md:text-7xl filter drop-shadow-md">🛑</span>
+                        <span class="text-white font-black text-sm md:text-base mt-2 uppercase tracking-widest text-shadow">Incorrecto</span>
+                    </div>
+
+                    <!-- Luz Verde (Buen comportamiento) -->
+                    <div id="zona-verde" class="w-32 h-32 md:w-40 md:h-40 rounded-full bg-green-500 opacity-50 border-8 border-gray-900 shadow-inner flex flex-col items-center justify-center transition-all duration-300" data-tipo="buena">
+                        <span class="text-5xl md:text-7xl filter drop-shadow-md">✅</span>
+                        <span class="text-white font-black text-sm md:text-base mt-2 uppercase tracking-widest text-shadow">Correcto</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Columna Derecha (Zona de la Tarjeta) -->
+            <div class="w-full md:w-1/3 min-h-[250px] md:min-h-[400px] flex flex-col items-center justify-center relative z-30">
+                
+                <!-- Instrucción visible solo en móviles (arriba de la tarjeta) -->
+                <div class="md:hidden text-blue-700 font-extrabold text-sm md:text-base flex items-center gap-2 mb-6 bg-blue-100/80 px-4 py-2 rounded-full shadow-sm border border-blue-200 animate-pulse">
+                    <span>⬆️</span> Arrastra la tarjeta a la luz <span>⬆️</span>
+                </div>
+                
+                <!-- Contenedor donde aparecerán las tarjetas -->
+                <div id="contenedor-tarjeta" class="w-full h-full flex items-center justify-center relative">
+                    <!-- La tarjeta se inyectará aquí por JS -->
+                </div>
+                
+                <!-- Base decorativa visual -->
+                <div class="hidden md:block absolute w-64 h-8 bg-gray-200 rounded-[100%] bottom-10 -z-10 blur-sm opacity-60"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= PANTALLA FINAL ================= -->
+    <div id="pantalla-final" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-white/95 backdrop-blur-md transition-opacity duration-500">
+        <div class="text-8xl mb-6 floating">🏆</div>
+        <h1 class="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 mb-6 drop-shadow-sm">
+            ¡Misión Cumplida!
+        </h1>
+        <p class="text-2xl text-gray-700 max-w-xl mb-10 font-bold">
+            Has clasificado todas las acciones correctamente. <br>
+            ¡Lo hiciste genial!
+        </p>
+        <button onclick="mostrarSeleccion()" class="group relative inline-flex items-center justify-center px-10 py-5 text-2xl font-bold text-white bg-blue-500 rounded-full overflow-hidden shadow-[0_8px_0_#2563eb] active:shadow-[0_0px_0_#2563eb] active:translate-y-2 transition-all">
+            <span class="relative flex items-center gap-2">Elegir otro lugar <span class="text-3xl">🗺️</span></span>
+        </button>
+    </div>
+
+    <!-- ================= LÓGICA DEL JUEGO ================= -->
+    <script>
+        // --- BASE DE DATOS DE ESCENARIOS Y ACCIONES ---
+        const datosEscenarios = {
+            colegio: {
+                titulo: "🏫 Semáforo del Colegio",
+                acciones: [
+                    { texto: "Levantar la mano para hablar", tipo: "buena", emoji: "🙋🏽‍♂️", razon: "Ayuda a escucharnos sin interrumpir." },
+                    { texto: "Compartir los juguetes", tipo: "buena", emoji: "🧸", razon: "Compartir nos hace mejores amigos." },
+                    { texto: "Escuchar a la maestra", tipo: "buena", emoji: "👂", razon: "Así podemos aprender cosas nuevas e importantes." },
+                    { texto: "Ayudar a un compañero", tipo: "buena", emoji: "🤝", razon: "Ser solidarios hace muy feliz al grupo." },
+                    { texto: "Gritar en el salón", tipo: "mala", emoji: "🗣️", razon: "Gritar lastima los oídos y no deja concentrarse." },
+                    { texto: "Empujar a los amigos", tipo: "mala", emoji: "😠", razon: "Podemos lastimar a alguien si somos bruscos." },
+                    { texto: "Tirar basura al piso", tipo: "mala", emoji: "🗑️", razon: "El aula es de todos, debemos mantenerla limpia." },
+                    { texto: "Romper los materiales", tipo: "mala", emoji: "🖍️", razon: "Debemos cuidar las cosas para poder seguir jugando." }
+                ]
+            },
+            casa: {
+                titulo: "🏠 Semáforo de la Casa",
+                acciones: [
+                    { texto: "Ayudar a poner la mesa", tipo: "buena", emoji: "🍽️", razon: "Ayudar en familia es una gran acción." },
+                    { texto: "Lavarse los dientes", tipo: "buena", emoji: "🪥", razon: "Mantiene nuestros dientes fuertes y sanos." },
+                    { texto: "Ordenar la habitación", tipo: "buena", emoji: "🛏️", razon: "El orden hace que todo se vea más lindo." },
+                    { texto: "Dar las gracias", tipo: "buena", emoji: "🙏", razon: "Ser agradecido es una palabra mágica." },
+                    { texto: "Pelear con hermanos", tipo: "mala", emoji: "🤼", razon: "Debemos tratarnos con mucho cariño y respeto." },
+                    { texto: "Saltar en la cama", tipo: "mala", emoji: "🦘", razon: "Es peligroso, podrías caer y lastimarte." },
+                    { texto: "Dejar juguetes tirados", tipo: "mala", emoji: "🧩", razon: "Alguien de la familia podría tropezar y caer." },
+                    { texto: "Llorar por no comer", tipo: "mala", emoji: "😭", razon: "La comida nos da energía para jugar y crecer." }
+                ]
+            },
+            super: {
+                titulo: "🛒 Semáforo del Súper",
+                acciones: [
+                    { texto: "Caminar junto a mamá/papá", tipo: "buena", emoji: "👩‍👦", razon: "Ir de la mano nos mantiene súper seguros." },
+                    { texto: "Esperar el turno en la fila", tipo: "buena", emoji: "🧍", razon: "Ser pacientes es una regla muy importante." },
+                    { texto: "Ayudar con las bolsas", tipo: "buena", emoji: "🛍️", razon: "Demuestra que somos un gran equipo." },
+                    { texto: "Pedir las cosas por favor", tipo: "buena", emoji: "💬", razon: "¡Es otra de nuestras palabras mágicas!" },
+                    { texto: "Correr por los pasillos", tipo: "mala", emoji: "🏃", razon: "Podrías chocar con otros carritos o personas." },
+                    { texto: "Agarrar cosas sin permiso", tipo: "mala", emoji: "🍬", razon: "Siempre debemos preguntar antes de tomar algo." },
+                    { texto: "Hacer un berrinche", tipo: "mala", emoji: "😫", razon: "Podemos hablar tranquilos de lo que sentimos." },
+                    { texto: "Golpear el carrito", tipo: "mala", emoji: "🛒", razon: "Debemos cuidar las cosas de los demás lugares." }
+                ]
+            }
+        };
+
+        let accionesJuego = [];
+        let indiceActual = 0;
+        let puntaje = 0;
+        let escenarioActual = '';
+
+        // Elementos del DOM
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const pantallaSeleccion = document.getElementById('pantalla-seleccion');
+        const pantallaJuego = document.getElementById('pantalla-juego');
+        const pantallaFinal = document.getElementById('pantalla-final');
+        const contenedorTarjeta = document.getElementById('contenedor-tarjeta');
+        const zonaRoja = document.getElementById('zona-roja');
+        const zonaVerde = document.getElementById('zona-verde');
+        const contadorProgreso = document.getElementById('contador-progreso');
+        const mensajeFeedback = document.getElementById('mensaje-feedback');
+        const tituloEscenario = document.getElementById('titulo-escenario');
+
+        // Variables de Arrastre (Drag)
+        let isDragging = false;
+        let startX, startY;
+        let currentX, currentY;
+        let tarjetaActiva = null;
+
+        // --- FUNCIONES DEL FLUJO DEL JUEGO ---
+
+        function mezclarArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function mostrarSeleccion() {
+            // Ocultar todas las pantallas con fade out
+            pantallaInicio.classList.add('opacity-0');
+            pantallaFinal.classList.add('opacity-0');
+            pantallaJuego.classList.add('opacity-0');
+            
+            setTimeout(() => {
+                // Esconder divs
+                pantallaInicio.classList.add('hidden');
+                pantallaFinal.classList.add('hidden');
+                pantallaJuego.classList.add('hidden');
+                
+                // Mostrar selección
+                pantallaSeleccion.classList.remove('hidden');
+                setTimeout(() => {
+                    pantallaSeleccion.classList.remove('opacity-0');
+                }, 50); // pequeño delay para la transición
+            }, 500);
+        }
+
+        function iniciarJuego(escenarioKey) {
+            escenarioActual = escenarioKey;
+            
+            pantallaSeleccion.classList.add('opacity-0');
+            
+            setTimeout(() => {
+                pantallaSeleccion.classList.add('hidden');
+                pantallaJuego.classList.remove('hidden');
+                setTimeout(() => {
+                    pantallaJuego.classList.remove('opacity-0');
+                }, 50);
+                
+                // Cargar datos del escenario
+                tituloEscenario.innerText = datosEscenarios[escenarioKey].titulo;
+                accionesJuego = mezclarArray([...datosEscenarios[escenarioKey].acciones]);
+                
+                indiceActual = 0;
+                puntaje = 0;
+                actualizarProgreso();
+                mostrarSiguienteTarjeta();
+            }, 500);
+        }
+
+        function actualizarProgreso() {
+            contadorProgreso.innerText = `${indiceActual} / ${accionesJuego.length}`;
+        }
+
+        function mostrarSiguienteTarjeta() {
+            contenedorTarjeta.innerHTML = ''; // Limpiar contenedor
+
+            if (indiceActual >= accionesJuego.length) {
+                finalizarJuego();
+                return;
+            }
+
+            const accion = accionesJuego[indiceActual];
+            
+            // Crear elemento HTML de la tarjeta
+            const tarjeta = document.createElement('div');
+            tarjeta.className = 'tarjeta-accion bg-white p-6 md:p-8 rounded-3xl shadow-[0_10px_25px_rgba(0,0,0,0.15)] border-4 border-white border-b-gray-200 flex flex-col items-center justify-center w-64 md:w-80 absolute z-50 floating';
+            tarjeta.dataset.tipo = accion.tipo;
+            
+            tarjeta.innerHTML = `
+                <div class="text-7xl md:text-8xl mb-4 drop-shadow-md">${accion.emoji}</div>
+                <div class="text-xl md:text-2xl font-bold text-center text-gray-700 leading-tight">${accion.texto}</div>
+            `;
+
+            // Agregar eventos Pointer
+            tarjeta.addEventListener('pointerdown', iniciarArrastre);
+            
+            contenedorTarjeta.appendChild(tarjeta);
+        }
+
+        // --- LÓGICA DE ARRASTRE (DRAG & DROP) ---
+
+        function iniciarArrastre(e) {
+            isDragging = true;
+            tarjetaActiva = e.currentTarget;
+            tarjetaActiva.setPointerCapture(e.pointerId);
+
+            startX = e.clientX;
+            startY = e.clientY;
+            currentX = 0;
+            currentY = 0;
+
+            tarjetaActiva.classList.remove('floating');
+            tarjetaActiva.style.transition = 'none';
+            tarjetaActiva.style.zIndex = '100';
+            tarjetaActiva.style.transform = `scale(1.05)`;
+
+            tarjetaActiva.addEventListener('pointermove', arrastrar);
+            tarjetaActiva.addEventListener('pointerup', soltarArrastre);
+            tarjetaActiva.addEventListener('pointercancel', soltarArrastre);
+        }
+
+        function arrastrar(e) {
+            if (!isDragging || !tarjetaActiva) return;
+            e.preventDefault();
+
+            currentX = e.clientX - startX;
+            currentY = e.clientY - startY;
+
+            const rotacion = currentX * 0.05;
+            tarjetaActiva.style.transform = `translate(${currentX}px, ${currentY}px) scale(1.05) rotate(${rotacion}deg)`;
+
+            comprobarZonasHover(e.clientX, e.clientY);
+        }
+
+        function soltarArrastre(e) {
+            if (!isDragging || !tarjetaActiva) return;
+            
+            isDragging = false;
+            tarjetaActiva.releasePointerCapture(e.pointerId);
+            
+            tarjetaActiva.removeEventListener('pointermove', arrastrar);
+            tarjetaActiva.removeEventListener('pointerup', soltarArrastre);
+            tarjetaActiva.removeEventListener('pointercancel', soltarArrastre);
+
+            tarjetaActiva.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            limpiarHoverZonas();
+
+            const zonaDestino = obtenerZonaSoltada(e.clientX, e.clientY);
+
+            if (zonaDestino) {
+                const tipoEsperado = tarjetaActiva.dataset.tipo;
+                const tipoZona = zonaDestino.dataset.tipo;
+
+                if (tipoEsperado === tipoZona) {
+                    accionCorrecta(zonaDestino);
+                } else {
+                    accionIncorrecta();
+                }
+            } else {
+                tarjetaActiva.style.transform = `translate(0px, 0px) scale(1) rotate(0deg)`;
+                setTimeout(() => { if(tarjetaActiva) tarjetaActiva.classList.add('floating'); }, 400);
+            }
+            
+            tarjetaActiva = null;
+        }
+
+        // --- SISTEMA DE COLISIONES Y FEEDBACK ---
+
+        function comprobarZonasHover(x, y) {
+            limpiarHoverZonas();
+            const zona = obtenerZonaSoltada(x, y);
+            if (zona) {
+                zona.classList.add('luz-activa', 'opacity-100');
+                zona.classList.remove('opacity-50');
+            }
+        }
+
+        function limpiarHoverZonas() {
+            [zonaRoja, zonaVerde].forEach(zona => {
+                zona.classList.remove('luz-activa', 'opacity-100');
+                zona.classList.add('opacity-50');
+            });
+        }
+
+        function obtenerZonaSoltada(x, y) {
+            const rectRoja = zonaRoja.getBoundingClientRect();
+            const rectVerde = zonaVerde.getBoundingClientRect();
+            const padding = 20; // Hitbox extra
+
+            if (x > rectRoja.left - padding && x < rectRoja.right + padding && 
+                y > rectRoja.top - padding && y < rectRoja.bottom + padding) return zonaRoja;
+            
+            if (x > rectVerde.left - padding && x < rectVerde.right + padding && 
+                y > rectVerde.top - padding && y < rectVerde.bottom + padding) return zonaVerde;
+
+            return null;
+        }
+
+        function accionCorrecta(zonaDestino) {
+            zonaDestino.classList.add('luz-activa', 'opacity-100');
+            zonaDestino.classList.remove('opacity-50');
+            
+            const rectZona = zonaDestino.getBoundingClientRect();
+            const rectContenedor = contenedorTarjeta.getBoundingClientRect();
+            
+            const destX = rectZona.left + (rectZona.width / 2) - (rectContenedor.left + (rectContenedor.width / 2));
+            const destY = rectZona.top + (rectZona.height / 2) - (rectContenedor.top + (rectContenedor.height / 2));
+
+            tarjetaActiva.style.transform = `translate(${destX}px, ${destY}px) scale(0.2)`;
+            tarjetaActiva.style.opacity = '0';
+
+            mostrarMensaje("¡Excelente!", null, "text-green-500", "border-green-400");
+            crearConfeti();
+
+            setTimeout(() => {
+                limpiarHoverZonas();
+                indiceActual++;
+                actualizarProgreso();
+                mostrarSiguienteTarjeta();
+            }, 1000);
+        }
+
+        function accionIncorrecta() {
+            tarjetaActiva.style.transform = `translate(0px, 0px) scale(1) rotate(0deg)`;
+            tarjetaActiva.classList.add('shake');
+            
+            const accionActual = accionesJuego[indiceActual];
+            // Mostramos el feedback explicativo
+            mostrarMensaje("¡Piénsalo bien! 🤔", accionActual.razon, "text-red-500", "border-red-400");
+
+            setTimeout(() => {
+                if(tarjetaActiva) {
+                    tarjetaActiva.classList.remove('shake');
+                    tarjetaActiva.classList.add('floating');
+                }
+            }, 500);
+        }
+
+        function mostrarMensaje(titulo, textoExtra, colorClass, borderClass) {
+            // Estilos dinámicos de la burbuja
+            mensajeFeedback.className = `absolute -top-24 md:-top-32 bg-white px-6 py-4 rounded-3xl shadow-2xl border-4 ${borderClass} transition-all duration-300 z-50 text-center flex flex-col justify-center items-center w-[280px] md:w-[350px] pointer-events-none`;
+            
+            // Construir el contenido HTML
+            let contenidoHTML = `<div class="text-2xl md:text-3xl font-black ${colorClass}">${titulo}</div>`;
+            
+            if(textoExtra) {
+                // Agregar la explicación si existe
+                contenidoHTML += `<div class="text-sm md:text-base font-bold text-gray-700 mt-2 leading-tight">${textoExtra}</div>`;
+            }
+            
+            mensajeFeedback.innerHTML = contenidoHTML;
+            mensajeFeedback.style.opacity = '1';
+            mensajeFeedback.style.transform = 'scale(1)'; // Efecto pop-in
+
+            // Ocultar después del tiempo adecuado
+            const tiempoVisible = textoExtra ? 3500 : 1500; // Si hay texto explicativo, darle más tiempo para leer
+            
+            setTimeout(() => {
+                mensajeFeedback.style.opacity = '0';
+                mensajeFeedback.style.transform = 'scale(0.9)';
+            }, tiempoVisible);
+        }
+
+        // --- EFECTOS VISUALES EXTRA ---
+
+        function crearConfeti() {
+            const colores = ['#ef4444', '#3b82f6', '#22c55e', '#eab308', '#a855f7'];
+            for (let i = 0; i < 30; i++) {
+                const confeti = document.createElement('div');
+                confeti.classList.add('confetti');
+                
+                const color = colores[Math.floor(Math.random() * colores.length)];
+                const left = Math.random() * 100;
+                const animDuration = Math.random() * 2 + 1;
+                const animDelay = Math.random() * 0.5;
+                
+                confeti.style.backgroundColor = color;
+                confeti.style.left = left + 'vw';
+                confeti.style.top = '-10px';
+                confeti.style.animationDuration = animDuration + 's';
+                confeti.style.animationDelay = animDelay + 's';
+                
+                document.body.appendChild(confeti);
+                
+                setTimeout(() => { confeti.remove(); }, (animDuration + animDelay) * 1000);
+            }
+        }
+
+        function finalizarJuego() {
+            pantallaJuego.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaJuego.classList.add('hidden');
+                pantallaFinal.classList.remove('hidden');
+                setTimeout(() => {
+                    pantallaFinal.classList.remove('opacity-0');
+                }, 50);
+                crearConfeti();
+                crearConfeti();
+            }, 500);
+        }
+
+        // Inicializar pantallas al cargar
+        document.addEventListener('DOMContentLoaded', () => {
+            pantallaInicio.classList.remove('hidden');
+            setTimeout(() => {
+                pantallaInicio.classList.remove('opacity-0');
+            }, 50);
+        });
+
+    </script>
+</body>
+</html>

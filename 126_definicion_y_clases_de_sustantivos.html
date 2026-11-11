@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sustantivos - Full Experience & Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
+
+        :root {
+            --bg-common: #fff7ed;
+            --bg-proper: #eff6ff;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            background-color: #fdfcfb;
+        }
+
+        section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .hero-text {
+            font-size: clamp(3rem, 10vw, 8rem);
+            line-height: 0.9;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+        }
+
+        .description-text {
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            max-width: 900px;
+            line-height: 1.4;
+        }
+
+        .emoji-large {
+            font-size: clamp(5rem, 15vw, 12rem);
+        }
+
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(5deg); }
+        }
+
+        /* Secciones de Colores */
+        .intro { background: #fdfcfb; }
+        .definition { background: #f0fdf4; }
+        .common { background: var(--bg-common); }
+        .proper { background: var(--bg-proper); }
+        .examples { background: #faf5ff; }
+
+        /* Estilos del Test */
+        #test-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .test-word {
+            font-size: clamp(4rem, 15vw, 10rem);
+            font-weight: 900;
+            margin-bottom: 2rem;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .feedback-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 10vw;
+            font-weight: 900;
+            pointer-events: none;
+            z-index: 200;
+            opacity: 0;
+        }
+
+        .animate-feedback {
+            animation: feedbackFade 1s forwards;
+        }
+
+        @keyframes feedbackFade {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Contenido Educativo Principal -->
+    <div id="main-content">
+        <!-- Portada -->
+        <section class="intro">
+            <span class="text-blue-500 font-bold tracking-widest uppercase mb-4 text-xl">Aprende Jugando</span>
+            <h1 class="hero-text text-slate-900 text-center">
+                LOS <span class="text-blue-600">SUSTANTIVOS</span>
+            </h1>
+            <p class="description-text text-slate-500 text-center mt-8">Desliza para descubrir cómo nombrar el mundo.</p>
+            <div class="emoji-large mt-12 floating">🚀</div>
+            <div class="scroll-indicator">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 13 5 5 5-5"/><path d="m7 6 5 5 5-5"/></svg>
+            </div>
+        </section>
+
+        <!-- ¿Qué son? -->
+        <section class="definition">
+            <div class="w-full max-w-7xl px-8">
+                <h2 class="text-6xl md:text-8xl font-black text-green-800 mb-12">¿Qué son?</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                    <p class="description-text text-green-700">
+                        Son palabras que nombran <span class="bg-green-200 px-2">personas</span>, <span class="bg-green-200 px-2">animales</span>, <span class="bg-green-200 px-2">cosas</span> o <span class="bg-green-200 px-2">lugares</span>.
+                    </p>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="bg-white p-12 rounded-[2rem] shadow-xl text-center">
+                            <span class="text-7xl">👨‍🚀</span>
+                            <p class="text-2xl font-bold mt-4 text-slate-700">Personas</p>
+                        </div>
+                        <div class="bg-white p-12 rounded-[2rem] shadow-xl text-center">
+                            <span class="text-7xl">🐱</span>
+                            <p class="text-2xl font-bold mt-4 text-slate-700">Animales</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sustantivos Comunes -->
+        <section class="common">
+            <div class="w-full max-w-7xl px-8">
+                <h2 class="hero-text text-orange-700 mb-8">Comunes</h2>
+                <p class="description-text text-orange-900 mb-12">
+                    Nombran cosas de forma <b>general</b>. ¡Cualquiera de su clase!
+                </p>
+                <div class="flex flex-wrap gap-8">
+                    <span class="text-5xl bg-white px-10 py-5 rounded-3xl border-b-8 border-orange-200 text-orange-600 font-black">mesa</span>
+                    <span class="text-5xl bg-white px-10 py-5 rounded-3xl border-b-8 border-orange-200 text-orange-600 font-black">perro</span>
+                    <span class="text-5xl bg-white px-10 py-5 rounded-3xl border-b-8 border-orange-200 text-orange-600 font-black">bosque</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sustantivos Propios -->
+        <section class="proper">
+            <div class="w-full max-w-7xl px-8">
+                <h2 class="hero-text text-blue-700 mb-8">Propios</h2>
+                <p class="description-text text-blue-900 mb-12">
+                    Identifican algo <b>específico</b>. ¡Siempre con <b>Mayúscula</b>!
+                </p>
+                <div class="flex flex-wrap gap-8">
+                    <span class="text-5xl bg-blue-600 text-white px-10 py-5 rounded-3xl shadow-2xl font-black italic">Madrid</span>
+                    <span class="text-5xl bg-blue-600 text-white px-10 py-5 rounded-3xl shadow-2xl font-black italic">Luis</span>
+                    <span class="text-5xl bg-blue-600 text-white px-10 py-5 rounded-3xl shadow-2xl font-black italic">Everest</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección Final de Transición -->
+        <section class="examples">
+            <div class="text-center">
+                <h2 class="text-7xl font-black text-purple-900 mb-10">¿Listo para el reto?</h2>
+                <p class="text-3xl text-purple-600 mb-16 max-w-2xl mx-auto">Pon a prueba tu visión espacial y gramatical clasificando las palabras.</p>
+                <button onclick="startTest()" class="bg-purple-600 text-white text-5xl font-black px-20 py-10 rounded-full hover:scale-110 active:scale-95 transition-all shadow-[0_20px_50px_rgba(147,51,234,0.3)]">
+                    ¡EMPEZAR TEST!
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Interfaz del Test (Full Screen Overlay) -->
+    <div id="test-overlay">
+        <div id="test-progress" class="absolute top-0 left-0 h-4 bg-purple-500 transition-all duration-500" style="width: 0%"></div>
+        
+        <div class="mb-20">
+            <p class="text-slate-400 font-bold uppercase tracking-widest text-xl mb-4">¿Qué tipo de sustantivo es?</p>
+            <div id="current-word" class="test-word text-slate-800">Cargando...</div>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-8 w-full max-w-6xl px-12">
+            <button onclick="checkAnswer('comun')" class="flex-1 bg-orange-100 hover:bg-orange-200 text-orange-700 py-12 rounded-[3rem] text-4xl font-black transition-all border-b-8 border-orange-300">
+                COMÚN
+            </button>
+            <button onclick="checkAnswer('propio')" class="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 py-12 rounded-[3rem] text-4xl font-black transition-all border-b-8 border-blue-300">
+                PROPIO
+            </button>
+        </div>
+
+        <button onclick="exitTest()" class="absolute top-8 right-8 text-slate-300 hover:text-slate-600 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+    </div>
+
+    <!-- Mensajes de Feedback -->
+    <div id="feedback" class="feedback-message"></div>
+
+    <!-- Pantalla de Resultados -->
+    <div id="results-screen" class="hidden fixed inset-0 bg-purple-900 text-white z-[300] flex flex-col justify-center items-center p-8">
+        <h3 class="text-8xl font-black mb-8">¡LOGRADO!</h3>
+        <p id="final-score" class="text-4xl mb-12">Has clasificado todas las palabras.</p>
+        <button onclick="location.reload()" class="bg-white text-purple-900 text-3xl font-black px-16 py-8 rounded-full hover:scale-105 transition-transform">
+            VOLVER A EMPEZAR
+        </button>
+    </div>
+
+    <script>
+        const words = [
+            { text: "Zapato", type: "comun" },
+            { text: "Argentina", type: "propio" },
+            { text: "Niña", type: "comun" },
+            { text: "Júpiter", type: "propio" },
+            { text: "Computadora", type: "comun" },
+            { text: "Amazonas", type: "propio" },
+            { text: "Ciudad", type: "comun" },
+            { text: "Marta", type: "propio" }
+        ];
+
+        let currentIndex = 0;
+        let score = 0;
+
+        function startTest() {
+            document.getElementById('test-overlay').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            updateWord();
+        }
+
+        function exitTest() {
+            document.getElementById('test-overlay').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function updateWord() {
+            if (currentIndex < words.length) {
+                const wordElement = document.getElementById('current-word');
+                wordElement.style.display = 'none';
+                setTimeout(() => {
+                    wordElement.innerText = words[currentIndex].text;
+                    wordElement.style.display = 'block';
+                }, 10);
+                
+                const progress = (currentIndex / words.length) * 100;
+                document.getElementById('test-progress').style.width = `${progress}%`;
+            } else {
+                showResults();
+            }
+        }
+
+        function checkAnswer(answer) {
+            const feedback = document.getElementById('feedback');
+            const isCorrect = answer === words[currentIndex].type;
+            
+            feedback.innerText = isCorrect ? "¡SÍ! ✨" : "¡OH! ❌";
+            feedback.style.color = isCorrect ? "#22c55e" : "#ef4444";
+            feedback.classList.remove('animate-feedback');
+            void feedback.offsetWidth; // Trigger reflow
+            feedback.classList.add('animate-feedback');
+
+            if (isCorrect) score++;
+            
+            currentIndex++;
+            setTimeout(updateWord, 600);
+        }
+
+        function showResults() {
+            document.getElementById('results-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = `Puntuación: ${score} de ${words.length}`;
+        }
+    </script>
+
+</body>
+</html>

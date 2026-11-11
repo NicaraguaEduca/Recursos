@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2º Primaria | La Cosecha Numérica</title>
+    <!-- Tipografía infantil Fredoka -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --farm-green: #22C55E;
+            --farm-sky: #BAE6FD;
+            --farm-red: #EF4444;
+            --farm-orange: #F97316;
+            --farm-brown: #854D0E;
+            --wood-light: #FDE047;
+        }
+
+        * {
+            font-family: 'Fredoka', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: #F0FDF4;
+            background-image: radial-gradient(#BBF7D0 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+            color: #1F2937;
+        }
+
+        /* Transiciones de diapositivas con rebote suave */
+        .slide-content {
+            animation: bounceSlideIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
+        }
+
+        @keyframes bounceSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(25px) scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Botón gigante infantil */
+        .kid-btn {
+            box-shadow: 0 6px 0px rgba(0, 0, 0, 0.15);
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+
+        .kid-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Estilo para las frutas recolectables */
+        .fruit-interactive {
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .fruit-interactive:hover {
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        /* Animación de la canasta al recibir fruta */
+        .basket-bounce {
+            animation: basketShake 0.4s ease;
+        }
+
+        @keyframes basketShake {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1) rotate(-3deg); }
+        }
+
+        /* Animación flotante de nubes */
+        .cloud-float {
+            animation: floatingClouds 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes floatingClouds {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-6px); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
+
+    <!-- Pantalla de Bienvenida Pedagógica -->
+    <div id="welcomeScreen" class="fixed inset-0 bg-[#F0FDF4] z-50 flex items-center justify-center p-4">
+        <div class="bg-white border-8 border-green-700 rounded-[36px] max-w-2xl w-full p-6 md:p-10 text-center shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-6 -left-6 text-7xl opacity-10">🍎</div>
+            <div class="absolute -bottom-6 -right-6 text-7xl opacity-10">🍊</div>
+            <div class="absolute top-1/2 -right-8 text-6xl opacity-10">🧺</div>
+
+            <span class="bg-green-700 text-white px-6 py-2 rounded-full font-bold text-sm uppercase tracking-wider mb-4 inline-block">
+                🎒 2º de Primaria
+            </span>
+            
+            <h1 class="text-4xl md:text-5xl font-bold text-green-950 mb-4 leading-tight">
+                La Cosecha <br>
+                <span class="text-green-600">Numérica 🍎🧺</span>
+            </h1>
+
+            <div class="bg-green-50 border-3 border-dashed border-green-600 rounded-3xl p-6 text-left space-y-4 my-6">
+                <p class="text-green-950 text-base md:text-lg">
+                    <strong>🧠 Contenido:</strong> Números - Conteo del 1 al 10.
+                </p>
+                <p class="text-green-950 text-base md:text-lg">
+                    <strong>🎯 Habilidad Clave:</strong> Conteo activo de precisión y correspondencia uno a uno.
+                </p>
+                <p class="text-green-900 text-sm md:text-base border-t border-green-200 pt-3">
+                    <strong>💡 Objetivo Educativo:</strong> Aprender de manera lúdica y guiada a asociar de forma exacta la cantidad de elementos recolectados con la representación hablada y simbólica de los números hasta el 10, consolidando el conteo de precisión.
+                </p>
+            </div>
+
+            <button onclick="startPresentation()" class="kid-btn bg-green-700 hover:bg-green-800 text-white font-bold text-2xl py-4 px-12 rounded-full transform transition-all active:scale-95 inline-flex items-center gap-3">
+                <span>¡Empezar a Cosechar! 🍎🚀</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Cabecera Pedagógica -->
+    <header class="w-full max-w-5xl mx-auto bg-white border-3 border-green-700 rounded-2xl px-6 py-3 flex flex-col sm:flex-row justify-between items-center gap-3 shadow-md">
+        <div class="flex items-center gap-3">
+            <span class="bg-green-700 text-white px-4 py-1.5 rounded-full font-bold text-xs uppercase tracking-wider">
+                2º de Primaria
+            </span>
+            <div class="text-gray-800 font-bold text-base">
+                Tema: <span class="text-green-700">Números - Conteo 1-10</span>
+            </div>
+        </div>
+        <div class="text-green-800 text-sm font-bold uppercase tracking-wider">
+            Conteo Activo de Precisión
+        </div>
+    </header>
+
+    <!-- Contenedor Principal de la Presentación -->
+    <main class="w-full max-w-5xl mx-auto flex-1 flex flex-col justify-center my-4 md:my-6">
+        <div class="bg-white border-3 border-green-200 rounded-[32px] p-6 md:p-8 shadow-xl flex-1 flex flex-col justify-between min-h-[540px]">
+            
+            <!-- Diapositiva 1: Concepto básico de conteo (Exploración) -->
+            <div id="slide-1" class="slide-content flex flex-col lg:flex-row items-center gap-8 h-full flex-1">
+                <div class="flex-1 space-y-6">
+                    <span class="text-green-700 text-sm font-bold uppercase tracking-widest block">¡Hola, Cosechador! 🧑‍🌾🌾</span>
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 leading-tight">
+                        ¿Qué es <span class="text-green-700">contar</span> de verdad?
+                    </h2>
+                    <p class="text-gray-600 text-lg md:text-xl leading-relaxed">
+                        Contar no es solo decir números muy rápido. Es **tocar y nombrar** un solo objeto a la vez, dándole a cada uno su propio número.
+                    </p>
+                    <p class="text-gray-600 text-base md:text-lg leading-relaxed">
+                        Para contar sin equivocarnos, debemos ir con calma, tocando cada fruta **una sola vez**.
+                    </p>
+                    <div class="bg-green-50 border-l-4 border-green-600 p-4 rounded-r-2xl">
+                        <p class="text-green-950 text-sm md:text-base font-bold">
+                            👉 Toca cada una de las manzanas del árbol para que te digan su número de forma ordenada del 1 al 10. ¡Pruébalo!
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex-1 flex flex-col justify-center items-center w-full">
+                    <div class="bg-sky-100 rounded-3xl p-6 border-2 border-sky-300 w-full flex flex-col justify-center items-center relative overflow-hidden min-h-[280px]">
+                        <!-- Copas verdes del árbol decorativo -->
+                        <div class="absolute -top-12 w-64 h-64 bg-green-500 rounded-full opacity-90"></div>
+                        <div class="absolute -top-16 -left-12 w-48 h-48 bg-green-600 rounded-full opacity-80"></div>
+                        <div class="absolute -top-16 -right-12 w-48 h-48 bg-green-600 rounded-full opacity-80"></div>
+                        
+                        <!-- Tronco -->
+                        <div class="absolute bottom-0 w-16 h-36 bg-amber-800 rounded-t-lg"></div>
+
+                        <!-- Manzanas interactivas ordenadas en un grid invisible sobre la copa -->
+                        <div class="relative z-10 grid grid-cols-5 gap-4 md:gap-6 justify-center items-center mt-4">
+                            <!-- Las 10 manzanas se generan por JS o estáticas aquí -->
+                            <div onclick="countInteractiveFruit(1, this)" class="fruit-interactive text-4xl flex flex-col items-center">
+                                <span>🍎</span>
+                                <span class="text-xs bg-white/90 px-1.5 py-0.5 rounded-full font-bold text-green-700 shadow border border-green-200 mt-1" id="label-f-1">?</span>
+                            </div>
+                            <div onclick="countInteractiveFruit(2, this)" class="fruit-interactive text-4xl flex flex-col items-center">
+                                <span>🍎</span>
+                                <span class="text-xs bg-white/90 px-1.5 py-0.5 rounded-full font-bold text-green-700 shadow border border-green-200 mt-1" id="label-f-2">?</span>
+                            </div>
+                            <div onclick="countInteractiveFruit(3, this)" class="fruit-interactive text-4xl flex flex-col items-center">
+                                <span>🍎</span>
+                                <span class="text-xs bg-white/90 px-1.5 py-0.5 rounded-full font-bold text-green-700 shadow border border-green-200 mt-1" id="label-f-3">?</span>
+                            </div>
+                            <div onclick="countInteractiveFruit(4, this)" class="fruit-interactive text-4xl flex flex-col items-center">
+                                <span>🍎</span>
+                                <span class="text-xs bg-white/90 px-1.5 py-0.5 rounded-full font-bold text-green-700 shadow border border-green-200 mt-1" id="label-f-4">?</span>
+                            </div>
+                            <div onclick="countInteractiveFruit(5, this)" class="fruit-interactive text-4xl flex flex-col items-center">
+                                <span>🍎</span>
+                                <span class="text-xs bg-white/90 px-1.5 py-0.5 rounded-full font-bold text-green-700 shadow border border-green-200 mt-1" id="label-f-5">?</span>
+                            </div>
+                            <div onclick="countInteractiveFruit(6, this)" class="fruit-interactive text-4xl flex flex-col items-center">
+                                <span>🍎</span>
+                                <span class="text-xs bg-white/90 px-1.5 py-0.5 rounded-full font-bold text-green-700 shadow border border-green-200 mt-1" id="label-f-6">?</span>
+                            </div>
+                            <div onclick="countInteractiveFruit(7, this)" class="fruit-interactive text-4xl flex flex-col items-center">
+                                <span>🍎</span>
+                                <span class="text-xs bg-white/90 px-1.5 py-0.5 rounded-full font-bold text-green-700 shadow border border-green-200 mt-1" id="label-f-7">?</span>
+                            </div>
+                            <div onclick="countInteractiveFruit(8, this)" class="fruit-interactive text-4xl flex flex-col items-center">
+                                <span>🍎</span>
+                                <span class="text-xs bg-white/90 px-1.5 py-0.5 rounded-full font-bold text-green-700 shadow border border-green-200 mt-1" id="label-f-8">?</span>
+                            </div>
+                            <div onclick="countInteractiveFruit(9, this)" class="fruit-interactive text-4xl flex flex-col items-center">
+                                <span>🍎</span>
+                                <span class="text-xs bg-white/90 px-1.5 py-0.5 rounded-full font-bold text-green-700 shadow border border-green-200 mt-1" id="label-f-9">?</span>
+                            </div>
+                            <div onclick="countInteractiveFruit(10, this)" class="fruit-interactive text-4xl flex flex-col items-center">
+                                <span>🍎</span>
+                                <span class="text-xs bg-white/90 px-1.5 py-0.5 rounded-full font-bold text-green-700 shadow border border-green-200 mt-1" id="label-f-10">?</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="resetSlide1()" class="text-xs text-gray-500 font-bold underline mt-2 hover:text-green-700">Reiniciar conteo de exploración 🔄</button>
+                </div>
+            </div>
+
+            <!-- Diapositiva 2: Relación Cantidad-Símbolo -->
+            <div id="slide-2" class="slide-content hidden flex flex-col lg:flex-row items-center gap-8 h-full flex-1">
+                <div class="flex-1 space-y-5">
+                    <span class="text-green-700 text-sm font-bold uppercase tracking-widest block">¿Símbolo o Grupo? 🔢🍊</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 leading-tight">
+                        La conexión del <span class="text-green-700">número y la cantidad</span>
+                    </h2>
+                    <p class="text-gray-600 text-base md:text-lg leading-relaxed">
+                        Los números como el **7** o el **4** son símbolos que representan grupos reales.
+                    </p>
+                    <p class="text-gray-600 text-base md:text-lg leading-relaxed">
+                        Si vemos el símbolo **7**, nuestro cerebro sabe que hay exactamente **siete cosas** juntas en un espacio.
+                    </p>
+                    <div class="pt-2">
+                        <button onclick="revealSlide2Cosecha()" class="kid-btn bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-8 rounded-full text-base flex items-center gap-2">
+                            <span>🍊 Revelar la Cosecha del Número 7</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex-1 w-full bg-green-50 rounded-3xl p-6 border-2 border-green-200 flex flex-col justify-between items-center gap-4 min-h-[300px]">
+                    <div class="text-center">
+                        <span class="text-6xl font-bold text-green-800 block">7</span>
+                        <span class="text-xs text-gray-400 font-bold uppercase">Símbolo Numérico</span>
+                    </div>
+
+                    <!-- Representación de frutas del número 7 -->
+                    <div id="s2-fruits-container" class="flex flex-wrap justify-center items-center gap-4 min-h-[100px] bg-white rounded-2xl p-4 border border-dashed border-green-300 w-full">
+                        <span class="text-gray-400 text-sm italic">Esperando revelación...</span>
+                    </div>
+
+                    <p id="s2-helper" class="text-gray-500 text-sm text-center italic">
+                        Pulsa el botón para cosechar exactamente 7 mandarinas.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Diapositiva 3: La Precisión del Conteo (Errores Comunes) -->
+            <div id="slide-3" class="slide-content hidden flex flex-col lg:flex-row items-center gap-8 h-full flex-1">
+                <div class="flex-1 space-y-5">
+                    <span class="text-green-700 text-sm font-bold uppercase tracking-widest block">¡Evita las Trampas! 🔍🐛</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 leading-tight">
+                        La importancia de la <span class="text-green-700">precisión</span>
+                    </h2>
+                    <p class="text-gray-600 text-base md:text-lg leading-relaxed">
+                        Para ser cosechadores profesionales, debemos evitar dos trampas lógicas muy comunes:
+                    </p>
+                    <ul class="text-gray-600 text-sm md:text-base list-disc list-inside space-y-2 pl-2">
+                        <li><strong>Contar el doble:</strong> Contar una fruta dos veces por accidente.</li>
+                        <li><strong>Saltar frutas:</strong> Olvidar incluir alguna fruta de la rama.</li>
+                    </ul>
+                    <p class="text-gray-500 text-xs md:text-sm">
+                        La única forma de tener la cosecha perfecta es tocando las frutas en orden, marcando cada una mientras contamos con voz fuerte.
+                    </p>
+                </div>
+                
+                <div class="flex-1 w-full bg-green-50 rounded-3xl p-6 border-2 border-green-200 flex flex-col justify-center items-center gap-4">
+                    <!-- Animación del orden de conteo -->
+                    <div class="flex justify-center items-center gap-4 bg-white p-4 rounded-2xl border border-dashed border-green-300 w-full">
+                        <div class="flex flex-col items-center">
+                            <span class="text-3xl">🍓</span>
+                            <span class="bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded-full text-xs mt-1">1º</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <span class="text-3xl">🍓</span>
+                            <span class="bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded-full text-xs mt-1">2º</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <span class="text-3xl">🍓</span>
+                            <span class="bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded-full text-xs mt-1">3º</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <span class="text-3xl">🍓</span>
+                            <span class="bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded-full text-xs mt-1">4º</span>
+                        </div>
+                    </div>
+                    <button onclick="playPreciseCountingDemo()" class="kid-btn bg-green-700 hover:bg-green-800 text-white font-bold py-2.5 px-6 rounded-full text-sm">
+                        🍓 Escuchar el conteo de precisión
+                    </button>
+                    <p class="text-gray-400 text-xs text-center italic">Escucharás al agricultor contar de forma constante y ordenada.</p>
+                </div>
+            </div>
+
+            <!-- Diapositiva 4: Taller Exploratorio Cosecha Numérica (La canasta parlante) -->
+            <div id="slide-4" class="slide-content hidden flex flex-col h-full flex-1 justify-between">
+                <div class="space-y-1 mb-3">
+                    <span class="text-green-700 text-sm font-bold uppercase tracking-widest block">Taller Práctico de Precision 🧺🍎</span>
+                    <h2 class="text-xl md:text-2xl font-bold text-gray-800">El Pedido de la Canasta Parlante</h2>
+                    <p class="text-gray-600 text-xs md:text-sm">
+                        Ayuda al agricultor a completar la cosecha exacta que solicita la canasta parlante. Haz clic en las frutas del árbol para recolectarlas una por una y observa cómo la canasta cuenta en voz alta.
+                    </p>
+                </div>
+
+                <!-- Escenario de la Cosecha -->
+                <div class="w-full flex flex-col lg:flex-row gap-4 items-stretch justify-center flex-1 min-h-[220px] mb-3">
+                    
+                    <!-- Lado izquierdo: El árbol y canasta -->
+                    <div class="flex-1 bg-green-50 rounded-3xl p-4 border-2 border-green-600 flex flex-col md:flex-row justify-around items-center relative overflow-hidden">
+                        <!-- Botón auxiliar para escuchar de nuevo la petición de la canasta -->
+                        <button onclick="speakBasketRequest()" class="absolute top-2 left-2 bg-yellow-400 hover:bg-yellow-500 text-gray-800 p-2 rounded-full shadow-md text-base active:scale-95 transition-transform" title="Escuchar de nuevo">
+                            🔊 Repetir Pedido
+                        </button>
+
+                        <button onclick="resetHarvest()" class="absolute top-2 right-2 text-green-800 hover:text-green-950 font-bold text-xs underline">
+                            Reiniciar Cosecha 🔄
+                        </button>
+
+                        <!-- Árbol de Manzanas Interactivas -->
+                        <div class="relative w-44 h-44 md:w-52 md:h-52 flex flex-col justify-center items-center mt-6 md:mt-0">
+                            <!-- Copa verde del árbol -->
+                            <div class="absolute inset-0 bg-green-500 rounded-full opacity-95"></div>
+                            <div class="absolute inset-2 bg-green-600 rounded-full opacity-85"></div>
+                            
+                            <!-- Manzanas listas para ser recolectadas -->
+                            <div id="tree-fruits-container" class="absolute inset-0 grid grid-cols-4 gap-2 p-6 justify-center items-center z-10">
+                                <!-- Generadas dinámicamente -->
+                            </div>
+                        </div>
+
+                        <!-- Canasta de Recolección -->
+                        <div id="basketElement" class="w-36 h-36 md:w-40 md:h-40 flex flex-col justify-end items-center relative transition-transform duration-300">
+                            <!-- Rostro emoji parlante -->
+                            <span class="absolute top-0 text-3xl animate-bounce">🧺🗣️</span>
+                            
+                            <!-- Dibujo de la canasta -->
+                            <div class="w-28 h-20 bg-amber-800 rounded-b-3xl border-4 border-amber-950 flex flex-wrap justify-center items-center p-2 gap-1 content-center shadow-lg relative z-10">
+                                <span class="absolute -top-4 text-xs font-bold bg-amber-950 text-white px-2 py-0.5 rounded-full" id="basket-counter-label">0</span>
+                                <div id="basket-fruits-grid" class="flex flex-wrap gap-0.5 justify-center">
+                                    <!-- Manzanas caídas aquí -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lado derecho: El Tutor Agricultor -->
+                    <div class="w-full lg:w-[280px] bg-white border border-green-600 rounded-3xl p-4 flex flex-col justify-between items-center text-center">
+                        <div>
+                            <span class="text-6xl block cloud-float">👩‍🌾</span>
+                            <h4 class="text-green-900 font-bold text-base mt-2">La Tutora Clara</h4>
+                        </div>
+                        
+                        <!-- Diálogo explicativo dinámico -->
+                        <div class="bg-green-50 p-3 rounded-2xl border border-green-200 flex-1 flex items-center justify-center my-3 w-full">
+                            <p id="tutor-dialog-text" class="text-green-950 font-semibold text-xs md:text-sm leading-relaxed">
+                                ¡Listo para cosechar! Escucha la cantidad de manzanas que la canasta parlante te solicita y haz clic en las manzanas del árbol.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diapositiva 5: Conclusión y Preguntas Táctiles Rápidas Rediseñadas -->
+            <div id="slide-5" class="slide-content hidden flex flex-col lg:flex-row items-stretch gap-8 h-full flex-1">
+                <!-- Columna Izquierda: Celebración Visual -->
+                <div class="flex-1 flex flex-col justify-center space-y-6 bg-gradient-to-br from-green-50 to-emerald-100 p-8 rounded-[36px] border-[4px] border-emerald-400 shadow-inner">
+                    <div class="text-center">
+                        <span class="text-8xl block animate-bounce mb-4">🏆🌾</span>
+                        <span class="text-green-700 text-sm font-bold uppercase tracking-widest block mb-2">¡Misión Cumplida!</span>
+                        <h2 class="text-3xl md:text-4xl font-extrabold text-gray-800 leading-tight">
+                            ¡Ya eres un <br>
+                            <span class="text-green-600">Súper Cosechador!</span>
+                        </h2>
+                    </div>
+                    <p class="text-gray-600 text-center text-base md:text-lg leading-relaxed max-w-sm mx-auto">
+                        Has aprendido que contar requiere calma, tocar y señalar una sola vez cada fruta y conectar los símbolos con la cantidad real. ¡Súper!
+                    </p>
+                </div>
+                
+                <!-- Columna Derecha: Tarjetas de Reto Interactivas y Vistosas -->
+                <div class="flex-1 flex flex-col justify-between gap-4">
+                    <h3 class="text-2xl font-bold text-green-950 text-center flex items-center justify-center gap-2">
+                        ⭐ ¡Resuelve los Retos Finales! ⭐
+                    </h3>
+                    
+                    <!-- Reto 1: Recolectar de más / error -->
+                    <div class="bg-gradient-to-r from-yellow-50 to-orange-50 p-6 rounded-[28px] border-[4px] border-amber-300 shadow-md space-y-3 relative overflow-hidden">
+                        <div class="absolute -top-3 -right-3 text-5xl opacity-10">🍓</div>
+                        <p class="text-sm md:text-base font-extrabold text-gray-800 leading-snug">
+                            1. Si la canasta te pide <span class="bg-amber-200 px-2 py-0.5 rounded-md text-amber-950 font-extrabold">5 fresas</span> y recolectas <span class="bg-amber-200 px-2 py-0.5 rounded-md text-amber-950 font-extrabold">6</span> por error, ¿qué pasó?
+                        </p>
+                        <div class="grid grid-cols-2 gap-4" id="q1-choices">
+                            <button onclick="checkVisualAnswer(1, 'demas', true, this)" class="kid-btn bg-white hover:bg-amber-100 text-gray-800 border-[3px] border-amber-300 hover:border-amber-400 font-extrabold py-3 px-4 rounded-2xl text-sm transition-all flex flex-col items-center gap-1 shadow-sm">
+                                <span class="text-2xl">📈</span>
+                                <span>Recogiste de MÁS</span>
+                            </button>
+                            <button onclick="checkVisualAnswer(1, 'demenos', false, this)" class="kid-btn bg-white hover:bg-amber-100 text-gray-800 border-[3px] border-amber-300 hover:border-amber-400 font-extrabold py-3 px-4 rounded-2xl text-sm transition-all flex flex-col items-center gap-1 shadow-sm">
+                                <span class="text-2xl">📉</span>
+                                <span>Recogiste de MENOS</span>
+                            </button>
+                        </div>
+                        <p id="feedback-q1" class="text-sm font-bold text-center h-5 transition-all duration-300"></p>
+                    </div>
+
+                    <!-- Reto 2: Conteo visual espaciado -->
+                    <div class="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-[28px] border-[4px] border-indigo-200 shadow-md space-y-3 relative overflow-hidden">
+                        <div class="absolute -top-3 -right-3 text-5xl opacity-10">🍇</div>
+                        <p class="text-sm md:text-base font-extrabold text-gray-800 leading-snug">
+                            2. Cuenta con precisión estas ricas uvas:
+                        </p>
+                        <!-- Mostrador de uvas con diseño espacial -->
+                        <div class="flex justify-center items-center gap-2 py-2 bg-white rounded-2xl border border-indigo-100 shadow-inner">
+                            <span class="text-3xl hover:scale-125 transition-transform duration-200 cursor-pointer">🍇</span>
+                            <span class="text-3xl hover:scale-125 transition-transform duration-200 cursor-pointer">🍇</span>
+                            <span class="text-3xl hover:scale-125 transition-transform duration-200 cursor-pointer">🍇</span>
+                            <span class="text-3xl hover:scale-125 transition-transform duration-200 cursor-pointer">🍇</span>
+                            <span class="text-3xl hover:scale-125 transition-transform duration-200 cursor-pointer">🍇</span>
+                            <span class="text-3xl hover:scale-125 transition-transform duration-200 cursor-pointer">🍇</span>
+                            <span class="text-3xl hover:scale-125 transition-transform duration-200 cursor-pointer">🍇</span>
+                        </div>
+                        <p class="text-[10px] text-indigo-500 font-bold text-center italic mt-0.5">¡Toca cada uva con tu dedo para contar con calma!</p>
+                        
+                        <div class="grid grid-cols-3 gap-3" id="q2-choices">
+                            <button onclick="checkVisualAnswer(2, '6', false, this)" class="kid-btn bg-white hover:bg-indigo-100 text-gray-800 border-[3px] border-indigo-200 hover:border-indigo-300 font-extrabold py-2.5 rounded-2xl text-sm transition-all shadow-sm">
+                                <span class="block text-lg">6</span> <span class="text-xs text-gray-500">uvas</span>
+                            </button>
+                            <button onclick="checkVisualAnswer(2, '7', true, this)" class="kid-btn bg-white hover:bg-indigo-100 text-gray-800 border-[3px] border-indigo-200 hover:border-indigo-300 font-extrabold py-2.5 rounded-2xl text-sm transition-all shadow-sm">
+                                <span class="block text-lg text-indigo-600 font-black">7</span> <span class="text-xs text-gray-500">uvas</span>
+                            </button>
+                            <button onclick="checkVisualAnswer(2, '8', false, this)" class="kid-btn bg-white hover:bg-indigo-100 text-gray-800 border-[3px] border-indigo-200 hover:border-indigo-300 font-extrabold py-2.5 rounded-2xl text-sm transition-all shadow-sm">
+                                <span class="block text-lg">8</span> <span class="text-xs text-gray-500">uvas</span>
+                            </button>
+                        </div>
+                        <p id="feedback-q2" class="text-sm font-bold text-center h-5 transition-all duration-300"></p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Controles de Navegación de la Presentación -->
+    <footer class="w-full max-w-5xl mx-auto bg-white border-3 border-green-700 rounded-2xl p-4 flex justify-between items-center shadow-md">
+        <button id="btn-prev" onclick="changeSlide(-1)" class="kid-btn bg-green-50 hover:bg-green-100 text-green-900 font-bold py-3 px-6 rounded-2xl text-base disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+            Anterior
+        </button>
+
+        <div class="text-gray-600 font-bold text-sm md:text-base">
+            Sección <span id="current-slide-num" class="text-green-700">1</span> de 5
+        </div>
+
+        <button id="btn-next" onclick="changeSlide(1)" class="kid-btn bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-6 rounded-2xl text-base">
+            Siguiente
+        </button>
+    </footer>
+
+    <script>
+        // --- Estado General de la Presentación ---
+        let currentSlide = 1;
+        const totalSlides = 5;
+
+        // --- Sintetizador de Sonido (Web Audio API) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'magic') {
+                const now = audioCtx.currentTime;
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+                osc.frequency.setValueAtTime(1046.50, now + 0.24); // C6
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            } else if (type === 'error') {
+                const now = audioCtx.currentTime;
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'click') {
+                const now = audioCtx.currentTime;
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, now);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                osc.start(now);
+                osc.stop(now + 0.12);
+            } else if (type === 'drop') {
+                const now = audioCtx.currentTime;
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(330, now);
+                osc.frequency.linearRampToValueAtTime(220, now + 0.15);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            }
+        }
+
+        // --- Sintetizador de Voz Nativo (Web Speech API) ---
+        function speakText(text, isSlow = false) {
+            if ('speechSynthesis' in window) {
+                // Cancelar cualquier discurso previo para que no se empalme
+                window.speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'es-ES';
+                utterance.rate = isSlow ? 0.75 : 0.85; // Voz pausada infantil
+                utterance.pitch = 1.15; // Tono ligeramente agudo y amigable
+
+                // Buscar específicamente una voz en español
+                const voices = window.speechSynthesis.getVoices();
+                const esVoice = voices.find(v => v.lang.startsWith('es'));
+                if (esVoice) utterance.voice = esVoice;
+
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // --- Navegación General de la Presentación ---
+        function startPresentation() {
+            playSound('magic');
+            const welcome = document.getElementById('welcomeScreen');
+            welcome.style.opacity = '0';
+            welcome.style.pointerEvents = 'none';
+            setTimeout(() => {
+                welcome.style.display = 'none';
+            }, 500);
+
+            // Asegurar carga de voces
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.getVoices();
+            }
+        }
+
+        function changeSlide(direction) {
+            playSound('click');
+
+            // Caso especial: Reiniciar la presentación desde la última página
+            if (currentSlide === totalSlides && direction === 1) {
+                document.getElementById(`slide-${currentSlide}`).classList.add('hidden');
+                currentSlide = 1;
+                document.getElementById(`slide-${currentSlide}`).classList.remove('hidden');
+                updateFooter();
+                return;
+            }
+
+            // Ocultar actual
+            document.getElementById(`slide-${currentSlide}`).classList.add('hidden');
+            // Mover índice
+            currentSlide += direction;
+            // Mostrar nueva
+            document.getElementById(`slide-${currentSlide}`).classList.remove('hidden');
+
+            updateFooter();
+
+            // Cargar configuraciones específicas de las diapositivas
+            if (currentSlide === 1) {
+                resetSlide1();
+            } else if (currentSlide === 2) {
+                resetSlide2();
+            } else if (currentSlide === 3) {
+                resetSlide3();
+            } else if (currentSlide === 4) {
+                initSlide4Harvest();
+            } else if (currentSlide === 5) {
+                resetSlide5();
+            }
+        }
+
+        function updateFooter() {
+            document.getElementById('current-slide-num').textContent = currentSlide;
+            document.getElementById('btn-prev').disabled = (currentSlide === 1);
+            
+            const btnNext = document.getElementById('btn-next');
+            if (currentSlide === totalSlides) {
+                btnNext.textContent = 'Volver a comenzar 🔄';
+            } else {
+                btnNext.textContent = 'Siguiente';
+            }
+        }
+
+        // --- STREAMING_CHUNK: Coding Slide 1 logic... ---
+        // --- Lógica Diapositiva 1 (Conteo Exploratorio Uno a Uno) ---
+        let slide1Counted = new Set();
+
+        function resetSlide1() {
+            slide1Counted.clear();
+            for (let i = 1; i <= 10; i++) {
+                const lbl = document.getElementById(`label-f-${i}`);
+                if (lbl) lbl.textContent = '?';
+            }
+        }
+
+        function countInteractiveFruit(num, element) {
+            // Animación de escalado
+            element.classList.add('scale-125');
+            setTimeout(() => element.classList.remove('scale-125'), 200);
+
+            // Verificar orden exacto del conteo para guiar en la precisión
+            const nextExpected = slide1Counted.size + 1;
+            
+            if (num === nextExpected) {
+                playSound('click');
+                slide1Counted.add(num);
+                document.getElementById(`label-f-${num}`).textContent = num;
+                speakText(num.toString());
+            } else if (slide1Counted.has(num)) {
+                // Ya la contó
+                playSound('click');
+                speakText(`Esta es la manzana número ${num}`);
+            } else {
+                // Contando en desorden
+                playSound('error');
+                speakText(`¡Espera! Para contar en orden, busca la manzana número ${nextExpected}`, false);
+            }
+        }
+
+        // --- STREAMING_CHUNK: Coding Slide 2 and 3 logic... ---
+        // --- Lógica Diapositiva 2 (Símbolo y Cantidad) ---
+        function resetSlide2() {
+            document.getElementById('s2-fruits-container').innerHTML = `<span class="text-gray-400 text-sm italic">Esperando revelación...</span>`;
+            document.getElementById('s2-helper').innerHTML = "Pulsa el botón para cosechar exactamente 7 mandarinas.";
+        }
+
+        function revealSlide2Cosecha() {
+            playSound('magic');
+            const container = document.getElementById('s2-fruits-container');
+            container.innerHTML = '';
+
+            // Cosechar 7 mandarinas con efecto progresivo
+            for (let i = 1; i <= 7; i++) {
+                setTimeout(() => {
+                    const fruit = document.createElement('span');
+                    fruit.className = 'text-4xl animate-bounce';
+                    fruit.textContent = '🍊';
+                    container.appendChild(fruit);
+                    playSound('drop');
+                    if (i === 7) {
+                        document.getElementById('s2-helper').innerHTML = "<strong>¡Listo!</strong> Aquí tienes un grupo de exactamente <strong>7 mandarinas</strong> correspondientes al símbolo.";
+                        speakText("Siete mandarinas en total.", false);
+                    }
+                }, i * 200);
+            }
+        }
+
+        // --- Lógica Diapositiva 3 (Conteo de Precisión) ---
+        function resetSlide3() {
+            // Sin estado complejo, solo demo de audio
+        }
+
+        function playPreciseCountingDemo() {
+            playSound('magic');
+            // Hacer conteo pausado y expresivo imitando la precisión
+            const words = ["¡Uno!", "¡Dos!", "¡Tres!", "¡Cuatro!"];
+            words.forEach((word, idx) => {
+                setTimeout(() => {
+                    speakText(word, true);
+                }, idx * 1000);
+            });
+        }
+
+        // --- STREAMING_CHUNK: Coding Slide 4 active harvest workshop logic... ---
+        // --- Lógica Diapositiva 4 (Taller de la Cosecha Activa) ---
+        let harvestGoalQty = 6; // Cantidad solicitada por la canasta
+        let harvestCurrentCount = 0;
+        const totalFruitsOnTree = 10;
+
+        function initSlide4Harvest() {
+            // Generar un número aleatorio de meta entre 4 y 9 para el taller exploratorio
+            harvestGoalQty = Math.floor(Math.random() * 6) + 4; // 4 a 9
+            harvestCurrentCount = 0;
+
+            document.getElementById('basket-counter-label').textContent = "0";
+            document.getElementById('basket-fruits-grid').innerHTML = '';
+            document.getElementById('tutor-dialog-text').innerHTML = `
+                La canasta solicita exactamente <strong>${harvestGoalQty}</strong> manzanas. ¡Haz clic en las manzanas de arriba para cosecharlas!
+            `;
+
+            // Construir las manzanas del árbol
+            const treeContainer = document.getElementById('tree-fruits-container');
+            treeContainer.innerHTML = '';
+
+            for (let i = 1; i <= totalFruitsOnTree; i++) {
+                const btn = document.createElement('button');
+                btn.id = `harvest-f-${i}`;
+                btn.className = 'fruit-interactive text-3xl focus:outline-none';
+                btn.innerHTML = '🍎';
+                btn.onclick = () => harvestFruit(i);
+                treeContainer.appendChild(btn);
+            }
+
+            // Hacer que la canasta exprese su deseo de forma hablada
+            setTimeout(() => {
+                speakBasketRequest();
+            }, 600);
+        }
+
+        function speakBasketRequest() {
+            speakText(`¡Hola! Por favor cosechame exactamente ${harvestGoalQty} manzanas.`, false);
+        }
+
+        function harvestFruit(id) {
+            const fruitBtn = document.getElementById(`harvest-f-${id}`);
+            if (!fruitBtn || fruitBtn.style.opacity === '0.2') return;
+
+            playSound('drop');
+            harvestCurrentCount++;
+
+            // Desactivar manzana del árbol (se considera cosechada)
+            fruitBtn.style.opacity = '0.2';
+            fruitBtn.style.pointerEvents = 'none';
+
+            // Agregar manzana visualmente a la canasta
+            const basketGrid = document.getElementById('basket-fruits-grid');
+            const basketApple = document.createElement('span');
+            basketApple.className = 'text-xl animate-bounce';
+            basketApple.textContent = '🍎';
+            basketGrid.appendChild(basketApple);
+
+            // Actualizar etiqueta del contador de la canasta
+            document.getElementById('basket-counter-label').textContent = harvestCurrentCount;
+
+            // Hacer vibrar la canasta de forma divertida
+            const basket = document.getElementById('basketElement');
+            basket.classList.add('basket-bounce');
+            setTimeout(() => basket.classList.remove('basket-bounce'), 400);
+
+            // La canasta cuenta en voz alta de manera interactiva
+            speakText(harvestCurrentCount.toString(), true);
+
+            // Analizar estado y actualizar el consejo de la tutora en tiempo real
+            updateHarvestDialogue();
+        }
+
+        function updateHarvestDialogue() {
+            const tutorText = document.getElementById('tutor-dialog-text');
+
+            if (harvestCurrentCount === harvestGoalQty) {
+                playSound('magic');
+                tutorText.innerHTML = `
+                    <span class="text-green-600 font-bold block mb-1">¡Cosecha Perfecta! 🧺✨</span>
+                    Has recolectado exactamente <strong>${harvestCurrentCount}</strong> manzanas. ¡La canasta está muy feliz!
+                `;
+                speakText(`¡Perfecto! Juntaste las ${harvestGoalQty} manzanas exactas.`, false);
+            } else if (harvestCurrentCount < harvestGoalQty) {
+                const remaining = harvestGoalQty - harvestCurrentCount;
+                tutorText.innerHTML = `
+                    <span class="text-blue-600 font-bold block mb-1">¡Sigue así! 👍</span>
+                    Llevas <strong>${harvestCurrentCount}</strong> manzanas. Te faltan exactamente <strong>${remaining}</strong> para completar el pedido de la canasta.
+                `;
+            } else {
+                // Se pasó de la cantidad solicitada
+                playSound('error');
+                tutorText.innerHTML = `
+                    <span class="text-red-500 font-bold block mb-1">¡Oh no! Cosechaste de más 🧐</span>
+                    La canasta solo pedía <strong>${harvestGoalQty}</strong>, pero ya tienes <strong>${harvestCurrentCount}</strong>. <br>
+                    <span class="text-[11px] text-gray-500 block mt-1">Presiona "Reiniciar Cosecha" para intentarlo de nuevo con precisión.</span>
+                `;
+                speakText(`¡Uy! Te pasaste. Eran solamente ${harvestGoalQty} manzanas.`, false);
+            }
+        }
+
+        function resetHarvest() {
+            playSound('click');
+            harvestCurrentCount = 0;
+            document.getElementById('basket-counter-label').textContent = "0";
+            document.getElementById('basket-fruits-grid').innerHTML = '';
+            document.getElementById('tutor-dialog-text').innerHTML = `
+                La canasta solicita exactamente <strong>${harvestGoalQty}</strong> manzanas. ¡Intenta de nuevo cosechar con orden y precisión!
+            `;
+
+            // Volver a activar las manzanas del árbol
+            for (let i = 1; i <= totalFruitsOnTree; i++) {
+                const btn = document.getElementById(`harvest-f-${i}`);
+                if (btn) {
+                    btn.style.opacity = '1';
+                    btn.style.pointerEvents = 'auto';
+                }
+            }
+
+            speakBasketRequest();
+        }
+
+        // --- STREAMING_CHUNK: Coding Slide 5 quiz check logic... ---
+        // --- Lógica Diapositiva 5 (Actividades de Evaluación de 2º de Primaria) ---
+        function resetSlide5() {
+            // Restablecer estilos de los botones en las preguntas del examen
+            document.querySelectorAll('#q1-choices button').forEach(btn => {
+                btn.className = "kid-btn bg-white hover:bg-amber-100 text-gray-800 border-[3px] border-amber-300 hover:border-amber-400 font-extrabold py-3 px-4 rounded-2xl text-sm transition-all flex flex-col items-center gap-1 shadow-sm";
+                btn.style.opacity = "1";
+                btn.style.pointerEvents = "auto";
+            });
+            document.querySelectorAll('#q2-choices button').forEach(btn => {
+                btn.className = "kid-btn bg-white hover:bg-indigo-100 text-gray-800 border-[3px] border-indigo-200 hover:border-indigo-300 font-extrabold py-2.5 rounded-2xl text-sm transition-all shadow-sm";
+                btn.style.opacity = "1";
+                btn.style.pointerEvents = "auto";
+            });
+            document.getElementById('feedback-q1').textContent = '';
+            document.getElementById('feedback-q2').textContent = '';
+        }
+
+        function checkVisualAnswer(questionNum, answerKey, isCorrect, clickedButton) {
+            const feedbackElement = document.getElementById(`feedback-q${questionNum}`);
+            const choicesContainer = document.getElementById(`q${questionNum}-choices`);
+            
+            // Bloquear los clics de los otros botones de manera temporal
+            choicesContainer.querySelectorAll('button').forEach(btn => {
+                if (questionNum === 1) {
+                    btn.className = "kid-btn bg-white text-gray-800 border-[3px] border-amber-200 font-extrabold py-3 px-4 rounded-2xl text-sm transition-all flex flex-col items-center gap-1 shadow-sm opacity-50 pointer-events-none";
+                } else {
+                    btn.className = "kid-btn bg-white text-gray-800 border-[3px] border-indigo-100 font-extrabold py-2.5 rounded-2xl text-sm transition-all shadow-sm opacity-50 pointer-events-none";
+                }
+            });
+
+            // Resaltar el botón elegido
+            clickedButton.style.opacity = "1";
+            clickedButton.style.pointerEvents = "auto";
+
+            if (isCorrect) {
+                playSound('magic');
+                if (questionNum === 1) {
+                    clickedButton.className = "kid-btn bg-emerald-500 text-white font-extrabold py-3 px-4 rounded-2xl text-sm transition-all flex flex-col items-center gap-1 shadow-md scale-105 border-[3px] border-emerald-600";
+                } else {
+                    clickedButton.className = "kid-btn bg-emerald-500 text-white font-extrabold py-2.5 rounded-2xl text-sm transition-all shadow-md scale-105 border-[3px] border-emerald-600";
+                }
+                feedbackElement.className = "text-sm font-bold text-center text-green-600 mt-1";
+                feedbackElement.innerHTML = "🎉 ¡Excelente! Conteo de precisión impecable. 🌟";
+                speakText("¡Es correcto! Excelente razonamiento.", false);
+            } else {
+                playSound('error');
+                if (questionNum === 1) {
+                    clickedButton.className = "kid-btn bg-red-500 text-white font-extrabold py-3 px-4 rounded-2xl text-sm transition-all flex flex-col items-center gap-1 shadow-md scale-105 border-[3px] border-red-600";
+                } else {
+                    clickedButton.className = "kid-btn bg-red-500 text-white font-extrabold py-2.5 rounded-2xl text-sm transition-all shadow-md scale-105 border-[3px] border-red-600";
+                }
+                feedbackElement.className = "text-sm font-bold text-center text-red-500 mt-1 animate-pulse";
+                feedbackElement.innerHTML = "❌ ¡Inténtalo otra vez! Cuenta con calma con tu dedo.";
+                speakText("Inténtalo de nuevo.", false);
+
+                // Permitir reintentar después de un breve momento restaurando los estilos normales
+                setTimeout(() => {
+                    choicesContainer.querySelectorAll('button').forEach(btn => {
+                        btn.style.opacity = "1";
+                        btn.style.pointerEvents = "auto";
+                        if (questionNum === 1) {
+                            btn.className = "kid-btn bg-white hover:bg-amber-100 text-gray-800 border-[3px] border-amber-300 hover:border-amber-400 font-extrabold py-3 px-4 rounded-2xl text-sm transition-all flex flex-col items-center gap-1 shadow-sm";
+                        } else {
+                            btn.className = "kid-btn bg-white hover:bg-indigo-100 text-gray-800 border-[3px] border-indigo-200 hover:border-indigo-300 font-extrabold py-2.5 rounded-2xl text-sm transition-all shadow-sm";
+                        }
+                    });
+                    feedbackElement.textContent = '';
+                }, 1800);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lupa de Detective - Discriminación Visual</title>
+    
+    <!-- Fuentes Google: Special Elite (Máquina de escribir/Detective) y Nunito (Lectura 1er grado) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&family=Special+Elite&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA DE TAILWIND -->
+    <script>
+        window.tailwind = {
+            config: {
+                important: '#recurso-wp-lupa',
+                corePlugins: { preflight: false },
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            detective: ['"Special Elite"', 'cursive'],
+                            body: ['Nunito', 'sans-serif'],
+                        },
+                        colors: {
+                            noir: {
+                                dark: '#1e1b4b',      /* Azul noche oscuro */
+                                desk: '#451a03',      /* Madera oscura escritorio */
+                                paper: '#fef3c7',     /* Papel amarillo viejo */
+                                red: '#dc2626',       /* Sello rojo */
+                                green: '#16a34a',     /* Acierto verde */
+                                gold: '#fbbf24'       /* Detalles dorados */
+                            }
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* =========================================================
+           MICRO-RESET LOCAL
+           ========================================================= */
+        #recurso-wp-lupa * { box-sizing: border-box; border-width: 0; border-style: solid; border-color: currentColor; line-height: normal; }
+        #recurso-wp-lupa h1, #recurso-wp-lupa h2, #recurso-wp-lupa h3, #recurso-wp-lupa p, #recurso-wp-lupa span { margin: 0; padding: 0; }
+        #recurso-wp-lupa button { background-color: transparent; cursor: pointer; padding: 0; font-family: inherit; }
+
+        /* =========================================================
+           ESTILOS PANTALLA COMPLETA & FONDO DETECTIVE
+           ========================================================= */
+        #recurso-wp-lupa {
+            font-family: 'Nunito', sans-serif;
+            background-color: #451a03; 
+            /* Textura de escritorio de madera */
+            background-image: repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(0,0,0,0.05) 40px, rgba(0,0,0,0.05) 80px);
+            color: #fef3c7;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Cursor de Lupa Global en el juego */
+        .cursor-lupa {
+            cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='%23fbbf24' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='11' r='8'></circle><line x1='21' y1='21' x2='16.65' y2='16.65'></line></svg>") 20 20, auto !important;
+        }
+
+        /* Paneles de Papel (Expedientes) */
+        #recurso-wp-lupa .paper-panel {
+            background-color: #fef3c7;
+            color: #1e1b4b;
+            border: 4px solid #b45309;
+            border-radius: 4px;
+            box-shadow: 10px 10px 20px rgba(0,0,0,0.6), inset 0 0 40px rgba(180, 83, 9, 0.2);
+            position: relative;
+        }
+
+        /* Clips de papel en las esquinas */
+        .paperclip {
+            position: absolute;
+            top: -15px;
+            left: 30px;
+            width: 20px;
+            height: 50px;
+            border: 4px solid #94a3b8;
+            border-radius: 10px;
+            background: transparent;
+            z-index: 10;
+            transform: rotate(15deg);
+            box-shadow: 2px 2px 2px rgba(0,0,0,0.3);
+        }
+
+        #recurso-wp-lupa .noir-btn {
+            background: #1e1b4b;
+            border: 4px solid #1e1b4b;
+            color: #fef3c7;
+            border-radius: 8px;
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.5);
+            transition: all 0.15s ease;
+            font-family: 'Special Elite', cursive;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        #recurso-wp-lupa .noir-btn:hover:not(:disabled) {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.6);
+            background: #312e81;
+        }
+        #recurso-wp-lupa .noir-btn:active:not(:disabled) {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px rgba(0,0,0,0.6);
+        }
+
+        /* =========================================================
+           ELEMENTOS ESPARCIDOS (Las letras y objetos)
+           ========================================================= */
+        .scatter-board {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .scatter-item {
+            position: absolute;
+            width: clamp(50px, 12vw, 85px);
+            height: clamp(50px, 12vw, 85px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(2rem, 6vw, 3.5rem);
+            font-weight: 900;
+            background: rgba(255,255,255,0.9);
+            border: 3px solid #b45309;
+            border-radius: 16px;
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.4);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            user-select: none;
+            color: #1e1b4b;
+            /* El transform se asignará inline para la rotación aleatoria */
+        }
+        
+        /* Efecto Lupa al pasar por encima */
+        .scatter-item:hover:not(.collected):not(.failed) {
+            transform: scale(1.5) rotate(0deg) !important;
+            z-index: 40 !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            border-color: #fbbf24;
+            background: #fff;
+        }
+
+        /* Letra atrapada (Evidencia) */
+        .scatter-item.collected {
+            background: #dcfce7;
+            border-color: #16a34a;
+            color: #16a34a;
+            transform: scale(0) rotate(180deg) !important;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Objeto tocado por error */
+        .scatter-item.failed {
+            background: #fee2e2;
+            border-color: #dc2626;
+            animation: shakeError 0.5s ease-in-out;
+        }
+
+        @keyframes shakeError {
+            0%, 100% { transform: translateX(0) scale(1.2) rotate(0deg); }
+            25% { transform: translateX(-10px) scale(1.2) rotate(-5deg); }
+            50% { transform: translateX(10px) scale(1.2) rotate(5deg); }
+            75% { transform: translateX(-10px) scale(1.2) rotate(-5deg); }
+        }
+
+        /* Sello Confidencial */
+        .stamp-top-secret {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            border: 4px double #dc2626;
+            color: #dc2626;
+            font-family: 'Special Elite', cursive;
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 5px 10px;
+            transform: rotate(15deg);
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        /* Pantallas SPA */
+        #recurso-wp-lupa .screen {
+            display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; position: absolute; top: 0; left: 0; overflow-y: auto; overflow-x: hidden; z-index: 10;
+        }
+        #recurso-wp-lupa .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-lupa .screen.active {
+            display: flex;
+            animation: bounceInUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+        }
+        @keyframes bounceInUp {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-lupa">
+
+        <!-- ==============================================
+             PANTALLA 1: PORTADA
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="paper-panel p-8 md:p-14 max-w-3xl w-full mx-4 flex flex-col items-center">
+                <div class="paperclip"></div>
+                <div class="stamp-top-secret">CONFIDENCIAL</div>
+
+                <div class="text-[5rem] md:text-[8rem] mb-2 animate__animated animate__tada animate__infinite drop-shadow-md">🕵️‍♂️</div>
+                
+                <h2 class="text-xs md:text-sm text-noir-dark font-body font-black mb-4 uppercase bg-noir-gold/40 inline-block px-6 py-2 rounded-full border border-noir-gold tracking-widest">
+                    Lenguaje - 1er Grado
+                </h2>
+                
+                <h1 class="text-5xl md:text-6xl lg:text-[5rem] font-detective text-noir-dark leading-none uppercase drop-shadow-sm mb-6 border-y-4 border-noir-dark py-4 w-full">
+                    Lupa de <br><span class="text-noir-red">Detective</span>
+                </h1>
+                
+                <p class="text-lg md:text-2xl text-gray-700 font-bold mb-8 px-2 leading-relaxed font-body">
+                    ¡Abre bien los ojos! Alguien ha revuelto todo en mi escritorio. Necesito que uses tu lupa para encontrar <strong class="text-noir-red text-2xl">SOLO LAS LETRAS</strong> escondidas.
+                </p>
+                
+                <button onclick="openInstructions()" class="noir-btn text-xl md:text-3xl px-12 py-5 w-full md:w-auto">
+                    ¿CÓMO JUGAR? 🔍
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: TEORÍA Y REGLAS (Audición)
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center">
+            <div class="paper-panel p-6 md:p-12 max-w-4xl w-full text-center my-auto">
+                <div class="paperclip"></div>
+                
+                <h2 class="text-3xl md:text-5xl font-detective text-noir-dark mb-6 uppercase border-b-2 border-noir-dark/30 pb-4">
+                    Pistas del Caso
+                </h2>
+                <p class="text-lg md:text-2xl text-gray-700 font-bold mb-8 font-body">
+                    A veces las letras y los dibujos se mezclan. Pero recuerda nuestra regla de oro:
+                </p>
+                
+                <div class="flex flex-col md:flex-row items-stretch justify-center gap-6 md:gap-12 mb-10 font-body">
+                    
+                    <!-- Letras -->
+                    <div class="bg-blue-50 p-6 rounded-2xl border-4 border-noir-dark shadow-md flex-1">
+                        <span class="text-[4rem] mb-2 block">🅰️</span>
+                        <h3 class="font-detective text-2xl text-noir-dark uppercase mb-2">LAS LETRAS</h3>
+                        <p class="text-base text-gray-800 font-bold">
+                            Son signos que sirven para <strong>leer y escribir</strong> palabras. ¡Estas son las que debes atrapar!
+                        </p>
+                    </div>
+
+                    <!-- Objetos -->
+                    <div class="bg-red-50 p-6 rounded-2xl border-4 border-noir-dark shadow-md flex-1">
+                        <span class="text-[4rem] mb-2 block">🚗</span>
+                        <h3 class="font-detective text-2xl text-noir-dark uppercase mb-2">LOS OBJETOS</h3>
+                        <p class="text-base text-gray-800 font-bold">
+                            Son dibujos de cosas, animales o comida. ¡No las toques, esas no se leen!
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="bg-amber-100 border-4 border-noir-gold p-4 rounded-xl mb-8 flex items-center justify-center gap-4">
+                    <span class="text-4xl animate-pulse">🔊</span>
+                    <p class="text-lg md:text-xl font-bold text-noir-dark text-left">
+                        <strong class="text-noir-red uppercase">¡Escucha!</strong> Yo te iré diciendo qué has tocado.
+                    </p>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="playBeep(); stopVoice(); showScreen('screen-start')" class="noir-btn bg-transparent text-noir-dark hover:bg-gray-200 border-gray-400 px-8 py-4 text-xl">
+                        ⬅ VOLVER
+                    </button>
+                    <button onclick="playBeep(); stopVoice(); startGame()" class="noir-btn bg-noir-green border-noir-green text-white text-2xl md:text-3xl px-12 py-4">
+                        ¡A INSPECCIONAR! 🔎
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: EL JUEGO (Escritorio Revuelto)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start p-0 bg-transparent relative cursor-lupa">
+            
+            <!-- Barra de Herramientas del Detective (Arriba) -->
+            <div class="w-full bg-noir-dark text-noir-paper border-b-4 border-noir-gold p-2 md:p-3 flex justify-between items-center z-30 shrink-0 shadow-lg cursor-default">
+                <div class="flex items-center gap-3 px-2 md:px-4">
+                    <div class="bg-white text-noir-dark w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center text-xl md:text-3xl font-detective shadow-inner border-2 border-noir-gold">
+                        <span id="level-display">1</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] md:text-xs text-gray-400 font-black uppercase tracking-widest leading-none mb-1">Nivel de Búsqueda</span>
+                        <span class="font-body font-black text-xl md:text-2xl text-white leading-none">Cargando...</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-center bg-black/50 px-6 py-2 rounded-full border border-noir-gold/50">
+                    <span class="text-sm md:text-lg font-bold text-white uppercase flex items-center gap-2">
+                        Evidencias: <strong class="text-noir-gold text-2xl" id="score-count">0</strong> <span class="text-gray-400">/<span id="total-target">3</span></span>
+                    </span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="playBeep(); exitGame()" class="bg-noir-red text-white p-2 md:p-3 rounded-lg border-2 border-white/50 hover:bg-red-500 transition cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TABLERO PRINCIPAL: Los objetos esparcidos -->
+            <div class="w-full flex-grow flex items-center justify-center p-2 md:p-4 relative overflow-hidden">
+                
+                <h3 id="instruction-title" class="absolute top-2 md:top-4 left-1/2 transform -translate-x-1/2 font-detective text-base md:text-2xl text-white bg-black/80 px-6 py-2 rounded-full border-2 border-noir-gold shadow-lg z-20 text-center w-max cursor-default">
+                    Busca y toca solo las letras 🔍
+                </h3>
+
+                <!-- Contenedor Scatter (Caja segura absoluta para evitar desbordes) -->
+                <div id="desk-board" class="absolute top-16 bottom-4 left-4 right-4 md:top-20 md:bottom-8 md:left-8 md:right-8 max-w-5xl mx-auto">
+                    <!-- Los elementos se inyectan por JS con coordenadas % aleatorias seguras -->
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (Victoria)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex-col items-center justify-center p-4 text-center bg-noir-dark/95 backdrop-blur-sm">
+            <div id="result-card" class="paper-panel p-8 md:p-14 max-w-2xl w-full animate__animated animate__zoomIn text-center border-t-8 border-t-noir-green">
+                <div class="paperclip"></div>
+                <div class="stamp-top-secret text-noir-green border-noir-green">CASO CERRADO</div>
+                
+                <div class="text-[6rem] md:text-[8rem] mb-4 animate-bounce">🕵️‍♂️📁</div>
+                <h2 id="result-title" class="font-detective text-4xl md:text-6xl text-noir-dark mb-4 uppercase drop-shadow-sm">
+                    ¡Gran Trabajo!
+                </h2>
+                <p id="result-msg" class="text-xl md:text-3xl text-gray-800 mb-10 font-bold leading-relaxed font-body">
+                    Has limpiado todo mi escritorio. Eres un experto diferenciando las letras de los dibujos. ¡Estás listo para aprender a leer cualquier misterio!
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center font-body">
+                    <button onclick="playBeep(); exitGame()" class="noir-btn bg-transparent text-noir-dark border-gray-400 hover:bg-gray-200 px-8 py-4 text-xl">
+                        SALIR DE LA OFICINA
+                    </button>
+                    <button onclick="playBeep(); startGame()" class="noir-btn bg-noir-gold text-noir-dark border-noir-gold hover:text-white text-2xl md:text-3xl px-12 py-4">
+                        NUEVO CASO 🔄
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO Y AUDIO TTS
+         ============================================== -->
+    <script>
+        // --- 1. SINTETIZADOR DE AUDIO ---
+        let audioCtx = null;
+        function initAudio() {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+            } catch (e) {}
+        }
+        document.body.addEventListener('click', initAudio, { once: true });
+
+        function playBeep(freq = 600, duration = 0.1, type = "sine") {
+            try {
+                if (audioCtx && audioCtx.state !== 'suspended') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + duration);
+                }
+            } catch (e) {}
+        }
+
+        function playSuccessSound() {
+            playBeep(523.25, 0.1); // Do
+            setTimeout(() => playBeep(659.25, 0.1), 100); // Mi
+            setTimeout(() => playBeep(783.99, 0.2), 200);  // Sol
+        }
+        function playErrorSound() {
+            playBeep(200, 0.3, "sawtooth"); 
+        }
+
+        // --- MOTOR DE VOZ (SpeechSynthesis) ---
+        function speakPhrase(text, cancelPrevious = true) {
+            if (cancelPrevious) window.speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'es-ES'; // Español
+            utter.rate = 0.9; // Pausado y claro para niños
+            utter.pitch = 1.1; 
+            window.speechSynthesis.speak(utter);
+        }
+
+        function stopVoice() {
+            window.speechSynthesis.cancel();
+        }
+
+        function openInstructions() {
+            playBeep();
+            showScreen('screen-theory');
+            speakPhrase("¡Atención! Las letras son signos que sirven para leer palabras. Los objetos son dibujos de cosas. En este juego, tu lupa te ayudará a encontrar solo las letras.");
+        }
+
+        // --- 2. BASE DE DATOS DEL JUEGO ---
+        // Letras disponibles (Mayúsculas y minúsculas claras)
+        const allLetters = ["A", "E", "I", "O", "U", "M", "P", "S", "L", "T", "a", "e", "m", "s", "p"];
+        // Objetos distractores (Emojis)
+        const allObjects = [
+            { id: "🍎", name: "manzana" }, { id: "🚗", name: "auto" }, { id: "🧸", name: "oso de peluche" },
+            { id: "👟", name: "zapato" }, { id: "🎈", name: "globo" }, { id: "🚲", name: "bicicleta" },
+            { id: "🍕", name: "pizza" }, { id: "🎸", name: "guitarra" }, { id: "⚽", name: "pelota" },
+            { id: "🎩", name: "sombrero" }, { id: "🌻", name: "flor" }, { id: "🐟", name: "pez" }
+        ];
+
+        // Configuración de niveles: { numLetters, numObjects }
+        const levelConfigs = [
+            { l: 3, o: 6 },  // Nivel 1: Fácil, pocas cosas en la mesa
+            { l: 4, o: 10 }, // Nivel 2: Medio
+            { l: 5, o: 15 }  // Nivel 3: Lleno de cosas
+        ];
+
+        // --- 3. ESTADO DEL JUEGO ---
+        let currentLevelIndex = 0;
+        let itemsToFind = 0;
+        let itemsFound = 0;
+        let isProcessing = false;
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function shuffleArray(arr) {
+            let array = [...arr];
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startGame() {
+            currentLevelIndex = 0;
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('flex');
+            showScreen('screen-game');
+            loadLevel();
+        }
+
+        function loadLevel() {
+            if (currentLevelIndex >= levelConfigs.length) {
+                endGame();
+                return;
+            }
+
+            const config = levelConfigs[currentLevelIndex];
+            itemsToFind = config.l;
+            itemsFound = 0;
+            isProcessing = false;
+
+            // Actualizar UI
+            document.getElementById('level-display').innerText = currentLevelIndex + 1;
+            document.getElementById('total-target').innerText = itemsToFind;
+            document.getElementById('score-count').innerText = itemsFound;
+            document.getElementById('instruction-title').innerText = "Busca y toca solo las letras 🔍";
+            document.getElementById('instruction-title').classList.remove('bg-red-500', 'bg-green-500');
+            document.getElementById('instruction-title').classList.add('bg-black/80');
+
+            // Preparar el tablero disperso
+            const board = document.getElementById('desk-board');
+            board.innerHTML = '';
+
+            // Seleccionar Letras y Objetos para este nivel
+            const selectedLetters = shuffleArray(allLetters).slice(0, config.l).map(l => ({ type: 'letter', val: l, name: `la letra ${l}` }));
+            const selectedObjects = shuffleArray(allObjects).slice(0, config.o).map(o => ({ type: 'object', val: o.id, name: `el dibujo de un ${o.name}` }));
+            
+            // Mezclar todo junto
+            const allItems = shuffleArray([...selectedLetters, ...selectedObjects]);
+
+            // Sistema de posicionamiento semi-aleatorio (Grid grid-less)
+            const cols = Math.ceil(Math.sqrt(allItems.length));
+            const rows = Math.ceil(allItems.length / cols);
+            
+            // ZONAS SEGURAS: Usamos máximo el 85% del ancho y el 80% del alto 
+            // Esto asegura que el tamaño del propio dibujo no se salga del borde derecho ni inferior.
+            const safeWidth = 85; 
+            const safeHeight = 80;
+
+            const cellWidth = safeWidth / cols;
+            const cellHeight = safeHeight / rows;
+            
+            let itemIndex = 0;
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (itemIndex >= allItems.length) break;
+                    
+                    const itemData = allItems[itemIndex];
+                    const btn = document.createElement('div');
+                    
+                    // Cálculo de posiciones porcentuales base dentro del área segura
+                    const baseX = c * cellWidth;
+                    const baseY = r * cellHeight;
+                    
+                    // Offset aleatorio pero restringido al interior de su propia "celda"
+                    const randomOffsetX = Math.random() * (cellWidth * 0.7); 
+                    const randomOffsetY = Math.random() * (cellHeight * 0.7);
+                    
+                    const rotation = Math.random() * 60 - 30; // -30deg a +30deg
+
+                    btn.className = 'scatter-item animate__animated animate__zoomIn';
+                    btn.style.left = `${baseX + randomOffsetX}%`;
+                    btn.style.top = `${baseY + randomOffsetY}%`;
+                    btn.style.transform = `rotate(${rotation}deg)`;
+                    // Se usa una variable css custom para que el hover funcione bien con rotate(0) y luego vuelva
+                    btn.style.setProperty('--rot', `${rotation}deg`); 
+                    btn.style.animationDelay = `${itemIndex * 0.05}s`;
+                    
+                    // Asegurar que al quitar el hover vuelva a su rotación
+                    btn.onmouseleave = function() {
+                        if(!this.classList.contains('collected') && !this.classList.contains('failed')) {
+                            this.style.transform = `rotate(${this.style.getPropertyValue('--rot')})`;
+                        }
+                    };
+
+                    btn.innerText = itemData.val;
+                    
+                    // En móvil, el hover no existe igual, así que el click dispara la lógica
+                    btn.onclick = (e) => handleItemClick(itemData, btn, e);
+                    
+                    board.appendChild(btn);
+                    itemIndex++;
+                }
+            }
+        }
+
+        function handleItemClick(itemData, btnElement, e) {
+            if (isProcessing || btnElement.classList.contains('collected')) return;
+
+            const title = document.getElementById('instruction-title');
+
+            if (itemData.type === 'letter') {
+                // ACIERTO
+                playSuccessSound();
+                // Eliminada la línea speakPhrase para evitar que la voz sea repetitiva al acertar
+                
+                btnElement.classList.add('collected');
+                
+                title.innerText = `¡Es una Letra! ✅`;
+                title.className = "absolute top-4 left-1/2 transform -translate-x-1/2 font-detective text-lg md:text-2xl text-white px-6 py-2 rounded-full border-2 border-white shadow-lg z-20 text-center w-max cursor-default bg-green-600";
+                
+                itemsFound++;
+                document.getElementById('score-count').innerText = itemsFound;
+
+                if (itemsFound === itemsToFind) {
+                    isProcessing = true;
+                    setTimeout(() => {
+                        speakPhrase(`¡Nivel completado! Encontraste todas las letras.`);
+                        currentLevelIndex++;
+                        loadLevel();
+                    }, 2000);
+                }
+
+            } else {
+                // ERROR
+                isProcessing = true;
+                playErrorSound();
+                speakPhrase(`Cuidado. Eso es ${itemData.name}, no es una letra.`, true);
+                
+                btnElement.classList.add('failed');
+                
+                title.innerText = `¡Es un objeto! ❌`;
+                title.className = "absolute top-4 left-1/2 transform -translate-x-1/2 font-detective text-lg md:text-2xl text-white px-6 py-2 rounded-full border-2 border-white shadow-lg z-20 text-center w-max cursor-default bg-red-600";
+
+                setTimeout(() => {
+                    btnElement.classList.remove('failed');
+                    // Restaurar rotación original
+                    btnElement.style.transform = `rotate(${btnElement.style.getPropertyValue('--rot')})`;
+                    
+                    title.innerText = "Sigue buscando las letras 🔍";
+                    title.className = "absolute top-4 left-1/2 transform -translate-x-1/2 font-detective text-lg md:text-2xl text-white bg-black/80 px-6 py-2 rounded-full border-2 border-noir-gold shadow-lg z-20 text-center w-max cursor-default";
+                    isProcessing = false;
+                }, 2000); // Dar tiempo para escuchar el audio
+            }
+        }
+
+        function endGame() {
+            const res = document.getElementById('screen-result');
+            res.classList.remove('hidden');
+            res.classList.add('flex');
+            playSuccessSound();
+            setTimeout(playSuccessSound, 300);
+            speakPhrase("¡Caso cerrado! Has limpiado todo mi escritorio. Eres un experto diferenciando las letras de los dibujos.");
+        }
+
+        function exitGame() {
+            stopVoice();
+            currentLevelIndex = 0;
+            isProcessing = false;
+            showScreen('screen-start');
+        }
+    </script>
+</body>
+</html>

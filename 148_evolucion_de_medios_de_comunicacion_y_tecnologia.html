@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Línea de Tiempo Galáctica - Comunicación y Astronomía</title>
+    
+    <!-- Fuentes Google: Space Grotesk (Tech) y Nunito (Lectura) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA PARA WORDPRESS -->
+    <script>
+        tailwind.config = {
+            important: '#recurso-wp-galaxia',
+            corePlugins: {
+                preflight: false,
+            },
+            theme: {
+                extend: {
+                    fontFamily: {
+                        space: ['"Space Grotesk"', 'sans-serif'],
+                        body: ['Nunito', 'sans-serif'],
+                    },
+                    colors: {
+                        cosmos: {
+                            dark: '#030014',     /* Deep space */
+                            panel: '#111827',    /* Dark gray blue */
+                            cyan: '#00e5ff',     /* Neon cyan */
+                            purple: '#b388ff',   /* Neon purple */
+                            pink: '#ff4081',     /* Neon pink */
+                            green: '#00e676',    /* Success green */
+                            red: '#ff1744'       /* Error red */
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* MICRO-RESET LOCAL */
+        #recurso-wp-galaxia * { box-sizing: border-box; border-width: 0; border-style: solid; border-color: currentColor; line-height: normal; }
+        #recurso-wp-galaxia h1, #recurso-wp-galaxia h2, #recurso-wp-galaxia h3, #recurso-wp-galaxia p, #recurso-wp-galaxia span, #recurso-wp-galaxia div { margin: 0; padding: 0; }
+        #recurso-wp-galaxia button { background-color: transparent; background-image: none; cursor: pointer; padding: 0; font-family: inherit; }
+
+        /* ESTILOS PANTALLA COMPLETA & ESPACIO */
+        #recurso-wp-galaxia {
+            font-family: 'Nunito', sans-serif;
+            background-color: #030014;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Fondo Estrellado Animado */
+        .stars-bg {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 40px 70px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 50px 160px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 90px 40px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 130px 80px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 160px 120px, #ffffff, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            animation: starsMove 100s linear infinite;
+            opacity: 0.3;
+            z-index: 0;
+            pointer-events: none;
+        }
+        @keyframes starsMove {
+            from { background-position: 0 0; }
+            to { background-position: -10000px 5000px; }
+        }
+
+        /* Paneles Sci-Fi */
+        #recurso-wp-galaxia .space-panel {
+            background: rgba(17, 24, 39, 0.8);
+            border: 2px solid #00e5ff;
+            border-radius: 16px;
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.2), inset 0 0 15px rgba(0, 229, 255, 0.1);
+            backdrop-filter: blur(8px);
+            position: relative;
+            z-index: 10;
+        }
+        
+        #recurso-wp-galaxia .space-btn {
+            background: linear-gradient(135deg, rgba(0,229,255,0.1), rgba(179,136,255,0.1));
+            border: 2px solid #00e5ff;
+            color: #00e5ff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.3), inset 0 0 5px rgba(0, 229, 255, 0.2);
+            transition: all 0.2s ease-out;
+            text-transform: uppercase;
+            font-family: 'Space Grotesk', sans-serif;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+        #recurso-wp-galaxia .space-btn:hover:not(:disabled) {
+            background: rgba(0, 229, 255, 0.2);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
+            transform: translateY(-2px);
+            color: #ffffff;
+        }
+        #recurso-wp-galaxia .space-btn:active:not(:disabled) {
+            transform: translateY(2px);
+            box-shadow: 0 0 5px rgba(0, 229, 255, 0.4);
+        }
+
+        /* Línea de Tiempo (Timeline) Scrollable */
+        .timeline-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+            /* Scrollbar invisible pero funcional */
+            -ms-overflow-style: none;  
+            scrollbar-width: none;  
+        }
+        .timeline-wrapper::-webkit-scrollbar { 
+            display: none; 
+        }
+
+        .timeline-container {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-width: 800px; /* Fuerza el scroll en pantallas pequeñas */
+            padding: 2rem 20px;
+            margin-top: 1rem;
+            gap: 15px;
+        }
+        .timeline-line {
+            position: absolute;
+            top: 50%;
+            left: 20px;
+            right: 20px;
+            height: 4px;
+            background: rgba(0, 229, 255, 0.3);
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+        .timeline-node {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: clamp(60px, 12vw, 90px);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .timeline-node:hover:not(.solved) {
+            transform: scale(1.1);
+        }
+        .node-year {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 900;
+            color: #00e5ff;
+            background: #030014;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 2px solid #00e5ff;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px #00e5ff;
+            transition: all 0.3s;
+        }
+        .node-slot {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(3, 0, 20, 0.8);
+            border: 2px dashed #b388ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 10px rgba(179, 136, 255, 0.3);
+            transition: all 0.3s;
+        }
+        .timeline-node:hover:not(.solved) .node-slot {
+            background: rgba(179, 136, 255, 0.2);
+            border-style: solid;
+            box-shadow: 0 0 15px #b388ff;
+        }
+        .timeline-node.solved .node-slot {
+            background: rgba(0, 230, 118, 0.2);
+            border: 2px solid #00e676;
+            box-shadow: 0 0 20px #00e676;
+            cursor: default;
+            transform: scale(1.1);
+        }
+        .timeline-node.solved .node-year {
+            color: #00e676;
+            border-color: #00e676;
+            text-shadow: 0 0 5px #00e676;
+        }
+
+        /* Proyector Holográfico Central */
+        .holo-projector {
+            position: relative;
+            background: radial-gradient(ellipse at bottom, rgba(0, 229, 255, 0.3) 0%, transparent 60%);
+            border-bottom: 4px solid #00e5ff;
+            border-radius: 0 0 50% 50%;
+            padding-bottom: 20px;
+            box-shadow: 0 10px 30px -10px rgba(0, 229, 255, 0.5);
+            animation: holoFlicker 4s infinite;
+        }
+        @keyframes holoFlicker {
+            0%, 100% { opacity: 1; }
+            5% { opacity: 0.8; }
+            10% { opacity: 1; }
+            50% { opacity: 0.9; }
+        }
+
+        .item-hologram {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+            animation: floatHolo 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px #00e5ff);
+        }
+        @keyframes floatHolo {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        /* Pantallas SPA */
+        #recurso-wp-galaxia .screen {
+            display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; position: absolute; top: 0; left: 0; overflow-y: auto; overflow-x: hidden; z-index: 10;
+        }
+        #recurso-wp-galaxia .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-galaxia .screen.active {
+            display: flex;
+            animation: spaceIn 0.5s ease-out forwards;
+        }
+        @keyframes spaceIn {
+            from { opacity: 0; transform: scale(0.9) translateY(30px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .shake-error { animation: shakeError 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shakeError {
+            10%, 90% { transform: translate3d(-3px, 0, 0); }
+            20%, 80% { transform: translate3d(5px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
+        /* Rayo de teletransporte (Warp) */
+        .warp-beam {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 4px; height: 100px;
+            background: #00e5ff;
+            box-shadow: 0 0 20px #00e5ff, 0 0 40px #00e5ff;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            z-index: 100;
+        }
+        .warping { animation: warpAnim 0.6s ease-out forwards; }
+        @keyframes warpAnim {
+            0% { transform: translate(-50%, -50%) scaleY(0); opacity: 1; }
+            50% { transform: translate(-50%, -50%) scaleY(1); opacity: 1; }
+            100% { transform: translate(-50%, -150%) scaleY(0); opacity: 0; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-galaxia">
+
+        <!-- Fondo Espacial Global -->
+        <div class="stars-bg"></div>
+
+        <!-- ==============================================
+             PANTALLA 1: INICIO
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="space-panel p-8 md:p-14 max-w-3xl w-full mx-4 flex flex-col items-center">
+                <div class="text-[5rem] md:text-[7rem] mb-4 animate__animated animate__pulse animate__infinite drop-shadow-[0_0_20px_rgba(0,229,255,0.6)]">🚀</div>
+                
+                <h2 class="text-xs md:text-sm text-cosmos-purple font-space font-bold mb-4 uppercase bg-cosmos-purple/10 inline-block px-4 py-2 border border-cosmos-purple/50 rounded tracking-widest">
+                    Tecnología y Ciencia - 5/6to Grado
+                </h2>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-space text-white mt-2 mb-6 leading-none tracking-wider uppercase drop-shadow-[0_0_15px_#00e5ff]">
+                    Línea de Tiempo <br><span class="text-cosmos-cyan">Galáctica</span>
+                </h1>
+                <p class="text-lg md:text-xl text-gray-300 font-bold mb-8 px-2 leading-relaxed max-w-xl">
+                    ¡Comandante! Una anomalía ha desordenado la historia de la astronomía. Los grandes inventos e hitos espaciales están flotando en el espacio-tiempo.
+                </p>
+                <button onclick="playBeep(); showScreen('screen-theory')" class="space-btn text-xl md:text-2xl px-10 py-4 w-full md:w-auto">
+                    INICIAR MISIÓN DE RESCATE ▶
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: TEORÍA Y CONTEXTO (ACTUALIZADA)
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center">
+            <div class="space-panel p-6 md:p-10 max-w-6xl w-full text-center my-auto overflow-y-auto">
+                <h2 class="text-3xl md:text-5xl font-space text-white mb-6 uppercase border-b border-cosmos-cyan/30 pb-4">
+                    La Evolución Espacial
+                </h2>
+                <p class="text-base md:text-lg text-gray-300 mb-8 font-bold max-w-4xl mx-auto leading-relaxed">
+                    Nuestra carrera por conquistar el universo tomó cientos de años. Conoce nuestros 7 grandes saltos históricos que deberás organizar en el radar:
+                </p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8 text-left">
+                    
+                    <div class="bg-black/50 p-4 rounded-lg border border-cosmos-cyan/40 hover:border-cosmos-cyan transition shadow-lg">
+                        <div class="text-3xl mb-2">🔭</div>
+                        <h3 class="font-space text-lg text-cosmos-cyan uppercase mb-1">Año 1609</h3>
+                        <p class="text-xs text-gray-400 font-bold">Galileo Galilei apunta el primer <strong>Telescopio</strong> y descubre que la Luna tiene cráteres.</p>
+                    </div>
+                    
+                    <div class="bg-black/50 p-4 rounded-lg border border-cosmos-cyan/40 hover:border-cosmos-cyan transition shadow-lg">
+                        <div class="text-3xl mb-2">📡</div>
+                        <h3 class="font-space text-lg text-cosmos-cyan uppercase mb-1">Año 1957</h3>
+                        <p class="text-xs text-gray-400 font-bold">Rusia lanza "Sputnik 1", el primer <strong>Satélite Artificial</strong> en orbitar la Tierra.</p>
+                    </div>
+                    
+                    <div class="bg-black/50 p-4 rounded-lg border border-cosmos-cyan/40 hover:border-cosmos-cyan transition shadow-lg">
+                        <div class="text-3xl mb-2">👨‍🚀</div>
+                        <h3 class="font-space text-lg text-cosmos-cyan uppercase mb-1">Año 1969</h3>
+                        <p class="text-xs text-gray-400 font-bold">La Misión <strong>Apolo 11</strong> lleva a los primeros humanos (Neil Armstrong) a caminar sobre la Luna.</p>
+                    </div>
+                    
+                    <div class="bg-black/50 p-4 rounded-lg border border-cosmos-cyan/40 hover:border-cosmos-cyan transition shadow-lg">
+                        <div class="text-3xl mb-2">🌌</div>
+                        <h3 class="font-space text-lg text-cosmos-cyan uppercase mb-1">Año 1990</h3>
+                        <p class="text-xs text-gray-400 font-bold">Lanzan el <strong>Telescopio Hubble</strong> para tomar fotos sin la interferencia de las nubes.</p>
+                    </div>
+                    
+                    <div class="bg-black/50 p-4 rounded-lg border border-cosmos-cyan/40 hover:border-cosmos-cyan transition shadow-lg">
+                        <div class="text-3xl mb-2">🛰️</div>
+                        <h3 class="font-space text-lg text-cosmos-cyan uppercase mb-1">Año 1998</h3>
+                        <p class="text-xs text-gray-400 font-bold">Comienza a construirse la <strong>Estación Espacial Internacional</strong>, donde viven los astronautas.</p>
+                    </div>
+                    
+                    <div class="bg-black/50 p-4 rounded-lg border border-cosmos-cyan/40 hover:border-cosmos-cyan transition shadow-lg">
+                        <div class="text-3xl mb-2">🤖</div>
+                        <h3 class="font-space text-lg text-cosmos-cyan uppercase mb-1">Año 2012</h3>
+                        <p class="text-xs text-gray-400 font-bold">Aterriza "Curiosity", el <strong>Rover de Exploración</strong> diseñado para investigar Marte.</p>
+                    </div>
+
+                    <div class="bg-black/50 p-4 rounded-lg border border-cosmos-cyan/40 hover:border-cosmos-cyan transition shadow-lg sm:col-span-2 lg:col-span-3 xl:col-span-1">
+                        <div class="text-3xl mb-2">👁️</div>
+                        <h3 class="font-space text-lg text-cosmos-cyan uppercase mb-1">Año 2021</h3>
+                        <p class="text-xs text-gray-400 font-bold">Lanzamiento del <strong>Telescopio James Webb</strong>, el más potente jamás creado con espejos dorados.</p>
+                    </div>
+
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="playBeep(); showScreen('screen-start')" class="border border-gray-600 text-gray-400 font-space font-bold px-8 py-3 rounded-lg text-sm uppercase hover:bg-gray-800 transition tracking-widest shrink-0">
+                        < ABORTAR
+                    </button>
+                    <button onclick="playBeep(); startGame()" class="space-btn text-xl md:text-2xl px-10 py-3 shrink-0">
+                        ACTIVAR TELETRANSPORTADOR ⚡
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: EL JUEGO (Línea de Tiempo)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start p-0 bg-transparent relative">
+            
+            <!-- HUD Superior -->
+            <div class="w-full bg-cosmos-panel/90 backdrop-blur-sm border-b border-cosmos-cyan/50 p-3 md:p-4 flex justify-between items-center z-30 shrink-0">
+                <div class="flex items-center gap-3 px-2 md:px-4">
+                    <span class="text-3xl md:text-4xl drop-shadow-[0_0_10px_#b388ff]">⏳</span>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] md:text-xs text-gray-400 font-space uppercase tracking-widest leading-none mb-1">Anomalías Resueltas</span>
+                        <span class="font-space text-2xl md:text-3xl text-cosmos-purple leading-none"><span id="score-display">0</span><span class="text-gray-500 text-lg">/7</span></span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <div class="flex flex-col text-right">
+                        <span class="text-[10px] md:text-xs text-gray-400 font-space uppercase tracking-widest leading-none mb-1">Energía Temporal</span>
+                        <span id="lives-display" class="text-lg md:text-xl tracking-widest mt-1 drop-shadow-[0_0_8px_#ff1744]">🔋🔋🔋</span>
+                    </div>
+                    <button onclick="playBeep(); exitGame()" class="border border-cosmos-red text-cosmos-red hover:bg-cosmos-red hover:text-white transition-colors p-2 rounded-lg ml-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Área Principal -->
+            <div class="w-full flex-grow flex flex-col items-center justify-center p-4 md:p-8 overflow-hidden relative max-w-6xl mx-auto">
+                
+                <!-- Info Text Top -->
+                <p class="text-cosmos-cyan font-space text-sm md:text-lg uppercase tracking-widest mb-4 bg-cosmos-cyan/10 px-6 py-2 rounded-full border border-cosmos-cyan/30 text-center animate-pulse shrink-0">
+                    Identifica el invento y selecciona su época correcta
+                </p>
+
+                <!-- El Invento Desubicado (Proyector) -->
+                <div class="space-panel p-6 md:p-8 w-full max-w-md flex flex-col items-center text-center mt-2 mb-auto z-20 shrink-0">
+                    <div class="holo-projector w-full mb-4 relative">
+                        <!-- El SVG del invento se inyecta aquí -->
+                        <div id="active-item-svg" class="item-hologram"></div>
+                        <div id="warp-effect" class="warp-beam"></div>
+                    </div>
+                    <h3 id="active-item-name" class="font-space text-2xl md:text-3xl text-white uppercase tracking-wider mb-2">Nombre</h3>
+                    <p id="active-item-desc" class="text-sm md:text-base text-gray-300 font-bold bg-black/40 p-3 rounded border border-gray-700 leading-snug">
+                        Descripción del invento...
+                    </p>
+                </div>
+
+                <!-- La Línea de Tiempo (Destino Scrollable) -->
+                <div class="w-full mt-auto mb-4 bg-black/40 p-4 md:p-6 rounded-2xl border border-cosmos-purple/30 backdrop-blur-md relative z-10 shrink-0">
+                    <div class="timeline-wrapper">
+                        <div class="timeline-container" id="timeline-container">
+                            <div class="timeline-line"></div>
+                            <!-- Los nodos de la línea de tiempo se inyectan por JS ordenados por año -->
+                        </div>
+                    </div>
+                    <p class="text-center text-xs text-gray-500 font-space uppercase mt-2 hidden sm:block">Puedes deslizar la línea si no ves todos los años.</p>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ==============================================
+             MODAL DE FEEDBACK (Error / Acierto)
+             ============================================== -->
+        <div id="feedback-modal" class="hidden absolute inset-0 z-[60] flex-col items-center justify-center bg-black/90 p-4 text-center backdrop-blur-sm">
+            <div id="feedback-card" class="space-panel p-8 md:p-12 max-w-xl w-full animate__animated text-center border-t-[6px]">
+                <div id="feedback-icon" class="text-[5rem] md:text-[6rem] mb-2 leading-none drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">✨</div>
+                <h3 id="feedback-title" class="font-space text-3xl md:text-4xl text-white mb-4 uppercase tracking-widest">Título</h3>
+                <div class="bg-black/50 p-4 rounded-xl border border-gray-700 mb-6">
+                    <p id="feedback-reason" class="text-base md:text-lg font-bold text-gray-300 leading-relaxed"></p>
+                </div>
+                <button onclick="closeFeedback()" class="space-btn text-lg md:text-xl px-10 py-3 w-full font-bold">
+                    Siguiente Anomalía ➡
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (Victoria)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex-col items-center justify-center p-6 text-center bg-cosmos-dark">
+            <div id="result-card" class="space-panel p-10 md:p-16 max-w-2xl w-full animate__animated animate__zoomIn text-center z-10 border-t-[8px]">
+                <div id="result-icon" class="text-[6rem] md:text-[8rem] mb-6 drop-shadow-[0_0_20px_rgba(0,229,255,0.6)]">🌍</div>
+                <h2 id="result-title" class="font-space text-4xl md:text-6xl text-cosmos-cyan mb-4 uppercase tracking-widest">¡Línea Restaurada!</h2>
+                <p id="result-msg" class="text-lg md:text-2xl text-gray-300 mb-10 font-bold leading-relaxed">
+                    Mensaje de victoria
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="playBeep(); exitGame()" class="border border-gray-500 text-gray-400 hover:bg-gray-800 hover:text-white px-8 py-3 rounded-lg text-lg uppercase transition-colors font-space font-bold tracking-widest">
+                        ABANDONAR NAVE
+                    </button>
+                    <button onclick="playBeep(); startGame()" class="space-btn text-xl md:text-2xl px-10 py-3">
+                        NUEVO SALTO 🔄
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO CON SVGS DE ASTRONOMÍA
+         ============================================== -->
+    <script>
+        // --- SINTETIZADOR DE AUDIO ---
+        let audioCtx = null;
+        function initAudio() {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+            } catch (e) {}
+        }
+        document.body.addEventListener('click', initAudio, { once: true });
+
+        function playBeep(freq = 600, duration = 0.1, type = "sine") {
+            try {
+                if (audioCtx && audioCtx.state !== 'suspended') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + duration);
+                }
+            } catch (e) {}
+        }
+        function playWarp() { playBeep(300, 0.4, "triangle"); setTimeout(() => playBeep(800, 0.2, "sine"), 200); }
+        function playError() { playBeep(150, 0.4, "sawtooth"); }
+
+        function shuffleArray(arr) {
+            let array = [...arr];
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // --- DIBUJOS VECTORIALES DE LOS 7 INVENTOS ---
+        function getInventionSVG(id) {
+            switch(id) {
+                case "telescopio": // Telescopio Óptico Galileo
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-[0_0_5px_#fff]">
+                        <line x1="50" y1="60" x2="30" y2="90" stroke="#b45309" stroke-width="4" stroke-linecap="round"/>
+                        <line x1="50" y1="60" x2="70" y2="90" stroke="#b45309" stroke-width="4" stroke-linecap="round"/>
+                        <line x1="50" y1="60" x2="50" y2="95" stroke="#78350f" stroke-width="4" stroke-linecap="round"/>
+                        <circle cx="50" cy="60" r="5" fill="#94a3b8"/>
+                        <g transform="rotate(-30 50 60)">
+                            <rect x="20" y="52" width="60" height="16" fill="#fcd34d" stroke="#b45309" stroke-width="2"/>
+                            <rect x="80" y="48" width="10" height="24" fill="#00e5ff" stroke="#b45309" stroke-width="2"/>
+                            <rect x="10" y="55" width="10" height="10" fill="#00e5ff" stroke="#b45309" stroke-width="2"/>
+                            <line x1="40" y1="52" x2="40" y2="68" stroke="#b45309" stroke-width="2"/>
+                            <line x1="60" y1="52" x2="60" y2="68" stroke="#b45309" stroke-width="2"/>
+                        </g>
+                    </svg>
+                    `;
+                case "satelite": // Sputnik
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-[0_0_5px_#fff]">
+                        <line x1="50" y1="50" x2="10" y2="10" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="50" y1="50" x2="90" y2="10" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="50" y1="50" x2="20" y2="90" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="50" y1="50" x2="80" y2="90" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+                        <circle cx="50" cy="50" r="20" fill="#e2e8f0" stroke="#64748b" stroke-width="3"/>
+                        <circle cx="45" cy="45" r="5" fill="#ffffff" opacity="0.6"/>
+                        <path d="M30,50 Q50,60 70,50" fill="none" stroke="#64748b" stroke-width="2"/>
+                    </svg>
+                    `;
+                case "luna": // Apolo 11
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-[0_0_5px_#fff]">
+                        <path d="M 20,90 Q 50,70 80,90" fill="none" stroke="#cbd5e1" stroke-width="4"/>
+                        <circle cx="50" cy="150" r="80" fill="#94a3b8" />
+                        <circle cx="30" cy="85" r="5" fill="#64748b" />
+                        <circle cx="65" cy="90" r="8" fill="#64748b" />
+                        <line x1="50" y1="80" x2="50" y2="30" stroke="#e2e8f0" stroke-width="3"/>
+                        <polygon points="50,30 80,40 50,50" fill="#ef4444"/>
+                    </svg>
+                    `;
+                case "hubble": // Telescopio Espacial
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-[0_0_5px_#fff]">
+                        <rect x="5" y="40" width="30" height="20" fill="#1e3a8a" stroke="#60a5fa" stroke-width="2"/>
+                        <line x1="15" y1="40" x2="15" y2="60" stroke="#60a5fa" stroke-width="1"/>
+                        <line x1="25" y1="40" x2="25" y2="60" stroke="#60a5fa" stroke-width="1"/>
+                        <rect x="65" y="40" width="30" height="20" fill="#1e3a8a" stroke="#60a5fa" stroke-width="2"/>
+                        <line x1="75" y1="40" x2="75" y2="60" stroke="#60a5fa" stroke-width="1"/>
+                        <line x1="85" y1="40" x2="85" y2="60" stroke="#60a5fa" stroke-width="1"/>
+                        <rect x="35" y="20" width="30" height="60" rx="4" fill="#cbd5e1" stroke="#475569" stroke-width="3"/>
+                        <rect x="40" y="10" width="20" height="10" fill="#000000" stroke="#475569" stroke-width="3"/>
+                        <ellipse cx="50" cy="10" rx="10" ry="3" fill="#00e5ff" opacity="0.8"/>
+                        <path d="M40,10 L30,0" stroke="#cbd5e1" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="35" y1="35" x2="65" y2="35" stroke="#94a3b8" stroke-width="2"/>
+                        <line x1="35" y1="65" x2="65" y2="65" stroke="#94a3b8" stroke-width="2"/>
+                    </svg>
+                    `;
+                case "iss": // Estación Espacial
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-[0_0_5px_#fff]">
+                        <rect x="42" y="10" width="16" height="80" rx="2" fill="#cbd5e1" stroke="#475569" stroke-width="2"/>
+                        <line x1="42" y1="30" x2="58" y2="30" stroke="#475569" stroke-width="2"/>
+                        <line x1="42" y1="70" x2="58" y2="70" stroke="#475569" stroke-width="2"/>
+                        <rect x="5" y="35" width="30" height="10" fill="#1e3a8a" stroke="#60a5fa" stroke-width="1"/>
+                        <rect x="5" y="55" width="30" height="10" fill="#1e3a8a" stroke="#60a5fa" stroke-width="1"/>
+                        <rect x="65" y="35" width="30" height="10" fill="#1e3a8a" stroke="#60a5fa" stroke-width="1"/>
+                        <rect x="65" y="55" width="30" height="10" fill="#1e3a8a" stroke="#60a5fa" stroke-width="1"/>
+                    </svg>
+                    `;
+                case "rover": // Curiosity
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-[0_0_5px_#fff]">
+                        <circle cx="25" cy="80" r="10" fill="#334155" stroke="#000" stroke-width="2"/>
+                        <circle cx="50" cy="80" r="10" fill="#334155" stroke="#000" stroke-width="2"/>
+                        <circle cx="75" cy="80" r="10" fill="#334155" stroke="#000" stroke-width="2"/>
+                        <path d="M25,80 L40,65 L60,65 L75,80 M50,80 L50,65" fill="none" stroke="#94a3b8" stroke-width="3"/>
+                        <rect x="20" y="45" width="60" height="20" rx="2" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
+                        <rect x="15" y="48" width="10" height="12" rx="2" fill="#475569" stroke="#000" stroke-width="2"/>
+                        <line x1="70" y1="45" x2="70" y2="20" stroke="#f8fafc" stroke-width="4"/>
+                        <rect x="62" y="15" width="16" height="10" rx="2" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/>
+                        <circle cx="66" cy="20" r="3" fill="#00e5ff"/>
+                        <circle cx="74" cy="20" r="2" fill="#00e5ff"/>
+                        <path d="M80,55 Q95,50 90,65" fill="none" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                    `;
+                case "webb": // James Webb
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-[0_0_5px_#fff]">
+                        <polygon points="10,80 90,80 70,90 30,90" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+                        <polygon points="15,75 85,75 65,85 35,85" fill="#e2e8f0"/>
+                        <g fill="#fbbf24" stroke="#b45309" stroke-width="1">
+                            <polygon points="50,20 60,25 60,35 50,40 40,35 40,25" />
+                            <polygon points="38,30 48,35 48,45 38,50 28,45 28,35" />
+                            <polygon points="62,30 72,35 72,45 62,50 52,45 52,35" />
+                            <polygon points="50,42 60,47 60,57 50,62 40,57 40,47" />
+                        </g>
+                        <line x1="50" y1="40" x2="50" y2="75" stroke="#475569" stroke-width="2"/>
+                        <circle cx="50" cy="40" r="3" fill="#1e1b4b"/>
+                    </svg>
+                    `;
+            }
+        }
+
+        // --- DATOS DEL JUEGO (7 Hitos) ---
+        const inventionsData = [
+            {
+                id: "telescopio",
+                year: "1609",
+                name: "Telescopio Óptico",
+                desc: "Primer instrumento que usó lentes de cristal para acercar las estrellas.",
+                explanation: "Galileo Galilei usó este invento para observar la Luna en 1609, dando inicio a la astronomía moderna."
+            },
+            {
+                id: "satelite",
+                year: "1957",
+                name: "Satélite Artificial",
+                desc: "Esfera de metal con antenas enviada para enviar señales de radio a la Tierra.",
+                explanation: "El Sputnik 1 marcó el inicio de la era espacial en 1957. ¡Fue el primer objeto humano en orbitar nuestro planeta!"
+            },
+            {
+                id: "luna",
+                year: "1969",
+                name: "Misión Apolo 11",
+                desc: "Primera vez que el ser humano camina sobre otro cuerpo celeste.",
+                explanation: "En 1969, Neil Armstrong y Buzz Aldrin caminaron sobre la Luna. ¡Un pequeño paso para el hombre, un gran salto para la humanidad!"
+            },
+            {
+                id: "hubble",
+                year: "1990",
+                name: "Telescopio Espacial",
+                desc: "Observatorio en forma de cilindro en órbita fuera de nuestra atmósfera.",
+                explanation: "Lanzado en 1990, el Hubble nos ha dado las fotos más impresionantes de galaxias lejanas sin que las nubes estorben."
+            },
+            {
+                id: "iss",
+                year: "1998",
+                name: "Estación Espacial",
+                desc: "Laboratorio gigante que orbita la Tierra donde viven astronautas.",
+                explanation: "La Estación Espacial Internacional (ISS) comenzó a construirse en 1998. Es el objeto artificial más grande en el espacio."
+            },
+            {
+                id: "rover",
+                year: "2012",
+                name: "Rover Explorador",
+                desc: "Laboratorio científico rodante operado a millones de kilómetros.",
+                explanation: "En 2012 llegó 'Curiosity' a Marte, un robot diseñado para buscar pistas del pasado en el planeta rojo."
+            },
+            {
+                id: "webb",
+                year: "2021",
+                name: "Telescopio James Webb",
+                desc: "Telescopio de espejos dorados capaz de ver las primeras galaxias.",
+                explanation: "Lanzado en 2021, el James Webb es el sucesor del Hubble y usa luz infrarroja para ver a través del polvo cósmico."
+            }
+        ];
+
+        let score = 0;
+        let lives = 3;
+        let isProcessing = false;
+        let playQueue = [];
+        let currentItem = null;
+
+        // --- FUNCIONES DE JUEGO ---
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startGame() {
+            score = 0;
+            lives = 3;
+            isProcessing = false;
+            
+            // Llenar y mezclar la cola de inventos
+            playQueue = shuffleArray([...inventionsData]);
+            
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('flex');
+            
+            updateUI();
+            buildTimeline();
+            showScreen('screen-game');
+            loadNextItem();
+        }
+
+        function updateUI() {
+            document.getElementById('score-display').innerText = score;
+            let battery = "";
+            for(let i=0; i<3; i++) battery += i < lives ? "🔋" : "🪫";
+            document.getElementById('lives-display').innerText = battery;
+        }
+
+        // Crea la línea de tiempo Fija (Ordenada cronológicamente)
+        function buildTimeline() {
+            const container = document.getElementById('timeline-container');
+            // Removemos los nodos viejos pero mantenemos la línea
+            container.innerHTML = '<div class="timeline-line"></div>';
+
+            // Ordenar por año (convertido a número) y en caso de empate alfabéticamente
+            const chronologicalData = [...inventionsData].sort((a, b) => {
+                if (parseInt(a.year) === parseInt(b.year)) {
+                    return a.name.localeCompare(b.name);
+                }
+                return parseInt(a.year) - parseInt(b.year);
+            });
+
+            chronologicalData.forEach(data => {
+                const node = document.createElement('div');
+                node.className = 'timeline-node';
+                node.id = `node-${data.id}`; // Usar ID único en lugar de año para evitar colisiones
+                
+                node.innerHTML = `
+                    <div class="node-year">${data.year}</div>
+                    <div class="node-slot" id="slot-${data.id}">
+                        <span class="text-gray-600 text-xs md:text-sm font-space">VÍNCULO</span>
+                    </div>
+                `;
+                
+                node.onclick = () => checkEra(data.id, node);
+                container.appendChild(node);
+            });
+        }
+
+        function loadNextItem() {
+            if (playQueue.length === 0) {
+                setTimeout(() => endGame(true), 1000);
+                return;
+            }
+
+            currentItem = playQueue.shift();
+            isProcessing = false;
+
+            document.getElementById('active-item-name').innerText = currentItem.name;
+            document.getElementById('active-item-desc').innerText = currentItem.desc;
+            
+            const svgContainer = document.getElementById('active-item-svg');
+            svgContainer.innerHTML = getInventionSVG(currentItem.id);
+            svgContainer.className = "item-hologram animate__animated animate__zoomIn";
+        }
+
+        function checkEra(targetId, nodeElement) {
+            if (isProcessing || !currentItem || nodeElement.classList.contains('solved')) return;
+            isProcessing = true;
+
+            const isCorrect = targetId === currentItem.id;
+
+            if (isCorrect) {
+                // ACIERTO: Animación Warp
+                playWarp();
+                
+                const svgItem = document.getElementById('active-item-svg');
+                svgItem.classList.replace('animate__zoomIn', 'animate__zoomOutUp');
+                
+                // Efecto de haz de luz
+                const warpBeam = document.getElementById('warp-effect');
+                warpBeam.classList.add('warping');
+                
+                setTimeout(() => {
+                    warpBeam.classList.remove('warping');
+                    
+                    // Marcar el nodo como resuelto y colocar el icono en miniatura
+                    nodeElement.classList.add('solved');
+                    const slot = document.getElementById(`slot-${targetId}`);
+                    slot.innerHTML = `<div class="w-10 h-10">${getInventionSVG(currentItem.id)}</div>`;
+                    
+                    score++;
+                    updateUI();
+
+                    showFeedback(true, "¡SALTO TEMPORAL ÉXITOSO! 🌌", currentItem.explanation);
+                }, 600); // 600ms es lo que dura el warpAnim
+
+            } else {
+                // ERROR
+                playError();
+                lives--;
+                updateUI();
+
+                // Animación de error en la máquina
+                nodeElement.classList.add('shake-error');
+                const projector = document.querySelector('.holo-projector');
+                projector.style.borderBottomColor = '#ff1744'; // Red
+                projector.style.boxShadow = '0 10px 30px -10px rgba(255, 23, 68, 0.5)';
+                
+                setTimeout(() => {
+                    nodeElement.classList.remove('shake-error');
+                    projector.style.borderBottomColor = '#00e5ff';
+                    projector.style.boxShadow = '0 10px 30px -10px rgba(0, 229, 255, 0.5)';
+                    
+                    showFeedback(false, "¡PARADOJA TEMPORAL! 💥", `Esa no es la época correcta. <strong>${currentItem.name}</strong> pertenece al año <strong>${currentItem.year}</strong>.<br><br>${currentItem.explanation}`);
+                }, 600);
+            }
+        }
+
+        function showFeedback(isSuccess, titleText, reasonText) {
+            const modal = document.getElementById('feedback-modal');
+            const card = document.getElementById('feedback-card');
+            const icon = document.getElementById('feedback-icon');
+            const title = document.getElementById('feedback-title');
+            const reason = document.getElementById('feedback-reason');
+
+            card.classList.remove('animate__zoomIn', 'border-cosmos-green', 'border-cosmos-red');
+            void card.offsetWidth;
+
+            if (isSuccess) {
+                icon.innerText = "✨🛰️";
+                title.innerText = titleText;
+                title.className = "font-space text-2xl md:text-4xl mb-4 uppercase tracking-widest text-cosmos-green drop-shadow-[0_0_5px_#00e676]";
+                card.classList.add('border-cosmos-green');
+            } else {
+                icon.innerText = "⚠️🪐";
+                title.innerText = titleText;
+                title.className = "font-space text-2xl md:text-4xl mb-4 uppercase tracking-widest text-cosmos-red drop-shadow-[0_0_5px_#ff1744]";
+                card.classList.add('border-cosmos-red');
+            }
+
+            reason.innerHTML = reasonText;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            card.classList.add('animate__zoomIn');
+        }
+
+        function closeFeedback() {
+            const modal = document.getElementById('feedback-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            
+            if (lives <= 0) {
+                endGame(false);
+            } else {
+                // El invento actual ya fue revelado si fue error, así que igual avanzamos la cola.
+                loadNextItem();
+            }
+        }
+
+        function endGame(victory) {
+            const screenResult = document.getElementById('screen-result');
+            const title = document.getElementById('result-title');
+            const msg = document.getElementById('result-msg');
+            const icon = document.getElementById('result-icon');
+            const card = document.getElementById('result-card');
+            
+            card.classList.remove('border-cosmos-cyan', 'border-cosmos-red');
+
+            if (victory) {
+                icon.innerText = "🌍📡";
+                title.innerText = "¡LÍNEA RESTAURADA!";
+                title.className = "font-space text-4xl md:text-6xl text-cosmos-cyan mb-4 uppercase tracking-widest drop-shadow-[0_0_10px_#00e5ff]";
+                msg.innerHTML = `Has ubicado correctamente todos los inventos. Entender cómo la tecnología espacial evolucionó nos ayuda a diseñar el futuro.`;
+                card.classList.add('border-cosmos-cyan');
+            } else {
+                icon.innerText = "💥🛸";
+                title.innerText = "¡SISTEMA COLAPSADO!";
+                title.className = "font-space text-4xl md:text-6xl text-cosmos-red mb-4 uppercase tracking-widest drop-shadow-[0_0_10px_#ff1744]";
+                msg.innerHTML = "La energía temporal se agotó por enviar cosas a las eras equivocadas. ¡Revisa las fechas e inténtalo de nuevo comandante!";
+                card.classList.add('border-cosmos-red');
+            }
+
+            screenResult.classList.remove('hidden');
+            screenResult.classList.add('flex');
+        }
+
+        function exitGame() {
+            if(confirm("¿Seguro que deseas abandonar la nave? Perderás tu progreso.")) {
+                isProcessing = false;
+                playQueue = [];
+                showScreen('screen-start');
+            }
+        }
+    </script>
+</body>
+</html>

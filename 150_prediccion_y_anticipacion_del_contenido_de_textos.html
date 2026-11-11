@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Bola de Cristal - Predicción de Textos</title>
+    
+    <!-- Fuentes Google: Cinzel Decorative (Mágica) y Nunito (Lectura clara) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA DE TAILWIND -->
+    <script>
+        tailwind.config = {
+            important: '#recurso-wp-cristal',
+            corePlugins: {
+                preflight: false,
+            },
+            theme: {
+                extend: {
+                    fontFamily: {
+                        magic: ['"Cinzel Decorative"', 'cursive'],
+                        body: ['Nunito', 'sans-serif'],
+                    },
+                    colors: {
+                        mystic: {
+                            dark: '#0f0616',      /* Muy oscuro casi negro */
+                            purple: '#4c1d95',    /* Violeta profundo */
+                            fuchsia: '#c026d3',   /* Fucsia mágico */
+                            gold: '#fbbf24',      /* Dorado estrellas */
+                            cyan: '#06b6d4',      /* Bola de cristal */
+                            red: '#e11d48'        /* Rojo error */
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* =========================================================
+           MICRO-RESET LOCAL: Protege el recurso del tema de WP
+           ========================================================= */
+        #recurso-wp-cristal * {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: currentColor;
+            line-height: normal;
+        }
+        #recurso-wp-cristal h1, #recurso-wp-cristal h2, #recurso-wp-cristal h3, #recurso-wp-cristal p, #recurso-wp-cristal span, #recurso-wp-cristal div {
+            margin: 0; padding: 0;
+        }
+        #recurso-wp-cristal button {
+            background-color: transparent; background-image: none; cursor: pointer; padding: 0; font-family: inherit;
+        }
+
+        /* =========================================================
+           ESTILOS PANTALLA COMPLETA & MÍSTICOS
+           ========================================================= */
+        #recurso-wp-cristal {
+            font-family: 'Nunito', sans-serif;
+            background-color: #0f0616; 
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(76, 29, 149, 0.4) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(192, 38, 211, 0.2) 0%, transparent 40%);
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Botones Mágicos */
+        #recurso-wp-cristal .magic-btn {
+            background: linear-gradient(135deg, #4c1d95, #c026d3);
+            border: 2px solid #fbbf24;
+            color: #fff;
+            border-radius: 9999px;
+            box-shadow: 0 0 15px rgba(192, 38, 211, 0.5), inset 0 0 10px rgba(251, 191, 36, 0.3);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-transform: uppercase;
+            font-family: 'Cinzel Decorative', cursive;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+        #recurso-wp-cristal .magic-btn:hover:not(:disabled) {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 0 25px rgba(192, 38, 211, 0.8), inset 0 0 15px rgba(251, 191, 36, 0.6);
+            border-color: #fff;
+        }
+        #recurso-wp-cristal .magic-btn:active:not(:disabled) {
+            transform: translateY(2px) scale(0.95);
+        }
+
+        /* Paneles */
+        #recurso-wp-cristal .mystic-panel {
+            background: rgba(15, 6, 22, 0.85);
+            backdrop-filter: blur(10px);
+            border: 2px solid #c026d3;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(76, 29, 149, 0.6), inset 0 0 20px rgba(192, 38, 211, 0.2);
+        }
+
+        /* Portadas de Libros */
+        .magic-book {
+            background: linear-gradient(to right, #78350f, #92400e);
+            border-radius: 4px 16px 16px 4px;
+            box-shadow: inset 10px 0 20px rgba(0,0,0,0.5), 10px 10px 20px rgba(0,0,0,0.8);
+            position: relative;
+            border: 2px solid #b45309;
+            border-left: 12px solid #451a03; /* Lomo del libro */
+        }
+        .book-cover-art {
+            border: 4px double #fbbf24;
+            background: #1e293b;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        /* Bola de Cristal */
+        .crystal-ball {
+            width: clamp(120px, 20vw, 180px);
+            height: clamp(120px, 20vw, 180px);
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8) 0%, rgba(6, 182, 212, 0.4) 20%, rgba(76, 29, 149, 0.8) 80%, #000 100%);
+            box-shadow: 
+                0 0 30px rgba(6, 182, 212, 0.6),
+                inset 0 0 40px rgba(192, 38, 211, 0.8),
+                inset -20px -20px 40px rgba(0,0,0,0.5);
+            position: relative;
+            animation: floatBall 4s ease-in-out infinite alternate;
+        }
+        .crystal-ball::before {
+            content: '';
+            position: absolute;
+            top: 10%; left: 15%;
+            width: 30%; height: 20%;
+            background: rgba(255,255,255,0.4);
+            border-radius: 50%;
+            transform: rotate(-45deg);
+            filter: blur(2px);
+        }
+        .crystal-base {
+            width: clamp(100px, 16vw, 140px);
+            height: 30px;
+            background: linear-gradient(to right, #b45309, #fcd34d, #b45309);
+            border-radius: 50%;
+            margin: -15px auto 0;
+            position: relative;
+            z-index: -1;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.8);
+        }
+        .crystal-glow {
+            position: absolute;
+            inset: -20px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.4) 0%, transparent 70%);
+            z-index: -1;
+            animation: pulseGlow 2s infinite alternate;
+        }
+
+        /* Opciones de Predicción (Tarjetas) */
+        .prediction-card {
+            background: rgba(30, 41, 59, 0.7);
+            border: 2px solid #4c1d95;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .prediction-card:hover {
+            border-color: #c026d3;
+            background: rgba(76, 29, 149, 0.8);
+            transform: translateX(10px);
+            box-shadow: 0 0 15px rgba(192, 38, 211, 0.4);
+        }
+        .prediction-card::before {
+            content: '✨';
+            position: absolute;
+            left: -30px;
+            transition: all 0.3s;
+            opacity: 0;
+        }
+        .prediction-card:hover::before {
+            left: 10px;
+            opacity: 1;
+        }
+
+        /* Animaciones */
+        @keyframes floatBall {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-15px); }
+        }
+        @keyframes pulseGlow {
+            0% { transform: scale(0.9); opacity: 0.5; }
+            100% { transform: scale(1.1); opacity: 1; }
+        }
+        .shake-error { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
+        /* Estrellitas de fondo */
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle var(--dur) infinite alternate;
+        }
+        @keyframes twinkle {
+            0% { opacity: 0.2; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 5px #fff; }
+        }
+
+        /* Pantallas SPA */
+        #recurso-wp-cristal .screen {
+            display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; position: absolute; top: 0; left: 0; overflow-y: auto; overflow-x: hidden; z-index: 10;
+        }
+        #recurso-wp-cristal .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-cristal .screen.active {
+            display: flex;
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); filter: blur(5px); }
+            to { opacity: 1; transform: scale(1); filter: blur(0); }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-cristal">
+
+        <!-- Fondo de Estrellas -->
+        <div id="stars-bg"></div>
+
+        <!-- ==============================================
+             PANTALLA 1: INICIO
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="mystic-panel p-8 md:p-14 max-w-3xl w-full mx-4 flex flex-col items-center">
+                
+                <div class="crystal-ball mb-6 mx-auto relative z-10 flex items-center justify-center text-[4rem]">🔮</div>
+                <div class="crystal-base z-0 mb-8"></div>
+                
+                <h2 class="text-xs md:text-sm text-mystic-gold font-body font-bold mb-4 uppercase tracking-[0.3em] border border-mystic-gold/50 px-4 py-1 rounded-full bg-black/50">
+                    Comprensión Lectora - 5to Grado
+                </h2>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-magic text-white leading-none uppercase drop-shadow-[0_0_15px_rgba(192,38,211,0.6)] mb-6">
+                    La Bola de <br><span class="text-mystic-cyan">Cristal</span>
+                </h1>
+                <p class="text-base md:text-xl text-gray-300 font-bold mb-10 px-2 leading-relaxed max-w-xl font-body">
+                    Todo buen lector tiene poderes de vidente. Observa los títulos y portadas para <strong class="text-mystic-gold">PREDECIR</strong> de qué tratará la historia antes de abrir el libro.
+                </p>
+                <button onclick="playBeep(); showScreen('screen-theory')" class="magic-btn text-lg md:text-2xl px-10 py-4 w-full md:w-auto">
+                    CONSULTAR EL ORÁCULO ✨
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: TEORÍA Y REGLAS
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center">
+            <div class="mystic-panel p-6 md:p-12 max-w-4xl w-full text-center my-auto">
+                <h2 class="text-3xl md:text-5xl font-magic text-mystic-gold mb-6 uppercase border-b border-mystic-gold/30 pb-4">
+                    ¿Qué es una Predicción?
+                </h2>
+                
+                <div class="bg-black/40 border border-mystic-purple p-6 rounded-xl mb-8">
+                    <p class="text-lg md:text-2xl text-gray-200 font-bold leading-relaxed font-body">
+                        Predecir es <strong class="text-mystic-cyan">adivinar de manera inteligente</strong> usando las pistas que nos da el libro y sumándolas a lo que ya sabemos del mundo.
+                    </p>
+                </div>
+                
+                <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 mb-10">
+                    <!-- Pista 1 -->
+                    <div class="flex flex-col items-center flex-1">
+                        <div class="w-16 h-16 rounded-full bg-mystic-purple border-2 border-mystic-gold flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_#4c1d95]">👁️</div>
+                        <h3 class="font-magic text-xl text-white">Las Pistas</h3>
+                        <p class="text-sm text-gray-400 font-body">El título y los dibujos de la portada del libro.</p>
+                    </div>
+                    <span class="text-4xl text-mystic-gold font-bold">+</span>
+                    <!-- Pista 2 -->
+                    <div class="flex flex-col items-center flex-1">
+                        <div class="w-16 h-16 rounded-full bg-mystic-fuchsia border-2 border-mystic-gold flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_#c026d3]">🧠</div>
+                        <h3 class="font-magic text-xl text-white">Tu Mente</h3>
+                        <p class="text-sm text-gray-400 font-body">Lo que tú ya conoces sobre ese tema en la vida real.</p>
+                    </div>
+                    <span class="text-4xl text-mystic-gold font-bold">=</span>
+                    <!-- Resultado -->
+                    <div class="flex flex-col items-center flex-1">
+                        <div class="w-16 h-16 rounded-full bg-mystic-cyan border-2 border-mystic-gold flex items-center justify-center text-3xl mb-3 shadow-[0_0_15px_#06b6d4]">🔮</div>
+                        <h3 class="font-magic text-xl text-white">Predicción</h3>
+                        <p class="text-sm text-gray-400 font-body">¡Saber qué va a pasar antes de leer!</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="playBeep(); showScreen('screen-start')" class="bg-transparent border-2 border-gray-500 text-gray-400 font-bold px-8 py-3 rounded-full text-sm uppercase hover:bg-gray-800 transition tracking-widest">
+                        ⬅ Salir
+                    </button>
+                    <button onclick="playBeep(); startGame()" class="magic-btn text-xl md:text-2xl px-12 py-3">
+                        ¡VER EL FUTURO! 👁️‍🗨️
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: EL JUEGO (Predicciones)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start p-0 bg-transparent relative">
+            
+            <!-- HUD Superior -->
+            <div class="w-full bg-black/60 border-b border-mystic-purple/50 p-3 flex justify-between items-center z-30 shrink-0 backdrop-blur-md">
+                <div class="flex items-center gap-3 px-2 md:px-4">
+                    <span class="text-2xl md:text-4xl drop-shadow-[0_0_10px_#06b6d4]">🧿</span>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] md:text-xs text-mystic-cyan font-bold uppercase tracking-widest leading-none mb-1">Visiones Correctas</span>
+                        <span class="font-magic text-xl md:text-3xl text-white leading-none"><span id="score-display">0</span><span class="text-gray-500 text-lg">/4</span></span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="flex flex-col text-right">
+                        <span class="text-[10px] md:text-xs text-mystic-gold font-bold uppercase tracking-widest leading-none mb-1">Energía Mágica</span>
+                        <span id="lives-display" class="text-lg md:text-2xl tracking-widest mt-1 drop-shadow-[0_0_8px_#fbbf24]">⭐ ⭐ ⭐</span>
+                    </div>
+                    <button onclick="playBeep(); exitGame()" class="bg-mystic-red/20 border border-mystic-red text-mystic-red hover:bg-mystic-red hover:text-white transition-colors p-2 rounded-full ml-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Área Principal del Juego -->
+            <div class="w-full flex-grow flex flex-col md:flex-row gap-6 p-4 md:p-8 overflow-y-auto md:overflow-hidden relative max-w-6xl mx-auto items-center md:items-stretch">
+                
+                <!-- SECCIÓN IZQUIERDA: El Libro (Pistas visuales) -->
+                <div class="w-full md:w-5/12 flex flex-col items-center justify-center shrink-0 py-4 md:py-0">
+                    
+                    <h3 class="font-magic text-mystic-gold text-lg md:text-xl uppercase tracking-widest mb-4 drop-shadow-[0_0_5px_#fbbf24] text-center">
+                        Analiza la Portada:
+                    </h3>
+
+                    <!-- El Libro Renderizado con CSS -->
+                    <div class="magic-book w-56 h-72 sm:w-64 sm:h-80 md:w-80 md:h-96 p-4 flex flex-col justify-between items-center text-center animate__animated animate__fadeInLeft" id="book-container">
+                        <!-- Título del Libro -->
+                        <div class="w-full">
+                            <h2 id="book-title" class="font-magic text-xl sm:text-2xl md:text-3xl text-mystic-gold mt-2 sm:mt-4 px-2 leading-tight drop-shadow-[0_2px_2px_#000]">
+                                Título del Libro
+                            </h2>
+                        </div>
+                        
+                        <!-- Arte de la Portada (Emoji grande + color de fondo) -->
+                        <div id="book-cover-bg" class="book-cover-art w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full flex items-center justify-center mt-2 mb-2 sm:mb-4 bg-gradient-to-br">
+                            <span id="book-icon" class="text-[4rem] sm:text-[5rem] md:text-[6rem] drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)]">📚</span>
+                        </div>
+                        
+                        <div class="text-[9px] sm:text-[10px] text-gray-400 font-body uppercase tracking-widest mb-2">Editorial Mágica</div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN DERECHA: La Bola y Opciones -->
+                <div class="w-full md:w-7/12 flex flex-col justify-start md:justify-center md:h-full gap-4 md:gap-6 shrink-0 relative z-20 pb-8 md:pb-0">
+                    
+                    <div class="text-center md:text-left pl-0 md:pl-8">
+                        <div class="flex items-center justify-center md:justify-start gap-3 md:gap-4 mb-2 md:mb-4">
+                            <div class="crystal-ball w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 text-2xl sm:text-3xl flex items-center justify-center m-0 animate-none shrink-0" id="mini-ball">🔮</div>
+                            <h3 class="font-magic text-white text-lg sm:text-xl md:text-3xl drop-shadow-md">¿Qué crees que pasará?</h3>
+                        </div>
+                        <p class="text-xs sm:text-sm md:text-base text-gray-400 font-body">Usa tu lógica y tu conocimiento previo para elegir la opción más probable.</p>
+                    </div>
+
+                    <!-- Contenedor de Opciones -->
+                    <div id="options-container" class="flex flex-col gap-2 sm:gap-3 md:gap-4 pl-0 md:pl-8 overflow-visible md:overflow-y-auto pb-4">
+                        <!-- Botones inyectados por JS -->
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ==============================================
+             MODAL DE FEEDBACK (Explicación de la Visión)
+             ============================================== -->
+        <div id="feedback-modal" class="hidden absolute inset-0 z-[60] flex-col items-center justify-center bg-black/90 p-4 text-center backdrop-blur-sm">
+            <div id="feedback-card" class="mystic-panel p-6 sm:p-8 md:p-12 max-w-2xl w-full animate__animated text-center border-t-[6px]">
+                <div id="feedback-icon" class="text-[4rem] sm:text-[5rem] md:text-[7rem] mb-2 sm:mb-4 drop-shadow-[0_0_15px_#fff]">✨</div>
+                <h3 id="feedback-title" class="font-magic text-2xl sm:text-3xl md:text-4xl text-white mb-3 sm:mb-4 uppercase tracking-widest drop-shadow-[0_0_10px_#fff]">Visión</h3>
+                <div class="bg-black/50 p-4 sm:p-6 rounded-xl border border-mystic-purple/50 mb-6 sm:mb-8">
+                    <p id="feedback-reason" class="text-sm sm:text-base md:text-xl font-bold text-gray-200 leading-relaxed font-body"></p>
+                </div>
+                <button onclick="playBeep(); closeFeedback()" class="magic-btn text-base sm:text-lg md:text-2xl px-8 sm:px-10 py-3 sm:py-4 w-full">
+                    Siguiente Visión ➡
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (Victoria/Derrota)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex-col items-center justify-center p-4 sm:p-6 text-center bg-mystic-dark bg-[radial-gradient(circle_at_center,rgba(76,29,149,0.4)_0%,rgba(0,0,0,0.9)_100%)]">
+            <div id="result-card" class="mystic-panel p-6 sm:p-10 md:p-16 max-w-3xl w-full animate__animated animate__zoomIn text-center z-10 border-t-[8px]">
+                <div id="result-icon" class="text-[5rem] sm:text-[6rem] md:text-[8rem] mb-4 sm:mb-6 drop-shadow-[0_0_20px_#fbbf24]">🏆</div>
+                <h2 id="result-title" class="font-magic text-3xl sm:text-4xl md:text-6xl text-mystic-gold mb-4 sm:mb-6 uppercase tracking-widest drop-shadow-lg">
+                    ¡Gran Oráculo!
+                </h2>
+                <p id="result-msg" class="text-base sm:text-lg md:text-2xl text-gray-300 mb-8 sm:mb-10 font-bold leading-relaxed font-body max-w-2xl mx-auto">
+                    Has demostrado ser un lector perspicaz. Sabes unir las pistas del libro con tus conocimientos para predecir cualquier historia.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+                    <button onclick="playBeep(); exitGame()" class="bg-transparent border-2 border-gray-600 text-gray-400 font-bold hover:bg-gray-800 hover:text-white px-6 sm:px-8 py-3 rounded-full text-xs sm:text-sm uppercase transition-colors tracking-widest">
+                        SALIR AL LOBBY
+                    </button>
+                    <button onclick="playBeep(); startGame()" class="magic-btn text-lg sm:text-xl md:text-2xl px-8 sm:px-10 py-3">
+                        NUEVA PREDICCIÓN 🔮
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO
+         ============================================== -->
+    <script>
+        // --- AUDIO ---
+        let audioCtx = null;
+        function initAudio() {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+            } catch (e) {}
+        }
+        document.body.addEventListener('click', initAudio, { once: true });
+
+        function playBeep(freq = 600, duration = 0.1, type = "sine") {
+            try {
+                if (audioCtx && audioCtx.state !== 'suspended') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + duration);
+                }
+            } catch (e) {}
+        }
+        function playSuccess() { playBeep(523.25, 0.1); setTimeout(() => playBeep(659.25, 0.1), 100); setTimeout(() => playBeep(783.99, 0.3), 200); }
+        function playError() { playBeep(200, 0.3, "sawtooth"); setTimeout(() => playBeep(150, 0.4, "sawtooth"), 150); }
+
+        // --- GENERADOR DE ESTRELLAS DE FONDO ---
+        function createStars() {
+            const container = document.getElementById('stars-bg');
+            for(let i=0; i<50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 3 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.setProperty('--dur', `${Math.random() * 3 + 2}s`);
+                container.appendChild(star);
+            }
+        }
+
+        // --- BASE DE DATOS DE LIBROS (NIVELES) ---
+        const booksData = [
+            {
+                title: "El misterio de la mansión abandonada",
+                icon: "🏚️",
+                bgColor: "from-slate-700 to-slate-900",
+                options: [
+                    { text: "Un grupo de amigos entrará a investigar ruidos extraños en la noche.", correct: true },
+                    { text: "Un panadero abrirá una tienda de pasteles muy exitosa.", correct: false },
+                    { text: "Una familia compra una casa nueva y brillante en la playa.", correct: false }
+                ],
+                explanation: "¡Visión clara! Sabemos por las películas y cuentos que las 'mansiones abandonadas' siempre tratan sobre misterios o fantasmas, no sobre casas brillantes ni panaderías."
+            },
+            {
+                title: "El dragón que le temía al fuego",
+                icon: "🐉",
+                bgColor: "from-red-800 to-orange-900",
+                options: [
+                    { text: "El dragón destruirá una aldea entera con su gran aliento de fuego.", correct: false },
+                    { text: "El dragón buscará hacer otras cosas, como escupir agua o hacer esculturas de hielo.", correct: true },
+                    { text: "Un caballero peleará contra un león en el bosque.", correct: false }
+                ],
+                explanation: "¡Exacto! El título dice que le teme al fuego, por lo tanto, es lógico deducir que no destruirá aldeas quemándolas, sino que buscará alternativas para ser diferente."
+            },
+            {
+                title: "Perdidos en el planeta rojo",
+                icon: "🚀",
+                bgColor: "from-rose-700 to-red-900",
+                options: [
+                    { text: "Van a construir un castillo de arena gigante en la orilla del mar.", correct: false },
+                    { text: "El planeta rojo en realidad es un tomate gigante del espacio.", correct: false },
+                    { text: "Los astronautas buscarán piezas para arreglar su nave y volver a casa.", correct: true }
+                ],
+                explanation: "¡Conexión lógica! Nuestro conocimiento previo nos dice que el 'planeta rojo' es Marte. Si están perdidos ahí, lo natural en la historia será que intenten sobrevivir y escapar."
+            },
+            {
+                title: "La ardilla que quería volar",
+                icon: "🐿️",
+                bgColor: "from-green-700 to-emerald-900",
+                options: [
+                    { text: "La ardilla inventará un aparato con hojas y ramas para planear por los aires.", correct: true },
+                    { text: "La ardilla decidirá vivir bajo tierra para siempre con los topos.", correct: false },
+                    { text: "Los pájaros le enseñarán magia para respirar bajo el agua del río.", correct: false }
+                ],
+                explanation: "¡Excelente deducción! Las ardillas viven en los árboles. Si quiere volar, lo más lógico para ese animal es que intente construir un planeador con lo que hay a su alrededor (hojas)."
+            }
+        ];
+
+        let currentLevel = 0;
+        let score = 0;
+        let lives = 3;
+        let isProcessing = false;
+        let gameQueue = [];
+
+        function showScreen(screenId) {
+            const container = document.getElementById('recurso-wp-cristal');
+            container.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function shuffleArray(arr) {
+            let array = [...arr];
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startGame() {
+            createStars();
+            score = 0;
+            lives = 3;
+            currentLevel = 0;
+            isProcessing = false;
+            
+            gameQueue = shuffleArray([...booksData]);
+            
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('flex');
+            
+            updateUI();
+            showScreen('screen-game');
+            loadLevel();
+        }
+
+        function updateUI() {
+            document.getElementById('score-display').innerText = score;
+            let stars = "";
+            for(let i=0; i<3; i++) stars += i < lives ? "⭐ " : "❌ ";
+            document.getElementById('lives-display').innerText = stars;
+        }
+
+        function loadLevel() {
+            if (currentLevel >= gameQueue.length) {
+                setTimeout(() => endGame(true), 500);
+                return;
+            }
+
+            const data = gameQueue[currentLevel];
+            isProcessing = false;
+
+            // Animar el libro
+            const bookContainer = document.getElementById('book-container');
+            bookContainer.classList.remove('animate__fadeInLeft');
+            void bookContainer.offsetWidth;
+            bookContainer.classList.add('animate__fadeInLeft');
+
+            // Cargar datos del libro
+            document.getElementById('book-title').innerText = data.title;
+            document.getElementById('book-icon').innerText = data.icon;
+            document.getElementById('book-cover-bg').className = `book-cover-art w-40 h-40 md:w-48 md:h-48 rounded-full flex items-center justify-center mt-2 mb-4 bg-gradient-to-br ${data.bgColor}`;
+
+            // Restaurar bola de cristal
+            const miniBall = document.getElementById('mini-ball');
+            miniBall.classList.remove('shake-error');
+            miniBall.style.boxShadow = "0 0 30px rgba(6, 182, 212, 0.6), inset 0 0 40px rgba(192, 38, 211, 0.8)"; // Restaurar brillo original
+
+            // Cargar opciones
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            const shuffledOptions = shuffleArray(data.options);
+
+            shuffledOptions.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'prediction-card text-left p-3 sm:p-4 md:p-5 flex items-center gap-2 sm:gap-3 animate__animated animate__fadeInRight shadow-lg hover:pl-6 sm:hover:pl-8 text-white font-body font-bold text-sm sm:text-base md:text-lg pl-4 sm:pl-6';
+                btn.style.animationDelay = `${idx * 0.1}s`;
+                
+                btn.innerText = opt.text;
+                
+                btn.onclick = () => handlePrediction(opt, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function handlePrediction(option, btnElement) {
+            if (isProcessing) return;
+            isProcessing = true;
+
+            const data = gameQueue[currentLevel];
+            const isCorrect = option.correct;
+            const miniBall = document.getElementById('mini-ball');
+
+            if (isCorrect) {
+                // ACIERTO
+                score++;
+                updateUI();
+                playSuccess();
+                
+                btnElement.classList.add('bg-mystic-fuchsia', 'border-white', 'text-white');
+                miniBall.style.boxShadow = "0 0 50px rgba(34, 197, 94, 0.8), inset 0 0 40px rgba(34, 197, 94, 0.8)"; // Brillo verde
+
+                setTimeout(() => {
+                    showFeedback(true, "¡Predicción Exacta! 🔮", data.explanation);
+                }, 800);
+
+            } else {
+                // ERROR
+                lives--;
+                updateUI();
+                playError();
+
+                btnElement.classList.add('bg-mystic-red', 'border-mystic-red');
+                miniBall.classList.add('shake-error');
+                miniBall.style.boxShadow = "0 0 50px rgba(225, 29, 72, 0.8), inset 0 0 40px rgba(225, 29, 72, 0.8)"; // Brillo rojo
+
+                setTimeout(() => {
+                    miniBall.classList.remove('shake-error');
+                    showFeedback(false, "¡Visión Nublada! 🌫️", `Esa predicción es ilógica o contradice al título. <br><br> <strong>Análisis:</strong> ${data.explanation}`);
+                }, 800);
+            }
+        }
+
+        function showFeedback(isSuccess, titleText, reasonText) {
+            const modal = document.getElementById('feedback-modal');
+            const card = document.getElementById('feedback-card');
+            const icon = document.getElementById('feedback-icon');
+            const title = document.getElementById('feedback-title');
+            const reason = document.getElementById('feedback-reason');
+
+            card.classList.remove('animate__zoomIn', 'border-mystic-cyan', 'border-mystic-red');
+            void card.offsetWidth;
+
+            if (isSuccess) {
+                icon.innerText = "👁️‍🗨️✨";
+                title.innerText = titleText;
+                title.className = "font-magic text-3xl md:text-4xl mb-4 uppercase tracking-widest text-mystic-cyan drop-shadow-[0_0_10px_#06b6d4]";
+                card.classList.add('border-mystic-cyan');
+            } else {
+                icon.innerText = "💨❌";
+                title.innerText = titleText;
+                title.className = "font-magic text-3xl md:text-4xl mb-4 uppercase tracking-widest text-mystic-red drop-shadow-[0_0_10px_#e11d48]";
+                card.classList.add('border-mystic-red');
+            }
+
+            reason.innerHTML = reasonText;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            card.classList.add('animate__zoomIn');
+        }
+
+        function closeFeedback() {
+            const modal = document.getElementById('feedback-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            
+            currentLevel++;
+            
+            if (lives <= 0) {
+                endGame(false);
+            } else {
+                loadLevel();
+            }
+        }
+
+        function endGame(victory) {
+            const screenResult = document.getElementById('screen-result');
+            const title = document.getElementById('result-title');
+            const msg = document.getElementById('result-msg');
+            const icon = document.getElementById('result-icon');
+            const card = document.getElementById('result-card');
+            
+            card.classList.remove('border-mystic-gold', 'border-mystic-red');
+
+            if (victory) {
+                icon.innerText = "🔮🧙‍♂️";
+                title.innerText = "¡Gran Oráculo!";
+                title.className = "font-magic text-4xl md:text-6xl text-mystic-gold mb-6 uppercase tracking-widest drop-shadow-lg";
+                msg.innerText = "Has demostrado ser un lector perspicaz. Sabes unir las pistas del libro con tus conocimientos para predecir cualquier historia.";
+                card.classList.add('border-mystic-gold');
+            } else {
+                icon.innerText = "🥀💨";
+                title.innerText = "¡Poder Agotado!";
+                title.className = "font-magic text-4xl md:text-6xl text-mystic-red mb-6 uppercase tracking-widest drop-shadow-lg";
+                msg.innerText = "Tus predicciones perdieron la lógica y la bola de cristal se apagó. ¡Asegúrate de conectar las pistas con lo que ya sabes del mundo real!";
+                card.classList.add('border-mystic-red');
+            }
+
+            screenResult.classList.remove('hidden');
+            screenResult.classList.add('flex');
+        }
+
+        function exitGame() {
+            if(confirm("¿Deseas desconectar la bola de cristal? Perderás tus visiones.")) {
+                isProcessing = false;
+                gameQueue = [];
+                showScreen('screen-start');
+            }
+        }
+    </script>
+</body>
+</html>

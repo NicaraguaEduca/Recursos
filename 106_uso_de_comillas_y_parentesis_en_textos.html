@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Editor de Citas Pro ✍️</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Public+Sans:wght@400;700;900&family=Special+Elite&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --comillas-color: #f59e0b;
+            --parentesis-color: #10b981;
+            --bg-editor: #f1f5f9;
+            --ink: #0f172a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Public Sans', sans-serif; }
+        h1, h2, .btn-action { font-family: 'Unbounded', sans-serif; text-transform: uppercase; }
+
+        body { 
+            background: #cbd5e1; 
+            color: var(--ink); 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+        }
+
+        /* --- PANTALLAS DE ESTADO --- */
+        .overlay {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); z-index: 100;
+            display: flex; align-items: center; justify-content: center; padding: 15px;
+        }
+
+        .ficha {
+            background: white; padding: 25px; border-radius: 25px; max-width: 500px; width: 100%;
+            text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .ficha-meta { text-align: left; margin: 15px 0; border-left: 4px solid var(--comillas-color); padding-left: 15px; }
+        .ficha-meta b { font-size: 0.7rem; color: #64748b; display: block; text-transform: uppercase; }
+
+        /* --- ÁREA DE EDICIÓN --- */
+        .escritorio {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 15px; position: relative;
+        }
+
+        .documento {
+            background: white; width: 100%; max-width: 650px; padding: clamp(20px, 5vw, 40px);
+            border-radius: 2px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            font-family: 'Special Elite', cursive; 
+            font-size: clamp(1rem, 3.5vw, 1.4rem);
+            line-height: 1.6; position: relative;
+            text-align: left;
+        }
+
+        .slot-box {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 35px; height: 35px; background: #f1f5f9;
+            border-bottom: 3px solid var(--comillas-color); 
+            margin: 0 4px; border-radius: 4px;
+            color: var(--comillas-color); font-weight: 900;
+        }
+
+        /* --- CONSOLA DE HERRAMIENTAS --- */
+        .consola {
+            background: #1e293b; padding: 20px; display: flex; flex-direction: column;
+            align-items: center; gap: 15px; border-top: 5px solid #334155;
+        }
+
+        .herramientas { display: flex; gap: 12px; width: 100%; max-width: 600px; }
+
+        .btn-tool {
+            flex: 1; padding: 15px 10px; border-radius: 12px; border: none; color: white;
+            font-weight: 900; cursor: pointer; transition: 0.2s;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        .btn-comillas { background: var(--comillas-color); box-shadow: 0 5px 0 #b45309; }
+        .btn-parentesis { background: var(--parentesis-color); box-shadow: 0 5px 0 #065f46; }
+        .btn-tool:active { transform: translateY(3px); box-shadow: none; }
+
+        #msg-ui {
+            position: absolute; top: 15px; width: 90%; max-width: 500px;
+            padding: 12px; border-radius: 12px; font-weight: 700; 
+            text-align: center; display: none; z-index: 50;
+        }
+
+        @media (max-width: 500px) {
+            .herramientas { flex-direction: column; }
+            .btn-tool { width: 100%; }
+            .documento { padding: 25px 15px; }
+        }
+    </style>
+</head>
+<body x-data="editorApp()">
+
+    <template x-if="fase === 'inicio'">
+        <div class="overlay">
+            <div class="ficha">
+                <h2 style="font-size: 1.2rem; color: var(--ink);">🖋️ Editor de Citas Pro</h2>
+                <div class="ficha-meta"><b>🎯 Objetivo</b><p>Colocar comillas y paréntesis con exactitud técnica.</p></div>
+                <div class="ficha-meta"><b>💡 Propósito</b><p>Evitar malentendidos en la escritura de informes y notas.</p></div>
+                <div class="ficha-meta"><b>🧒 Grado</b><p>4º a 6º de Primaria.</p></div>
+                <button @click="fase = 'juego'" style="background: var(--ink); color: white; padding: 15px; border-radius: 50px; width: 100%; border: none; font-weight: 900; cursor: pointer; font-size: 0.9rem;">REVISAR 7 NOTAS</button>
+            </div>
+        </div>
+    </template>
+
+    <template x-if="fase === 'fin'">
+        <div class="overlay">
+            <div class="ficha" style="border-top: 8px solid var(--parentesis-color);">
+                <div style="font-size: 4rem;">🏆</div>
+                <h2 style="color: var(--parentesis-color); font-size: 1.5rem;">¡NOTAS PUBLICADAS!</h2>
+                <p style="margin: 15px 0; font-weight: 700; color: #475569;">Has completado los 7 ítems con precisión gramatical.</p>
+                <button @click="reiniciar()" style="background: var(--ink); color: white; padding: 15px; border-radius: 50px; width: 100%; border: none; font-weight: 900; cursor: pointer;">REINICIAR EDITOR</button>
+            </div>
+        </div>
+    </template>
+
+    <main class="escritorio">
+        <div id="msg-ui"></div>
+        
+        <div style="margin-bottom: 15px; font-weight: 900; color: #475569; font-size: 0.8rem;">
+            NOTA <span x-text="puntero + 1"></span> DE 7
+        </div>
+
+        <div class="documento" id="doc-area">
+            <span x-text="niveles[puntero].pre"></span>
+            <div class="slot-box" :style="{color: slotColor}"><span x-text="slot1"></span></div>
+            <span x-text="niveles[puntero].mid"></span>
+            <div class="slot-box" :style="{color: slotColor}"><span x-text="slot2"></span></div>
+            <span x-text="niveles[puntero].post"></span>
+        </div>
+    </main>
+
+    <footer class="consola">
+        <p style="color: #94a3b8; font-weight: 800; font-size: 0.7rem;">SELECCIONA EL SIGNO CORRECTO:</p>
+        <div class="herramientas">
+            <button class="btn-tool btn-comillas" @click="procesar('comillas')">
+                <span>" " COMILLAS</span>
+                <small style="font-size: 0.6rem; font-weight: 400; opacity: 0.9;">Para CITAS TEXTUALES</small>
+            </button>
+            <button class="btn-tool btn-parentesis" @click="procesar('parentesis')">
+                <span>( ) PARÉNTESIS</span>
+                <small style="font-size: 0.6rem; font-weight: 400; opacity: 0.9;">Para DATOS EXTRAS</small>
+            </button>
+        </div>
+    </footer>
+
+    <script>
+        function editorApp() {
+            return {
+                fase: 'inicio',
+                puntero: 0,
+                slot1: '?',
+                slot2: '?',
+                slotColor: '#f59e0b',
+                niveles: [
+                    { pre: "El autor escribió: ", mid: " El saber no ocupa lugar ", post: ".", tipo: "comillas", s: ['"', '"'], info: "Es una cita textual." },
+                    { pre: "La ciudad de Roma ", mid: " Italia ", post: " es muy antigua.", tipo: "parentesis", s: ['(', ')'], info: "Aclara el país del lugar." },
+                    { pre: "Neil Armstrong gritó: ", mid: " Un pequeño paso para el hombre ", post: ".", tipo: "comillas", s: ['"', '"'], info: "Es una frase que él dijo." },
+                    { pre: "La ONU ", mid: " Organización de las Naciones Unidas ", post: " se reunirá hoy.", tipo: "parentesis", s: ['(', ')'], info: "Explica el significado de las siglas." },
+                    { pre: "Albert Einstein ", mid: " 1879-1955 ", post: " fue un gran físico.", tipo: "parentesis", s: ['(', ')'], info: "Son fechas aclaratorias." },
+                    { pre: "Mi madre me dijo: ", mid: " No olvides el paraguas ", post: ".", tipo: "comillas", s: ['"', '"'], info: "Es un mensaje directo." },
+                    { pre: "El famoso cuadro ", mid: " La Gioconda ", post: " está en el museo.", tipo: "parentesis", s: ['(', ')'], info: "Aclara el nombre de la obra." }
+                ],
+                procesar(input) {
+                    const actual = this.niveles[this.puntero];
+                    const ui = document.getElementById('msg-ui');
+
+                    if (input === actual.tipo) {
+                        this.slotColor = input === 'comillas' ? '#f59e0b' : '#10b981';
+                        this.slot1 = actual.s[0];
+                        this.slot2 = actual.s[1];
+                        
+                        ui.style.display = "block";
+                        ui.style.background = "#10b981";
+                        ui.style.color = "white";
+                        ui.innerText = "¡Excelente precisión!";
+
+                        setTimeout(() => {
+                            ui.style.display = "none";
+                            if (this.puntero < this.niveles.length - 1) {
+                                this.puntero++;
+                                this.slot1 = '?'; this.slot2 = '?';
+                            } else {
+                                confetti({ particleCount: 200, spread: 80 });
+                                this.fase = 'fin';
+                            }
+                        }, 1200);
+                    } else {
+                        ui.style.display = "block";
+                        ui.style.background = "#ef4444";
+                        ui.style.color = "white";
+                        ui.innerText = "⚠️ Revisa bien: " + actual.info;
+                        gsap.to("#doc-area", { x: 5, repeat: 5, yoyo: true, duration: 0.05 });
+                    }
+                },
+                reiniciar() {
+                    this.puntero = 0;
+                    this.slot1 = '?'; this.slot2 = '?';
+                    this.fase = 'inicio';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ensalada-Bot: Diagramador de Flujo Lógico 🥗</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Public+Sans:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --healthy-green: #22c55e;
+            --action-blue: #3b82f6;
+            --decision-yellow: #eab308;
+            --bg-dark: #0f172a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Public Sans', sans-serif; }
+        h1, h2, h3, .btn-action { font-family: 'Unbounded', sans-serif; text-transform: uppercase; }
+
+        /* Eliminación total del scroll */
+        body { background: var(--bg-dark); color: white; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+        /* --- UI OVERLAYS --- */
+        .overlay {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.98); z-index: 200;
+            display: flex; align-items: center; justify-content: center; padding: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .card-ui {
+            background: white; color: #1e293b; padding: 25px; border-radius: 25px;
+            text-align: center; max-width: 450px; width: 100%;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+
+        /* --- HEADER Y ESCENARIO --- */
+        header {
+            padding: 10px 20px; display: flex; justify-content: space-between; 
+            align-items: center; border-bottom: 2px solid #1e293b; height: 55px;
+        }
+
+        .escenario {
+            flex: 1; display: grid; grid-template-columns: 240px 1fr; gap: 15px;
+            padding: 15px; overflow: hidden; height: calc(100vh - 55px);
+        }
+
+        /* Banco de Ideas (Izquierda) */
+        .banco-ideas {
+            background: #1e293b; border-radius: 15px; padding: 15px;
+            display: flex; flex-direction: column; gap: 8px; border: 2px solid #334155;
+            justify-content: center; /* Centrado vertical para evitar scroll */
+        }
+
+        /* Diagrama de Flujo (Derecha) */
+        .diagrama-flujo {
+            background: #0f172a; border-radius: 15px; border: 2px dashed #334155;
+            padding: 10px; display: flex; flex-direction: column; align-items: center; 
+            justify-content: space-evenly; /* Distribuye el espacio sin hacer scroll */
+        }
+
+        /* --- ESTILOS DE BLOQUES LÓGICOS --- */
+        .bloque-base {
+            padding: 10px; cursor: grab; text-align: center; display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 800; font-size: 0.75rem; transition: 0.2s;
+            width: 100%; min-height: 45px; border: 2px solid transparent;
+        }
+
+        /* Óvalo: Inicio / Fin */
+        .bloque-terminal { background: var(--healthy-green); border-radius: 50px; }
+        /* Rectángulo: Proceso / Acción */
+        .bloque-proceso { background: var(--action-blue); border-radius: 8px; }
+        /* Rombo: Decisión */
+        .bloque-decision {
+            background: var(--decision-yellow); color: #854d0e;
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            min-height: 70px; padding: 10px 25px;
+        }
+
+        /* --- RESPLANDOR (GLOW) AL ESTAR EN EL DIAGRAMA --- */
+        .diagrama-slot .bloque-terminal {
+            border-color: #16a34a;
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.8);
+        }
+        .diagrama-slot .bloque-proceso {
+            border-color: #1d4ed8;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);
+        }
+        .diagrama-slot .bloque-decision {
+            /* clip-path oculta los bordes normales, usamos drop-shadow para el resplandor */
+            filter: drop-shadow(0 0 10px rgba(234, 179, 8, 0.9));
+        }
+
+        /* Slots del Diagrama */
+        .diagrama-slot {
+            width: 220px; min-height: 50px; border: 2px dashed #334155;
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            color: #475569; font-size: 0.75rem; font-weight: 700; position: relative;
+        }
+        .diagrama-slot.slot-decision { min-height: 75px; width: 240px; }
+        .diagrama-slot.over { border-color: var(--healthy-green); background: rgba(34, 197, 94, 0.05); }
+
+        /* Flechas conectoras (Más pequeñas para evitar scroll) */
+        .conector-flecha::after {
+            content: "↓"; display: block; font-size: 1.2rem; color: #334155; margin: 0; line-height: 1;
+        }
+
+        .no-grab { cursor: default; }
+    </style>
+</head>
+<body x-data="flowGame()">
+
+    <template x-if="fase === 'inicio'">
+        <div class="overlay">
+            <div class="card-ui">
+                <div style="font-size: 3rem; margin-bottom: 10px;">🥗🤖</div>
+                <h2>Ensalada-Bot</h2>
+                <div style="text-align: left; background: #f1f5f9; padding: 15px; border-radius: 15px; margin: 15px 0; font-size: 0.85rem; color: #334155; line-height: 1.4;">
+                    <p><b>📍 Nivel:</b> 4to a 6to de Primaria</p>
+                    <p><b>🧠 Lógica:</b> Algoritmos y Diagramas de Flujo.</p>
+                    <p><b>🎯 Misión:</b> Crea el algoritmo perfecto arrastrando los bloques. ¡Mira cómo brillan al ubicarlos!</p>
+                </div>
+                <div style="font-size: 0.7rem; color: #64748b; margin-bottom: 20px;">
+                    🟢 Óvalo = Inicio/Fin | 🔵 Rectángulo = Acción | 🟡 Rombo = Decisión
+                </div>
+                <button @click="fase = 'jugando'" class="btn-action" 
+                        style="background: var(--healthy-green); color: white; padding: 15px; border-radius: 50px; border: none; width: 100%; cursor: pointer; font-weight: 900;">
+                    CREAR ALGORITMO
+                </button>
+            </div>
+        </div>
+    </template>
+
+    <template x-if="mostrandoError">
+        <div class="overlay" style="background: rgba(15, 23, 42, 0.95);">
+            <div class="card-ui" style="border: 4px solid #ef4444;">
+                <div style="font-size: 3rem;">🧐❌</div>
+                <h2 style="color: #ef4444; margin-top: 10px;">Revisión Lógica</h2>
+                <p style="margin: 15px 0; font-weight: 600; line-height: 1.5; color: #475569; font-size: 0.9rem;" x-text="mensajeError"></p>
+                <button @click="mostrandoError = false" class="btn-action" 
+                        style="background: #1e293b; color: white; padding: 12px 25px; border-radius: 50px; border: none; cursor: pointer;">
+                    CORREGIR MI DIAGRAMA
+                </button>
+            </div>
+        </div>
+    </template>
+
+    <template x-if="fase === 'resultado'">
+        <div class="overlay">
+            <div class="card-ui" style="border: 4px solid var(--healthy-green);">
+                <div style="font-size: 4rem;">🥗🎉</div>
+                <h2 style="color: var(--healthy-green);">¡ALGORITMO PERFECTO!</h2>
+                <p style="margin: 15px 0; font-weight: 600; color: #475569;">Has diagramado secuencialmente la tarea. ¡Misión cumplida!</p>
+                <button @click="reiniciar()" class="btn-action" 
+                        style="background: #0f172a; color: white; padding: 15px 30px; border-radius: 50px; border: none; cursor: pointer;">
+                    NUEVA ENSALADA
+                </button>
+            </div>
+        </div>
+    </template>
+
+    <header>
+        <div style="font-size: 0.7rem; font-weight: 900; color: var(--healthy-green); letter-spacing: 1px;">DIAGRAMADOR v1.0</div>
+        <button @click="verificar()" class="btn-action" 
+                style="background: white; color: black; padding: 8px 20px; border-radius: 50px; border: none; font-size: 0.7rem; font-weight: 900; cursor: pointer;">
+            VERIFICAR LÓGICA
+        </button>
+    </header>
+
+    <main class="escenario">
+        <aside class="banco-ideas">
+            <h3 style="font-size: 0.65rem; color: #94a3b8; text-align: center; margin-bottom: 5px;">BANCO DE IDEAS</h3>
+            <template x-for="bloque in banco" :key="bloque.id">
+                <div :class="getClaseBloque(bloque.tipo)" 
+                     draggable="true" 
+                     @dragstart="onDragStart($event, bloque.id)"
+                     @dragend="onDragEnd($event)"
+                     x-text="bloque.texto"></div>
+            </template>
+        </aside>
+
+        <section class="diagrama-flujo">
+            <template x-for="(slot, index) in diagrama" :key="index">
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <div class="diagrama-slot" 
+                         :class="{ 'slot-decision': index === 2, 'over': slotOver === index }"
+                         @dragover.prevent="onDragOver($event, index)"
+                         @dragleave="onDragLeave($event, index)"
+                         @drop="onDrop($event, index)">
+                        
+                        <template x-if="slot">
+                            <div :class="getClaseBloque(slot.tipo) + ' no-grab'" x-text="slot.texto"></div>
+                        </template>
+                        <span x-show="!slot" x-text="getPistaSlot(index)"></span>
+                    </div>
+                    <div class="conector-flecha" x-show="index < diagrama.length - 1"></div>
+                </div>
+            </template>
+        </section>
+    </main>
+
+    <script>
+        function flowGame() {
+            return {
+                fase: 'inicio',
+                mostrandoError: false,
+                mensajeError: '',
+                slotOver: null,
+                draggingId: null,
+
+                bancoBase: [
+                    { id: 1, tipo: 'terminal', texto: 'INICIO', correcta: 0 },
+                    { id: 2, tipo: 'proceso', texto: 'Lavar los vegetales', correcta: 1 },
+                    { id: 3, tipo: 'decision', texto: '¿Están limpios?', correcta: 2 },
+                    { id: 4, tipo: 'proceso', texto: 'Cortar los vegetales', correcta: 3 },
+                    { id: 5, tipo: 'proceso', texto: 'Poner en una pana', correcta: 4 },
+                    { id: 6, tipo: 'proceso', texto: 'Mezclar la Ensalada', correcta: 5 },
+                    { id: 7, tipo: 'terminal', texto: 'FIN', correcta: 6 },
+                    { id: 8, tipo: 'proceso', texto: 'Jugar Videojuegos', correcta: -1 }
+                ],
+                
+                banco: [],
+                diagrama: Array(7).fill(null),
+
+                init() {
+                    this.banco = [...this.bancoBase].sort(() => Math.random() - 0.5);
+                },
+
+                // Usamos una función que devuelve un string directo para evitar conflictos
+                getClaseBloque(tipo) {
+                    return `bloque-base bloque-${tipo}`;
+                },
+
+                getPistaSlot(index) {
+                    return ['Paso 1', 'Paso 2', 'Decisión', 'Paso 4', 'Paso 5', 'Paso 6', 'Final'][index];
+                },
+
+                onDragStart(e, id) {
+                    this.draggingId = id;
+                    e.target.style.opacity = '0.5';
+                },
+
+                onDragEnd(e) {
+                    e.target.style.opacity = '1';
+                },
+
+                onDragOver(e, index) {
+                    this.slotOver = index;
+                },
+
+                onDragLeave(e, index) {
+                    if (this.slotOver === index) this.slotOver = null;
+                },
+
+                onDrop(e, index) {
+                    this.slotOver = null;
+                    const bloqueData = this.bancoBase.find(b => b.id === this.draggingId);
+                    if (bloqueData) {
+                        if (this.diagrama[index]) {
+                            this.banco.push(this.diagrama[index]);
+                        }
+                        this.diagrama[index] = bloqueData;
+                        this.banco = this.banco.filter(b => b.id !== this.draggingId);
+                    }
+                    this.draggingId = null;
+                },
+
+                verificar() {
+                    if (this.diagrama.includes(null)) {
+                        this.lanzarError("Aún quedan espacios vacíos en el diagrama de flujo. ¡Completa toda la secuencia!");
+                        return;
+                    }
+
+                    if (this.diagrama[0].texto !== 'INICIO') {
+                        this.lanzarError("Lógica de Algoritmo: Un diagrama de flujo debe empezar obligatoriamente con el bloque de terminal de INICIO.");
+                        return;
+                    }
+                    if (this.diagrama[6].texto !== 'FIN') {
+                        this.lanzarError("Lógica de Algoritmo: Todo proceso debe tener un final definido. El último bloque debe ser FIN.");
+                        return;
+                    }
+
+                    if (this.diagrama[2].id !== 3) { 
+                        this.lanzarError("Resolución de Tareas: En el tercer paso necesitamos una DECISIÓN (Rombo) para verificar el estado de los vegetales antes de continuar.");
+                        return;
+                    }
+
+                    if (this.diagrama.some(b => b.id === 8)) {
+                        this.lanzarError("Pertinencia de Tareas: 'Jugar Videojuegos' no es una tarea lógica para el algoritmo de hacer una ensalada saludable.");
+                        return;
+                    }
+
+                    for (let i = 0; i < this.diagrama.length; i++) {
+                        if (this.diagrama[i].correcta !== i) {
+                            this.lanzarError("Tu diagrama no tiene sentido lógico. Por ejemplo, no puedes aliñar la ensalada si no la has puesto en el bol. Revisa el orden de las acciones.");
+                            return;
+                        }
+                    }
+
+                    this.fase = 'resultado';
+                    confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
+                },
+
+                lanzarError(msg) {
+                    this.mensajeError = msg;
+                    this.mostrandoError = true;
+                },
+
+                reiniciar() {
+                    this.init();
+                    this.diagrama = Array(7).fill(null);
+                    this.fase = 'inicio';
+                    this.mostrandoError = false;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

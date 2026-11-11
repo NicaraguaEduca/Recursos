@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enriquecedor de Noticias - Vocabulario</title>
+    
+    <!-- Fuentes Google: Playfair Display (Titulares), Courier Prime (Máquina escribir) y Nunito (UI) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Nunito:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA DE TAILWIND -->
+    <script>
+        window.tailwind = {
+            config: {
+                important: '#recurso-wp-vocabulario',
+                corePlugins: { preflight: false },
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            news: ['"Playfair Display"', 'serif'],
+                            typewriter: ['"Courier Prime"', 'monospace'],
+                            ui: ['Nunito', 'sans-serif'],
+                        },
+                        colors: {
+                            press: {
+                                paper: '#F4F1EA',     /* Papel vintage */
+                                ink: '#1A1A1A',       /* Tinta oscura */
+                                highlight: '#FDE047', /* Resaltador amarillo */
+                                red: '#DC2626',       /* Rojo corrección */
+                                green: '#16A34A',     /* Verde éxito */
+                                gray: '#D6D3D1',      /* Gris paneles */
+                                dark: '#292524'       /* Fondo de escritorio */
+                            }
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* =========================================================
+           MICRO-RESET LOCAL: Protege el recurso del tema de WP
+           ========================================================= */
+        #recurso-wp-vocabulario * {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: currentColor;
+            line-height: normal;
+        }
+        #recurso-wp-vocabulario h1, #recurso-wp-vocabulario h2, #recurso-wp-vocabulario h3, #recurso-wp-vocabulario p, #recurso-wp-vocabulario span, #recurso-wp-vocabulario div {
+            margin: 0; padding: 0;
+        }
+        #recurso-wp-vocabulario button {
+            background-color: transparent; background-image: none; cursor: pointer; padding: 0; font-family: inherit;
+        }
+
+        /* =========================================================
+           ESTILOS PANTALLA COMPLETA & ESTÉTICA VINTAGE
+           ========================================================= */
+        #recurso-wp-vocabulario {
+            font-family: 'Nunito', sans-serif;
+            background-color: #292524; 
+            background-image: radial-gradient(#44403c 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Paneles Estilo Papel/Periodico */
+        #recurso-wp-vocabulario .paper-panel {
+            background-color: #F4F1EA;
+            color: #1A1A1A;
+            border: 2px solid #D6D3D1;
+            border-radius: 8px;
+            box-shadow: 10px 10px 20px rgba(0,0,0,0.5), inset 0 0 50px rgba(0,0,0,0.05);
+            position: relative;
+        }
+        /* Líneas de cuaderno/periódico (Ajustadas para móvil) */
+        .ruled-bg {
+            background-image: repeating-linear-gradient(transparent, transparent 27px, #e5e5e5 27px, #e5e5e5 28px);
+            background-attachment: local;
+        }
+        @media (min-width: 768px) {
+            .ruled-bg {
+                background-image: repeating-linear-gradient(transparent, transparent 35px, #e5e5e5 35px, #e5e5e5 36px);
+            }
+        }
+
+        /* Botones de UI */
+        #recurso-wp-vocabulario .press-btn {
+            background: #1A1A1A;
+            color: #F4F1EA;
+            border: 2px solid #1A1A1A;
+            border-radius: 6px;
+            box-shadow: 4px 4px 0px rgba(255,255,255,0.2);
+            transition: all 0.15s ease;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        #recurso-wp-vocabulario .press-btn:hover:not(:disabled) {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px rgba(255,255,255,0.3);
+            background: #292524;
+        }
+        #recurso-wp-vocabulario .press-btn:active:not(:disabled) {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px rgba(255,255,255,0.1);
+        }
+        #recurso-wp-vocabulario .press-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+
+        /* Palabras a enriquecer (Resaltador) */
+        .vocab-blank {
+            background-color: rgba(253, 224, 71, 0.5); /* yellow-300 con opacidad */
+            border-bottom: 2px dashed #DC2626;
+            color: #1A1A1A;
+            font-family: 'Courier Prime', monospace;
+            font-weight: bold;
+            padding: 0 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 0 2px;
+        }
+        .vocab-blank:hover {
+            background-color: rgba(253, 224, 71, 0.9);
+            transform: scale(1.05);
+        }
+        .vocab-blank.active {
+            background-color: #FDE047;
+            border-bottom: 3px solid #DC2626;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+        .vocab-solved {
+            color: #16A34A; /* press-green */
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-style: italic;
+            border-bottom: none !important;
+            background-color: transparent !important;
+            padding: 0;
+            pointer-events: none;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 1.1em;
+        }
+
+        /* Opciones del Diccionario */
+        .option-card {
+            background: #ffffff;
+            border: 2px solid #D6D3D1;
+            border-left: 6px solid #1A1A1A;
+            border-radius: 6px;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            color: #1A1A1A;
+        }
+        .option-card:hover {
+            background: #f8fafc;
+            border-left-color: #FDE047;
+            transform: translateX(5px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Pantallas SPA */
+        #recurso-wp-vocabulario .screen {
+            display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; position: absolute; top: 0; left: 0; overflow-y: auto; overflow-x: hidden; z-index: 10;
+        }
+        #recurso-wp-vocabulario .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-vocabulario .screen.active {
+            display: flex;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .shake-error { animation: shakeError 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shakeError {
+            10%, 90% { transform: translate3d(-3px, 0, 0); }
+            20%, 80% { transform: translate3d(5px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-7px, 0, 0); }
+            40%, 60% { transform: translate3d(7px, 0, 0); }
+        }
+
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.5); }
+            50% { transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        /* Ajuste de tipografía base para móvil y escritorio */
+        .text-fluid-body {
+            font-size: 1.05rem;
+            line-height: 1.8;
+        }
+        @media (min-width: 768px) {
+            .text-fluid-body {
+                font-size: 1.35rem;
+                line-height: 2.1;
+            }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-vocabulario">
+
+        <!-- Decoraciones de escritorio -->
+        <div class="absolute top-10 left-4 md:left-10 text-[4rem] md:text-[6rem] opacity-10 pointer-events-none rotate-12">📰</div>
+        <div class="absolute bottom-10 right-4 md:right-10 text-[6rem] md:text-[8rem] opacity-10 pointer-events-none -rotate-12">☕</div>
+
+        <!-- ==============================================
+             PANTALLA 1: INICIO
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="paper-panel p-6 md:p-14 max-w-3xl w-full mx-auto flex flex-col items-center">
+                <div class="text-[4rem] md:text-[7rem] mb-2 drop-shadow-md animate__animated animate__pulse animate__infinite">✍️</div>
+                <h2 class="text-xs md:text-sm text-press-ink font-ui font-black mb-4 uppercase bg-press-highlight inline-block px-4 py-1 border border-press-ink rounded">
+                    Lenguaje - 6to Grado
+                </h2>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-news text-press-ink mt-2 mb-4 leading-none tracking-tight">
+                    Enriquecedor de <br><span class="text-press-red italic">Noticias</span>
+                </h1>
+                <p class="text-base md:text-xl text-gray-700 font-ui font-bold mb-8 px-2 leading-relaxed max-w-xl">
+                    ¡Bienvenido, Editor Jefe! Los reporteros novatos han entregado artículos con un vocabulario muy aburrido. Usa tu diccionario para cambiar las palabras simples por <strong>adjetivos descriptivos</strong> y darle vida a los reportajes.
+                </p>
+                <button onclick="playBeep(); showScreen('screen-theory')" class="press-btn text-lg md:text-2xl px-8 md:px-10 py-3 md:py-4 w-full md:w-auto">
+                    VER MANUAL DE ESTILO 📖
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: TEORÍA Y REGLAS
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center">
+            <div class="paper-panel p-6 md:p-12 max-w-5xl w-full text-center my-auto overflow-y-auto">
+                <h2 class="text-3xl md:text-5xl font-news text-press-ink mb-4 md:mb-6 uppercase border-b border-press-gray pb-4">
+                    El Poder del Adjetivo
+                </h2>
+                
+                <p class="text-sm md:text-xl text-gray-700 font-ui font-bold mb-6 md:mb-8 max-w-3xl mx-auto leading-relaxed">
+                    Un reportaje debe ser claro, pero también debe atrapar al lector. Los adjetivos "comunes" (bueno, malo, grande) no nos ayudan a imaginar bien la escena. ¡Necesitamos <strong>precisión</strong>!
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-8 text-left">
+                    <!-- Ejemplo Aburrido -->
+                    <div class="bg-gray-100 p-5 md:p-6 rounded border border-gray-300 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-gray-300 text-gray-600 font-ui text-[10px] md:text-xs font-bold px-2 md:px-3 py-1 rounded-bl">TEXTO POBRE 😴</div>
+                        <p class="font-typewriter text-base md:text-xl text-gray-600 mt-4 leading-relaxed">
+                            Hubo un choque <span class="line-through text-press-red">fuerte</span> en la avenida. Los bomberos hicieron un trabajo <span class="line-through text-press-red">bueno</span>.
+                        </p>
+                    </div>
+
+                    <!-- Ejemplo Enriquecido -->
+                    <div class="bg-yellow-50 p-5 md:p-6 rounded border border-press-highlight relative overflow-hidden shadow-sm">
+                        <div class="absolute top-0 right-0 bg-press-highlight text-press-ink font-ui text-[10px] md:text-xs font-bold px-2 md:px-3 py-1 rounded-bl">TEXTO ENRIQUECIDO ✨</div>
+                        <p class="font-news text-lg md:text-2xl text-press-ink mt-4 leading-relaxed">
+                            Hubo un choque <strong class="text-press-green italic">aparatoso</strong> en la avenida. Los bomberos hicieron un trabajo <strong class="text-press-green italic">heroico</strong>.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button onclick="playBeep(); showScreen('screen-start')" class="font-ui font-bold text-gray-500 uppercase px-6 md:px-8 py-3 hover:text-press-ink transition">
+                        ⬅ Volver
+                    </button>
+                    <button onclick="playBeep(); startGame()" class="press-btn text-lg md:text-2xl px-8 md:px-12 py-3">
+                        ENTRAR A LA REDACCIÓN 🖋️
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: EL JUEGO (Editor)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start p-0 bg-transparent relative">
+            
+            <!-- Barra Superior (Progreso y Vidas) -->
+            <div class="w-full bg-press-ink text-press-paper p-3 md:p-4 flex justify-between items-center z-30 shrink-0 shadow-lg">
+                <div class="flex items-center gap-2 md:gap-3 px-2 md:px-4">
+                    <div class="text-2xl md:text-4xl">📰</div>
+                    <div class="flex flex-col">
+                        <span class="text-[9px] md:text-xs text-gray-400 font-ui uppercase font-bold tracking-widest leading-none mb-1">Ediciones</span>
+                        <span class="font-news font-bold text-xl md:text-3xl text-white leading-none"><span id="score-display">0</span><span class="text-gray-500 text-lg">/6</span></span>
+                    </div>
+                </div>
+
+                <div class="hidden sm:flex flex-col items-center">
+                    <span id="level-title" class="px-4 py-1 border border-press-gray bg-white/10 text-white font-ui font-bold text-xs md:text-sm rounded uppercase tracking-widest text-center">
+                        Artículo en Revisión
+                    </span>
+                </div>
+
+                <div class="flex items-center gap-3 pr-2">
+                    <div class="flex flex-col text-right">
+                        <span class="text-[9px] md:text-xs text-gray-400 font-ui uppercase font-bold tracking-widest leading-none mb-1">Tinta (Vidas)</span>
+                        <span id="lives-display" class="text-base md:text-xl tracking-widest mt-1">🖋️ 🖋️ 🖋️</span>
+                    </div>
+                    <button onclick="playBeep(); exitGame()" class="text-gray-400 hover:text-white transition-colors p-1 md:p-2 rounded ml-1 md:ml-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 md:h-8 md:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Área Principal Dividida -->
+            <div class="w-full flex-grow flex flex-col md:flex-row gap-4 p-3 md:p-6 overflow-hidden relative max-w-6xl mx-auto items-stretch">
+                
+                <!-- IZQUIERDA: La Hoja de Papel (Noticia) -->
+                <div class="w-full md:w-7/12 paper-panel p-5 md:p-10 flex flex-col h-[55%] md:h-full shrink-0 overflow-y-auto ruled-bg shadow-lg">
+                    
+                    <h2 id="news-headline" class="font-news font-black text-2xl md:text-5xl text-press-ink mb-4 md:mb-6 uppercase leading-tight border-b-2 md:border-b-4 border-press-ink pb-2">
+                        TITULAR DE LA NOTICIA
+                    </h2>
+                    
+                    <div id="news-body" class="font-typewriter text-fluid-body text-gray-800">
+                        <!-- El texto se inyecta por JS y contiene las etiquetas vocab-blank -->
+                    </div>
+
+                    <!-- Botón de publicar (oculto hasta completar) -->
+                    <div class="mt-auto pt-4 md:pt-6 flex justify-center">
+                        <button id="btn-publish" onclick="publishArticle()" disabled class="press-btn bg-press-green border-press-green w-full py-3 md:py-4 text-base md:text-xl disabled:opacity-0 transition-opacity duration-300 hidden">
+                            📰 ENVIAR A IMPRENTA
+                        </button>
+                    </div>
+                </div>
+
+                <!-- DERECHA: Diccionario (Opciones) -->
+                <div class="w-full md:w-5/12 bg-white border-2 border-press-gray rounded shadow-md p-4 md:p-6 flex flex-col h-[45%] md:h-full shrink-0 relative overflow-hidden">
+                    
+                    <div class="border-b-2 border-press-ink pb-2 mb-3 md:mb-4 flex items-center justify-between shrink-0">
+                        <h3 class="font-news font-bold text-lg md:text-2xl text-press-ink uppercase">📖 Diccionario</h3>
+                    </div>
+
+                    <div id="instruction-panel" class="bg-yellow-50 p-3 md:p-4 rounded border border-press-highlight text-xs md:text-base font-ui font-bold text-gray-700 text-center mb-2 shrink-0">
+                        Toca una palabra resaltada en amarillo en el papel para buscar mejores opciones.
+                    </div>
+
+                    <!-- Aquí se inyectan las opciones cuando se hace click en una palabra -->
+                    <div id="options-container" class="flex flex-col gap-2 md:gap-3 flex-grow overflow-y-auto pr-1 pb-2">
+                        <!-- Opciones -->
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ==============================================
+             MODAL DE FEEDBACK (Error / Acierto de palabra)
+             ============================================== -->
+        <div id="feedback-modal" class="hidden absolute inset-0 z-[60] flex-col items-center justify-center bg-press-dark/90 p-4 text-center backdrop-blur-sm">
+            <div id="feedback-card" class="paper-panel p-6 md:p-12 max-w-lg w-full animate__animated text-center border-t-[8px]">
+                <div id="feedback-icon" class="text-[4rem] md:text-[6rem] mb-2 leading-none">✨</div>
+                <h3 id="feedback-title" class="font-news font-bold text-2xl md:text-4xl text-press-ink mb-3 uppercase tracking-wider">Título</h3>
+                <div class="bg-white p-4 rounded border border-press-gray mb-6 text-left">
+                    <p id="feedback-reason" class="text-sm md:text-lg font-ui font-medium text-gray-700 leading-relaxed"></p>
+                </div>
+                <button onclick="closeFeedback()" class="press-btn text-base md:text-xl px-8 py-3 w-full">
+                    Continuar Edición ➡
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA INTERMEDIA: Subir de Nivel
+             ============================================== -->
+        <div id="screen-intermission" class="hidden absolute inset-0 z-[70] flex-col items-center justify-center p-6 text-center bg-press-dark/95 backdrop-blur-md">
+            <div class="paper-panel p-8 md:p-14 max-w-2xl w-full animate__animated animate__zoomIn text-center z-10 border-t-[8px] border-t-press-highlight">
+                <div class="text-[5rem] md:text-[7rem] mb-4">🏆</div>
+                <h2 class="font-news font-black text-3xl md:text-5xl text-press-ink mb-4 tracking-tight">¡Excelente Edición!</h2>
+                <p class="text-base md:text-xl text-gray-700 mb-8 font-ui font-medium leading-relaxed">
+                    Has limpiado este artículo a la perfección. Pero me han llegado textos más complicados a la redacción... <br><strong class="text-press-blue">¿Estás listo para el siguiente artículo?</strong>
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="loadNextLevel()" class="press-btn bg-press-highlight text-press-ink border-press-highlight font-bold text-base md:text-xl px-8 py-4 uppercase animate__animated animate__pulse animate__infinite">
+                        ¡SÍ, SOY EXPERTO! 🔥
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (Resultados Totales)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex-col items-center justify-center p-6 text-center bg-press-dark">
+            <div id="result-card" class="paper-panel p-8 md:p-16 max-w-2xl w-full animate__animated animate__zoomIn text-center z-10 border-t-[10px] border-t-press-green">
+                <div id="result-icon" class="text-[6rem] md:text-[8rem] mb-4 drop-shadow-md">🏆🗞️</div>
+                <h2 id="result-title" class="font-news font-black text-4xl md:text-6xl text-press-green mb-4 uppercase tracking-widest">
+                    ¡Pluma de Oro!
+                </h2>
+                <p id="result-msg" class="text-base md:text-2xl text-gray-800 mb-10 font-ui font-bold leading-relaxed">
+                    Mensaje de resultado
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="playBeep(); exitGame()" class="font-ui font-bold text-gray-500 uppercase px-6 py-3 hover:text-press-ink transition border border-gray-300 rounded">
+                        SALIR DE LA REDACCIÓN
+                    </button>
+                    <button onclick="playBeep(); startGame()" class="press-btn bg-press-ink text-white text-lg md:text-2xl px-10 py-4">
+                        NUEVA EDICIÓN 🔄
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO
+         ============================================== -->
+    <script>
+        // --- SINTETIZADOR DE AUDIO ---
+        let audioCtx = null;
+        function initAudio() {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+            } catch (e) {}
+        }
+        document.body.addEventListener('click', initAudio, { once: true });
+
+        function playBeep(freq = 600, duration = 0.1, type = "sine") {
+            try {
+                if (audioCtx && audioCtx.state !== 'suspended') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + duration);
+                }
+            } catch (e) {}
+        }
+        function playBlip() { playBeep(900, 0.05, "square"); }
+        function playSuccess() { playBeep(523.25, 0.1); setTimeout(() => playBeep(659.25, 0.1), 100); setTimeout(() => playBeep(783.99, 0.3), 200); }
+        function playError() { playBeep(200, 0.3, "sawtooth"); setTimeout(() => playBeep(150, 0.3, "sawtooth"), 200); }
+
+        // --- BASE DE DATOS DE ARTÍCULOS (6 NIVELES) ---
+        const articlesData = [
+            {
+                headline: "RESCATE EN LA MONTAÑA",
+                text: "Ayer, el equipo de emergencias realizó una labor {1} al salvar a los excursionistas perdidos. Soportaron un clima {2} durante toda la noche.",
+                blanks: {
+                    1: { 
+                        orig: "buena", correct: "heroica", 
+                        options: ["bonita", "heroica", "larga"], 
+                        hint: "Arriesgaron sus vidas para salvar a otros. Es más que 'bueno', es digno de un héroe." 
+                    },
+                    2: { 
+                        orig: "malo", correct: "extremo", 
+                        options: ["feo", "extremo", "triste"], 
+                        hint: "Un clima en la montaña de noche con temperaturas bajo cero es un clima muy severo y peligroso." 
+                    }
+                }
+            },
+            {
+                headline: "DESCUBREN CIUDAD ANTIGUA",
+                text: "Un grupo de arqueólogos halló unas ruinas {1} escondidas en la selva. Encontraron vasijas de oro que tienen un valor {2} para la historia de nuestro país.",
+                blanks: {
+                    1: { 
+                        orig: "viejas", correct: "milenarias", 
+                        options: ["oxidadas", "milenarias", "sucias"], 
+                        hint: "Son ruinas que tienen miles de años de antigüedad. 'Viejo' se queda corto." 
+                    },
+                    2: { 
+                        orig: "grande", correct: "incalculable", 
+                        options: ["incalculable", "pesado", "caro"], 
+                        hint: "Su importancia es tan inmensa para la historia que no se le puede poner un precio exacto." 
+                    }
+                }
+            },
+            {
+                headline: "VICTORIA EN EL ESTADIO",
+                text: "La jugadora anotó un gol {1} en el último minuto del partido. Los aficionados lo celebraron con un grito {2} que hizo temblar las gradas del estadio.",
+                blanks: {
+                    1: { 
+                        orig: "bonito", correct: "magistral", 
+                        options: ["suave", "magistral", "limpio"], 
+                        hint: "Fue un gol hecho con muchísima maestría, técnica y perfección." 
+                    },
+                    2: { 
+                        orig: "fuerte", correct: "ensordecedor", 
+                        options: ["ensordecedor", "agudo", "pesado"], 
+                        hint: "Un ruido tan inmensamente fuerte que casi te deja sordo por un momento." 
+                    }
+                }
+            },
+            {
+                headline: "PERRITO CAE AL POZO",
+                text: "Un grupo de voluntarios salvó a un perrito {1} que había caído en un agujero {2}. Después de horas de esfuerzo, lograron sacarlo sano y salvo.",
+                blanks: {
+                    1: { 
+                        orig: "asustado", correct: "aterrorizado", 
+                        options: ["aterrorizado", "feliz", "enojado"], 
+                        hint: "El perrito sentía muchísimo más que un simple susto; estaba lleno de terror por la oscuridad." 
+                    },
+                    2: { 
+                        orig: "hondo", correct: "abismal", 
+                        options: ["abismal", "ancho", "corto"], 
+                        hint: "El agujero era tan pero tan profundo que parecía no tener fondo, como un abismo." 
+                    }
+                }
+            },
+            {
+                headline: "CUEVA DE CRISTAL",
+                text: "Unos exploradores encontraron una cueva {1} bajo la montaña. En su interior, había rocas {2} que iluminaban todo el lugar como si fuera de día.",
+                blanks: {
+                    1: { 
+                        orig: "vieja", correct: "prehistórica", 
+                        options: ["prehistórica", "sucia", "nueva"], 
+                        hint: "Es muchísimo más antigua que 'vieja', pertenece a la época antes de la historia escrita." 
+                    },
+                    2: { 
+                        orig: "brillantes", correct: "deslumbrantes", 
+                        options: ["deslumbrantes", "feas", "oscuras"], 
+                        hint: "Brillaban tanto que casi lastimaban los ojos, dejaban ciego por un segundo de tanta luz." 
+                    }
+                }
+            },
+            {
+                headline: "TORMENTA EN LA COSTA",
+                text: "Anoche, una lluvia {1} golpeó las playas del sur. Los fuertes vientos crearon olas {2} que cubrieron el muelle por completo.",
+                blanks: {
+                    1: { 
+                        orig: "mala", correct: "devastadora", 
+                        options: ["devastadora", "triste", "buena"], 
+                        hint: "Hizo muchísimo daño y causó destrucción a su paso. Es peor que solo decir 'mala'." 
+                    },
+                    2: { 
+                        orig: "grandes", correct: "gigantescas", 
+                        options: ["gigantescas", "pequeñas", "calientes"], 
+                        hint: "Las olas eran de un tamaño tan descomunal que parecían gigantes levantándose del agua." 
+                    }
+                }
+            }
+        ];
+
+        let currentLevel = 0;
+        let lives = 3;
+        let isProcessing = false;
+        let activeBlankId = null; 
+        let blanksToSolve = 0;
+        let blanksSolved = 0;
+
+        function showScreen(screenId) {
+            const container = document.getElementById('recurso-wp-vocabulario');
+            container.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function showOverlay(id) {
+            const target = document.getElementById(id);
+            target.classList.remove('hidden');
+            target.classList.add('flex');
+        }
+        function hideOverlay(id) {
+            const target = document.getElementById(id);
+            target.classList.add('hidden');
+            target.classList.remove('flex');
+        }
+
+        function shuffle(arr) {
+            let a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function startGame() {
+            currentLevel = 0;
+            lives = 3;
+            isProcessing = false;
+            
+            hideOverlay('screen-result');
+            hideOverlay('screen-intermission');
+            
+            updateUI();
+            showScreen('screen-game');
+            loadArticle();
+        }
+
+        function updateUI() {
+            document.getElementById('score-display').innerText = currentLevel;
+            let battery = "";
+            for(let i=0; i<3; i++) {
+                battery += i < lives ? "🖋️ " : "❌ ";
+            }
+            document.getElementById('lives-display').innerText = battery;
+        }
+
+        function loadArticle() {
+            if (currentLevel >= articlesData.length) {
+                endGame(true);
+                return;
+            }
+
+            const data = articlesData[currentLevel];
+            isProcessing = false;
+            activeBlankId = null;
+            blanksToSolve = Object.keys(data.blanks).length;
+            blanksSolved = 0;
+
+            document.getElementById('level-title').innerText = `Noticia ${currentLevel + 1}`;
+            document.getElementById('news-headline').innerText = data.headline;
+            
+            // Ocultar botón publicar
+            const btnPublish = document.getElementById('btn-publish');
+            btnPublish.classList.add('hidden');
+            btnPublish.classList.remove('block');
+            btnPublish.disabled = true;
+
+            // Restablecer el panel de instrucciones
+            const instPanel = document.getElementById('instruction-panel');
+            instPanel.classList.remove('hidden');
+            instPanel.innerText = "Toca una palabra resaltada en amarillo en el papel para buscar mejores opciones.";
+            instPanel.className = "bg-yellow-50 p-3 md:p-4 rounded border border-press-highlight text-xs md:text-base font-ui font-bold text-gray-700 text-center mb-2 shrink-0";
+            
+            document.getElementById('options-container').innerHTML = '';
+
+            // Construir el texto con los botones (blanks)
+            let formattedText = data.text;
+            for (const [key, blank] of Object.entries(data.blanks)) {
+                const btnHTML = `<span id="blank-${key}" class="vocab-blank" onclick="window.handleBlankClick(${key})">${blank.orig}</span>`;
+                formattedText = formattedText.replace(`{${key}}`, btnHTML);
+            }
+            
+            document.getElementById('news-body').innerHTML = formattedText;
+        }
+
+        // Expuesta a window para el onclick en HTML
+        window.handleBlankClick = function(id) {
+            if (isProcessing) return;
+            
+            const blankEl = document.getElementById(`blank-${id}`);
+            if (blankEl.classList.contains('vocab-solved')) return;
+
+            playBlip();
+
+            // Desmarcar otros
+            document.querySelectorAll('.vocab-blank').forEach(b => b.classList.remove('active'));
+            // Marcar el actual
+            blankEl.classList.add('active');
+            activeBlankId = id;
+
+            // Ocultar instrucción, mostrar opciones
+            document.getElementById('instruction-panel').classList.add('hidden');
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            // Crear el encabezado del diccionario para esta palabra
+            const data = articlesData[currentLevel].blanks[id];
+            
+            const dictHeader = document.createElement('div');
+            dictHeader.className = "bg-press-highlight/30 border border-press-highlight p-3 rounded mb-2 shrink-0";
+            dictHeader.innerHTML = `<span class="font-ui text-xs md:text-sm font-bold text-gray-600 block">Mejora para:</span><span class="font-typewriter font-bold text-lg md:text-xl line-through text-press-red">${data.orig}</span>`;
+            optionsContainer.appendChild(dictHeader);
+
+            const shuffledOptions = shuffle(data.options);
+
+            shuffledOptions.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-card text-left text-lg md:text-xl animate__animated animate__fadeInUp shrink-0';
+                btn.style.animationDelay = `${idx * 0.1}s`;
+                btn.innerHTML = `<span class="text-press-gray font-ui text-xs md:text-sm mr-2">${idx+1}.</span> ${opt}`;
+                
+                btn.onclick = () => window.checkAnswer(opt, btn);
+                optionsContainer.appendChild(btn);
+            });
+        };
+
+        window.checkAnswer = function(selectedWord, btnElement) {
+            if (isProcessing || !activeBlankId) return;
+            isProcessing = true;
+
+            const data = articlesData[currentLevel].blanks[activeBlankId];
+            const blankEl = document.getElementById(`blank-${activeBlankId}`);
+            const isCorrect = selectedWord === data.correct;
+
+            if (isCorrect) {
+                // ACIERTO
+                playSuccess();
+                
+                // Estilo botón acertado
+                btnElement.classList.replace('border-D6D3D1', 'border-press-green');
+                btnElement.style.backgroundColor = '#dcfce7'; // green-100
+                btnElement.style.borderLeftColor = '#16A34A'; // green-600
+
+                // Cambiar el texto en el documento
+                blankEl.classList.remove('active', 'vocab-blank');
+                blankEl.classList.add('vocab-solved');
+                blankEl.innerText = selectedWord;
+
+                blanksSolved++;
+
+                setTimeout(() => {
+                    // Limpiar panel derecho
+                    document.getElementById('options-container').innerHTML = '';
+                    const instPanel = document.getElementById('instruction-panel');
+                    instPanel.classList.remove('hidden');
+                    instPanel.innerText = "¡Excelente reemplazo! Toca otra palabra amarilla si la hay.";
+                    
+                    activeBlankId = null;
+                    isProcessing = false;
+
+                    // Verificar si ya completó todas las palabras del artículo
+                    if (blanksSolved === blanksToSolve) {
+                        const btnPublish = document.getElementById('btn-publish');
+                        btnPublish.classList.remove('hidden');
+                        btnPublish.classList.add('block');
+                        btnPublish.disabled = false;
+                        
+                        instPanel.innerText = "¡El artículo está perfecto! Envíalo a la imprenta.";
+                        instPanel.className = "bg-green-100 p-3 md:p-4 rounded border border-press-green text-xs md:text-base font-ui font-bold text-press-green text-center mb-2 shrink-0 animate-pulse";
+                    }
+                }, 1000);
+
+            } else {
+                // ERROR
+                lives--;
+                updateUI();
+                playError();
+
+                // Animación error en el botón
+                btnElement.classList.add('shake-error', 'bg-red-100');
+                btnElement.style.borderLeftColor = '#DC2626';
+
+                setTimeout(() => {
+                    showFeedback(false, "¡Ese adjetivo no encaja!", `Elegiste <strong>"${selectedWord}"</strong>. <br><br> <strong>Pista de Editor:</strong> ${data.hint}`);
+                }, 500);
+            }
+        };
+
+        // Función cuando le da al botón verde de ENVIAR A IMPRENTA
+        window.publishArticle = function() {
+            if (isProcessing) return;
+            isProcessing = true;
+            playSuccess();
+            
+            showFeedback(true, "¡Artículo Impreso!", "El vocabulario rico hace que el lector pueda imaginar la escena perfectamente. ¡Gran trabajo de edición!");
+        };
+
+        function showFeedback(isSuccess, titleText, reasonText) {
+            const card = document.getElementById('feedback-card');
+            const icon = document.getElementById('feedback-icon');
+            const title = document.getElementById('feedback-title');
+            const reason = document.getElementById('feedback-reason');
+
+            card.classList.remove('animate__bounceIn', 'border-t-press-green', 'border-t-press-red');
+            void card.offsetWidth;
+
+            if (isSuccess) {
+                icon.innerText = "📰✨";
+                title.innerText = titleText;
+                title.className = "font-news font-black text-2xl md:text-4xl mb-4 text-press-green";
+                card.classList.add('border-t-press-green');
+                card.dataset.action = "next";
+            } else {
+                icon.innerText = "❌🖊️";
+                title.innerText = titleText;
+                title.className = "font-news font-black text-2xl md:text-4xl mb-4 text-press-red";
+                card.classList.add('border-t-press-red');
+                card.dataset.action = "retry";
+            }
+
+            reason.innerHTML = reasonText;
+            showOverlay('feedback-modal');
+            card.classList.add('animate__bounceIn');
+        }
+
+        window.closeFeedback = function() {
+            const card = document.getElementById('feedback-card');
+            const action = card.dataset.action;
+            
+            hideOverlay('feedback-modal');
+            
+            if (lives <= 0) {
+                endGame(false);
+            } else if (action === "next") {
+                // Si ya completó la noticia, verificar si hay más niveles
+                if (currentLevel < articlesData.length - 1) {
+                    showOverlay('screen-intermission');
+                } else {
+                    endGame(true); // Ganó todo
+                }
+            } else {
+                // Retry: Quitar la animación de error del botón del diccionario para seguir
+                const errBtn = document.querySelector('.shake-error');
+                if (errBtn) {
+                    errBtn.classList.remove('shake-error', 'bg-red-100');
+                    errBtn.style.borderLeftColor = '#1A1A1A';
+                }
+                isProcessing = false;
+            }
+        };
+
+        window.loadNextLevel = function() {
+            hideOverlay('screen-intermission');
+            currentLevel++;
+            loadArticle();
+        }
+
+        function endGame(victory) {
+            const title = document.getElementById('result-title');
+            const msg = document.getElementById('result-msg');
+            const icon = document.getElementById('result-icon');
+            const card = document.getElementById('result-card');
+            
+            card.classList.remove('border-t-press-green', 'border-t-press-red');
+
+            if (victory) {
+                icon.innerText = "🏆🖋️";
+                title.innerText = "¡Pluma de Oro!";
+                title.className = "font-news font-black text-4xl md:text-6xl text-press-green mb-4 uppercase tracking-widest";
+                msg.innerHTML = "Has enriquecido el vocabulario de todas las noticias. ¡Ahora los lectores no podrán dejar de leer el periódico! Has editado con éxito los " + articlesData.length + " artículos.";
+                card.classList.add('border-t-press-green');
+            } else {
+                icon.innerText = "💥🪫";
+                title.innerText = "¡Sin Tinta!";
+                title.className = "font-news font-black text-4xl md:text-6xl text-press-red mb-4 uppercase tracking-widest";
+                msg.innerHTML = "Te has quedado sin intentos (tinta). Un buen editor sabe exactamente qué adjetivo usar. ¡Repasa el manual y vuelve a intentarlo!";
+                card.classList.add('border-t-press-red');
+            }
+
+            showOverlay('screen-result');
+        }
+
+        window.exitGame = function() {
+            if(confirm("¿Deseas salir de la redacción? Perderás el progreso de edición.")) {
+                currentLevel = 0;
+                isProcessing = false;
+                hideOverlay('screen-intermission');
+                hideOverlay('screen-result');
+                showScreen('screen-start');
+            }
+        };
+    </script>
+</body>
+</html>

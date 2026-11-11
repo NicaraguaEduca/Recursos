@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misión Guardianes del Agua - Ciencias Naturales 1º</title>
+    <!-- Tailwind CSS para el diseño base -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fuentes redondeadas premium de Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome para iconos infantiles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #f0fdf4;
+            user-select: none;
+            overflow-x: hidden;
+        }
+
+        /* Botones y tarjetas infantiles con efecto 3D pronunciado */
+        .btn-3d-emerald {
+            box-shadow: 0 10px 0 #059669;
+            transition: all 0.1s ease;
+        }
+        .btn-3d-emerald:active {
+            transform: translateY(6px);
+            box-shadow: 0 4px 0 #059669;
+        }
+
+        .btn-3d-sky {
+            box-shadow: 0 10px 0 #0284c7;
+            transition: all 0.1s ease;
+        }
+        .btn-3d-sky:active {
+            transform: translateY(6px);
+            box-shadow: 0 4px 0 #0284c7;
+        }
+
+        /* Tarjetas de conceptos 3D explosivas de color */
+        .card-3d-green {
+            box-shadow: 0 12px 0 #047857;
+            transition: all 0.15s ease;
+        }
+        .card-3d-green:active {
+            transform: translateY(6px);
+            box-shadow: 0 6px 0 #047857;
+        }
+
+        .card-3d-amber {
+            box-shadow: 0 12px 0 #b45309;
+            transition: all 0.15s ease;
+        }
+        .card-3d-amber:active {
+            transform: translateY(6px);
+            box-shadow: 0 6px 0 #b45309;
+        }
+
+        .card-3d-indigo {
+            box-shadow: 0 12px 0 #4338ca;
+            transition: all 0.15s ease;
+        }
+        .card-3d-indigo:active {
+            transform: translateY(6px);
+            box-shadow: 0 6px 0 #4338ca;
+        }
+
+        .card-shadow {
+            box-shadow: 0 20px 30px rgba(15, 23, 42, 0.1);
+        }
+
+        /* Animaciones juguetonas */
+        @keyframes float-slow {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(2deg); }
+        }
+        .animate-float {
+            animation: float-slow 4.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(56, 189, 248, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+        }
+        .animate-pulse-ring {
+            animation: pulse-ring 2s infinite;
+        }
+
+        /* Cursor de arrastre para la gotita */
+        .draggable-cursor {
+            cursor: grab;
+        }
+        .draggable-cursor:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body class="w-screen h-screen flex items-center justify-center p-2 md:p-6 bg-gradient-to-br from-[#e0f2fe] via-[#f0fdf4] to-[#ecfdf5]">
+
+    <!-- Contenedor premium estilo tableta de juegos gigante -->
+    <div class="relative w-full max-w-5xl h-[92vh] bg-white rounded-[40px] border-[12px] border-sky-400 card-shadow overflow-hidden flex flex-col justify-between p-4 md:p-8 z-10">
+        
+        <!-- Burbujas decorativas animadas en el fondo -->
+        <div class="absolute -top-12 -left-12 w-56 h-56 bg-sky-200/50 rounded-full blur-2xl pointer-events-none"></div>
+        <div class="absolute -bottom-20 -right-20 w-80 h-80 bg-emerald-200/40 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- ================= PANTALLA 1: BIENVENIDA Y PRESENTACIÓN ================= -->
+        <div id="screen-welcome" class="screen flex flex-col items-center justify-between flex-1 z-10 py-4 h-full">
+            <span class="bg-emerald-100 text-emerald-700 text-sm md:text-lg font-bold px-8 py-2.5 rounded-full border-2 border-emerald-200 shadow-sm uppercase tracking-wide">
+                Ciencias Naturales • 1º de Primaria
+            </span>
+            
+            <h1 class="text-5xl md:text-7xl font-bold text-sky-800 leading-tight">
+                Misión: <br class="md:hidden"><span class="text-sky-500 font-extrabold">Guardianes del Agua</span>
+            </h1>
+
+            <!-- Ilustración gigante de Goti con animación flotante -->
+            <div class="w-48 h-48 my-auto animate-float flex items-center justify-center">
+                <svg id="goti-avatar" viewBox="0 0 100 120" class="w-full h-full">
+                    <ellipse cx="50" cy="115" rx="35" ry="6" fill="#cbd5e1" opacity="0.7"/>
+                    <path d="M50,15 C55,40 85,70 85,95 C85,115 69,120 50,120 C31,120 15,115 15,95 C15,70 45,40 50,15 Z" fill="#38bdf8" stroke="#0284c7" stroke-width="4.5"/>
+                    <path d="M30,85 C25,85 22,75 25,65 C28,55 35,50 35,50" fill="none" stroke="#f0f9ff" stroke-width="4" stroke-linecap="round"/>
+                    <g id="goti-eyes">
+                        <circle cx="38" cy="85" r="7.5" fill="#0f172a"/>
+                        <circle cx="62" cy="85" r="7.5" fill="#0f172a"/>
+                        <circle cx="41" cy="81.5" r="3" fill="white"/>
+                        <circle cx="65" cy="81.5" r="3" fill="white"/>
+                    </g>
+                    <path d="M42,96 Q50,104 58,96" fill="none" stroke="#0f172a" stroke-width="5" stroke-linecap="round"/>
+                    <circle cx="27" cy="94" r="6" fill="#f472b6" opacity="0.7"/>
+                    <circle cx="73" cy="94" r="6" fill="#f472b6" opacity="0.7"/>
+                </svg>
+            </div>
+
+            <div class="bg-sky-50/90 border-4 border-dashed border-sky-300 rounded-[30px] p-5 max-w-2xl shadow-inner my-auto">
+                <p class="text-gray-700 text-lg md:text-2xl font-semibold leading-relaxed">
+                    🌟 <strong>¡Hola, soy Goti!</strong> Necesito tu súper ayuda. El agua de casa se está perdiendo sin querer. ¡Vamos juntos a cerrar los grifos y cuidar nuestro planeta!
+                </p>
+            </div>
+
+            <button onclick="changeScreen('screen-intro')" class="btn-3d-sky bg-sky-500 hover:bg-sky-600 text-white font-bold text-2xl md:text-3xl px-16 py-5 rounded-[28px] mt-auto mb-4 transition-all flex items-center gap-3 animate-float">
+                ¡Empezar Misión! <i class="fa-solid fa-play"></i>
+            </button>
+        </div>
+
+        <!-- ================= PANTALLA 2: APRENDIZAJE SÚPER VISUAL Y GRANDE ================= -->
+        <div id="screen-intro" class="screen hidden flex-col items-center justify-between flex-1 z-10 py-4 h-full">
+            <div class="text-center">
+                <h2 class="text-4xl md:text-5xl font-bold text-sky-800">¿Cómo ayudamos al planeta?</h2>
+                <p class="text-gray-500 text-lg md:text-xl font-medium mt-1">¡Toca cada dibujo gigante para descubrir tu superpoder!</p>
+            </div>
+
+            <!-- Bloques interactivos gigantes y súper coloridos en Grid (Con margen auto para distribuirse arriba) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl my-auto">
+                <!-- Tarjeta 1: Plantas (Verde Esmeralda Radiante) -->
+                <div onclick="selectConcept('jardin', this)" class="concept-card card-3d-green cursor-pointer bg-gradient-to-br from-emerald-400 to-teal-500 border-4 border-emerald-300 rounded-[36px] p-6 text-center transform hover:-translate-y-2 text-white">
+                    <div class="w-20 h-20 bg-white/30 text-white rounded-3xl flex items-center justify-center text-5xl mx-auto mb-4 shadow-lg animate-bounce" style="animation-duration: 3s;">
+                        <i class="fa-solid fa-seedling"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold">Salvar Plantitas</h3>
+                    <p class="text-emerald-50 text-sm mt-2 font-medium">El agua limpia les ayuda a crecer con hermosas flores.</p>
+                </div>
+
+                <!-- Tarjeta 2: Animales (Amarillo / Naranja Atardecer) -->
+                <div onclick="selectConcept('sed', this)" class="concept-card card-3d-amber cursor-pointer bg-gradient-to-br from-amber-400 to-orange-500 border-4 border-amber-300 rounded-[36px] p-6 text-center transform hover:-translate-y-2 text-white">
+                    <div class="w-20 h-20 bg-white/30 text-white rounded-3xl flex items-center justify-center text-5xl mx-auto mb-4 shadow-lg animate-bounce" style="animation-duration: 2.5s;">
+                        <i class="fa-solid fa-dog"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold">Dar de Beber</h3>
+                    <p class="text-amber-50 text-sm mt-2 font-medium">Todos los perritos y aves necesitan agua fresca para jugar.</p>
+                </div>
+
+                <!-- Tarjeta 3: Higiene (Azul Eléctrico / Índigo) -->
+                <div onclick="selectConcept('higiene', this)" class="concept-card card-3d-indigo cursor-pointer bg-gradient-to-br from-sky-400 to-indigo-500 border-4 border-sky-300 rounded-[36px] p-6 text-center transform hover:-translate-y-2 text-white">
+                    <div class="w-20 h-20 bg-white/30 text-white rounded-3xl flex items-center justify-center text-5xl mx-auto mb-4 shadow-lg animate-bounce" style="animation-duration: 3.5s;">
+                        <i class="fa-solid fa-droplet"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold">Estar Limpios</h3>
+                    <p class="text-sky-50 text-sm mt-2 font-medium">Nos lavamos las manos y cepillamos los dientes para estar sanos.</p>
+                </div>
+            </div>
+
+            <!-- Diálogo del personaje súper grande estilo cómic (Con margen auto para bajarlo sin tocar las tarjetas) -->
+            <div class="flex items-center gap-5 bg-emerald-50 border-4 border-emerald-300 rounded-[30px] p-5 w-full max-w-3xl shadow-md my-auto">
+                <div class="w-16 h-16 shrink-0">
+                    <svg viewBox="0 0 100 120" class="w-full h-full">
+                        <path d="M50,15 C55,40 85,70 85,95 C85,115 69,120 50,120 C31,120 15,115 15,95 C15,70 45,40 50,15 Z" fill="#38bdf8" stroke="#0284c7" stroke-width="4"/>
+                        <circle cx="38" cy="85" r="7.5" fill="#0f172a"/>
+                        <circle cx="62" cy="85" r="7.5" fill="#0f172a"/>
+                        <path d="M43,96 Q50,102 57,96" fill="none" stroke="#0f172a" stroke-width="4.5" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <p id="intro-speech" class="text-emerald-950 font-bold text-lg md:text-2xl text-left leading-relaxed">
+                    👉 ¡Toca uno de los grandes cuadros de colores arriba para ver nuestro súper secreto!
+                </p>
+            </div>
+
+            <!-- Botones de navegación perfectamente situados en la parte inferior (Espacio de recuadro rojo) -->
+            <div class="flex gap-4 mb-4 mt-auto">
+                <button onclick="changeScreen('screen-welcome')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-8 py-4 rounded-2xl text-lg transition-all">
+                    Atrás
+                </button>
+                <button onclick="changeScreen('screen-game')" class="btn-3d-emerald bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xl md:text-2xl px-12 py-4 rounded-2xl transition-all">
+                    ¡Iniciar Aventura! <i class="fa-solid fa-shield-heart ml-1"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ================= PANTALLA 3: ADVENTURE PLAYGROUND GIGANTE ================= -->
+        <div id="screen-game" class="screen hidden flex-col justify-between flex-1 z-10 py-2 h-full">
+            
+            <!-- Barra superior de Progreso -->
+            <div class="w-full flex items-center justify-between bg-sky-50/80 border-2 border-sky-100 rounded-2xl p-3 shadow-inner">
+                <div class="flex items-center gap-2">
+                    <span class="text-3xl">🛡️</span>
+                    <span class="font-bold text-sky-800 text-base md:text-xl">Misiones completadas:</span>
+                    <div class="flex gap-2 ml-2" id="mission-dots">
+                        <span class="w-5 h-5 rounded-full bg-gray-200 border-2 border-gray-300" id="dot-1"></span>
+                        <span class="w-5 h-5 rounded-full bg-gray-200 border-2 border-gray-300" id="dot-2"></span>
+                        <span class="w-5 h-5 rounded-full bg-gray-200 border-2 border-gray-300" id="dot-3"></span>
+                    </div>
+                </div>
+                <div class="text-sm bg-sky-200/50 text-sky-800 px-4 py-1.5 rounded-full font-bold uppercase">
+                    ¡Vamos Guardián!
+                </div>
+            </div>
+
+            <!-- ESCENARIO DE JUEGO (Centrado de forma equilibrada) -->
+            <div id="adventure-stage" class="relative flex-1 bg-gradient-to-b from-sky-50 to-white border-4 border-dashed border-sky-300 rounded-[36px] overflow-hidden p-6 flex flex-col md:flex-row items-center justify-around gap-6 my-auto">
+                
+                <!-- MISIÓN 1: EL BAÑO (Cerrar grifo) -->
+                <div id="mission-1-ui" class="mission-view w-full h-full flex flex-col md:flex-row items-center justify-around gap-6">
+                    <div class="max-w-sm text-center md:text-left">
+                        <span class="bg-amber-100 text-amber-700 text-sm font-bold px-4 py-1.5 rounded-full">MISION 1</span>
+                        <h3 class="text-3xl md:text-4xl font-bold text-slate-800 mt-3">El Grifo Abierto</h3>
+                        <p class="text-gray-500 text-base md:text-lg mt-2 leading-relaxed">
+                            Mateo dejó la llave corriendo. ¡El agua se escapa de su vaso!
+                        </p>
+                        <!-- Indicador gigante de ayuda -->
+                        <div class="mt-5 flex items-center gap-3 bg-amber-50 p-4 rounded-2xl border-2 border-amber-200 justify-center md:justify-start">
+                            <i class="fa-solid fa-arrows-spin text-amber-500 animate-spin text-2xl"></i>
+                            <span class="text-sm md:text-base text-amber-800 font-bold">¡Haz clic sobre la gran manivela roja!</span>
+                        </div>
+                    </div>
+
+                    <!-- Gráficos de Mateo de mayor tamaño -->
+                    <div class="relative w-80 h-80 bg-sky-100/50 rounded-full border-4 border-white shadow-xl flex items-center justify-center">
+                        <div class="absolute top-6 left-6 text-6xl animate-bounce" style="animation-duration: 3s">🧒🪥</div>
+                        
+                        <!-- El Grifo Gigante -->
+                        <div class="absolute top-16 right-16 flex flex-col items-center">
+                            <i class="fa-solid fa-faucet text-8xl text-slate-500"></i>
+                            <!-- Chorro de agua muy visible -->
+                            <div id="m1-water-flow" class="w-5 h-28 bg-sky-400/80 rounded-b-full absolute top-16 right-6 animate-pulse"></div>
+                        </div>
+
+                        <!-- Válvula Gigante Roja fácil de presionar -->
+                        <div onclick="solveMission1()" id="m1-valve" class="absolute top-28 right-20 w-16 h-16 bg-rose-500 hover:bg-rose-600 rounded-full border-4 border-white shadow-lg flex items-center justify-center cursor-pointer transform active:scale-90 transition-all z-20">
+                            <i class="fa-solid fa-rotate text-white text-2xl"></i>
+                        </div>
+
+                        <!-- El Vaso de Mateo Grande -->
+                        <div class="absolute bottom-6 left-20 flex flex-col items-center">
+                            <div class="relative w-20 h-24 border-4 border-sky-300 rounded-b-2xl overflow-hidden bg-white">
+                                <div id="m1-glass-water" class="absolute bottom-0 left-0 w-full bg-sky-400 transition-all duration-1000" style="height: 10%;"></div>
+                            </div>
+                            <span class="text-xs font-bold text-slate-500 mt-2 uppercase tracking-wider">Vaso de Mateo</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MISIÓN 2: EL JARDÍN (Arreglar manguera con Drag & Drop adaptado a niños) -->
+                <div id="mission-2-ui" class="mission-view hidden w-full h-full flex flex-col md:flex-row items-center justify-around gap-6">
+                    <div class="max-w-sm text-center md:text-left">
+                        <span class="bg-emerald-100 text-emerald-700 text-sm font-bold px-4 py-1.5 rounded-full">MISION 2</span>
+                        <h3 class="text-3xl md:text-4xl font-bold text-slate-800 mt-3">La Flor Sedienta</h3>
+                        <p class="text-gray-500 text-base md:text-lg mt-2 leading-relaxed">
+                            La manguera está tirando agua en el cemento y la plantita está triste.
+                        </p>
+                        <div class="mt-5 flex items-center gap-3 bg-emerald-50 p-4 rounded-2xl border-2 border-emerald-200 justify-center md:justify-start">
+                            <i class="fa-solid fa-hand-pointer text-emerald-500 animate-bounce text-2xl"></i>
+                            <span class="text-sm md:text-base text-emerald-800 font-bold">¡Arrastra la gran gota azul hacia la planta!</span>
+                        </div>
+                    </div>
+
+                    <!-- Área de juego de mayor escala y diseño pulido -->
+                    <div class="relative w-[340px] h-[300px] bg-emerald-50/50 rounded-[40px] border-4 border-dashed border-emerald-200 flex items-center justify-center overflow-hidden">
+                        
+                        <!-- La Flor Gigante -->
+                        <div class="absolute left-10 bottom-6 flex flex-col items-center z-10">
+                            <div id="m2-flower" class="text-8xl transition-transform duration-500">🥀</div>
+                            <span id="m2-flower-label" class="text-sm font-bold text-emerald-700 bg-emerald-100 px-4 py-1 rounded-full mt-2">¡Tiene sed!</span>
+                        </div>
+
+                        <!-- Zona de Caída (Dropzone) muy visible -->
+                        <div id="m2-dropzone" 
+                             class="absolute left-8 bottom-4 w-32 h-40 border-4 border-dashed border-emerald-300 rounded-[30px] bg-emerald-100/30 flex items-center justify-center transition-all duration-300">
+                        </div>
+
+                        <!-- Grifo desperdiciando agua -->
+                        <div class="absolute right-8 top-10 flex flex-col items-center">
+                            <i class="fa-solid fa-shower text-5xl text-slate-600 rotate-90"></i>
+                            <div id="m2-waste-water" class="text-2xl text-sky-400 absolute top-10 -left-6 animate-bounce">💧</div>
+                        </div>
+
+                        <!-- La Gota Mágica Draggable - Con microfísicas para iFrame y alta tolerancia táctil -->
+                        <div id="m2-draggable-drop" 
+                             class="draggable-cursor absolute right-16 bottom-16 w-24 h-24 bg-sky-400 hover:bg-sky-500 rounded-full border-4 border-white shadow-xl flex items-center justify-center transition-shadow z-30 animate-pulse-ring"
+                             onmousedown="initDrag(event)"
+                             ontouchstart="initDrag(event)">
+                            <i class="fa-solid fa-droplet text-white text-4xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MISIÓN 3: LA COCINA (Goteo ruidoso) -->
+                <div id="mission-3-ui" class="mission-view hidden w-full h-full flex flex-col md:flex-row items-center justify-around gap-6">
+                    <div class="max-w-sm text-center md:text-left">
+                        <span class="bg-blue-100 text-blue-700 text-sm font-bold px-4 py-1.5 rounded-full">MISION 3</span>
+                        <h3 class="text-3xl md:text-4xl font-bold text-slate-800 mt-3">El Perrito Asustado</h3>
+                        <p class="text-gray-500 text-base md:text-lg mt-2 leading-relaxed">
+                            El grifo de la cocina gotea y asusta al perrito Toby. ¡Vamos a cerrarlo!
+                        </p>
+                        <div class="mt-5 flex items-center gap-3 bg-blue-50 p-4 rounded-2xl border-2 border-blue-200 justify-center md:justify-start">
+                            <i class="fa-solid fa-sliders text-blue-500 animate-pulse text-2xl"></i>
+                            <span class="text-sm md:text-base text-blue-800 font-bold">¡Desliza la manija roja a la derecha!</span>
+                        </div>
+                    </div>
+
+                    <!-- Panel de control de mayor escala -->
+                    <div class="relative w-80 h-80 bg-blue-50/50 rounded-full border-4 border-white shadow-2xl flex flex-col items-center justify-center p-6">
+                        
+                        <div class="flex justify-between w-full px-6 mb-6">
+                            <!-- Perrito que reacciona -->
+                            <div id="m3-dog" class="text-7xl transition-all duration-300">🐶😢</div>
+                            <!-- Grifo goteando -->
+                            <div class="relative">
+                                <i class="fa-solid fa-faucet text-5xl text-slate-500"></i>
+                                <span id="m3-dripping-drop" class="absolute top-8 left-3 text-sky-400 text-2xl animate-bounce">💧</span>
+                            </div>
+                        </div>
+
+                        <!-- Slider Táctil Gigante -->
+                        <div class="w-full bg-slate-200 h-14 rounded-full relative p-1 border-2 border-slate-300">
+                            <!-- Riel indicador de cerrado -->
+                            <div id="m3-slider-fill" class="h-full bg-rose-400 rounded-full w-1/4 transition-all"></div>
+                            
+                            <!-- Botón deslizador gigante e intuitivo -->
+                            <input type="range" min="0" max="100" value="10" id="m3-slider" 
+                                   class="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-20"
+                                   oninput="checkSlider(this.value)">
+                            
+                            <!-- Manija visual del slider -->
+                            <div id="m3-handle" class="absolute top-1 left-1 w-12 h-12 bg-rose-500 rounded-full border-4 border-white shadow-md flex items-center justify-center pointer-events-none transition-all duration-100">
+                                <i class="fa-solid fa-lock-open text-white text-lg"></i>
+                            </div>
+                        </div>
+                        <div class="flex justify-between w-full px-4 mt-3 text-xs font-bold text-slate-500 uppercase tracking-wide">
+                            <span>Abierto 🔴</span>
+                            <span>Cerrado 🟢</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Botones inferiores de Navegación (Puestos en la base de la pantalla) -->
+            <div class="w-full flex justify-between items-center mt-auto mb-2 z-30">
+                <button onclick="quitGame()" class="bg-gray-100 hover:bg-gray-200 text-gray-500 font-bold px-6 py-3 rounded-2xl text-sm transition-all">
+                    Abandonar Misión
+                </button>
+                <div class="text-emerald-800 font-bold text-sm bg-emerald-50 px-5 py-2.5 rounded-full border border-emerald-200">
+                    Misión orientada a resolver problemas reales
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PANTALLA 4: RESULTADO Y ENTREGA DE LA INSIGNIA ================= -->
+        <div id="screen-result" class="screen hidden flex-col items-center justify-between flex-1 z-10 py-4 h-full">
+            
+            <!-- Insignia de Guardián Gigante -->
+            <div class="w-52 h-52 animate-float my-auto flex items-center justify-center">
+                <svg viewBox="0 0 120 120" class="w-full h-full">
+                    <polygon points="60,10 75,45 110,45 80,70 95,105 60,85 25,105 40,70 10,45 45,45" fill="#fbbf24" stroke="#d97706" stroke-width="4"/>
+                    <circle cx="60" cy="62" r="28" fill="#0ea5e9" stroke="#0284c7" stroke-width="3" />
+                    <path d="M60,46 C63,58 75,70 75,80 C75,88 68,91 60,91 C52,91 45,88 45,80 C45,70 57,58 60,46 Z" fill="white" />
+                </svg>
+            </div>
+
+            <div class="my-auto">
+                <h2 class="text-5xl md:text-6xl font-bold text-emerald-600 leading-tight">¡Misión Cumplida, Guardián!</h2>
+                <p class="text-gray-600 text-lg md:text-2xl max-w-2xl leading-relaxed mt-2 mx-auto">
+                    Has ayudado a Mateo a ahorrar agua, reviviste la hermosa flor sedienta y calmaste a Toby. ¡El planeta Tierra está feliz!
+                </p>
+            </div>
+
+            <!-- Diploma de Compromiso Directo -->
+            <div class="bg-[#f0fdf4] border-4 border-dashed border-emerald-300 rounded-[30px] p-6 max-w-xl my-auto">
+                <h4 class="text-emerald-800 font-bold text-xl md:text-2xl flex items-center justify-center gap-2 mb-2">
+                    <i class="fa-solid fa-seedling text-emerald-500 animate-pulse"></i> Mi Superpoder en Casa:
+                </h4>
+                <p class="text-emerald-950 text-base md:text-lg leading-relaxed">
+                    "Prometo cerrar la llave del agua mientras cepillo mis dientes y avisar a mamá o papá si veo que un grifo está goteando".
+                </p>
+            </div>
+
+            <div class="flex gap-4 mt-auto mb-4">
+                <button onclick="changeScreen('screen-welcome')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-8 py-4 rounded-2xl text-lg transition-all">
+                    Inicio
+                </button>
+                <button onclick="restartGame()" class="btn-3d-emerald bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xl px-12 py-4 rounded-2xl transition-all">
+                    Volver a jugar <i class="fa-solid fa-rotate-right ml-1"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ================= PIE DE PÁGINA ================= -->
+        <footer class="w-full flex justify-between items-center mt-4 text-[11px] md:text-sm font-semibold text-sky-800 border-t border-sky-100 pt-3 z-10">
+            <div><i class="fa-solid fa-earth-americas text-emerald-500"></i> Aprendizaje Basado en Hábitos Reales</div>
+            <div>"Cada gotita cuenta"</div>
+            <div>Foco Pedagógico: Ciencias Naturales</div>
+        </footer>
+    </div>
+
+    <!-- ================= LÓGICA DE JUEGO Y AUDIO SYNTHESIZER ================= -->
+    <script>
+        let currentMission = 1;
+        const totalMissions = 3;
+        
+        // Estado del arrastre (Drag & Drop)
+        let isDragging = false;
+        let dragEl = null;
+        let dragOffset = { x: 0, y: 0 };
+
+        // Inicializar Audio Synthesizer (Web Audio API)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            try {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'select') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.15);
+                } else if (type === 'success') {
+                    const notes = [330, 392, 523, 659]; 
+                    notes.forEach((freq, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.08);
+                        g.gain.setValueAtTime(0.15, audioCtx.currentTime + idx * 0.08);
+                        g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + idx * 0.08 + 0.2);
+                        o.start(audioCtx.currentTime + idx * 0.08);
+                        o.stop(audioCtx.currentTime + idx * 0.08 + 0.2);
+                    });
+                } else if (type === 'valve') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(50, audioCtx.currentTime + 0.25);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.25);
+                }
+            } catch (e) {
+                console.log('Audio contextual deshabilitado.');
+            }
+        }
+
+        function changeScreen(screenId) {
+            playSound('select');
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+
+            if (screenId === 'screen-game') {
+                startMissions();
+            }
+        }
+
+        // CONTROL CONCEPTUAL DE LA PORTADA (3D, gigante y colorida)
+        function selectConcept(topic, element) {
+            playSound('select');
+            document.querySelectorAll('.concept-card').forEach(card => {
+                card.classList.remove('scale-105', 'rotate-1');
+            });
+            element.classList.add('scale-105', 'rotate-1');
+
+            const speech = document.getElementById('intro-speech');
+            if (topic === 'jardin') {
+                speech.innerHTML = "🌱 <strong>¡Superpoder del Jardín!</strong> El agua les da de comer a nuestras flores para que llenen de color el planeta.";
+            } else if (topic === 'sed') {
+                speech.innerHTML = "🐶 <strong>¡Amigos Felices!</strong> Toda el agua dulce que ahorramos mantiene limpios los ríos para los animalitos.";
+            } else if (topic === 'higiene') {
+                speech.innerHTML = "🪥 <strong>¡Higiene Mágica!</strong> Usar un solo vaso al cepillarnos ahorra hasta 10 botellas gigantes de agua.";
+            }
+        }
+
+        // INICIAR SECUENCIA DE MISIONES
+        function startMissions() {
+            currentMission = 1;
+            updateMissionUI();
+        }
+
+        function updateMissionUI() {
+            document.querySelectorAll('.mission-view').forEach(view => view.classList.add('hidden'));
+            document.getElementById(`mission-${currentMission}-ui`).classList.remove('hidden');
+
+            for (let i = 1; i <= totalMissions; i++) {
+                const dot = document.getElementById(`dot-${i}`);
+                if (i < currentMission) {
+                    dot.className = "w-5 h-5 rounded-full bg-emerald-500 border-2 border-emerald-600 shadow-md";
+                } else if (i === currentMission) {
+                    dot.className = "w-5 h-5 rounded-full bg-sky-400 border-2 border-sky-600 animate-pulse shadow-md";
+                } else {
+                    dot.className = "w-5 h-5 rounded-full bg-gray-200 border-2 border-gray-300";
+                }
+            }
+        }
+
+        // MISIÓN 1: LÓGICA DE LA LLAVE DE PASO DEL BAÑO
+        function solveMission1() {
+            playSound('valve');
+            
+            const valve = document.getElementById('m1-valve');
+            valve.style.transform = "rotate(180deg)";
+            
+            const flow = document.getElementById('m1-water-flow');
+            flow.style.height = "0px";
+            flow.style.opacity = "0";
+
+            const glassWater = document.getElementById('m1-glass-water');
+            glassWater.style.height = "85%";
+
+            playSound('success');
+
+            setTimeout(() => {
+                nextMission();
+            }, 2200);
+        }
+
+        // ================= SISTEMA DE ARRASTRE MULTIPLATAFORMA COMPLETO Y CORREGIDO =================
+        function initDrag(e) {
+            e.preventDefault();
+            isDragging = true;
+            dragEl = document.getElementById('m2-draggable-drop');
+            const rect = dragEl.getBoundingClientRect();
+            
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            dragOffset.x = clientX - rect.left;
+            dragOffset.y = clientY - rect.top;
+            
+            dragEl.style.transition = 'none';
+            
+            window.addEventListener('mousemove', doDrag);
+            window.addEventListener('touchmove', doDrag, { passive: false });
+            window.addEventListener('mouseup', stopDrag);
+            window.addEventListener('touchend', stopDrag);
+        }
+
+        function doDrag(e) {
+            if (!isDragging || !dragEl) return;
+            if (e.type === 'touchmove') e.preventDefault(); 
+            
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            const parent = dragEl.parentElement;
+            const parentRect = parent.getBoundingClientRect();
+            
+            let x = clientX - parentRect.left - dragOffset.x;
+            let y = clientY - parentRect.top - dragOffset.y;
+            
+            x = Math.max(0, Math.min(parentRect.width - dragEl.offsetWidth, x));
+            y = Math.max(0, Math.min(parentRect.height - dragEl.offsetHeight, y));
+            
+            dragEl.style.left = `${x}px`;
+            dragEl.style.top = `${y}px`;
+            dragEl.style.right = 'auto';
+            dragEl.style.bottom = 'auto';
+            
+            // Detección visual del arrastre sobre el receptor
+            if (checkCollision()) {
+                const dropzone = document.getElementById('m2-dropzone');
+                dropzone.classList.add('bg-emerald-300/60', 'scale-105', 'border-emerald-500');
+                dropzone.classList.remove('bg-emerald-100/30', 'border-emerald-300');
+            } else {
+                const dropzone = document.getElementById('m2-dropzone');
+                dropzone.classList.remove('bg-emerald-300/60', 'scale-105', 'border-emerald-500');
+                dropzone.classList.add('bg-emerald-100/30', 'border-emerald-300');
+            }
+        }
+
+        function checkCollision() {
+            const dropzone = document.getElementById('m2-dropzone');
+            const dragEl = document.getElementById('m2-draggable-drop');
+            if (!dropzone || !dragEl) return false;
+
+            const dzRect = dropzone.getBoundingClientRect();
+            const elRect = dragEl.getBoundingClientRect();
+
+            // Añadimos una tolerancia de 40px para que el niño no tenga que ser extremadamente preciso
+            const tolerance = 40;
+            return (
+                elRect.left < dzRect.right + tolerance &&
+                elRect.right > dzRect.left - tolerance &&
+                elRect.top < dzRect.bottom + tolerance &&
+                elRect.bottom > dzRect.top - tolerance
+            );
+        }
+
+        function stopDrag(e) {
+            if (!isDragging || !dragEl) return;
+            isDragging = false;
+            
+            window.removeEventListener('mousemove', doDrag);
+            window.removeEventListener('touchmove', doDrag);
+            window.removeEventListener('mouseup', stopDrag);
+            window.removeEventListener('touchend', stopDrag);
+            
+            const dropzone = document.getElementById('m2-dropzone');
+
+            if (checkCollision()) {
+                solveMission2();
+            } else {
+                // Regresar suavemente mediante muelle elástico si no se soltó en la maceta
+                dragEl.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                dragEl.style.left = '';
+                dragEl.style.top = '';
+                dropzone.classList.remove('bg-emerald-300/60', 'scale-105', 'border-emerald-500');
+                dropzone.classList.add('bg-emerald-100/30', 'border-emerald-300');
+            }
+            dragEl = null;
+        }
+
+        function solveMission2() {
+            document.getElementById('m2-waste-water').style.display = 'none';
+            
+            const dropEl = document.getElementById('m2-draggable-drop');
+            dropEl.classList.add('scale-0', 'opacity-0');
+
+            const flower = document.getElementById('m2-flower');
+            flower.innerText = "🌻✨";
+            flower.className = "text-8xl animate-bounce";
+            
+            const label = document.getElementById('m2-flower-label');
+            label.innerText = "¡Flor Feliz!";
+            label.className = "text-sm font-bold text-emerald-800 bg-emerald-200 px-4 py-1.5 rounded-full mt-2 animate-pulse";
+
+            playSound('success');
+
+            setTimeout(() => {
+                nextMission();
+            }, 2500);
+        }
+
+        // MISIÓN 3: SLIDER DE SELLO DE COCINA
+        function checkSlider(val) {
+            const fill = document.getElementById('m3-slider-fill');
+            const handle = document.getElementById('m3-handle');
+            
+            fill.style.width = `${val}%`;
+            handle.style.left = `calc(${val}% - ${val * 0.45}px)`;
+
+            if (val >= 90) {
+                document.getElementById('m3-dripping-drop').style.display = 'none';
+                
+                handle.className = "absolute top-1 left-1 w-12 h-12 bg-emerald-500 rounded-full border-4 border-white shadow-md flex items-center justify-center pointer-events-none";
+                handle.innerHTML = '<i class="fa-solid fa-lock text-white text-lg"></i>';
+
+                const dog = document.getElementById('m3-dog');
+                dog.innerText = "🐶✨💖";
+                dog.className = "text-7xl animate-bounce";
+
+                playSound('success');
+
+                setTimeout(() => {
+                    endAdventure();
+                }, 2500);
+            }
+        }
+
+        // CONTROL DE FLUJO DE LA AVENTURA
+        function nextMission() {
+            if (currentMission < totalMissions) {
+                currentMission++;
+                updateMissionUI();
+            }
+        }
+
+        function endAdventure() {
+            changeScreen('screen-result');
+        }
+
+        function restartGame() {
+            // Misión 1 Reset
+            const flow = document.getElementById('m1-water-flow');
+            flow.style.height = "112px";
+            flow.style.opacity = "1";
+            document.getElementById('m1-glass-water').style.height = "10%";
+            document.getElementById('m1-valve').style.transform = "rotate(0deg)";
+
+            // Misión 2 Reset
+            document.getElementById('m2-waste-water').style.display = 'block';
+            const dropEl = document.getElementById('m2-draggable-drop');
+            dropEl.className = "draggable-cursor absolute right-16 bottom-16 w-24 h-24 bg-sky-400 hover:bg-sky-500 rounded-full border-4 border-white shadow-xl flex items-center justify-center transition-shadow z-30 animate-pulse-ring";
+            dropEl.style.left = "";
+            dropEl.style.top = "";
+            dropEl.style.transition = "";
+            
+            const dropzone = document.getElementById('m2-dropzone');
+            dropzone.className = "absolute left-8 bottom-4 w-32 h-40 border-4 border-dashed border-emerald-300 rounded-[30px] bg-emerald-100/30 flex items-center justify-center transition-all duration-300";
+
+            const flower = document.getElementById('m2-flower');
+            flower.innerText = "🥀";
+            flower.className = "text-8xl";
+            const label = document.getElementById('m2-flower-label');
+            label.innerText = "¡Tiene sed!";
+            label.className = "text-sm font-bold text-emerald-700 bg-emerald-100 px-4 py-1 rounded-full mt-2";
+
+            // Misión 3 Reset
+            document.getElementById('m3-dripping-drop').style.display = 'block';
+            document.getElementById('m3-slider').value = 10;
+            const fill = document.getElementById('m3-slider-fill');
+            const handle = document.getElementById('m3-handle');
+            fill.style.width = "10%";
+            handle.style.left = "4px";
+            handle.className = "absolute top-1 left-1 w-12 h-12 bg-rose-500 rounded-full border-4 border-white shadow-md flex items-center justify-center pointer-events-none";
+            handle.innerHTML = '<i class="fa-solid fa-lock-open text-white text-lg"></i>';
+            document.getElementById('m3-dog').innerText = "🐶😢";
+            document.getElementById('m3-dog').className = "text-7xl";
+
+            changeScreen('screen-game');
+        }
+
+        function quitGame() {
+            changeScreen('screen-welcome');
+        }
+    </script>
+</body>
+</html>

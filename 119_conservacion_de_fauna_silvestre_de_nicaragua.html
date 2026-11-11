@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentación: Misión Eco-Guardia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #ecfdf5;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .slide {
+            display: none;
+            height: 100vh;
+            width: 100vw;
+            padding: 2rem;
+            box-sizing: border-box;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-content {
+            background: white;
+            padding: 3rem;
+            border-radius: 3rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            max-width: 900px;
+            width: 100%;
+            border: 8px solid #10b981;
+            position: relative;
+        }
+
+        .nav-btn {
+            background: #059669;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 1.5rem;
+            font-weight: bold;
+            transition: all 0.2s;
+            cursor: pointer;
+            border-bottom: 4px solid #047857;
+            user-select: none;
+        }
+
+        .nav-btn:hover {
+            background: #10b981;
+            transform: scale(1.05);
+        }
+
+        .nav-btn:active {
+            transform: translateY(4px);
+            border-bottom-width: 0;
+        }
+
+        .nav-btn.disabled {
+            background: #d1d5db;
+            border-bottom-color: #9ca3af;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .progress-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 10px;
+            background: #34d399;
+            transition: width 0.5s ease;
+        }
+
+        .icon-large {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #fef3c7;
+            color: #92400e;
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Diapositiva 1: Portada -->
+    <div class="slide active" id="slide-0">
+        <div class="card-content">
+            <span class="icon-large">🌿</span>
+            <h1 class="text-5xl md:text-7xl font-bold text-green-800 mb-4">Misión Eco-Guardia</h1>
+            <p class="text-2xl text-green-600 mb-8">Protegiendo la fauna silvestre de Nicaragua</p>
+            <div class="bg-green-100 p-4 rounded-2xl mb-8">
+                <p class="text-lg text-green-800 italic">"Pequeñas acciones, grandes cambios para nuestra naturaleza"</p>
+            </div>
+            <p class="text-gray-500 font-bold">Usa las flechas para comenzar la aventura</p>
+        </div>
+    </div>
+
+    <!-- Diapositiva 2: ¿Qué es un Eco-Guardia? -->
+    <div class="slide" id="slide-1">
+        <div class="card-content">
+            <span class="icon-large">🛡️</span>
+            <h2 class="text-4xl font-bold text-green-800 mb-6">¿Qué es un Eco-Guardia?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="p-4 bg-blue-50 rounded-xl">
+                    <p class="text-4xl mb-2">👀</p>
+                    <p class="font-bold">Observa</p>
+                    <p class="text-sm">Identifica los peligros que rodean a los animales.</p>
+                </div>
+                <div class="p-4 bg-yellow-50 rounded-xl">
+                    <p class="text-4xl mb-2">📢</p>
+                    <p class="font-bold">Informa</p>
+                    <p class="text-sm">Enseña a otros por qué es importante cuidar el bosque.</p>
+                </div>
+                <div class="p-4 bg-green-50 rounded-xl">
+                    <p class="text-4xl mb-2">🤝</p>
+                    <p class="font-bold">Protege</p>
+                    <p class="text-sm">Ayuda a mantener limpios los ríos y playas.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diapositiva 3: El Jaguar -->
+    <div class="slide" id="slide-2">
+        <div class="card-content">
+            <span class="tag">Zona Norte: Bosawás</span>
+            <span class="icon-large">🐆</span>
+            <h2 class="text-4xl font-bold text-orange-700 mb-4">El Jaguar</h2>
+            <p class="text-xl mb-6">Es el felino más grande de Nicaragua. ¡Es un excelente nadador!</p>
+            <div class="text-left bg-orange-50 p-6 rounded-2xl border-l-8 border-orange-400">
+                <p class="font-bold text-orange-800">⚠️ Amenaza:</p>
+                <p>La deforestación (corte de árboles) está destruyendo su hogar en la selva.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diapositiva 4: La Tortuga Paslama -->
+    <div class="slide" id="slide-3">
+        <div class="card-content">
+            <span class="tag">Zona Pacífico: Rivas</span>
+            <span class="icon-large">🐢</span>
+            <h2 class="text-4xl font-bold text-blue-700 mb-4">Tortuga Paslama</h2>
+            <p class="text-xl mb-6">Viajan miles de kilómetros para poner sus huevos en nuestras costas.</p>
+            <div class="text-left bg-blue-50 p-6 rounded-2xl border-l-8 border-blue-400">
+                <p class="font-bold text-blue-800">⚠️ Amenaza:</p>
+                <p>El saqueo de nidos y la contaminación por plásticos en el mar.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diapositiva 5: Medida 1 - Reservas -->
+    <div class="slide" id="slide-4">
+        <div class="card-content">
+            <h2 class="text-4xl font-bold text-green-800 mb-8">Medida #1: Crear Reservas</h2>
+            <p class="text-6xl mb-6">🏞️</p>
+            <p class="text-xl mb-6">Declarar áreas protegidas donde **nadie** pueda cortar árboles ni cazar. Esto asegura que los animales tengan comida y refugio para siempre.</p>
+            <div class="bg-green-800 text-white p-4 rounded-xl">
+                <p>Nicaragua tiene reservas increíbles como **Indio Maíz** y **Bosawás**.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diapositiva 6: Medida 2 - Educación -->
+    <div class="slide" id="slide-5">
+        <div class="card-content">
+            <h2 class="text-4xl font-bold text-green-800 mb-8">Medida #2: Educación Ambiental</h2>
+            <p class="text-6xl mb-6">📚</p>
+            <p class="text-xl mb-6">Enseñar en las escuelas que los animales silvestres **no son mascotas**. Un loro o un mono sufren mucho en una jaula.</p>
+            <p class="text-2xl font-bold text-red-600">¡Los animales quieren ser libres!</p>
+        </div>
+    </div>
+
+    <!-- Diapositiva 7: Compromiso -->
+    <div class="slide" id="slide-6">
+        <div class="card-content">
+            <span class="icon-large">🌟</span>
+            <h2 class="text-4xl font-bold text-green-800 mb-4">¿Te unes a la misión?</h2>
+            <p class="text-xl mb-8">Ser un Eco-Guardia es una promesa de por vida con nuestro país.</p>
+            <div class="p-6 bg-green-100 rounded-3xl border-4 border-dashed border-green-500">
+                <p class="text-2xl font-bold text-green-800">¡Juntos salvaremos nuestra fauna!</p>
+            </div>
+            <p class="mt-8 text-gray-500">Fin de la presentación</p>
+        </div>
+    </div>
+
+    <!-- Navegación -->
+    <div class="fixed bottom-8 left-0 right-0 flex justify-center gap-10 items-center">
+        <button id="prevBtn" class="nav-btn disabled">← Anterior</button>
+        <span id="slideNumber" class="font-bold text-green-800 bg-white px-4 py-2 rounded-full shadow-md">1 / 7</span>
+        <button id="nextBtn" class="nav-btn">Siguiente →</button>
+    </div>
+
+    <div class="progress-bar" id="progress"></div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const slideNumber = document.getElementById('slideNumber');
+        const progressBar = document.getElementById('progress');
+        
+        let currentSlide = 0;
+
+        function updateSlides() {
+            slides.forEach((slide, index) => {
+                slide.classList.toggle('active', index === currentSlide);
+            });
+
+            // Actualizar botones
+            prevBtn.classList.toggle('disabled', currentSlide === 0);
+            nextBtn.classList.toggle('disabled', currentSlide === slides.length - 1);
+
+            // Actualizar número y progreso
+            slideNumber.innerText = `${currentSlide + 1} / ${slides.length}`;
+            const progressPercent = ((currentSlide + 1) / slides.length) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+        }
+
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateSlides();
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlides();
+            }
+        });
+
+        // Soporte para teclas de flecha
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextBtn.click();
+            if (e.key === 'ArrowLeft') prevBtn.click();
+        });
+
+        updateSlides();
+    </script>
+</body>
+</html>

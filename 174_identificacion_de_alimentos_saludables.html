@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2º Primaria | El Plato del Bien 🍎🍔</title>
+    <!-- Tipografía infantil y amigable Fredoka -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Fredoka', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #F0FDF4; /* Verde suave de fondo */
+            background-image: radial-gradient(#DCFCE7 2px, transparent 2px);
+            background-size: 30px 30px;
+        }
+        .gummy-shadow {
+            box-shadow: 0 8px 0px rgba(0, 0, 0, 0.06);
+        }
+        .gummy-shadow-primary {
+            box-shadow: 0 8px 0px #15803D;
+        }
+        .gummy-shadow-danger {
+            box-shadow: 0 8px 0px #B91C1C;
+        }
+        .gummy-shadow-purple {
+            box-shadow: 0 8px 0px #6B21A8;
+        }
+
+        /* Animaciones */
+        .floating {
+            animation: softFloat 3s ease-in-out infinite alternate;
+        }
+        @keyframes softFloat {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-8px); }
+        }
+
+        /* Arrastre interactivo */
+        .draggable-food {
+            touch-action: none;
+            cursor: grab;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 50;
+        }
+        .draggable-food:active {
+            cursor: grabbing;
+            transform: scale(1.15);
+        }
+
+        /* Contenedores de caída */
+        .drop-zone {
+            transition: all 0.3s ease;
+        }
+        .drop-zone.active-hover {
+            transform: scale(1.04);
+            box-shadow: 0 0 25px rgba(34, 197, 94, 0.4);
+        }
+        .drop-zone.trash-hover {
+            transform: scale(1.04);
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.4);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
+
+    <!-- PANTALLA INICIAL (BIENVENIDA PEDAGÓGICA) -->
+    <div id="welcome-screen" class="fixed inset-0 bg-[#F0FDF4] z-50 flex items-center justify-center p-4">
+        <div class="bg-white border-8 border-green-500 rounded-3xl p-6 md:p-10 max-w-2xl w-full text-center gummy-shadow relative overflow-hidden">
+            <span class="bg-green-600 text-white font-bold px-4 py-2 rounded-full text-sm uppercase tracking-wider block w-max mx-auto mb-4">
+                🎒 Ciencias Naturales • 2º Primaria
+            </span>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-green-800 leading-tight mb-2" style="text-shadow: 3px 3px 0px #DCFCE7;">
+                El Plato del Bien 🍎🥦
+            </h1>
+            <p class="text-xl text-green-950 font-bold mb-6">Contenido: Alimentación Saludable y Clasificación Nutricional</p>
+            
+            <div class="bg-green-50 border-3 border-dashed border-green-300 rounded-2xl p-4 text-left mb-6 space-y-2">
+                <p class="text-green-900 font-bold text-lg">🎯 Objetivo del Recurso:</p>
+                <p class="text-green-800 text-base leading-relaxed">
+                    Identificar y clasificar los alimentos saludables frente a los ultraprocesados o comida chatarra. Los alumnos aprenderán activamente a armar un plato nutricional equilibrado y a descartar productos nocivos para el cuerpo.
+                </p>
+            </div>
+
+            <button onclick="startPresentation()" class="bg-green-600 hover:bg-green-500 text-white font-bold text-2xl px-10 py-5 rounded-full border-4 border-green-800 gummy-shadow-primary transition transform active:translate-y-1">
+                ¡Empezar a Clasificar! 🍏🚀
+            </button>
+        </div>
+    </div>
+
+    <!-- CABECERA CURRICULAR OBLIGATORIA -->
+    <header class="w-full max-w-4xl mx-auto bg-white border-4 border-green-400 rounded-2xl p-3 flex flex-wrap items-center justify-between gummy-shadow mb-4">
+        <div class="flex items-center gap-3">
+            <span class="bg-green-600 text-white text-xs md:text-sm font-bold px-3 py-1 rounded-full uppercase">2º Primaria</span>
+            <span class="text-gray-700 font-bold text-xs md:text-base">Ciencias Naturales: <span class="text-green-600">Alimentación Saludable</span></span>
+        </div>
+        <div class="text-gray-500 font-bold text-sm mt-1 md:mt-0" id="slide-indicator">Sección 1 de 5</div>
+    </header>
+
+    <!-- ÁREA PRINCIPAL DE CONTENIDO (CONTENEDOR DE DIAPOSITIVAS) -->
+    <main class="w-full max-w-4xl mx-auto bg-white border-4 border-gray-100 rounded-3xl p-6 flex-grow flex flex-col justify-center items-center gummy-shadow relative min-h-[460px]">
+
+        <!-- DIAPOSITIVA 1: INTRODUCCIÓN CONCEPTUAL -->
+        <div id="slide-1" class="slide flex flex-col items-center text-center max-w-2xl animate-[fadeIn_0.5s_ease-out]">
+            <span class="text-7xl mb-4 floating">🍎🥗🍌🌾</span>
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">La Energía de Nuestro Cuerpo</h2>
+            <p class="text-lg md:text-xl text-gray-600 leading-relaxed">
+                ¡Hola, pequeño nutricionista! Nuestro cuerpo es como un superhéroe que necesita **combustible de buena calidad** para correr, pensar y crecer fuerte. Ese combustible viene de los alimentos que consumimos.
+            </p>
+            <p class="text-sm text-gray-400 mt-6 font-semibold italic">Usa los botones de "Siguiente" abajo para aprender a elegir la mejor comida.</p>
+        </div>
+
+        <!-- DIAPOSITIVA 2: ¿QUÉ ES EL PLATO DEL BIEN COMER? -->
+        <div id="slide-2" class="slide hidden flex-col items-center text-center max-w-3xl w-full animate-[fadeIn_0.5s_ease-out]">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">El Plato del Bien Comer 🥗</h2>
+            <p class="text-sm text-gray-500 mb-6">Un plato balanceado debe tener tres grupos mágicos de comida. ¡Descubre de qué color es cada uno!</p>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
+                <!-- Verduras y Frutas -->
+                <div class="bg-green-50 border-4 border-green-400 rounded-2xl p-4 gummy-shadow flex flex-col items-center">
+                    <span class="text-4xl block mb-2">🥦🍎</span>
+                    <h3 class="font-bold text-green-800 text-base">Verdes: Frutas y Verduras</h3>
+                    <p class="text-xs text-green-700 mt-2 font-medium leading-relaxed">¡Aportan vitaminas y minerales para proteger nuestro cuerpo y darnos defensas!</p>
+                </div>
+                <!-- Cereales -->
+                <div class="bg-yellow-50 border-4 border-yellow-400 rounded-2xl p-4 gummy-shadow flex flex-col items-center">
+                    <span class="text-4xl block mb-2">🍞🌾</span>
+                    <h3 class="font-bold text-yellow-800 text-base">Amarillos: Cereales</h3>
+                    <p class="text-xs text-yellow-700 mt-2 font-medium leading-relaxed">Pan, cereales y maíz. ¡Son la gasolina principal que nos da energía para jugar!</p>
+                </div>
+                <!-- Leguminosas y Proteínas -->
+                <div class="bg-red-50 border-4 border-red-400 rounded-2xl p-4 gummy-shadow flex flex-col items-center">
+                    <span class="text-4xl block mb-2">🍗🧀</span>
+                    <h3 class="font-bold text-red-800 text-base">Rojos: Proteínas</h3>
+                    <p class="text-xs text-red-700 mt-2 font-medium leading-relaxed">Carne, pescado, frijoles y queso. ¡Ayudan a nuestros músculos a crecer fuertes!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 3: ¿POR QUÉ EVITAR LA COMIDA CHATARRA? -->
+        <div id="slide-3" class="slide hidden flex-col items-center text-center max-w-3xl w-full animate-[fadeIn_0.5s_ease-out]">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">La Comida Chatarra 🍩❌</h2>
+            <p class="text-sm text-gray-500 mb-6">Hay productos que parecen alimentos, pero en realidad dañan nuestro organismo si los comemos seguido.</p>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
+                <div class="bg-rose-50 border-4 border-rose-400 rounded-2xl p-5 gummy-shadow flex flex-col items-center">
+                    <span class="text-5xl block mb-2">🥤🍟🍩</span>
+                    <h3 class="font-bold text-rose-800 text-lg">¿Qué contienen?</h3>
+                    <p class="text-sm text-gray-600 mt-2 leading-relaxed">
+                        Tienen demasiada **azúcar, sal y grasas malas**. No nos aportan nutrientes verdaderos y nos quitan la energía dejándonos cansados y adoloridos del estómago.
+                    </p>
+                </div>
+                <div class="bg-emerald-50 border-4 border-emerald-400 rounded-2xl p-5 gummy-shadow flex flex-col items-center justify-center">
+                    <span class="text-5xl block mb-2">💧💪✨</span>
+                    <h3 class="font-bold text-emerald-800 text-lg">¡La decisión inteligente!</h3>
+                    <p class="text-sm text-gray-600 mt-2 leading-relaxed">
+                        Elegir agua simple en lugar de refresco, y frutas en lugar de pastelitos, mantendrá tu corazón contento, tus dientes limpios y tu mente brillante.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 4: EL SIMULADOR DEL PLATO DEL BIEN -->
+        <div id="slide-4" class="slide hidden flex-col items-center w-full animate-[fadeIn_0.5s_ease-out]">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-1">¡Taller Nutricional Activo! 🧑‍🌾🍽️</h2>
+            <p class="text-xs sm:text-sm text-gray-500 mb-4 text-center max-w-xl">
+                ¡Clasifica los alimentos! <strong>Arrastra la comida sana al plato verde</strong> para llenarte de fuerza, y la <strong>comida chatarra al bote de basura</strong>. ¡También puedes pulsar en un alimento y luego en su destino!
+            </p>
+
+            <div class="flex flex-col lg:flex-row items-center justify-around w-full gap-6">
+                <!-- Alacena / Estante de alimentos sueltos -->
+                <div class="bg-amber-50 border-4 border-amber-300 rounded-3xl p-3 w-full lg:w-44 flex flex-row lg:flex-col gap-3 justify-center items-center flex-wrap min-h-[100px] gummy-shadow">
+                    <p class="text-xs font-bold text-amber-800 uppercase tracking-wider block w-full text-center lg:border-b border-amber-200 pb-1">Estante</p>
+                    <div id="food-container" class="flex flex-row lg:flex-col gap-3 flex-wrap justify-center">
+                        <!-- Los alimentos se inyectan dinámicamente con JS -->
+                    </div>
+                </div>
+
+                <!-- Zonas de Caída / Destinos -->
+                <div class="flex flex-col sm:flex-row gap-6 items-center justify-center">
+                    <!-- Destino 1: El Plato del Bien -->
+                    <div id="plate-destination" class="drop-zone border-4 border-dashed border-green-500 rounded-full w-48 h-48 sm:w-56 sm:h-56 flex flex-col items-center justify-center bg-green-50/50 p-4 relative" onclick="handleTargetClick('plate-destination')">
+                        <span class="text-5xl">🍽️</span>
+                        <span class="text-xs font-extrabold text-green-700 mt-2 uppercase text-center leading-tight">Plato del Bien</span>
+                        <!-- Elementos colocados adentro se verán en miniatura -->
+                        <div id="plate-items" class="absolute inset-0 flex flex-wrap gap-1 justify-center items-center p-8 pointer-events-none"></div>
+                    </div>
+
+                    <!-- Destino 2: Bote de Basura -->
+                    <div id="trash-destination" class="drop-zone border-4 border-dashed border-red-500 rounded-3xl w-40 h-40 sm:w-44 sm:h-44 flex flex-col items-center justify-center bg-red-50/50 p-4 relative" onclick="handleTargetClick('trash-destination')">
+                        <span class="text-5xl">🗑️</span>
+                        <span class="text-xs font-extrabold text-red-700 mt-2 uppercase text-center leading-tight">Bote de Basura</span>
+                        <!-- Elementos colocados adentro -->
+                        <div id="trash-items" class="absolute inset-0 flex flex-wrap gap-1 justify-center items-center p-8 pointer-events-none"></div>
+                    </div>
+                </div>
+
+                <!-- Caja de retroalimentación interactiva del tutor -->
+                <div class="bg-emerald-50 border-4 border-emerald-300 rounded-3xl p-4 max-w-xs w-full gummy-shadow text-center min-h-[140px] flex flex-col justify-center items-center">
+                    <span class="text-3xl block mb-1">👩‍⚕️</span>
+                    <p id="tutor-feedback-text" class="text-emerald-950 font-bold text-sm leading-snug">
+                        ¡Hola! Soy tu doctora saludable. Conecta los alimentos del estante con su lugar correcto para ganar el reto.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 5: COMPROBACIÓN ACADÉMICA -->
+        <div id="slide-5" class="slide hidden flex-col items-center w-full max-w-2xl animate-[fadeIn_0.5s_ease-out]">
+            <h2 class="text-3xl font-bold text-gray-800 mb-5 text-center">¡Retos Nutricionales! 🧠🌟</h2>
+            
+            <div class="flex flex-col gap-5 w-full">
+                <!-- Pregunta 1 -->
+                <div class="bg-green-50 border-4 border-green-300 rounded-2xl p-4 gummy-shadow relative">
+                    <p class="text-base sm:text-lg font-bold text-gray-800 mb-3">1. ¿Qué nos aporta principalmente el grupo de verduras y frutas?</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="choices-q1">
+                        <button onclick="checkQuizAnswer(1, 'grasa', false, this)" class="bg-white border-2 border-green-200 py-3 rounded-xl font-bold text-sm text-gray-700 active:scale-95 transition">Mucha grasa y sal 🍩</button>
+                        <button onclick="checkQuizAnswer(1, 'vitaminas', true, this)" class="bg-white border-2 border-green-200 py-3 rounded-xl font-bold text-sm text-gray-700 active:scale-95 transition">Vitaminas y defensas 🛡️</button>
+                    </div>
+                    <p id="feedback-q1" class="mt-2 text-center font-bold text-base hidden"></p>
+                </div>
+
+                <!-- Pregunta 2 -->
+                <div class="bg-red-50 border-4 border-red-300 rounded-2xl p-4 gummy-shadow relative">
+                    <p class="text-base sm:text-lg font-bold text-gray-800 mb-3">2. Si consumimos refrescos y dulces todos los días, ¿qué le puede pasar a nuestro cuerpo?</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="choices-q2">
+                        <button onclick="checkQuizAnswer(2, 'daño', true, this)" class="bg-white border-2 border-red-200 py-3 rounded-xl font-bold text-sm text-gray-700 active:scale-95 transition">Nos dolerá la panza y los dientes 🦷🤕</button>
+                        <button onclick="checkQuizAnswer(2, 'crecer', false, this)" class="bg-white border-2 border-red-200 py-3 rounded-xl font-bold text-sm text-gray-700 active:scale-95 transition">Creceremos más sanos y fuertes 💪</button>
+                    </div>
+                    <p id="feedback-q2" class="mt-2 text-center font-bold text-base hidden"></p>
+                </div>
+            </div>
+
+            <!-- Botón Volver a Comenzar -->
+            <button onclick="changeSlide('restart')" class="mt-6 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xl px-8 py-3 rounded-full border-4 border-purple-800 gummy-shadow-purple transition transform active:translate-y-1">
+                🔄 Volver a comenzar
+            </button>
+        </div>
+
+    </main>
+
+    <!-- BARRA DE NAVEGACIÓN INFERIOR -->
+    <footer class="w-full max-w-4xl mx-auto flex items-center justify-between mt-4">
+        <button id="btn-prev" onclick="changeSlide('prev')" class="bg-amber-500 hover:bg-amber-400 text-white font-bold px-6 py-3 rounded-2xl border-4 border-amber-600 gummy-shadow transition transform active:translate-y-1 flex items-center gap-2 opacity-50 cursor-not-allowed" disabled>
+            ⬅️ Atrás
+        </button>
+        
+        <div class="text-gray-500 font-bold text-sm md:text-base">
+            Sección <span id="current-slide-num" class="text-green-600">1</span> de 5
+        </div>
+
+        <button id="btn-next" onclick="changeSlide('next')" class="bg-green-500 hover:bg-green-400 text-white font-bold px-6 py-3 rounded-2xl border-4 border-green-600 gummy-shadow-primary transition transform active:translate-y-1 flex items-center gap-2">
+            Siguiente ➡️
+        </button>
+    </footer>
+
+    <!-- LÓGICA DE CONTROL EN JAVASCRIPT -->
+    <script>
+        // --- Estado de la Presentación ---
+        let currentSlide = 1;
+        const totalSlides = 5;
+
+        // --- STREAMING_CHUNK: Setting up sound synthesizers... ---
+        // --- Sintetizador de Sonidos (Web Audio API) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'success') {
+                // Melodía mágica ascendente
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.08); // E5
+                osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.16); // G5
+                osc.frequency.setValueAtTime(1046.50, audioCtx.currentTime + 0.24); // C6
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'error') {
+                // Tono bajo de alerta suave
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(110, audioCtx.currentTime + 0.25);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.25);
+            } else if (type === 'click') {
+                // Sonido de clic sutil
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(450, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.1);
+            }
+        }
+
+        // --- STREAMING_CHUNK: Integrating TTS audio guidance... ---
+        // --- Narración de Voz Inteligente (SpeechSynthesis) ---
+        function speakNarrative(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Detener lecturas anteriores
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'es-ES';
+                utterance.rate = 0.9; // Velocidad pausada
+                utterance.pitch = 1.15; // Tono de voz amigable
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // --- Navegación de Diapositivas ---
+        function changeSlide(direction) {
+            playSound('click');
+
+            if (direction === 'restart') {
+                currentSlide = 1;
+                resetInteractiveSimulator();
+                resetQuiz();
+            } else if (direction === 'next') {
+                if (currentSlide < totalSlides) currentSlide++;
+            } else if (direction === 'prev') {
+                if (currentSlide > 1) currentSlide--;
+            }
+
+            // Cambiar visibilidad de diapositivas
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.add('hidden');
+                slide.classList.remove('flex');
+            });
+
+            const activeSlide = document.getElementById(`slide-${currentSlide}`);
+            activeSlide.classList.remove('hidden');
+            activeSlide.classList.add('flex');
+
+            // Actualizar encabezado
+            document.getElementById('slide-indicator').textContent = `Sección ${currentSlide} de ${totalSlides}`;
+            document.getElementById('current-slide-num').textContent = currentSlide;
+
+            // Control de botones inferiores
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
+
+            if (currentSlide === 1) {
+                btnPrev.disabled = true;
+                btnPrev.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                btnPrev.disabled = false;
+                btnPrev.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            if (currentSlide === totalSlides) {
+                btnNext.disabled = true;
+                btnNext.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                btnNext.disabled = false;
+                btnNext.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            // Activar locución descriptiva por slide
+            triggerVoiceGuidance();
+        }
+
+        function triggerVoiceGuidance() {
+            if (currentSlide === 1) {
+                speakNarrative("¡Hola! Vamos a aprender sobre la comida saludable y el plato del bien comer.");
+            } else if (currentSlide === 2) {
+                speakNarrative("El plato del bien comer tiene tres grupos de comida: frutas y verduras de verde, cereales de amarillo y proteínas de rojo.");
+            } else if (currentSlide === 3) {
+                speakNarrative("La comida chatarra tiene demasiada azúcar, sal y grasas malas que nos quitan la energía. ¡Es mejor evitarla!");
+            } else if (currentSlide === 4) {
+                speakNarrative("¡Taller interactivo! Lleva cada comida del estante a su lugar correcto. La comida sana al plato y la chatarra al bote de basura.");
+                initInteractiveSimulator();
+            } else if (currentSlide === 5) {
+                speakNarrative("¡Reto final! Responde estas dos preguntas para demostrar cuánto has aprendido.");
+            }
+        }
+
+        function startPresentation() {
+            playSound('click');
+            const overlay = document.getElementById('welcome-screen');
+            overlay.classList.add('opacity-0');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 500);
+
+            // Cargar motores de voz
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.getVoices();
+            }
+            triggerVoiceGuidance();
+        }
+
+        // --- STREAMING_CHUNK: Setting up simulator data and mechanics... ---
+        // --- LÓGICA DEL SIMULADOR DEL PLATO DEL BIEN (DIAPOSITIVA 4) ---
+        const foodItemsData = [
+            { id: 'food-apple', emoji: '🍎', type: 'healthy', name: 'Manzana fresca', desc: '¡Una fruta deliciosa que limpia tus dientes!' },
+            { id: 'food-donut', emoji: '🍩', type: 'junk', name: 'Dona azucarada', desc: 'Tiene demasiada azúcar que daña tus dientes.' },
+            { id: 'food-broccoli', emoji: '🥦', type: 'healthy', name: 'Brócoli verde', desc: '¡Aporta vitaminas para defenderte de enfermedades!' },
+            { id: 'food-soda', emoji: '🥤', type: 'junk', name: 'Refresco embotellado', desc: 'Tiene exceso de azúcares y no te hidrata.' },
+            { id: 'food-fish', emoji: '🐟', type: 'healthy', name: 'Pescado rico', desc: '¡Proteína sana para que crezcan tus músculos!' },
+            { id: 'food-fries', emoji: '🍟', type: 'junk', name: 'Papas fritas', desc: 'Tienen exceso de sal y aceite malo.' }
+        ];
+
+        let activeDragId = null;
+        let startPos = { x: 0, y: 0 };
+        let offset = { x: 0, y: 0 };
+        let selectedClickFoodId = null; // Para control táctil por clics sucesivos
+
+        function initInteractiveSimulator() {
+            resetInteractiveSimulator();
+
+            const container = document.getElementById('food-container');
+            container.innerHTML = '';
+
+            foodItemsData.forEach(food => {
+                const el = document.createElement('div');
+                el.id = food.id;
+                el.className = 'draggable-food bg-white border-4 border-amber-200 hover:border-amber-400 rounded-2xl p-3 flex flex-col items-center justify-center gummy-shadow w-16 h-16 sm:w-20 sm:h-20';
+                el.setAttribute('data-type', food.type);
+                el.innerHTML = `
+                    <span class="text-3xl sm:text-4xl">${food.emoji}</span>
+                `;
+                
+                // Evento pointer para unificar mouse y touch arrastre
+                el.addEventListener('pointerdown', startDrag);
+
+                container.appendChild(el);
+            });
+        }
+
+        // Motor de Arrastre Adaptable
+        function startDrag(e) {
+            e.preventDefault();
+            activeDragId = e.currentTarget.id;
+            const elem = document.getElementById(activeDragId);
+            const rect = elem.getBoundingClientRect();
+
+            startPos = {
+                left: elem.style.left || 'auto',
+                top: elem.style.top || 'auto',
+                position: elem.style.position || 'static'
+            };
+
+            // Convertir elemento a coordenadas flotantes fijas
+            elem.style.width = `${rect.width}px`;
+            elem.style.height = `${rect.height}px`;
+            elem.style.position = 'fixed';
+            elem.style.left = `${rect.left}px`;
+            elem.style.top = `${rect.top}px`;
+            elem.style.zIndex = '100';
+
+            offset = {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+
+            // Encender brillos sugeridos
+            const foodType = elem.getAttribute('data-type');
+            if (foodType === 'healthy') {
+                document.getElementById('plate-destination').classList.add('active-hover');
+            } else {
+                document.getElementById('trash-destination').classList.add('trash-hover');
+            }
+
+            // Activar control táctil simplificado (Click-to-Select)
+            if (selectedClickFoodId) {
+                const prevElem = document.getElementById(selectedClickFoodId);
+                if (prevElem) prevElem.classList.remove('border-green-500', 'bg-green-50');
+            }
+            selectedClickFoodId = activeDragId;
+            elem.classList.add('border-green-500', 'bg-green-50/50');
+
+            document.addEventListener('pointermove', dragMove);
+            document.addEventListener('pointerup', dragEnd);
+        }
+
+        function dragMove(e) {
+            if (!activeDragId) return;
+            const elem = document.getElementById(activeDragId);
+            elem.style.left = `${e.clientX - offset.x}px`;
+            elem.style.top = `${e.clientY - offset.y}px`;
+        }
+
+        function dragEnd(e) {
+            if (!activeDragId) return;
+            document.removeEventListener('pointermove', dragMove);
+            document.removeEventListener('pointerup', dragEnd);
+
+            const elem = document.getElementById(activeDragId);
+            const foodType = elem.getAttribute('data-type');
+
+            // Apagar brillos
+            document.getElementById('plate-destination').classList.remove('active-hover');
+            document.getElementById('trash-destination').classList.remove('trash-hover');
+
+            const plateDest = document.getElementById('plate-destination');
+            const trashDest = document.getElementById('trash-destination');
+
+            const plateRect = plateDest.getBoundingClientRect();
+            const trashRect = trashDest.getBoundingClientRect();
+            const elemRect = elem.getBoundingClientRect();
+
+            const elemCenterX = elemRect.left + elemRect.width / 2;
+            const elemCenterY = elemRect.top + elemRect.height / 2;
+
+            // Colisiones espaciales
+            const droppedInPlate = (
+                elemCenterX >= plateRect.left &&
+                elemCenterX <= plateRect.right &&
+                elemCenterY >= plateRect.top &&
+                elemCenterY <= plateRect.bottom
+            );
+
+            const droppedInTrash = (
+                elemCenterX >= trashRect.left &&
+                elemCenterX <= trashRect.right &&
+                elemCenterY >= trashRect.top &&
+                elemCenterY <= trashRect.bottom
+            );
+
+            if (droppedInPlate && foodType === 'healthy') {
+                snapFoodToTarget(elem, 'plate-items', 'healthy');
+            } else if (droppedInTrash && foodType === 'junk') {
+                snapFoodToTarget(elem, 'trash-items', 'junk');
+            } else if (droppedInPlate || droppedInTrash) {
+                // Colocación errónea
+                playSound('error');
+                handleClassificationError(foodType, droppedInPlate ? 'plate' : 'trash');
+                resetElementToBox(elem);
+            } else {
+                // Soltado en zona muerta
+                resetElementToBox(elem);
+            }
+
+            activeDragId = null;
+        }
+
+        // Fallback táctil: Clicar en el destino
+        function handleTargetClick(targetId) {
+            if (!selectedClickFoodId) return;
+            const elem = document.getElementById(selectedClickFoodId);
+            const foodType = elem.getAttribute('data-type');
+
+            if (targetId === 'plate-destination' && foodType === 'healthy') {
+                snapFoodToTarget(elem, 'plate-items', 'healthy');
+            } else if (targetId === 'trash-destination' && foodType === 'junk') {
+                snapFoodToTarget(elem, 'trash-items', 'junk');
+            } else {
+                playSound('error');
+                handleClassificationError(foodType, targetId === 'plate-destination' ? 'plate' : 'trash');
+                elem.classList.remove('border-green-500', 'bg-green-50/50');
+                selectedClickFoodId = null;
+            }
+        }
+
+        // Pegar comida en el destino final
+        function snapFoodToTarget(elem, containerId, type) {
+            playSound('success');
+            
+            // Ocultar original
+            elem.style.display = 'none';
+
+            // Agregar miniatura animada en el destino
+            const destContainer = document.getElementById(containerId);
+            const foodData = foodItemsData.find(f => f.id === elem.id);
+
+            const mini = document.createElement('span');
+            mini.className = 'text-3xl sm:text-4xl animate-[bounce_0.5s_ease]';
+            mini.textContent = foodData.emoji;
+            destContainer.appendChild(mini);
+
+            // Feedback del tutor doctor
+            const feedbackText = document.getElementById('tutor-feedback-text');
+            feedbackText.innerHTML = `<strong>¡Muy bien hecho! ✅</strong><br>${foodData.name}: ${foodData.desc}`;
+            speakNarrative(`Excelente. El ${foodData.name} es saludable.`);
+
+            selectedClickFoodId = null;
+            checkWinCondition();
+        }
+
+        function resetElementToBox(elem) {
+            elem.style.position = startPos.position;
+            elem.style.left = startPos.left;
+            elem.style.top = startPos.top;
+            elem.style.width = 'auto';
+            elem.style.height = 'auto';
+            elem.style.zIndex = '10';
+            elem.classList.remove('border-green-500', 'bg-green-50/50');
+            selectedClickFoodId = null;
+        }
+
+        // Manejo de retroalimentación en errores
+        function handleClassificationError(foodType, attemptedPlace) {
+            const feedbackText = document.getElementById('tutor-feedback-text');
+            
+            if (foodType === 'healthy' && attemptedPlace === 'trash') {
+                feedbackText.innerHTML = `<strong>¡Espera! 🩺</strong><br>¿Por qué tirarías comida sana al bote? ¡Esa comida te da superpoderes! Llévala al plato.`;
+                speakNarrative("Espera, esa comida es sana y te da energía. Llévala a tu plato.");
+            } else if (foodType === 'junk' && attemptedPlace === 'plate') {
+                feedbackText.innerHTML = `<strong>¡Cuidado! 🩺</strong><br>Ese alimento tiene exceso de azúcar o grasas malas para tu plato. ¡Mejor ponlo en el bote!`;
+                speakNarrative("Cuidado, ese producto tiene demasiada azúcar o sal. Llévalo al bote.");
+            }
+        }
+
+        function checkWinCondition() {
+            // Verificar si todos los elementos del estante están ocultos (clasificados)
+            const activeFoods = document.querySelectorAll('.draggable-food[style*="display: none"]');
+            if (activeFoods.length === foodItemsData.length) {
+                const feedbackText = document.getElementById('tutor-feedback-text');
+                feedbackText.innerHTML = `<strong>¡Reto Nutricional Logrado! 🏆✨</strong><br>Has clasificado todos los alimentos de forma perfecta. ¡Eres un súper campeón saludable!`;
+                speakNarrative("Felicidades. Lograste clasificar todos los alimentos de forma perfecta.");
+            }
+        }
+
+        function resetInteractiveSimulator() {
+            document.getElementById('plate-items').innerHTML = '';
+            document.getElementById('trash-items').innerHTML = '';
+            document.getElementById('tutor-feedback-text').innerHTML = `
+                ¡Hola! Soy tu doctora saludable. Conecta los alimentos del estante con su lugar correcto para ganar el reto.
+            `;
+            selectedClickFoodId = null;
+        }
+
+        // --- STREAMING_CHUNK: Coding quiz verification logic... ---
+        // --- LÓGICA DE LA EVALUACIÓN (DIAPOSITIVA 5) ---
+        function checkQuizAnswer(questionNum, answer, isCorrect, clickedBtn) {
+            const feedbackElem = document.getElementById(`feedback-q${questionNum}`);
+            const parentRow = document.getElementById(`choices-q${questionNum}`);
+
+            parentRow.querySelectorAll('button').forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('opacity-50');
+            });
+
+            feedbackElem.classList.remove('hidden');
+
+            if (isCorrect) {
+                playSound('success');
+                clickedBtn.classList.remove('bg-white', 'border-green-200', 'border-red-200');
+                clickedBtn.classList.add('bg-green-500', 'text-white', 'border-green-600', 'opacity-100');
+                feedbackElem.className = "mt-2 text-center font-bold text-base text-green-600 animate-[pulse_0.4s_ease]";
+                
+                if (questionNum === 1) {
+                    feedbackElem.textContent = "¡Perfecto! 🛡️ Las frutas nos llenan de defensas.";
+                    speakNarrative("¡Perfecto! Las frutas nos aportan vitaminas y defensas.");
+                } else {
+                    feedbackElem.textContent = "¡Exacto! 🦷🤕 El exceso de azúcar daña el cuerpo.";
+                    speakNarrative("¡Exacto! El exceso de refresco daña tus dientes y tu panza.");
+                }
+            } else {
+                playSound('error');
+                clickedBtn.classList.remove('bg-white', 'border-green-200', 'border-red-200');
+                clickedBtn.classList.add('bg-red-500', 'text-white', 'border-red-600', 'opacity-100');
+                feedbackElem.className = "mt-2 text-center font-bold text-base text-red-600";
+                feedbackElem.textContent = "¡Casi! Inténtalo de nuevo 🤔";
+                speakNarrative("Casi, vuelve a pensarlo.");
+
+                // Permitir reintentar
+                setTimeout(() => {
+                    parentRow.querySelectorAll('button').forEach(btn => {
+                        btn.disabled = false;
+                        btn.classList.remove('opacity-50', 'bg-red-500', 'text-white', 'border-red-600');
+                        btn.classList.add('bg-white', 'border-2');
+                    });
+                    feedbackElem.classList.add('hidden');
+                }, 1800);
+            }
+        }
+
+        function resetQuiz() {
+            document.querySelectorAll('#slide-5 button').forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'bg-green-500', 'bg-red-500', 'text-white', 'border-green-600', 'border-red-600');
+                btn.classList.add('bg-white', 'border-2', 'text-gray-700');
+            });
+            document.getElementById('feedback-q1').classList.add('hidden');
+            document.getElementById('feedback-q2').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

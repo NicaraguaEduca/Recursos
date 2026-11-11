@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>¡Todos Podemos! - El Juego de la Igualdad</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f5f3ff; /* Violeta súper suave y neutro */
+            background-image: 
+                radial-gradient(#ddd6fe 3px, transparent 3px),
+                radial-gradient(#ddd6fe 3px, transparent 3px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        /* Animaciones educativas y divertidas */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(1.5deg); }
+        }
+        .floating {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px) rotate(-2deg); }
+            40%, 80% { transform: translateX(8px) rotate(2deg); }
+        }
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes scaleUp {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .scale-up {
+            animation: scaleUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Estilo interactivo de la tarjeta de acción */
+        .tarjeta-accion {
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .tarjeta-accion:active {
+            cursor: grabbing;
+        }
+
+        /* Efectos visuales de las islas receptoras al pasar la tarjeta encima */
+        .isla-hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 25px -5px rgba(139, 92, 246, 0.3);
+            border-color: #8b5cf6 !important;
+        }
+
+        /* Partículas de celebración */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            animation: burst 1.2s ease-out forwards;
+            z-index: 100;
+        }
+        @keyframes burst {
+            0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-100px) scale(1.6) rotate(180deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="w-screen h-screen flex flex-col relative text-gray-800">
+
+    <!-- ================= PANTALLA DE INICIO ================= -->
+    <div id="pantalla-inicio" class="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-violet-50/95 backdrop-blur-md transition-opacity duration-500">
+        
+        <div class="bg-violet-100 rounded-full px-6 py-2 mb-4 font-bold text-violet-700 tracking-wider shadow-sm border border-violet-200">
+            FORMACIÓN CÍVICA Y VALORES • 1º GRADO
+        </div>
+        
+        <h1 class="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-600 mb-6 drop-shadow-sm leading-tight">
+            ¡Todos Podemos! 🌟
+        </h1>
+        
+        <div class="max-w-2xl bg-white p-8 rounded-[2.5rem] shadow-2xl border-4 border-violet-400 mb-8 transform hover:scale-105 transition-transform duration-300 relative overflow-hidden">
+            <h2 class="text-3xl font-bold text-violet-700 mb-4 flex items-center justify-center gap-3">
+                <span>🎯</span> Nuestro Objetivo de Aprendizaje
+            </h2>
+            <p class="text-xl text-gray-600 leading-relaxed font-semibold">
+                ¡Las niñas y los niños somos igual de valiosos y capaces!<br>
+                Descubre que los juguetes, los deportes, las profesiones y las emociones <b>no tienen género</b>. ¡Todos tenemos derecho a soñar y hacer lo que nos hace felices! <br><br>
+                <span class="text-fuchsia-500 font-black">¡Rompamos los estereotipos jugando!</span>
+            </p>
+            <div class="flex justify-center gap-6 mt-6 text-5xl">
+                <span class="floating" style="animation-delay: 0s;">👦</span>
+                <span class="floating" style="animation-delay: 0.3s;">🚀</span>
+                <span class="floating" style="animation-delay: 0.6s;">👧</span>
+            </div>
+        </div>
+
+        <button onclick="iniciarJuego()" class="group relative inline-flex items-center justify-center px-12 py-5 text-2xl font-bold text-white bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full overflow-hidden shadow-[0_8px_0_#6d28d9] active:shadow-[0_0px_0_#6d28d9] active:translate-y-2 transition-all">
+            <span class="relative flex items-center gap-2">¡Empezar a Desafiar! <span class="text-3xl group-hover:animate-bounce">🧠</span></span>
+        </button>
+    </div>
+
+    <!-- ================= PANTALLA DEL JUEGO ================= -->
+    <div id="pantalla-juego" class="hidden absolute inset-0 z-10 flex flex-col h-full w-full">
+        
+        <!-- Cabecera -->
+        <div class="w-full flex justify-between items-center bg-white/95 p-4 shadow-md border-b-4 border-violet-200 z-20 shrink-0">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl md:text-4xl bg-violet-100 p-2 rounded-full">🧠</span>
+                <div>
+                    <h2 class="text-xl md:text-3xl font-black text-violet-700">¡Todos Podemos!</h2>
+                    <p class="hidden md:block text-xs font-bold text-gray-400">Igualdad de Género y Dignidad • 1º Primaria</p>
+                </div>
+            </div>
+            <div class="flex flex-col items-end">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Tu Progreso</span>
+                <span id="contador-progreso" class="bg-fuchsia-100 px-4 py-1 rounded-full text-fuchsia-700 font-black border-2 border-fuchsia-200 text-lg md:text-xl shadow-sm">0 / 6 Desafíos</span>
+            </div>
+        </div>
+
+        <!-- Área Principal de Juego (Distribución Horizontal Inteligente) -->
+        <div class="flex-1 w-full p-4 md:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 overflow-hidden relative">
+            
+            <!-- Burbuja de Guía Pedagógica (Búho o Personaje Tutor) -->
+            <div id="burbuja-pedagogica" class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white px-6 py-4 rounded-[2rem] shadow-2xl border-4 border-violet-400 opacity-0 transition-all duration-300 z-50 text-center w-11/12 max-w-lg pointer-events-none scale-90">
+                <!-- Se inyectará el texto reflexivo aquí -->
+            </div>
+
+            <!-- Columna Izquierda: Tarjeta de Situación Actual -->
+            <div class="w-full lg:w-2/5 flex flex-col items-center justify-center bg-violet-100/40 rounded-[3rem] p-6 border-4 border-dashed border-violet-200 min-h-[250px] lg:h-full relative shrink-0">
+                
+                <h3 id="instruccion-juego" class="text-lg md:text-2xl font-black text-violet-800 text-center mb-6 animate-pulse">
+                    🤔 ¿Quién puede hacer esta actividad?
+                </h3>
+
+                <!-- Contenedor de la Tarjeta Desafío (Donde se inyecta por JS) -->
+                <div id="contenedor-tarjeta" class="w-full flex items-center justify-center min-h-[160px] relative">
+                    <!-- Tarjeta inyectada -->
+                </div>
+
+                <!-- Personaje tutor decorativo -->
+                <div class="hidden lg:flex items-center gap-2 mt-6 bg-white/80 p-3 rounded-2xl border border-violet-100 shadow-sm text-xs font-bold text-gray-500">
+                    <span class="text-2xl">🦉</span>
+                    <span>Arrastra la tarjeta hacia la opción que consideres correcta.</span>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Las 3 Islas de Decisión (Zonas Receptoras) -->
+            <div class="w-full lg:w-3/5 flex flex-col justify-center gap-4 lg:h-full z-10">
+                
+                <h3 class="text-xl md:text-2xl font-black text-violet-900 text-center lg:text-left mb-2">
+                    Elige la isla correcta:
+                </h3>
+
+                <!-- Contenedor de Zonas (Islas) -->
+                <div id="contenedor-islas" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    
+                    <!-- Isla Solo Niños -->
+                    <div id="isla-ninos" class="isla-receptora bg-sky-50 border-4 border-sky-300 rounded-[2rem] p-5 flex flex-col items-center justify-center text-center shadow-md transition-all duration-300 h-44 md:h-64 select-none" data-decision="ninos">
+                        <span class="text-4xl md:text-6xl mb-3 filter drop-shadow-sm select-none">👦</span>
+                        <h4 class="font-black text-sky-800 text-lg md:text-xl">Solo Niños</h4>
+                        <p class="text-xs font-bold text-sky-400 mt-1">¿Es exclusivo de niños?</p>
+                    </div>
+
+                    <!-- Isla ¡Todos por Igual! (Resaltada, dorada, más grande y sin overflow-hidden para la animación) -->
+                    <div id="isla-igualdad" class="isla-receptora bg-amber-50 border-4 border-amber-400 rounded-[2.5rem] p-5 flex flex-col items-center justify-center text-center shadow-lg transition-all duration-300 h-48 md:h-72 select-none relative" data-decision="iguales">
+                        <div class="absolute top-2 bg-amber-400 text-white font-black px-3 py-0.5 rounded-full text-[10px] tracking-wider uppercase animate-pulse">¡Recomendado!</div>
+                        <span class="text-5xl md:text-7xl mb-3 filter drop-shadow-md floating select-none">👦❤️👧</span>
+                        <h4 class="font-black text-amber-800 text-xl md:text-2xl">¡Todos por Igual!</h4>
+                        <p class="text-xs font-extrabold text-amber-600 mt-1">¡Niños y Niñas!</p>
+                    </div>
+
+                    <!-- Isla Solo Niñas -->
+                    <div id="isla-ninas" class="isla-receptora bg-pink-50 border-4 border-pink-300 rounded-[2rem] p-5 flex flex-col items-center justify-center text-center shadow-md transition-all duration-300 h-44 md:h-64 select-none" data-decision="ninas">
+                        <span class="text-4xl md:text-6xl mb-3 filter drop-shadow-sm select-none">👧</span>
+                        <h4 class="font-black text-pink-800 text-lg md:text-xl">Solo Niñas</h4>
+                        <p class="text-xs font-bold text-pink-400 mt-1">¿Es exclusivo de niñas?</p>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= PANTALLA FINAL ================= -->
+    <div id="pantalla-final" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-white/95 backdrop-blur-md transition-opacity duration-500">
+        <!-- Emojis distribuidos perfectamente en un flexbox para que no sufran cortes ni envolturas extrañas -->
+        <div class="flex gap-4 justify-center text-6xl md:text-8xl mb-6 floating select-none">
+            <span>👑</span>
+            <span>🏆</span>
+            <span>🌈</span>
+        </div>
+        <h1 class="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-600 mb-6 drop-shadow-sm leading-tight">
+            ¡Súper Campeón/a de la Igualdad!
+        </h1>
+        <p class="text-2xl text-gray-700 max-w-2xl mb-10 font-bold leading-relaxed">
+            Has demostrado que las actividades, las profesiones, el deporte y los sentimientos no tienen género. <br>
+            ¡Niños y niñas somos libres de jugar, soñar y crecer como queramos! 🤝💖
+        </p>
+        <button onclick="reiniciarJuego()" class="group relative inline-flex items-center justify-center px-12 py-5 text-2xl font-bold text-white bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full overflow-hidden shadow-[0_8px_0_#6d28d9] active:shadow-[0_0px_0_#6d28d9] active:translate-y-2 transition-all">
+            <span class="relative flex items-center gap-2">Jugar otra vez <span class="text-3xl">🔄</span></span>
+        </button>
+    </div>
+
+    <!-- ================= LÓGICA DEL JUEGO ================= -->
+    <script>
+        // --- BASE DE DATOS DE DESAFÍOS (Estereotipos vs. Realidad de Igualdad) ---
+        const desafiosTodas = [
+            {
+                id: "astronauta",
+                texto: "Ser astronauta y viajar al espacio 🚀",
+                categoria: "iguales",
+                explicacionCorrecta: "¡Exacto! Las mujeres son astronautas brillantes que viajan al espacio y estudian las estrellas. ¡La ciencia es para todos! 👩‍🚀👨‍🚀",
+                consejoNinos: "¡Espera! ¿Sabías que muchas mujeres valientes e inteligentes viajan al espacio y pilotan naves espaciales? ¡Las niñas también pueden ser grandes astronautas! 👩‍🚀✨",
+                consejoNinas: "¡Ay! Aunque las niñas son excelentes astronautas, los niños también sueñan con viajar a las estrellas y pilotar cohetes. ¡El espacio nos espera a todos! 👨‍🚀🚀"
+            },
+            {
+                id: "muñeca",
+                texto: "Jugar con muñecas y cuidar bebés 🍼",
+                categoria: "iguales",
+                explicacionCorrecta: "¡Excelente! Los niños también serán papás cariñosos en el futuro y jugar a cuidar les enseña a ser amorosos y protectores. 🧸👶",
+                consejoNinos: "¡Uy! Aunque los niños son maravillosos cuidadores, a las niñas también les fascina jugar a ser mamás y cuidar con mucho cariño. ¡Dar amor es de todos! 👧🍼",
+                consejoNinas: "¡Piénsalo! Los niños que juegan con muñecas de pequeños aprenden a ser papás súper cariñosos, atentos y protectores cuando crecen. ¡Cuidar no tiene género! 👦🍼"
+            },
+            {
+                id: "futbol",
+                texto: "Jugar fútbol y meter súper goles ⚽",
+                categoria: "iguales",
+                explicacionCorrecta: "¡Golazo! El deporte nos mantiene fuertes y sanos. Las niñas juegan fútbol increíble en copas mundiales llenas de público. 🏃‍♀️🏃‍♂️",
+                consejoNinos: "¡Un momento! ¿Sabías que las niñas meten goles increíbles y juegan torneos mundiales de fútbol llenos de emoción? ¡El balón es para divertirse todos por igual! ⚽👧",
+                consejoNinas: "¡Espera! A los niños también les encanta entrenar, jugar en equipo y correr para meter golazos con sus amigos. ¡El deporte nos hace felices a todos! ⚽👦"
+            },
+            {
+                id: "tristeza",
+                texto: "Llorar y decir cuando me siento triste 😢",
+                categoria: "iguales",
+                explicacionCorrecta: "¡Muy bien pensado! Llorar es la forma natural de aliviar nuestro corazón. Expresar sentimientos nos hace fuertes y valientes a todos. ❤️🩹",
+                consejoNinos: "¡Oye! Las niñas también se sienten tristes a veces y necesitan desahogarse llorando. Expresar lo que sentimos nos ayuda a sanar a todos por igual. 😢👧",
+                consejoNinas: "¡Alto ahí! Los niños también sienten tristeza y necesitan llorar para sentirse mejor. Llorar no es de cobardes, ¡es de valientes que entienden su corazón! 😢👦"
+            },
+            {
+                id: "ballet",
+                texto: "Bailar ballet y hacer gimnasia artística 🩰",
+                categoria: "iguales",
+                explicacionCorrecta: "¡Hermosa respuesta! El ballet requiere muchísima fuerza, entrenamiento y agilidad física. ¡Los niños bailarines son atletas magníficos! 🕺✨",
+                consejoNinos: "¡Espera! Las niñas practican ballet con muchísima elegancia, esfuerzo y disciplina. ¡Bailar es un arte precioso que las niñas disfrutan un montón! 🩰👧",
+                consejoNinas: "¡Mira esto! Los niños bailarines de ballet necesitan una fuerza muscular y agilidad increíbles. ¡Son súper atletas que saltan altísimo en los teatros! 🕺🩰"
+            },
+            {
+                id: "liderar",
+                texto: "Ser presidente/a de un país o equipo 👑",
+                categoria: "iguales",
+                explicacionCorrecta: "¡Súper correcto! Las mujeres son líderes asombrosas que toman decisiones sabias para cuidar y mejorar sus comunidades y escuelas. 🏛️👩",
+                consejoNinos: "¡Alto ahí! ¿Sabías que muchas mujeres sabias y valientes han sido presidentas y alcaldesas gobernando países enteros? ¡Las niñas lideran con gran inteligencia! 👧👑",
+                consejoNinas: "¡Espera! Los niños también tienen grandes ideas de liderazgo y de adultos pueden gobernar o dirigir equipos con mucho respeto y empatía. ¡Todos podemos ser líderes! 👦👑"
+            }
+        ];
+
+        let desafiosJuego = [];
+        let indiceActual = 0;
+        let tarjetaActiva = null;
+        let isDragging = false;
+        let startX, startY, currentX, currentY;
+        let zonasCaida = []; // Posiciones de las 3 islas receptores
+
+        // Referencias DOM
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const pantallaJuego = document.getElementById('pantalla-juego');
+        const pantallaFinal = document.getElementById('pantalla-final');
+        const contenedorTarjeta = document.getElementById('contenedor-tarjeta');
+        const contadorProgreso = document.getElementById('contador-progreso');
+        const burbujaPedagogica = document.getElementById('burbuja-pedagogica');
+        const instruccionJuego = document.getElementById('instruccion-juego');
+
+        // --- INICIALIZACIÓN ---
+
+        function mezclarArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function iniciarJuego() {
+            pantallaInicio.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaInicio.classList.add('hidden');
+                pantallaInicio.classList.remove('opacity-0');
+                pantallaJuego.classList.remove('hidden');
+                
+                desafiosJuego = mezclarArray([...desafiosTodas]);
+                indiceActual = 0;
+                
+                actualizarProgreso();
+                mostrarSiguienteDesafio();
+            }, 500);
+        }
+
+        function reiniciarJuego() {
+            pantallaFinal.classList.add('opacity-0');
+            setTimeout(() => {
+                window.location.reload(); // Recarga F5 limpia para reiniciar el recurso perfectamente
+            }, 300);
+        }
+
+        function actualizarProgreso() {
+            contadorProgreso.innerText = `${indiceActual} / ${desafiosJuego.length} Desafíos`;
+        }
+
+        // --- RENDERIZAR NUEVA TARJETA ---
+
+        function mostrarSiguienteDesafio() {
+            contenedorTarjeta.innerHTML = '';
+            burbujaPedagogica.className = "absolute top-4 left-1/2 transform -translate-x-1/2 bg-white px-6 py-4 rounded-[2rem] shadow-2xl border-4 border-violet-400 opacity-0 transition-all duration-300 z-50 text-center max-w-lg pointer-events-none scale-90";
+
+            if (indiceActual >= desafiosJuego.length) {
+                finalizarJuego();
+                return;
+            }
+
+            const desafio = desafiosJuego[indiceActual];
+
+            // Crear tarjeta física arrastrable
+            const tarjeta = document.createElement('div');
+            tarjeta.className = "tarjeta-accion bg-white p-6 md:p-8 rounded-[2.5rem] shadow-[0_15px_35px_rgba(139,92,246,0.15)] border-4 border-white border-b-gray-200 flex flex-col items-center justify-center w-64 md:w-80 absolute z-40 floating scale-up";
+            tarjeta.id = `tarjeta-${desafio.id}`;
+            tarjeta.dataset.categoria = desafio.categoria;
+
+            // Extraemos emoji del texto para hacerlo grande arriba
+            const matchEmoji = desafio.texto.match(/[\p{Emoji}\u200d]+/gu);
+            const emoji = matchEmoji ? matchEmoji[0] : "🌟";
+            const textoLimpio = desafio.texto.replace(/[\p{Emoji}\u200d]+/gu, '').trim();
+
+            tarjeta.innerHTML = `
+                <div class="text-6xl md:text-7xl mb-4 drop-shadow-md select-none">${emoji}</div>
+                <div class="text-lg md:text-xl font-black text-center text-gray-700 leading-snug select-none">${textoLimpio}</div>
+            `;
+
+            // Escucha PointerEvents para unificar Mouse y Táctil en celulares/tablets
+            tarjeta.addEventListener('pointerdown', iniciarArrastre);
+
+            contenedorTarjeta.appendChild(tarjeta);
+
+            // Guardar hitboxes de las islas para las colisiones de arrastre
+            setTimeout(actualizarHitboxes, 400);
+        }
+
+        function actualizarHitboxes() {
+            zonasCaida = [];
+            const islas = document.querySelectorAll('.isla-receptora');
+            islas.forEach(isla => {
+                zonasCaida.push({
+                    id: isla.id,
+                    decision: isla.dataset.decision,
+                    rect: isla.getBoundingClientRect(),
+                    dom: isla
+                });
+            });
+        }
+
+        // --- SISTEMA ARRASTRAR Y SOLTAR ---
+
+        function iniciarArrastre(e) {
+            isDragging = true;
+            tarjetaActiva = e.currentTarget;
+            tarjetaActiva.setPointerCapture(e.pointerId);
+
+            startX = e.clientX;
+            startY = e.clientY;
+            currentX = 0;
+            currentY = 0;
+
+            tarjetaActiva.classList.remove('floating');
+            tarjetaActiva.style.transition = 'none';
+            tarjetaActiva.style.zIndex = '100';
+            tarjetaActiva.style.transform = 'scale(1.08)';
+
+            tarjetaActiva.addEventListener('pointermove', arrastrar);
+            tarjetaActiva.addEventListener('pointerup', soltarArrastre);
+            tarjetaActiva.addEventListener('pointercancel', soltarArrastre);
+        }
+
+        function arrastrar(e) {
+            if (!isDragging || !tarjetaActiva) return;
+            e.preventDefault();
+
+            currentX = e.clientX - startX;
+            currentY = e.clientY - startY;
+
+            const rotacion = currentX * 0.05;
+            tarjetaActiva.style.transform = `translate(${currentX}px, ${currentY}px) scale(1.08) rotate(${rotacion}deg)`;
+
+            comprobarColision(e.clientX, e.clientY);
+        }
+
+        function comprobarColision(x, y) {
+            limpiarHovers();
+            const isla = obtenerIslaBajoPuntero(x, y);
+            if (isla) {
+                isla.dom.classList.add('isla-hover');
+            }
+        }
+
+        function limpiarHovers() {
+            zonasCaida.forEach(z => z.dom.classList.remove('isla-hover'));
+        }
+
+        function obtenerIslaBajoPuntero(x, y) {
+            const padding = 15;
+            for (let i = 0; i < zonasCaida.length; i++) {
+                const z = zonasCaida[i];
+                if (x > z.rect.left - padding && x < z.rect.right + padding && 
+                    y > z.rect.top - padding && y < z.rect.bottom + padding) {
+                    return z;
+                }
+            }
+            return null;
+        }
+
+        function soltarArrastre(e) {
+            if (!isDragging || !tarjetaActiva) return;
+            isDragging = false;
+
+            tarjetaActiva.releasePointerCapture(e.pointerId);
+
+            tarjetaActiva.removeEventListener('pointermove', arrastrar);
+            tarjetaActiva.removeEventListener('pointerup', soltarArrastre);
+            tarjetaActiva.removeEventListener('pointercancel', soltarArrastre);
+
+            tarjetaActiva.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            limpiarHovers();
+
+            const islaDestino = obtenerIslaBajoPuntero(e.clientX, e.clientY);
+
+            if (islaDestino) {
+                const categoriaTarjeta = tarjetaActiva.dataset.categoria;
+                const decisionIsla = islaDestino.decision;
+
+                if (categoriaTarjeta === decisionIsla) {
+                    // ¡Acierto! Es una actividad de igualdad
+                    procesarAcierto(tarjetaActiva, islaDestino);
+                } else {
+                    // El niño eligió un estereotipo (Solo niños o Solo niñas)
+                    procesarEstereotipo(tarjetaActiva, islaDestino);
+                }
+            } else {
+                // Volver a su lugar original
+                tarjetaActiva.style.transform = 'translate(0px, 0px) scale(1) rotate(0deg)';
+                setTimeout(() => { if (tarjetaActiva) tarjetaActiva.classList.add('floating'); }, 400);
+            }
+
+            tarjetaActiva = null;
+        }
+
+        // --- SISTEMA DE RETROALIMENTACIÓN REFLEXIVA ---
+
+        function procesarAcierto(tarjeta, isla) {
+            // Deshabilitar más acciones sobre esta tarjeta
+            tarjeta.removeEventListener('pointerdown', iniciarArrastre);
+            tarjeta.style.pointerEvents = 'none';
+
+            // Animación de ser absorbido por la isla de Igualdad
+            const rectIsla = isla.dom.getBoundingClientRect();
+            const rectContenedor = contenedorTarjeta.getBoundingClientRect();
+            const destX = rectIsla.left + (rectIsla.width / 2) - (rectContenedor.left + (rectContenedor.width / 2));
+            const destY = rectIsla.top + (rectIsla.height / 2) - (rectContenedor.top + (rectContenedor.height / 2));
+
+            tarjeta.style.transform = `translate(${destX}px, ${destY}px) scale(0.2)`;
+            tarjeta.style.opacity = '0';
+
+            const desafio = desafiosJuego[indiceActual];
+            crearCelebracion(rectIsla);
+
+            // Lanzar burbuja pedagógica con explicación positiva
+            lanzarFeedbackPedagogico(true, desafio.explicacionCorrecta, "border-amber-400 text-amber-600", "¡Súper Correcto! 👦💖👧");
+
+            setTimeout(() => {
+                indiceActual++;
+                actualizarProgreso();
+                mostrarSiguienteDesafio();
+            }, 5500); // Dar suficiente tiempo para la lectura guiada o autónoma de 1º de primaria
+        }
+
+        function procesarEstereotipo(tarjeta, isla) {
+            tarjeta.style.transform = 'translate(0px, 0px) scale(1) rotate(0deg)';
+            tarjeta.classList.add('shake');
+
+            const desafio = desafiosJuego[indiceActual];
+            
+            // Determinar qué consejo dar según la isla de destino (Niño o Niña)
+            let consejoPersonalizado = "";
+            let tituloFeedback = "¡Piénsalo un poquito! 🦉💡";
+            
+            if (isla.decision === "ninos") {
+                consejoPersonalizado = desafio.consejoNinos;
+            } else if (isla.decision === "ninas") {
+                consejoPersonalizado = desafio.consejoNinas;
+            }
+
+            // Lanzar burbuja pedagógica aclarando el mito de género de forma empática y específica
+            lanzarFeedbackPedagogico(false, consejoPersonalizado, "border-violet-400 text-violet-700", tituloFeedback);
+
+            setTimeout(() => {
+                tarjeta.classList.remove('shake');
+                tarjeta.classList.add('floating');
+            }, 600);
+        }
+
+        function lanzarFeedbackPedagogico(esCorrecto, mensaje, clasesColor, titulo) {
+            burbujaPedagogica.className = `absolute top-4 left-1/2 transform -translate-x-1/2 bg-white px-6 py-4 rounded-[2.5rem] shadow-2xl border-4 ${clasesColor.split(' ')[0]} transition-all duration-300 z-50 text-center w-11/12 max-w-lg scale-100 opacity-100`;
+            
+            burbujaPedagogica.innerHTML = `
+                <div class="text-xl md:text-2xl font-black ${clasesColor.split(' ')[1]} mb-1.5">${titulo}</div>
+                <div class="text-sm md:text-base font-bold text-gray-700 leading-snug">${mensaje}</div>
+            `;
+
+            // En caso de equivocarse, la burbuja desaparece después de un tiempo prudente para reintentar
+            if (!esCorrecto) {
+                setTimeout(() => {
+                    burbujaPedagogica.className = "absolute top-4 left-1/2 transform -translate-x-1/2 bg-white px-6 py-4 rounded-[2rem] shadow-2xl border-4 border-violet-400 opacity-0 transition-all duration-300 z-50 text-center max-w-lg pointer-events-none scale-90";
+                }, 6000);
+            }
+        }
+
+        // --- EFECTOS VISUALES ---
+
+        function crearCelebracion(rect) {
+            const emojis = ['⭐', '✨', '💖', '🎉', '🌈'];
+            const container = document.body;
+
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                // Nacer en el centro de la isla seleccionada
+                const posX = rect.left + (rect.width / 2) + (Math.random() * 100 - 50);
+                const posY = rect.top + (rect.height / 2) + (Math.random() * 60 - 30);
+                
+                p.style.left = `${posX}px`;
+                p.style.top = `${posY}px`;
+                p.style.fontSize = `${Math.random() * 15 + 20}px`;
+                p.style.animationDelay = `${Math.random() * 0.2}s`;
+                p.style.animationDuration = `${Math.random() * 0.8 + 0.8}s`;
+                
+                container.appendChild(p);
+                
+                setTimeout(() => p.remove(), 1600);
+            }
+        }
+
+        function finalizarJuego() {
+            pantallaJuego.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaJuego.classList.add('hidden');
+                pantallaFinal.classList.remove('hidden');
+                setTimeout(() => pantallaFinal.classList.remove('opacity-0'), 50);
+                
+                // Megalluvia de estrellas y colores
+                for (let i = 0; i < 4; i++) {
+                    setTimeout(() => {
+                        const fakeRect = {
+                            left: Math.random() * window.innerWidth - 50,
+                            width: 100,
+                            top: window.innerHeight - 100,
+                            height: 100
+                        };
+                        crearCelebracion(fakeRect);
+                    }, i * 250);
+                }
+            }, 500);
+        }
+
+        // Auto-adaptar las coordenadas de colisión si se rota la pantalla de la tablet/celular
+        window.addEventListener('resize', () => {
+            actualizarHitboxes();
+        });
+
+        // --- CARGA INICIAL ---
+        document.addEventListener('DOMContentLoaded', () => {
+            pantallaInicio.classList.remove('hidden');
+            setTimeout(() => pantallaInicio.classList.remove('opacity-0'), 50);
+        });
+
+    </script>
+</body>
+</html>

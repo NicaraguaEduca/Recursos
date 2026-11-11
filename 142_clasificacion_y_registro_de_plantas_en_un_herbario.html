@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Herbario Digital - Clasificación de Plantas</title>
+    
+    <!-- Fuentes Google: Fredoka One (Títulos Toon) y Quicksand (Lectura amigable) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA DE TAILWIND PARA WORDPRESS -->
+    <script>
+        window.tailwind = {
+            config: {
+                important: '#recurso-wp-herbario',
+                corePlugins: { preflight: false },
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            toon: ['"Fredoka One"', 'cursive'],
+                            body: ['Quicksand', 'sans-serif'],
+                        },
+                        colors: {
+                            garden: {
+                                dark: '#064e3b',     /* Verde pino */
+                                bg: '#f0fdf4',       /* Verde menta suave */
+                                green: '#16a34a',    /* Verde hoja */
+                                yellow: '#facc15',   /* Amarillo oro */
+                                red: '#f43f5e',      /* Rosa flor / Alerta */
+                                blue: '#0284c7',     /* Azul agua */
+                                earth: '#78350f'     /* Café tierra */
+                            }
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* MICRO-RESET LOCAL */
+        #recurso-wp-herbario * { box-sizing: border-box; border-width: 0; border-style: solid; border-color: currentColor; line-height: normal; }
+        #recurso-wp-herbario h1, #recurso-wp-herbario h2, #recurso-wp-herbario h3, #recurso-wp-herbario p, #recurso-wp-herbario span { margin: 0; padding: 0; }
+        #recurso-wp-herbario button { background-color: transparent; cursor: pointer; padding: 0; font-family: inherit; }
+
+        /* ESTILOS GENERALES (Pantalla Completa Responsiva) */
+        #recurso-wp-herbario {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #f0fdf4; 
+            background-image: radial-gradient(#bbf7d0 3px, transparent 3px);
+            background-size: 35px 35px;
+            color: #064e3b;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Paneles y Botones Estilo Toon */
+        #recurso-wp-herbario .toon-panel {
+            background-color: #ffffff;
+            border: 5px solid #064e3b;
+            border-radius: 2rem;
+            box-shadow: 6px 6px 0px #064e3b;
+        }
+
+        #recurso-wp-herbario .toon-btn {
+            border: 4px solid #064e3b;
+            border-radius: 1rem;
+            box-shadow: 4px 4px 0px #064e3b;
+            transition: all 0.1s ease-out;
+            font-family: 'Fredoka One', cursive;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        #recurso-wp-herbario .toon-btn:hover:not(:disabled) {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #064e3b;
+        }
+        #recurso-wp-herbario .toon-btn:active:not(:disabled) {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px #064e3b;
+        }
+        #recurso-wp-herbario .toon-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: 4px 4px 0px #064e3b !important;
+        }
+
+        /* Álbumes de Clasificación (Contenedor receptor) */
+        .album-drop-zone {
+            border: 4px solid #064e3b;
+            border-radius: 1.5rem;
+            box-shadow: 4px 4px 0px #064e3b;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+        .album-drop-zone:hover {
+            transform: scale(1.03) translateY(-3px);
+            box-shadow: 6px 8px 0px #064e3b;
+        }
+        .album-drop-zone:active {
+            transform: translateY(2px);
+            box-shadow: 2px 2px 0px #064e3b;
+        }
+
+        /* Pantallas SPA */
+        #recurso-wp-herbario .screen {
+            display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; position: absolute; top: 0; left: 0; overflow-y: auto; overflow-x: hidden; z-index: 10;
+        }
+        #recurso-wp-herbario .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-herbario .screen.active {
+            display: flex;
+            animation: bounceInUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+        }
+        @keyframes bounceInUp {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Animación de deslizar tarjeta al archivar */
+        .archive-animation {
+            animation: archiveSlide 0.5s ease-in forwards;
+        }
+        @keyframes archiveSlide {
+            0% { transform: scale(1) translateY(0); opacity: 1; }
+            100% { transform: scale(0.2) translateY(250px); opacity: 0; }
+        }
+
+        .pop-in { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.5) forwards; }
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.6); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .shake { animation: shakeAnim 0.5s ease-in-out; }
+        @keyframes shakeAnim {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            50% { transform: translateX(6px); }
+            75% { transform: translateX(-6px); }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-herbario">
+
+        <!-- ==============================================
+             PANTALLA 1: PORTADA
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="toon-panel p-8 md:p-12 max-w-3xl w-full mx-4 flex flex-col items-center transform -rotate-1">
+                <div class="flex gap-4 mb-2 md:mb-4">
+                    <span class="text-[4rem] md:text-[6rem] animate-bounce">🏥</span>
+                    <span class="text-[4rem] md:text-[6rem] animate-bounce" style="animation-delay: 0.15s">🥗</span>
+                    <span class="text-[4rem] md:text-[6rem] animate-bounce" style="animation-delay: 0.3s">🌹</span>
+                </div>
+                
+                <h2 class="text-sm md:text-lg text-black font-body font-black mb-4 uppercase bg-garden-yellow inline-block px-6 py-2 border-4 border-black rounded-full rotate-2 shadow-[4px_4px_0_#000]">
+                    Ciencias Naturales - 5/6to Grado
+                </h2>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-toon text-garden-dark leading-none uppercase drop-shadow-[2px_2px_0_#000] mb-4">
+                    Herbario <br><span class="text-garden-green">Digital</span>
+                </h1>
+                <p class="text-lg md:text-2xl text-gray-700 font-bold mb-8 px-2 leading-relaxed">
+                    ¡Conviértete en Botánico! Rastra las especies de nuestra región y organízalas en sus álbumes de campo según su uso e importancia.
+                </p>
+                <button id="btn-to-instructions" class="toon-btn bg-garden-yellow text-black text-xl md:text-3xl px-10 py-5 w-full md:w-auto">
+                    VER GUÍA DE TRABAJO 📜
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: MANUAL DEL BOTÁNICO (INSTRUCCIONES)
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center">
+            <div class="toon-panel p-6 md:p-10 max-w-5xl w-full text-center my-auto">
+                <h2 class="text-3xl md:text-5xl font-toon text-black mb-6 uppercase border-b-4 border-dashed border-gray-300 pb-2">
+                    Clasificación por Uso
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8 text-left">
+                    
+                    <!-- MEDICINALES -->
+                    <div class="bg-emerald-50 p-5 rounded-3xl border-4 border-black shadow-[4px_4px_0_#10b981] flex flex-col justify-between">
+                        <div>
+                            <span class="text-4xl">🏥</span>
+                            <h3 class="font-toon text-xl text-garden-green uppercase mt-2">Medicinales</h3>
+                            <p class="text-sm text-gray-700 font-bold mt-2 leading-snug">
+                                Plantas con sustancias que alivian dolores de cuerpo, curan heridas o ayudan a desinfectar.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- ALIMENTICIAS -->
+                    <div class="bg-amber-50 p-5 rounded-3xl border-4 border-black shadow-[4px_4px_0_#facc15] flex flex-col justify-between">
+                        <div>
+                            <span class="text-4xl">🥗</span>
+                            <h3 class="font-toon text-xl text-amber-600 uppercase mt-2">Alimenticias</h3>
+                            <p class="text-sm text-gray-700 font-bold mt-2 leading-snug">
+                                Nos nutren y sirven para cocinar ensaladas, sopas o bebidas diarias. ¡Frutas, verduras y cereales!
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- ORNAMENTALES -->
+                    <div class="bg-rose-50 p-5 rounded-3xl border-4 border-black shadow-[4px_4px_0_#f43f5e] flex flex-col justify-between">
+                        <div>
+                            <span class="text-4xl">🌹</span>
+                            <h3 class="font-toon text-xl text-garden-red uppercase mt-2">Ornamentales</h3>
+                            <p class="text-sm text-gray-700 font-bold mt-2 leading-snug">
+                                Hermosas y llamativas. Sirven para decorar hogares, embellecer parques o regalar ramos en días especiales.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button id="btn-back-lobby" class="toon-btn bg-gray-200 text-black font-toon px-6 py-3 text-lg md:text-xl">
+                        ⬅ VOLVER
+                    </button>
+                    <button id="btn-play" class="toon-btn bg-garden-green text-white font-toon text-xl md:text-2xl px-10 py-3">
+                        ¡ABRIR HERBARIO! 🌿
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: EL JUEGO (Herbario Interactivo)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start p-0 bg-transparent">
+            
+            <!-- HUD Superior -->
+            <div class="w-full bg-white border-b-4 border-black p-2 md:p-3 flex justify-between items-center z-30 shrink-0 shadow-lg">
+                <div class="flex items-center gap-2 px-2 md:px-4">
+                    <span class="text-2xl md:text-3xl">⭐</span>
+                    <div class="flex flex-col">
+                        <span class="text-[9px] md:text-[10px] text-gray-500 font-black uppercase tracking-widest leading-none mb-1">Clasificadas</span>
+                        <span class="font-toon text-xl md:text-2xl text-garden-dark leading-none"><span id="score">0</span><span class="text-gray-400 text-sm">/6</span></span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <div class="flex flex-col text-right">
+                        <span class="text-[9px] md:text-[10px] text-gray-500 font-black uppercase tracking-widest leading-none mb-1">Estabilidad</span>
+                        <span id="lives" class="text-lg md:text-xl tracking-widest mt-1">🌿🌿🌿</span>
+                    </div>
+                    <button id="btn-exit" class="toon-btn bg-garden-red text-white p-1 md:p-2 ml-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Área de Clasificación Central -->
+            <div class="w-full flex-grow flex flex-col items-center justify-around p-3 md:p-4 overflow-hidden relative">
+                
+                <!-- Tarjeta del Espécimen Botánico (Horizontal compacta) -->
+                <div id="specimen-card" class="bg-white border-4 border-black rounded-3xl p-3 md:p-4 shadow-[6px_6px_0_#000] max-w-3xl w-full text-left z-20 transition-all duration-300 transform flex items-center gap-4">
+                    <!-- Contenedor del dibujo vectorial de la planta -->
+                    <div id="specimen-svg-box" class="w-20 h-20 md:w-32 md:h-32 shrink-0 border-4 border-dashed border-garden-green rounded-2xl flex items-center justify-center p-2 bg-garden-bg">
+                        <!-- El SVG dinámico se inyecta por JS -->
+                    </div>
+                    <div class="flex-grow">
+                        <h3 id="specimen-name" class="font-toon text-xl md:text-2xl text-garden-dark mb-1">Especie</h3>
+                        <p id="specimen-desc" class="text-xs md:text-base font-bold text-gray-700 bg-gray-100 p-2 md:p-3 rounded-xl border-2 border-dashed border-gray-300 leading-snug">
+                            Descripción de la planta...
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Los 3 Álbumes (Botones Receptores Gigantes) -->
+                <div class="grid grid-cols-3 gap-3 md:gap-6 w-full max-w-4xl z-20">
+                    
+                    <!-- Álbum Medicinal -->
+                    <button id="btn-album-Medicinal" class="album-drop-zone bg-emerald-100 border-garden-green text-garden-green py-4 md:py-6 flex flex-col items-center justify-center gap-1 md:gap-3">
+                        <span class="text-4xl md:text-6xl">🏥</span>
+                        <span class="font-toon text-[10px] md:text-xl uppercase">Medicinales</span>
+                    </button>
+
+                    <!-- Álbum Alimenticio -->
+                    <button id="btn-album-Alimenticia" class="album-drop-zone bg-amber-100 border-garden-yellow text-amber-600 py-4 md:py-6 flex flex-col items-center justify-center gap-1 md:gap-3">
+                        <span class="text-4xl md:text-6xl">🥗</span>
+                        <span class="font-toon text-[10px] md:text-xl uppercase">Alimenticias</span>
+                    </button>
+
+                    <!-- Álbum Ornamental -->
+                    <button id="btn-album-Ornamental" class="album-drop-zone bg-rose-100 border-garden-red text-garden-red py-4 md:py-6 flex flex-col items-center justify-center gap-1 md:gap-3">
+                        <span class="text-4xl md:text-6xl">🌹</span>
+                        <span class="font-toon text-[10px] md:text-xl uppercase">Ornamentales</span>
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             MODAL DE FEEDBACK (Explicación)
+             ============================================== -->
+        <div id="feedback-modal" class="hidden absolute inset-0 z-[60] flex-col items-center justify-center bg-black/80 p-4 text-center backdrop-blur-sm">
+            <div id="feedback-card" class="toon-panel p-6 md:p-8 max-w-lg w-full text-center border-t-8">
+                <div id="feedback-icon" class="text-[4rem] md:text-[5rem] mb-2 drop-shadow-md">✨</div>
+                <h3 id="feedback-title" class="font-toon text-2xl md:text-4xl text-black mb-3 uppercase">Título</h3>
+                <div class="bg-gray-100 p-4 rounded-xl border-4 border-dashed border-gray-300 mb-6">
+                    <p id="feedback-reason" class="text-base md:text-lg font-bold text-gray-700 leading-relaxed"></p>
+                </div>
+                <button id="btn-next" class="toon-btn bg-garden-yellow text-black font-toon text-lg md:text-xl px-8 py-3 w-full">
+                    Siguiente Planta ➡
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (Resultados)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex-col items-center justify-center p-6 text-center bg-garden-dark">
+            <div id="result-card" class="toon-panel p-6 md:p-10 max-w-2xl w-full text-center z-10 border-t-[10px]">
+                <div id="result-icon" class="text-[5rem] md:text-[6rem] mb-4 drop-shadow-md">🏆🏵️</div>
+                <h2 id="result-title" class="font-toon text-3xl md:text-5xl text-garden-dark mb-4 uppercase">Herbario Completo</h2>
+                <p id="result-msg" class="text-base md:text-xl text-gray-800 mb-8 font-bold leading-relaxed">
+                    Mensaje de resultado...
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button id="btn-end-home" class="toon-btn bg-gray-200 text-black font-toon px-6 py-3 text-lg">
+                        IR AL INICIO
+                    </button>
+                    <button id="btn-end-retry" class="toon-btn bg-garden-yellow text-black font-toon text-xl md:text-2xl px-8 py-3">
+                        NUEVO HERBARIO 🔄
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO (EVENT LISTENERS SEGUROS)
+         ============================================== -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- AUDIO SINTETIZADO SEGURO ---
+            let audioCtx = null;
+            function initAudio() {
+                try {
+                    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                } catch (e) {}
+            }
+            document.body.addEventListener('click', initAudio, { once: true });
+
+            function playBeep(freq = 600, duration = 0.1, type = "sine") {
+                try {
+                    initAudio();
+                    if (audioCtx && audioCtx.state !== 'suspended') {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = type;
+                        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + duration);
+                    }
+                } catch (e) {}
+            }
+
+            function playSuccess() { playBeep(523.25, 0.1); setTimeout(() => playBeep(659.25, 0.1), 100); setTimeout(() => playBeep(783.99, 0.2), 200); }
+            function playError() { playBeep(220, 0.3, "sawtooth"); }
+
+            // --- DIBUJOS VECTORIALES SVGs ---
+            function getPlantSVG(id) {
+                switch(id) {
+                    case "Manzanilla":
+                        return `
+                        <svg viewBox="0 0 100 100" class="w-full h-full">
+                            <!-- Tallos -->
+                            <path d="M50,90 Q48,60 45,45 M50,90 Q55,70 58,50" stroke="#16a34a" stroke-width="3" fill="none" stroke-linecap="round"/>
+                            <!-- Flores blancas manzanilla -->
+                            <circle cx="45" cy="45" r="10" fill="#facc15" stroke="#ca8a04" stroke-width="2"/>
+                            <g fill="#fff" stroke="#000" stroke-width="1">
+                                <circle cx="45" cy="31" r="5"/> <circle cx="45" cy="59" r="5"/>
+                                <circle cx="31" cy="45" r="5"/> <circle cx="59" cy="45" r="5"/>
+                                <circle cx="35" cy="35" r="5"/> <circle cx="55" cy="55" r="5"/>
+                                <circle cx="35" cy="55" r="5"/> <circle cx="55" cy="35" r="5"/>
+                            </g>
+                            <circle cx="45" cy="45" r="10" fill="#facc15"/>
+                        </svg>
+                        `;
+                    case "Zanahoria":
+                        return `
+                        <svg viewBox="0 0 100 100" class="w-full h-full">
+                            <!-- Tallos verdes arriba -->
+                            <path d="M50,40 Q45,20 35,15 M50,40 Q50,15 50,10 M50,40 Q55,20 65,15" stroke="#16a34a" stroke-width="3" fill="none" stroke-linecap="round"/>
+                            <!-- Cuerpo zanahoria -->
+                            <path d="M35,38 Q50,30 65,38 L55,85 Q50,95 45,85 Z" fill="#f97316" stroke="#c2410c" stroke-width="3" stroke-linejoin="round"/>
+                            <!-- Textura rayas -->
+                            <path d="M38,48 L48,50 M58,58 L48,60 M40,70 L48,71" stroke="#c2410c" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        `;
+                    case "Rosa":
+                        return `
+                        <svg viewBox="0 0 100 100" class="w-full h-full">
+                            <!-- Tallo -->
+                            <path d="M50,95 L50,45" stroke="#14532d" stroke-width="4" stroke-linecap="round" fill="none"/>
+                            <!-- Espinas -->
+                            <path d="M50,75 L42,70 M50,60 L58,55" stroke="#14532d" stroke-width="3" stroke-linecap="round"/>
+                            <!-- Hojas verdes laterales -->
+                            <path d="M50,68 Q30,60 35,50 Q45,55 50,68" fill="#16a34a" stroke="#14532d" stroke-width="2"/>
+                            <!-- Capullo de la rosa roja -->
+                            <circle cx="50" cy="35" r="18" fill="#f43f5e" stroke="#be123c" stroke-width="3"/>
+                            <circle cx="50" cy="31" r="12" fill="#e11d48"/>
+                            <path d="M42,28 Q50,38 58,28" fill="none" stroke="#be123c" stroke-width="3"/>
+                        </g>
+                        </svg>
+                        `;
+                    case "Menta":
+                        return `
+                        <svg viewBox="0 0 100 100" class="w-full h-full">
+                            <!-- Rama principal -->
+                            <path d="M50,90 L50,15" stroke="#047857" stroke-width="4" stroke-linecap="round" fill="none"/>
+                            <!-- Hojas verdes dentadas opuestas -->
+                            <path d="M50,70 Q25,60 30,50 Q42,55 50,70" fill="#10b981" stroke="#047857" stroke-width="2.5"/>
+                            <path d="M50,70 Q75,60 70,50 Q58,55 50,70" fill="#10b981" stroke="#047857" stroke-width="2.5"/>
+                            <path d="M50,45 Q25,35 30,25 Q42,30 50,45" fill="#059669" stroke="#047857" stroke-width="2.5"/>
+                            <path d="M50,45 Q75,35 70,25 Q58,30 50,45" fill="#059669" stroke="#047857" stroke-width="2.5"/>
+                        </svg>
+                        `;
+                    case "Tomate":
+                        return `
+                        <svg viewBox="0 0 100 100" class="w-full h-full">
+                            <!-- Tallo -->
+                            <path d="M50,20 L50,35" stroke="#16a34a" stroke-width="4" stroke-linecap="round" fill="none"/>
+                            <!-- Hojas de arriba (Sépalo) -->
+                            <path d="M50,35 Q40,25 32,32 M50,35 Q60,25 68,32" stroke="#15803d" stroke-width="3" fill="none" stroke-linecap="round"/>
+                            <!-- Fruto rojo tomate -->
+                            <circle cx="50" cy="58" r="24" fill="#ef4444" stroke="#b91c1c" stroke-width="3"/>
+                            <!-- Brillo luz -->
+                            <ellipse cx="40" cy="48" rx="4" ry="2" fill="#fff" transform="rotate(-15 40 48)"/>
+                        </svg>
+                        `;
+                    case "Orquídea":
+                        return `
+                        <svg viewBox="0 0 100 100" class="w-full h-full">
+                            <!-- Tallo fino -->
+                            <path d="M50,95 L50,55" stroke="#15803d" stroke-width="3" stroke-linecap="round" fill="none"/>
+                            <!-- Pétalos exóticos -->
+                            <circle cx="50" cy="35" r="14" fill="#d946ef" stroke="#701a75" stroke-width="2"/> <!-- Arriba -->
+                            <circle cx="28" cy="50" r="15" fill="#c084fc" stroke="#701a75" stroke-width="2"/> <!-- Izq -->
+                            <circle cx="72" cy="50" r="15" fill="#c084fc" stroke="#701a75" stroke-width="2"/> <!-- Der -->
+                            <ellipse cx="50" cy="55" rx="12" ry="16" fill="#f43f5e" stroke="#701a75" stroke-width="2"/> <!-- Centro abajo -->
+                            <circle cx="50" cy="46" r="8" fill="#facc15"/>
+                        </svg>
+                        `;
+                }
+            }
+
+            // --- BASE DE DATOS DE LAS PLANTAS ---
+            const plantData = [
+                {
+                    name: "Manzanilla",
+                    type: "Medicinal",
+                    desc: "Tengo pequeñas flores blancas con centro amarillo. Mis hojas huelen riquísimo y me preparan en té calientito para aliviar los dolores de estómago.",
+                    explanation: "La Manzanilla es un excelente antiespasmódico y desinfectante natural."
+                },
+                {
+                    name: "Zanahoria",
+                    type: "Alimenticia",
+                    desc: "Tengo un cuerpo de color naranja brillante que crece bajo la tierra y hojas verdes largas. Me comen en ensaladas o caldos porque tengo muchas vitaminas para cuidar tus ojos.",
+                    explanation: "Las plantas alimenticias nos proporcionan carbohidratos, fibras y vitaminas necesarias para estar sanos."
+                },
+                {
+                    name: "Rosa",
+                    type: "Ornamental",
+                    desc: "Tengo hermosos pétalos de color rojo y un tallo con espinas protectoras. Me siembran en jardines o me regalan en ramos para embellecer los hogares.",
+                    explanation: "Las ornamentales se cultivan por su belleza visual y fragancias agradables."
+                },
+                {
+                    name: "Menta",
+                    type: "Medicinal",
+                    desc: "Mis hojas de color verde brillante tienen bordes con picos y huelen muy refrescante. Me usan para aliviar problemas de la garganta y dar una sensación helada de bienestar.",
+                    explanation: "La Menta se utiliza desde hace siglos por sus efectos calmantes y respiratorios."
+                },
+                {
+                    name: "Tomate",
+                    type: "Alimenticia",
+                    desc: "Soy un fruto redondo, jugoso y de color rojo brillante que crece en ramas finas. Me usan para preparar salsas, ensaladas y deliciosas pizzas.",
+                    explanation: "Los frutos de las plantas alimenticias proveen agua y nutrientes esenciales."
+                },
+                {
+                    name: "Orquídea",
+                    type: "Ornamental",
+                    desc: "Tengo pétalos exóticos de color morado y rosa con formas muy raras que parecen mariposas. Adorno los parques más elegantes del mundo.",
+                    explanation: "Las orquídeas son unas de las plantas decorativas y coleccionables más apreciadas del planeta."
+                }
+            ];
+
+            let score = 0;
+            let lives = 3;
+            let currentLevel = 0;
+            let gameQueue = [];
+
+            // --- NAVEGACIÓN ---
+            function showScreen(screenId) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                const target = document.getElementById(screenId);
+                if (target) target.classList.add('active');
+            }
+
+            function shuffleArray(arr) {
+                let array = [...arr];
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            // --- ESTADO DEL JUEGO ---
+            function startGame() {
+                score = 0;
+                lives = 3;
+                currentLevel = 0;
+                gameQueue = shuffleArray(plantData);
+
+                document.getElementById('screen-result').classList.add('hidden');
+                document.getElementById('screen-result').classList.remove('flex');
+                
+                updateUI();
+                showScreen('screen-game');
+                loadPlant();
+            }
+
+            function updateUI() {
+                document.getElementById('score').innerText = score;
+                let battery = "";
+                for(let i=0; i<3; i++) { battery += i < lives ? "🌿 " : "❌ "; }
+                document.getElementById('lives').innerText = battery;
+            }
+
+            // --- CARGAR PLANTA ACTUAL ---
+            function loadPlant() {
+                if (currentLevel >= gameQueue.length) {
+                    setTimeout(() => endGame(true), 600);
+                    return;
+                }
+
+                const data = gameQueue[currentLevel];
+
+                // Desbloqueamos los álbumes
+                document.getElementById('btn-album-Medicinal').disabled = false;
+                document.getElementById('btn-album-Alimenticia').disabled = false;
+                document.getElementById('btn-album-Ornamental').disabled = false;
+
+                // Restaurar tarjeta
+                const card = document.getElementById('specimen-card');
+                card.classList.remove('archive-animation', 'opacity-0');
+
+                document.getElementById('specimen-name').innerText = data.name;
+                document.getElementById('specimen-desc').innerText = `"${data.desc}"`;
+
+                // Inyectar el SVG científico correspondiente
+                document.getElementById('specimen-svg-box').innerHTML = getPlantSVG(data.name);
+
+                // Efecto pop-in
+                card.classList.add('pop-in');
+                setTimeout(() => card.classList.remove('pop-in'), 600);
+            }
+
+            // --- EVALUAR CLASIFICACIÓN ---
+            function checkClassification(chosenType) {
+                // Bloquear álbumes provisionalmente
+                document.getElementById('btn-album-Medicinal').disabled = true;
+                document.getElementById('btn-album-Alimenticia').disabled = true;
+                document.getElementById('btn-album-Ornamental').disabled = true;
+
+                const data = gameQueue[currentLevel];
+                const isCorrect = chosenType === data.type;
+
+                // Animación de archivar tarjeta
+                const card = document.getElementById('specimen-card');
+                card.classList.add('archive-animation');
+
+                setTimeout(() => {
+                    if (isCorrect) {
+                        score++;
+                        updateUI();
+                        playSuccess();
+                        setTimeout(() => showFeedback(true, "¡Archivado con éxito! 📁✅", `¡La <strong>${data.name}</strong> ha sido registrada en el álbum de las <strong>${data.type}s</strong>!<br><br>${data.explanation}`), 300);
+                    } else {
+                        lives--;
+                        updateUI();
+                        playError();
+                        
+                        // Temblar la pantalla para dar impacto
+                        const activeScreen = document.getElementById('screen-game');
+                        activeScreen.classList.add('shake');
+                        setTimeout(() => activeScreen.classList.remove('shake'), 400);
+
+                        setTimeout(() => showFeedback(false, "¡Ficha Mal Ubicada! 📂❌", `Esa planta no pertenece a esa categoría. Recuerda: <br> ${data.explanation}`), 300);
+                    }
+                }, 400);
+            }
+
+            // --- MOSTRAR COMENTARIOS ---
+            function showFeedback(isSuccess, titleText, reasonText) {
+                const modal = document.getElementById('feedback-modal');
+                const card = document.getElementById('feedback-card');
+                const icon = document.getElementById('feedback-icon');
+                const title = document.getElementById('feedback-title');
+                const reason = document.getElementById('feedback-reason');
+
+                card.classList.remove('animate__bounceIn', 'border-garden-green', 'border-garden-red');
+                void card.offsetWidth; // Reflow mecánico
+
+                if (isSuccess) {
+                    icon.innerText = "📁🌿";
+                    title.innerText = titleText;
+                    title.className = "font-toon text-2xl md:text-4xl text-garden-green mb-3 uppercase";
+                    card.classList.add('border-garden-green');
+                } else {
+                    icon.innerText = "💥🥀";
+                    title.innerText = titleText;
+                    title.className = "font-toon text-2xl md:text-4xl text-garden-red mb-3 uppercase";
+                    card.classList.add('border-garden-red');
+                }
+
+                reason.innerHTML = reasonText;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                card.classList.add('animate__bounceIn');
+            }
+
+            function closeFeedback() {
+                document.getElementById('feedback-modal').classList.add('hidden');
+                document.getElementById('feedback-modal').classList.remove('flex');
+                
+                currentLevel++;
+                if (lives <= 0) endGame(false);
+                else loadPlant();
+            }
+
+            // --- PANTALLA DE RESULTADO ---
+            function endGame(victory) {
+                const res = document.getElementById('screen-result');
+                const card = document.getElementById('result-card');
+                
+                card.classList.remove('border-t-garden-green', 'border-t-garden-red');
+
+                if (victory) {
+                    document.getElementById('result-icon').innerText = "🏆🏵️";
+                    document.getElementById('result-title').innerText = "¡Herbario Completado!";
+                    document.getElementById('result-title').className = "font-toon text-3xl md:text-5xl text-garden-green mb-4 uppercase";
+                    document.getElementById('result-msg').innerHTML = `¡Fantástico, Científico! Lograste organizar correctamente las ${score} especies del invernadero en sus álbumes. ¡Tu conocimiento botánico es excelente!`;
+                    card.classList.add('border-t-garden-green');
+                } else {
+                    document.getElementById('result-icon').innerText = "🥀⚠️";
+                    document.getElementById('result-title').innerText = "¡Herbario Incompleto!";
+                    document.getElementById('result-title').className = "font-toon text-3xl md:text-5xl text-garden-red mb-4 uppercase";
+                    document.getElementById('result-msg').innerHTML = "La estabilidad del invernadero colapsó debido a demasiadas clasificaciones erróneas. ¡Repasa la guía y vuelve a intentarlo!";
+                    card.classList.add('border-t-garden-red');
+                }
+
+                res.classList.remove('hidden');
+                res.classList.add('flex');
+            }
+
+            function exitGame() {
+                currentLevel = 0;
+                gameQueue = [];
+                showScreen('screen-start');
+            }
+
+            // --- ASIGNACIÓN DE EVENTOS SEGUROS ---
+            document.getElementById('btn-to-instructions').addEventListener('click', () => { playBeep(); showScreen('screen-theory'); });
+            document.getElementById('btn-back-lobby').addEventListener('click', () => { playBeep(); showScreen('screen-start'); });
+            document.getElementById('btn-play').addEventListener('click', () => { playBeep(); startGame(); });
+            document.getElementById('btn-next').addEventListener('click', () => { playBeep(); closeFeedback(); });
+            document.getElementById('btn-exit').addEventListener('click', () => { playBeep(); exitGame(); });
+            document.getElementById('btn-end-home').addEventListener('click', () => { playBeep(); exitGame(); });
+            document.getElementById('btn-end-retry').addEventListener('click', () => { playBeep(); startGame(); });
+
+            // Eventos de los Álbumes de campo
+            document.getElementById('btn-album-Medicinal').addEventListener('click', () => checkClassification('Medicinal'));
+            document.getElementById('btn-album-Alimenticia').addEventListener('click', () => checkClassification('Alimenticia'));
+            document.getElementById('btn-album-Ornamental').addEventListener('click', () => checkClassification('Ornamental'));
+
+        });
+    </script>
+</body>
+</html>

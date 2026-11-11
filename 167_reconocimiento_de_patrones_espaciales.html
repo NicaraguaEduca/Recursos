@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2º Primaria | La Alfombra Mágica</title>
+    <!-- Tipografía Fredoka para un diseño amigable e infantil -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS para diseño fluido y maquetación premium -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --magic-indigo: #2D1B4E;
+            --magic-purple: #5C3A93;
+            --magic-gold: #FFD700;
+            --magic-teal: #14B8A6;
+            --soft-pink: #FF85B3;
+        }
+
+        * {
+            font-family: 'Fredoka', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: #110B29;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(92, 58, 147, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(20, 184, 166, 0.3) 0%, transparent 50%),
+                radial-gradient(white 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 40px 40px;
+            color: #F3F4F6;
+        }
+
+        /* Efectos visuales de la alfombra mágica */
+        .magic-carpet {
+            background: linear-gradient(135deg, #4c1d95, #1e1b4b);
+            border: 6px solid var(--magic-gold);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 
+                        inset 0 0 20px rgba(255, 215, 0, 0.3);
+            position: relative;
+        }
+
+        /* Flecos de la alfombra */
+        .fringe-left, .fringe-right {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            width: 12px;
+        }
+        .fringe-left { left: -12px; }
+        .fringe-right { right: -12px; }
+
+        .fringe-segment {
+            width: 12px;
+            height: 6px;
+            background-color: var(--magic-gold);
+            border-radius: 4px 0 0 4px;
+        }
+        .fringe-right .fringe-segment {
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* Animación suave de vuelo */
+        .floating-animation {
+            animation: carpetFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes carpetFloat {
+            0% { transform: translateY(0px) rotate(1deg); }
+            50% { transform: translateY(-12px) rotate(-1deg); }
+            100% { transform: translateY(0px) rotate(1deg); }
+        }
+
+        /* Animación de estrellas centelleantes */
+        .sparkle {
+            animation: blink 2s infinite alternate;
+        }
+
+        @keyframes blink {
+            0% { opacity: 0.3; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* Diapositivas con transición suave */
+        .slide-content {
+            animation: slideIn 0.6s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
+
+    <!-- Pantalla de Bienvenida Pedagógica (Para iniciar de forma estructurada) -->
+    <div id="welcomeScreen" class="fixed inset-0 bg-[#0F0826] z-50 flex items-center justify-center p-4">
+        <div class="bg-[#1D123D] border-4 border-[#FFD700] rounded-3xl max-w-2xl w-full p-6 md:p-8 text-center shadow-2xl relative overflow-hidden">
+            <!-- Estrellas decorativas de fondo -->
+            <div class="absolute top-4 left-4 text-2xl sparkle">⭐</div>
+            <div class="absolute bottom-6 right-6 text-2xl sparkle delay-300">✨</div>
+            <div class="absolute top-1/2 right-4 text-xl sparkle">🌟</div>
+
+            <span class="bg-[#14B8A6] text-white px-4 py-1 rounded-full font-bold text-sm uppercase tracking-wider mb-4 inline-block">
+                🎒 2º de Primaria
+            </span>
+            
+            <h1 class="text-3xl md:text-5xl font-bold text-white mb-4 leading-tight">
+                La Alfombra Mágica <br>
+                <span class="text-[#FFD700]">de los Patrones Visuales</span>
+            </h1>
+
+            <div class="bg-[#2A1E54] border-2 border-[#5C3A93] rounded-2xl p-4 text-left space-y-3 my-6">
+                <p class="text-gray-300 text-sm md:text-base">
+                    <strong>🧠 Área Académica:</strong> Pensamiento Lógico y Matemático
+                </p>
+                <p class="text-gray-300 text-sm md:text-base">
+                    <strong>🎯 Habilidad Clave:</strong> Identificación de regularidades y secuencias de repetición.
+                </p>
+                <p class="text-gray-300 text-sm md:text-base">
+                    <strong>💡 Objetivo Educativo:</strong> Aprender a descubrir el orden oculto de los colores y formas (patrones) para predecir de manera visual qué elemento completa cada secuencia.
+                </p>
+            </div>
+
+            <button onclick="startPresentation()" class="bg-[#FFD700] hover:bg-[#FFE55C] text-[#2D1B4E] font-bold text-lg md:text-xl py-3 px-8 rounded-full shadow-lg transform transition-all hover:scale-105 active:scale-95 inline-flex items-center gap-2">
+                <span>¡Comenzar Viaje! 🧞‍♂️✨</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Cabecera Pedagógica Obligatoria -->
+    <header class="w-full max-w-5xl mx-auto bg-[#1E123D] border-2 border-[#5C3A93] rounded-2xl px-6 py-3 flex flex-col sm:flex-row justify-between items-center gap-3 shadow-md">
+        <div class="flex items-center gap-3">
+            <span class="bg-[#14B8A6] text-white px-3 py-1 rounded-full font-bold text-xs uppercase">
+                2º Primaria
+            </span>
+            <div class="text-gray-200 font-semibold text-sm sm:text-base">
+                Contenido: <span class="text-[#FFD700]">Pensamiento Lógico - Patrones Visuales</span>
+            </div>
+        </div>
+        <div class="text-[#FF85B3] text-xs sm:text-sm font-bold uppercase tracking-wider">
+            Identificación de Regularidades
+        </div>
+    </header>
+
+    <!-- Contenedor de la Presentación Interactiva -->
+    <main class="w-full max-w-5xl mx-auto flex-1 flex flex-col justify-center my-4 md:my-6">
+        <div class="bg-[#150D2E] border-2 border-[#5C3A93] rounded-3xl p-6 md:p-8 shadow-xl flex-1 flex flex-col justify-between min-h-[480px]">
+            
+            <!-- Diapositiva 1: Portada e Introducción -->
+            <div id="slide-1" class="slide-content flex flex-col md:flex-row items-center gap-8 h-full flex-1">
+                <div class="flex-1 space-y-5">
+                    <span class="text-[#14B8A6] text-sm font-bold uppercase tracking-widest block">¡Hola, Descubridor de Lógica! 🪐</span>
+                    <h2 class="text-3xl md:text-4xl font-bold text-white leading-tight">
+                        ¿Cómo funciona la <br>
+                        <span class="text-[#FFD700]">Alfombra Mágica?</span>
+                    </h2>
+                    <p class="text-gray-300 text-base md:text-lg leading-relaxed">
+                        Las alfombras del genio no vuelan con combustible, ¡vuelan con <strong>lógica y regularidades</strong>!
+                    </p>
+                    <p class="text-gray-400 text-sm md:text-base">
+                        Para que se eleven, sus bordes y telas deben estar tejidos con un orden perfecto. Si el orden se rompe, la alfombra pierde su magia y cae. Hoy aprenderemos a descifrar este orden secreto.
+                    </p>
+                    <div class="bg-[#2A1C4D] border-l-4 border-[#14B8A6] p-3 rounded-r-xl">
+                        <p class="text-[#14B8A6] text-xs md:text-sm font-semibold">
+                            💡 Regularidad: Es la regla secreta que nos dice cómo se repiten los elementos uno tras otro de forma predecible.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex-1 flex justify-center items-center w-full">
+                    <!-- Vista previa de alfombra flotante decorativa -->
+                    <div class="relative w-72 h-44 magic-carpet rounded-2xl p-4 flex flex-col justify-between floating-animation">
+                        <div class="fringe-left">
+                            <div class="fringe-segment"></div><div class="fringe-segment"></div><div class="fringe-segment"></div><div class="fringe-segment"></div>
+                        </div>
+                        <div class="fringe-right">
+                            <div class="fringe-segment"></div><div class="fringe-segment"></div><div class="fringe-segment"></div><div class="fringe-segment"></div>
+                        </div>
+                        <!-- Diseño interior de la alfombra -->
+                        <div class="flex justify-around items-center h-full">
+                            <span class="text-3xl sparkle">💠</span>
+                            <span class="text-3xl sparkle delay-150">⭐</span>
+                            <span class="text-3xl sparkle">💠</span>
+                            <span class="text-3xl sparkle delay-300">⭐</span>
+                        </div>
+                        <div class="text-center text-[10px] text-yellow-300 font-bold tracking-widest uppercase">
+                            Tejido Lógico
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diapositiva 2: Qué es un Patrón (Alternancia Simple A-B) -->
+            <div id="slide-2" class="slide-content hidden flex flex-col md:flex-row items-center gap-8 h-full flex-1">
+                <div class="flex-1 space-y-4">
+                    <span class="text-[#FF85B3] text-xs font-bold uppercase tracking-widest block">Concepto Básico 💎</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-white">
+                        El Secreto de la <span class="text-[#FFD700]">Alternancia</span>
+                    </h2>
+                    <p class="text-gray-300 text-sm md:text-base leading-relaxed">
+                        El patrón más sencillo de identificar es el que cambia entre dos elementos. Lo llamamos patrón <strong>A - B</strong>.
+                    </p>
+                    <p class="text-gray-300 text-sm md:text-base leading-relaxed">
+                        Mira el borde de esta alfombra: primero va una <span class="text-teal-400">gema azul 🔷</span>, luego un <span class="text-yellow-400">sol dorado ☀️</span>. ¿Qué elemento debería seguir para mantener la magia?
+                    </p>
+                    <div class="pt-2">
+                        <button onclick="revealStep2Pattern()" class="bg-[#14B8A6] hover:bg-[#11998e] text-white font-bold py-2.5 px-5 rounded-full shadow transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2">
+                            <span>🔍 Revelar Siguiente Elemento</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex-1 w-full bg-[#1A133B] rounded-2xl p-5 border border-[#5C3A93] flex flex-col justify-center items-center gap-6 min-h-[250px]">
+                    <div class="text-center">
+                        <span class="bg-[#5C3A93] text-white font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider">Patrón: Gema - Sol</span>
+                    </div>
+
+                    <!-- Secuencia de elementos A-B -->
+                    <div class="flex justify-center items-center gap-4 bg-[#231A4C] p-4 rounded-xl border border-dashed border-[#5C3A93]">
+                        <div class="flex flex-col items-center"><span class="text-4xl">🔷</span><span class="text-[10px] text-teal-400 font-bold mt-1">A</span></div>
+                        <div class="flex flex-col items-center"><span class="text-4xl">☀️</span><span class="text-[10px] text-yellow-400 font-bold mt-1">B</span></div>
+                        <div class="flex flex-col items-center"><span class="text-4xl">🔷</span><span class="text-[10px] text-teal-400 font-bold mt-1">A</span></div>
+                        <div class="flex flex-col items-center"><span class="text-4xl">☀️</span><span class="text-[10px] text-yellow-400 font-bold mt-1">B</span></div>
+                        <div id="slide2-target" class="w-14 h-14 border-2 border-dashed border-[#FFD700] rounded-lg flex items-center justify-center bg-[#150D2E] transition-all duration-500">
+                            <span class="text-3xl text-gray-500 font-bold">?</span>
+                        </div>
+                    </div>
+
+                    <p id="slide2-text" class="text-gray-400 text-xs md:text-sm text-center italic">
+                        Presiona el botón para completar la regularidad y ver la explicación lógica.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Diapositiva 3: Patrones Avanzados (Repetición Compleja) -->
+            <div id="slide-3" class="slide-content hidden flex flex-col md:flex-row items-center gap-8 h-full flex-1">
+                <div class="flex-1 space-y-4">
+                    <span class="text-[#FF85B3] text-xs font-bold uppercase tracking-widest block">Regularidades Avanzadas 🍄</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-white">
+                        ¿Qué pasa si los elementos <span class="text-[#FFD700]">se repiten</span>?
+                    </h2>
+                    <p class="text-gray-300 text-sm md:text-base leading-relaxed">
+                        ¡No todos los patrones cambian uno a uno! A veces un elemento se repite dos veces antes de cambiar, creando un patrón del tipo <strong>A - B - B</strong>.
+                    </p>
+                    <p class="text-gray-300 text-sm md:text-base leading-relaxed">
+                        Observemos la secuencia: <span class="text-emerald-400">Árbol 🌲</span>, <span class="text-pink-400">Flor 🌸</span>, <span class="text-pink-400">Flor 🌸</span>, <span class="text-emerald-400">Árbol 🌲</span>. ¿Puedes deducir con lógica cuáles son las dos piezas que faltan?
+                    </p>
+                    <div class="pt-2">
+                        <button onclick="revealStep3Pattern()" class="bg-[#FF85B3] hover:bg-[#E05B8C] text-white font-bold py-2.5 px-5 rounded-full shadow transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2">
+                            <span>🔍 Revelar Solución Lógica</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex-1 w-full bg-[#1A133B] rounded-2xl p-5 border border-[#5C3A93] flex flex-col justify-center items-center gap-6 min-h-[250px]">
+                    <div class="text-center">
+                        <span class="bg-[#5C3A93] text-white font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider">Patrón: Árbol - Flor - Flor</span>
+                    </div>
+
+                    <!-- Secuencia de elementos A-B-B -->
+                    <div class="flex justify-center items-center gap-3 bg-[#231A4C] p-3 rounded-xl border border-dashed border-[#5C3A93]">
+                        <div class="flex flex-col items-center"><span class="text-3xl">🌲</span><span class="text-[10px] text-emerald-400 font-bold mt-1">A</span></div>
+                        <div class="flex flex-col items-center"><span class="text-3xl">🌸</span><span class="text-[10px] text-pink-400 font-bold mt-1">B</span></div>
+                        <div class="flex flex-col items-center"><span class="text-3xl">🌸</span><span class="text-[10px] text-pink-400 font-bold mt-1">B</span></div>
+                        <div class="flex flex-col items-center"><span class="text-3xl">🌲</span><span class="text-[10px] text-emerald-400 font-bold mt-1">A</span></div>
+                        <div id="slide3-target-1" class="w-11 h-11 border border-dashed border-[#FF85B3] rounded-lg flex items-center justify-center bg-[#150D2E] transition-all duration-500">
+                            <span class="text-xl text-gray-500 font-bold">?</span>
+                        </div>
+                        <div id="slide3-target-2" class="w-11 h-11 border border-dashed border-[#FF85B3] rounded-lg flex items-center justify-center bg-[#150D2E] transition-all duration-500">
+                            <span class="text-xl text-gray-500 font-bold">?</span>
+                        </div>
+                    </div>
+
+                    <p id="slide3-text" class="text-gray-400 text-xs md:text-sm text-center italic">
+                        Descubre cómo la regularidad nos permite predecir exactamente el diseño sin temor a equivocarnos.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Diapositiva 4: Taller Exploratorio de la Alfombra Mágica -->
+            <div id="slide-4" class="slide-content hidden flex flex-col h-full flex-1 justify-between">
+                <div class="space-y-2 mb-3">
+                    <span class="text-[#14B8A6] text-xs font-bold uppercase tracking-widest block">Taller Práctico de Predicción 🧞‍♂️🧪</span>
+                    <h2 class="text-xl md:text-2xl font-bold text-white">Explora y completa el tejido para volar</h2>
+                    <p class="text-gray-300 text-xs md:text-sm">
+                        Elige una de las 3 alfombras. Presiona las formas de abajo para rellenar la pieza que falta y lee la explicación del Genio sobre su patrón.
+                    </p>
+                </div>
+
+                <!-- Selector de Alfombra -->
+                <div class="flex gap-2 justify-center mb-3">
+                    <button id="btn-theme-1" onclick="selectCarpetTheme(1)" class="bg-[#5C3A93] border-2 border-yellow-400 text-white font-semibold text-xs py-1.5 px-3 rounded-full transition-all">
+                        🧶 Alfombra Luna-Estrella
+                    </button>
+                    <button id="btn-theme-2" onclick="selectCarpetTheme(2)" class="bg-[#1A133B] border-2 border-[#5C3A93] text-gray-400 font-semibold text-xs py-1.5 px-3 rounded-full transition-all">
+                        🧶 Alfombra Frutas
+                    </button>
+                    <button id="btn-theme-3" onclick="selectCarpetTheme(3)" class="bg-[#1A133B] border-2 border-[#5C3A93] text-gray-400 font-semibold text-xs py-1.5 px-3 rounded-full transition-all">
+                        🧶 Alfombra Naturaleza
+                    </button>
+                </div>
+
+                <!-- Escenario de la Alfombra Mágica -->
+                <div class="relative w-full flex flex-col lg:flex-row gap-4 items-stretch justify-center flex-1 min-h-[180px] mb-3">
+                    
+                    <!-- Lado izquierdo: El tejido interactivo de la alfombra -->
+                    <div class="flex-1 bg-[#1A133B] rounded-2xl p-4 border border-[#5C3A93] flex flex-col justify-between items-center relative">
+                        <div class="text-center">
+                            <span class="bg-[#110B29] text-[#FFD700] font-bold text-[10px] px-2 py-0.5 rounded-full uppercase">
+                                El Borde de la Alfombra Mágica 🧺
+                            </span>
+                        </div>
+
+                        <!-- Representación de la secuencia de alfombra -->
+                        <div id="carpet-pattern-row" class="flex justify-center items-center gap-3 bg-[#231A4C] p-3 rounded-xl border-2 border-yellow-400 my-auto w-full max-w-md">
+                            <!-- Inyectado de manera dinámica por JS -->
+                        </div>
+
+                        <!-- Piezas disponibles para elegir (Causando interactividad libre) -->
+                        <div class="w-full">
+                            <p class="text-[10px] text-gray-400 text-center uppercase tracking-widest font-semibold mb-1">
+                                Toca la pieza para completar la regularidad:
+                            </p>
+                            <div id="carpet-options-container" class="flex justify-center gap-3">
+                                <!-- Opciones inyectadas dinámicamente por JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lado derecho: La explicación en tiempo real del Genio -->
+                    <div class="w-full lg:w-[280px] bg-[#1E123D] border border-[#5C3A93] rounded-2xl p-4 flex flex-col justify-between items-center">
+                        <div class="text-center">
+                            <span class="text-5xl sparkle block">🧞‍♂️</span>
+                            <h4 class="text-[#FFD700] font-bold text-sm mt-1">El Genio Explicador</h4>
+                        </div>
+                        <!-- Mensaje dinámico del genio sobre el patrón -->
+                        <div class="bg-[#110B29] p-3 rounded-xl border border-[#5C3A93] w-full text-center mt-2 flex-1 flex items-center justify-center">
+                            <p id="genie-text" class="text-gray-300 text-xs md:text-sm leading-relaxed">
+                                Elige una alfombra y coloca la pieza que sigue en la secuencia para ver su magia.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Diapositiva 5: Conclusión y Cierre -->
+            <div id="slide-5" class="slide-content hidden flex flex-col md:flex-row items-center gap-8 h-full flex-1">
+                <div class="flex-1 space-y-4">
+                    <span class="text-[#14B8A6] text-xs font-bold uppercase tracking-widest block">¡Gran Viaje! 🪄🚀</span>
+                    <h2 class="text-3xl font-bold text-white leading-tight">
+                        Los Patrones están en <br>
+                        <span class="text-[#FFD700]">todas partes</span>
+                    </h2>
+                    <p class="text-gray-300 text-sm md:text-base leading-relaxed">
+                        ¡Has aprendido a descifrar las regularidades visuales! Esta habilidad lógica es fundamental en las matemáticas y en la vida diaria.
+                    </p>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Gracias a que nuestro cerebro sabe identificar patrones, podemos predecir el orden de las cosas, entender el ritmo de la música y, por supuesto... ¡hacer que las alfombras mágicas vuelen!
+                    </p>
+                </div>
+                <div class="flex-1 w-full bg-[#1A133B] rounded-2xl p-5 border border-[#5C3A93] flex flex-col justify-center space-y-4">
+                    <h3 class="text-lg font-bold text-[#FFD700] text-center">🧠 ¡Demuestra lo aprendido!</h3>
+                    <p class="text-xs text-gray-300 text-center">Selecciona el objeto que completa la regularidad en cada reto:</p>
+                    
+                    <!-- Actividad 1 -->
+                    <div class="bg-[#231A4C] p-3 rounded-xl border border-[#5C3A93] space-y-2">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-1 text-xl">
+                                <span>🎈</span><span>🧸</span><span>🎈</span><span>🧸</span><span>🎈</span>
+                                <span class="text-sm font-bold text-yellow-400">➡️</span>
+                            </div>
+                            <select id="select-act-1" onchange="checkActivity(1)" class="bg-[#150D2E] border-2 border-[#5C3A93] rounded-xl text-white text-xs px-2 py-1.5 focus:border-[#FFD700] outline-none">
+                                <option value="">¿Cuál falta?</option>
+                                <option value="oso">🧸 Oso</option>
+                                <option value="globo">🎈 Globo</option>
+                                <option value="carro">🚗 Carro</option>
+                            </select>
+                        </div>
+                        <p id="feedback-act-1" class="text-[11px] text-center text-gray-400 font-semibold h-4"></p>
+                    </div>
+
+                    <!-- Actividad 2 -->
+                    <div class="bg-[#231A4C] p-3 rounded-xl border border-[#5C3A93] space-y-2">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-1 text-xl">
+                                <span>🐱</span><span>🐱</span><span>🐶</span><span>🐱</span><span>🐱</span>
+                                <span class="text-sm font-bold text-yellow-400">➡️</span>
+                            </div>
+                            <select id="select-act-2" onchange="checkActivity(2)" class="bg-[#150D2E] border-2 border-[#5C3A93] rounded-xl text-white text-xs px-2 py-1.5 focus:border-[#FFD700] outline-none">
+                                <option value="">¿Cuál falta?</option>
+                                <option value="gato">🐱 Gato</option>
+                                <option value="perro">🐶 Perro</option>
+                                <option value="raton">🐹 Hámster</option>
+                            </select>
+                        </div>
+                        <p id="feedback-act-2" class="text-[11px] text-center text-gray-400 font-semibold h-4"></p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Controles de Navegación de la Presentación -->
+    <footer class="w-full max-w-5xl mx-auto bg-[#1E123D] border-2 border-[#5C3A93] rounded-2xl p-4 flex justify-between items-center shadow-md">
+        <button id="btn-prev" onclick="changeSlide(-1)" class="bg-[#2A1E54] hover:bg-[#342666] text-gray-300 font-bold py-2 px-5 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+            Anterior
+        </button>
+
+        <div class="text-gray-400 font-semibold text-xs sm:text-sm">
+            Sección <span id="current-slide-num" class="text-[#FFD700]">1</span> de 5
+        </div>
+
+        <button id="btn-next" onclick="changeSlide(1)" class="bg-[#FF85B3] hover:bg-[#E05B8C] text-white font-bold py-2 px-5 rounded-xl transition-all">
+            Siguiente
+        </button>
+    </footer>
+
+    <script>
+        // --- Estado de la Presentación ---
+        let currentSlide = 1;
+        const totalSlides = 5;
+
+        // --- Sintetizador de Sonido (Web Audio API) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            // Activar contexto si estuviera suspendido
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'magic') {
+                // Arpegio brillante y místico (Chime)
+                const now = audioCtx.currentTime;
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                osc.frequency.setValueAtTime(1046.50, now + 0.3); // C6
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                osc.start(now);
+                osc.stop(now + 0.6);
+            } else if (type === 'select') {
+                // Tono suave al hacer clic en opciones
+                const now = audioCtx.currentTime;
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, now); // A4
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            } else if (type === 'click') {
+                // Clic estándar de navegación
+                const now = audioCtx.currentTime;
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, now);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            }
+        }
+
+        // --- Navegación ---
+        function startPresentation() {
+            playSound('magic');
+            const welcome = document.getElementById('welcomeScreen');
+            welcome.style.opacity = '0';
+            welcome.style.pointerEvents = 'none';
+            setTimeout(() => {
+                welcome.style.display = 'none';
+            }, 500);
+        }
+
+        function changeSlide(direction) {
+            playSound('click');
+
+            // Caso especial: Reiniciar desde el final
+            if (currentSlide === totalSlides && direction === 1) {
+                document.getElementById(`slide-${currentSlide}`).classList.add('hidden');
+                currentSlide = 1;
+                document.getElementById(`slide-${currentSlide}`).classList.remove('hidden');
+                updateFooter();
+                return;
+            }
+
+            // Ocultar actual
+            document.getElementById(`slide-${currentSlide}`).classList.add('hidden');
+            // Mover índice
+            currentSlide += direction;
+            // Mostrar nueva diapositiva
+            document.getElementById(`slide-${currentSlide}`).classList.remove('hidden');
+
+            updateFooter();
+
+            // Desencadenar lógica específica de diapositivas interactuables
+            if (currentSlide === 2) {
+                resetSlide2();
+            } else if (currentSlide === 3) {
+                resetSlide3();
+            } else if (currentSlide === 4) {
+                initSlide4Workshop();
+            } else if (currentSlide === 5) {
+                resetSlide5();
+            }
+        }
+
+        function updateFooter() {
+            document.getElementById('current-slide-num').textContent = currentSlide;
+            document.getElementById('btn-prev').disabled = (currentSlide === 1);
+            
+            const btnNext = document.getElementById('btn-next');
+            if (currentSlide === totalSlides) {
+                btnNext.textContent = 'Volver a comenzar 🔄';
+                btnNext.className = "bg-[#14B8A6] hover:bg-[#11998e] text-white font-bold py-2 px-5 rounded-xl transition-all";
+            } else {
+                btnNext.textContent = 'Siguiente';
+                btnNext.className = "bg-[#FF85B3] hover:bg-[#E05B8C] text-white font-bold py-2 px-5 rounded-xl transition-all";
+            }
+        }
+
+        // --- Lógica Diapositiva 2 (Alternancia Simple A-B) ---
+        function resetSlide2() {
+            const target = document.getElementById('slide2-target');
+            target.innerHTML = `<span class="text-3xl text-gray-500 font-bold">?</span>`;
+            target.className = "w-14 h-14 border-2 border-dashed border-[#FFD700] rounded-lg flex items-center justify-center bg-[#150D2E] transition-all duration-500";
+            document.getElementById('slide2-text').innerHTML = "Presiona el botón para completar la regularidad y ver la explicación lógica.";
+        }
+
+        function revealStep2Pattern() {
+            playSound('magic');
+            const target = document.getElementById('slide2-target');
+            target.innerHTML = `<span class="text-4xl animate-bounce">🔷</span>`;
+            target.className = "w-14 h-14 border-2 border-solid border-[#14B8A6] rounded-lg flex items-center justify-center bg-[#150D2E] shadow-lg shadow-[#14B8A6]/20 transition-all duration-500";
+            
+            document.getElementById('slide2-text').innerHTML = "<strong>¡Fabuloso!</strong> El elemento es la <span class='text-teal-400'>Gema Azul (A)</span>. El patrón se repite de forma secuencial: <strong>A-B-A-B-A</strong>. Con esta lógica, la alfombra sabe que después del sol siempre regresa la gema.";
+        }
+
+        // --- Lógica Diapositiva 3 (Repetición Compleja A-B-B) ---
+        function resetSlide3() {
+            document.getElementById('slide3-target-1').innerHTML = `<span class="text-xl text-gray-500 font-bold">?</span>`;
+            document.getElementById('slide3-target-2').innerHTML = `<span class="text-xl text-gray-500 font-bold">?</span>`;
+            document.getElementById('slide3-text').innerHTML = "Descubre cómo la regularidad nos permite predecir exactamente el diseño sin temor a equivocarnos.";
+        }
+
+        function revealStep3Pattern() {
+            playSound('magic');
+            
+            const t1 = document.getElementById('slide3-target-1');
+            const t2 = document.getElementById('slide3-target-2');
+
+            t1.innerHTML = `<span class="text-3xl animate-bounce">🌸</span>`;
+            t2.innerHTML = `<span class="text-3xl animate-bounce">🌸</span>`;
+
+            t1.className = "w-11 h-11 border border-solid border-[#FF85B3] rounded-lg flex items-center justify-center bg-[#150D2E] shadow-md transition-all duration-500";
+            t2.className = "w-11 h-11 border border-solid border-[#FF85B3] rounded-lg flex items-center justify-center bg-[#150D2E] shadow-md transition-all duration-500";
+
+            document.getElementById('slide3-text').innerHTML = "<strong>¡Perfecto!</strong> Los elementos que faltaban eran <strong>dos Flores</strong>. El patrón sigue la regla: <strong>Árbol-Flor-Flor (A-B-B)</strong> de manera infinitamente predecible.";
+        }
+
+        // --- STREAMING_CHUNK: Setting up Slide 5 interactive select validations... ---
+        // --- Lógica Diapositiva 5 (Actividades con Select) ---
+        function resetSlide5() {
+            const s1 = document.getElementById('select-act-1');
+            const s2 = document.getElementById('select-act-2');
+            if (s1 && s2) {
+                s1.value = "";
+                s2.value = "";
+                s1.className = "bg-[#150D2E] border-2 border-[#5C3A93] rounded-xl text-white text-xs px-2 py-1.5 focus:border-[#FFD700] outline-none";
+                s2.className = "bg-[#150D2E] border-2 border-[#5C3A93] rounded-xl text-white text-xs px-2 py-1.5 focus:border-[#FFD700] outline-none";
+                document.getElementById('feedback-act-1').textContent = "";
+                document.getElementById('feedback-act-2').textContent = "";
+            }
+        }
+
+        function checkActivity(num) {
+            const select = document.getElementById(`select-act-${num}`);
+            const feedback = document.getElementById(`feedback-act-${num}`);
+            const val = select.value;
+
+            if (val === "") {
+                feedback.textContent = "";
+                return;
+            }
+
+            if (num === 1) {
+                if (val === "oso") {
+                    playSound('magic');
+                    feedback.innerHTML = "<span class='text-teal-400'>¡Excelente! 🧸 Sigue el patrón A-B-A-B-A.</span>";
+                    select.className = "bg-[#150D2E] border-2 border-[#14B8A6] rounded-xl text-white text-xs px-2 py-1.5 outline-none";
+                } else {
+                    playSound('click');
+                    feedback.innerHTML = "<span class='text-red-400'>Inténtalo de nuevo ❌</span>";
+                    select.className = "bg-[#150D2E] border-2 border-[#FF85B3] rounded-xl text-white text-xs px-2 py-1.5 outline-none";
+                }
+            } else if (num === 2) {
+                if (val === "perro") {
+                    playSound('magic');
+                    feedback.innerHTML = "<span class='text-teal-400'>¡Genial! 🐶 Sigue el patrón A-A-B-A-A-B.</span>";
+                    select.className = "bg-[#150D2E] border-2 border-[#14B8A6] rounded-xl text-white text-xs px-2 py-1.5 outline-none";
+                } else {
+                    playSound('click');
+                    feedback.innerHTML = "<span class='text-red-400'>Inténtalo de nuevo ❌</span>";
+                    select.className = "bg-[#150D2E] border-2 border-[#FF85B3] rounded-xl text-white text-xs px-2 py-1.5 outline-none";
+                }
+            }
+        }
+
+        // --- Lógica Diapositiva 4 (Taller Práctico con 3 Temas de Alfombra) ---
+        
+        // Datos de las 3 alfombras didácticas
+        const carpetThemes = {
+            1: {
+                name: "Luna-Estrella",
+                patternType: "A - B",
+                explanation: "Este es un patrón de alternancia simple. El orden lógico se define alternando un solo elemento cada vez.",
+                items: ["🌙", "⭐", "🌙", "⭐", "🌙"],
+                targetIdx: 5,
+                correctItem: "⭐",
+                options: ["⭐", "🌙", "🧿"],
+                colors: { A: "text-indigo-400", B: "text-yellow-400" }
+            },
+            2: {
+                name: "Frutas Dulces",
+                patternType: "A - B - B",
+                explanation: "Este patrón repite dos veces el segundo elemento (B) antes de regresar al primero. Es una regularidad de repetición repetida.",
+                items: ["🍎", "🍌", "🍌", "🍎", "🍌"],
+                targetIdx: 5,
+                correctItem: "🍌",
+                options: ["🍇", "🍌", "🍎"],
+                colors: { A: "text-red-400", B: "text-yellow-300" }
+            },
+            3: {
+                name: "Naturaleza Mágica",
+                patternType: "A - B - C",
+                explanation: "¡Un patrón de secuencia triple! Contiene tres elementos distintos en un orden fijo que se repite exactamente igual.",
+                items: ["🍀", "🍄", "🌸", "🍀", "🍄"],
+                targetIdx: 5,
+                correctItem: "🌸",
+                options: ["🌸", "🍀", "🍄"],
+                colors: { A: "text-green-400", B: "text-red-400", C: "text-pink-400" }
+            }
+        };
+
+        let activeThemeId = 1;
+        let selectedUserItem = null;
+
+        function initSlide4Workshop() {
+            selectedUserItem = null;
+            selectCarpetTheme(1);
+        }
+
+        // Cambiar el tema activo de la alfombra exploratoria
+        function selectCarpetTheme(themeId) {
+            playSound('select');
+            activeThemeId = themeId;
+            selectedUserItem = null;
+
+            // Actualizar estilo visual de los botones de selección
+            for (let i = 1; i <= 3; i++) {
+                const btn = document.getElementById(`btn-theme-${i}`);
+                if (i === themeId) {
+                    btn.className = "bg-[#5C3A93] border-2 border-[#FFD700] text-white font-semibold text-xs py-1.5 px-3 rounded-full transition-all";
+                } else {
+                    btn.className = "bg-[#1A133B] border-2 border-[#5C3A93] text-gray-400 font-semibold text-xs py-1.5 px-3 rounded-full transition-all hover:text-white";
+                }
+            }
+
+            // Renderizar la fila de la alfombra
+            renderCarpetRow();
+            // Renderizar las opciones disponibles para el alumno
+            renderCarpetOptions();
+
+            // Restablecer el texto explicativo del genio a su estado guía neutral
+            const theme = carpetThemes[themeId];
+            document.getElementById('genie-text').innerHTML = `
+                ¡Has seleccionado la <strong>Alfombra ${theme.name}</strong>! <br>
+                Su patrón sigue la regla de regularidad <strong>${theme.patternType}</strong>. ¿Qué pieza debe ir en el espacio vacío del final? Toca una opción.
+            `;
+        }
+
+        // Renderizar la hilera del patrón de la alfombra
+        function renderCarpetRow() {
+            const container = document.getElementById('carpet-pattern-row');
+            container.innerHTML = '';
+            
+            const theme = carpetThemes[activeThemeId];
+
+            // Renderizar elementos fijos iniciales
+            theme.items.forEach((emoji, index) => {
+                const card = document.createElement('div');
+                card.className = 'w-10 h-10 md:w-12 md:h-12 bg-[#150D2E] border border-[#5C3A93] rounded-lg flex items-center justify-center text-2xl relative shadow-inner';
+                card.innerHTML = `<span>${emoji}</span>`;
+                container.appendChild(card);
+            });
+
+            // Renderizar el espacio vacío receptivo [?]
+            const targetCard = document.createElement('div');
+            targetCard.id = "carpet-target-box";
+            
+            if (selectedUserItem) {
+                // Si el alumno ya seleccionó una opción
+                targetCard.className = 'w-10 h-10 md:w-12 md:h-12 bg-[#2D1B4E] border-2 border-[#FFD700] rounded-lg flex items-center justify-center text-2xl relative animate-pulse shadow-md';
+                targetCard.innerHTML = `<span class="animate-bounce">${selectedUserItem}</span>`;
+            } else {
+                // Estado vacío en espera de interacción
+                targetCard.className = 'w-10 h-10 md:w-12 md:h-12 bg-[#150D2E] border-2 border-dashed border-[#FFD700] rounded-lg flex items-center justify-center text-xl text-yellow-300 font-bold shadow-inner cursor-pointer';
+                targetCard.innerHTML = `<span>?</span>`;
+            }
+
+            container.appendChild(targetCard);
+        }
+
+        // Renderizar botones para que el alumno complete de forma libre y descriptiva
+        function renderCarpetOptions() {
+            const container = document.getElementById('carpet-options-container');
+            container.innerHTML = '';
+
+            const theme = carpetThemes[activeThemeId];
+
+            theme.options.forEach(emoji => {
+                const btn = document.createElement('button');
+                btn.className = 'w-12 h-12 md:w-14 md:h-14 bg-[#231A4C] hover:bg-[#2D2163] border-2 border-[#5C3A93] hover:border-[#FFD700] rounded-xl flex items-center justify-center text-2xl transition-all transform hover:-translate-y-1 active:translate-y-0 shadow-md';
+                btn.innerHTML = `<span>${emoji}</span>`;
+                btn.onclick = () => tryCompletePattern(emoji);
+                container.appendChild(btn);
+            });
+        }
+
+        // --- STREAMING_CHUNK: Validating pattern predictions and generating descriptive feedback... ---
+        // Procesar la selección interactiva del alumno
+        function tryCompletePattern(emoji) {
+            selectedUserItem = emoji;
+            const theme = carpetThemes[activeThemeId];
+
+            // Volver a renderizar la fila de la alfombra para mostrar la pieza seleccionada
+            renderCarpetRow();
+
+            if (emoji === theme.correctItem) {
+                // ACIERTO: La regularidad es correcta
+                playSound('magic');
+                
+                // Explicación detallada del genio sobre por qué es correcto
+                document.getElementById('genie-text').innerHTML = `
+                    <span class="text-[#14B8A6] font-bold text-sm block mb-1">¡Correcto! 🌟✈️</span>
+                    Has puesto <strong>${emoji}</strong>. La regularidad se cumple de forma impecable. <br>
+                    <span class="text-xs text-gray-300 mt-1 block">La regla del patrón es <strong>${theme.patternType}</strong>. ${theme.explanation} ¡La alfombra se eleva de forma mágica!</span>
+                `;
+
+                // Añadir efecto de brillo y animación de vuelo
+                const targetBox = document.getElementById('carpet-target-box');
+                targetBox.className = 'w-10 h-10 md:w-12 md:h-12 bg-[#110B29] border-2 border-solid border-[#14B8A6] rounded-lg flex items-center justify-center text-2xl shadow-lg shadow-[#14B8A6]/30';
+                
+            } else {
+                // ERROR: No encaja en el patrón
+                playSound('click'); // Sonido normal
+
+                // Explicación descriptiva de por qué no cumple el patrón y guía de apoyo
+                document.getElementById('genie-text').innerHTML = `
+                    <span class="text-[#FF85B3] font-bold text-sm block mb-1">¡Inténtalo otra vez! 🧚‍♂️</span>
+                    Has puesto <strong>${emoji}</strong>, pero eso rompe la regla del patrón. <br>
+                    <span class="text-xs text-gray-300 mt-1 block">Observa con atención el orden inicial: busca qué elemento viene inmediatamente después de la última pieza en la secuencia original.</span>
+                `;
+
+                // Pequeño guiño visual de alerta suave
+                const targetBox = document.getElementById('carpet-target-box');
+                targetBox.className = 'w-10 h-10 md:w-12 md:h-12 bg-[#110B29] border-2 border-solid border-[#FF85B3] rounded-lg flex items-center justify-center text-2xl shadow-lg shadow-[#FF85B3]/20';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>La Caja de Sorpresas: Compartir - 1º Grado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #fef08a; /* Amarillo súper cálido */
+            background-image: 
+                radial-gradient(#fef9c3 3px, transparent 3px),
+                radial-gradient(#fef9c3 3px, transparent 3px);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        /* Animación de flotar (Caja y Objetos) */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Animación de sacudida (Caja emocionada o error) */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px) rotate(-3deg); }
+            40%, 80% { transform: translateX(8px) rotate(3deg); }
+        }
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        /* Destello cuando sale un objeto */
+        @keyframes popInObject {
+            0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+            70% { transform: scale(1.2) rotate(10deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .pop-in-object {
+            animation: popInObject 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Estilos de arrastre */
+        .objeto-drag {
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            transition: transform 0.1s;
+        }
+        .objeto-drag:active {
+            cursor: grabbing;
+        }
+
+        /* Efecto cuando pasas un objeto sobre un compañero */
+        @keyframes pulseTarget {
+            0%, 100% { transform: scale(1); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+            50% { transform: scale(1.05); box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.4); }
+        }
+        .target-hover {
+            animation: pulseTarget 0.8s infinite;
+            border-color: #3b82f6 !important;
+            background-color: #eff6ff !important;
+        }
+
+        /* Partículas de corazones y estrellas */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            animation: flyUp 1.5s ease-out forwards;
+            z-index: 100;
+        }
+        @keyframes flyUp {
+            0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-120px) scale(1.5) rotate(360deg); opacity: 0; }
+        }
+
+        /* Transición suave para las burbujas */
+        .bubble-speak {
+            position: relative;
+        }
+        .bubble-speak::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: white transparent transparent transparent;
+        }
+    </style>
+</head>
+<body class="w-screen h-screen flex flex-col relative text-gray-800">
+
+    <!-- ================= PANTALLA DE INICIO ================= -->
+    <div id="pantalla-inicio" class="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-yellow-50/95 backdrop-blur-md transition-opacity duration-500">
+        
+        <div class="bg-purple-100 rounded-full px-6 py-2 mb-4 font-bold text-purple-600 tracking-wider shadow-sm border border-purple-200">
+            FORMACIÓN CÍVICA Y VALORES • 1º GRADO
+        </div>
+        
+        <h1 class="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500 mb-6 drop-shadow-sm leading-tight">
+            La Caja de<br>Sorpresas 🎁
+        </h1>
+        
+        <div class="max-w-2xl bg-white p-8 rounded-[2.5rem] shadow-2xl border-4 border-purple-400 mb-8 transform hover:scale-105 transition-transform duration-300 relative overflow-hidden">
+            <h2 class="text-3xl font-bold text-purple-700 mb-4 flex items-center justify-center gap-3">
+                <span>🤝</span> ¿Qué aprenderemos?
+            </h2>
+            <p class="text-xl text-gray-600 leading-relaxed font-semibold">
+                ¡Compartir nos hace súper felices! <br>
+                Abre la caja mágica, descubre hermosos juguetes y meriendas, y compártelos con tus compañeros de clase virtuales.<br><br>
+                <span class="text-pink-500 font-black">¡Verás qué alegría da regalar!</span>
+            </p>
+            <div class="flex justify-center gap-6 mt-6 text-5xl">
+                <span class="floating" style="animation-delay: 0s;">🎁</span>
+                <span class="floating" style="animation-delay: 0.3s;">🧸</span>
+                <span class="floating" style="animation-delay: 0.6s;">🍪</span>
+            </div>
+        </div>
+
+        <button onclick="iniciarJuego()" class="group relative inline-flex items-center justify-center px-12 py-5 text-2xl font-bold text-white bg-gradient-to-r from-purple-500 to-pink-500 rounded-full overflow-hidden shadow-[0_8px_0_#a21caf] active:shadow-[0_0px_0_#a21caf] active:translate-y-2 transition-all">
+            <span class="relative flex items-center gap-2">Abrir la Caja <span class="text-3xl group-hover:animate-bounce">✨</span></span>
+        </button>
+    </div>
+
+    <!-- ================= PANTALLA DEL JUEGO ================= -->
+    <div id="pantalla-juego" class="hidden absolute inset-0 z-10 flex flex-col h-full w-full">
+        
+        <!-- Cabecera -->
+        <div class="w-full flex justify-between items-center bg-white/90 p-4 shadow-md border-b-4 border-purple-200 z-20 shrink-0">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl md:text-4xl bg-purple-100 p-2 rounded-full">🤝</span>
+                <h2 class="text-xl md:text-3xl font-black text-purple-700">El Valor de Compartir</h2>
+            </div>
+            <div class="flex flex-col items-end">
+                <span class="text-sm font-bold text-gray-400 uppercase tracking-wider">¡Alegría compartida!</span>
+                <span id="contador-progreso" class="bg-pink-100 px-4 py-1 rounded-full text-pink-700 font-black border-2 border-pink-200 text-lg md:text-xl shadow-sm">0 / 6</span>
+            </div>
+        </div>
+
+        <!-- Área Principal de Juego (Distribuido horizontalmente) -->
+        <div class="flex-1 w-full p-4 md:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 overflow-hidden relative">
+            
+            <!-- Burbuja de Feedback flotante (Paso pedagógico) -->
+            <div id="mensaje-feedback" class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white px-6 py-4 rounded-3xl shadow-2xl border-4 border-purple-400 opacity-0 transition-all duration-300 z-50 text-center max-w-md pointer-events-none scale-90">
+                <!-- Se inyecta feedback pedagógico aquí -->
+            </div>
+
+            <!-- Columna Izquierda: La Caja Mágica y el Objeto Revelado -->
+            <div class="w-full lg:w-2/5 flex flex-col items-center justify-center bg-yellow-100/50 rounded-[3rem] p-6 border-4 border-dashed border-yellow-300 min-h-[300px] lg:h-full relative">
+                
+                <h3 id="instruccion-caja" class="text-lg md:text-2xl font-black text-yellow-800 text-center mb-4 animate-pulse">
+                    🎁 ¡Toca la caja para ver la sorpresa!
+                </h3>
+
+                <!-- Contenedor de la Caja -->
+                <div id="area-caja" onclick="abrirCaja()" class="cursor-pointer transition-transform active:scale-95 z-20 relative select-none">
+                    <div id="caja-emoji" class="text-9xl md:text-[11rem] drop-shadow-2xl floating transition-all duration-300">🎁</div>
+                </div>
+
+                <!-- Contenedor del Objeto que sale (inicialmente vacío) -->
+                <div id="contenedor-objeto" class="absolute flex items-center justify-center z-30 pointer-events-none">
+                    <!-- Se inyectará el objeto para arrastrar aquí -->
+                </div>
+
+                <div class="hidden lg:block text-sm font-bold text-yellow-700 mt-6 bg-white/80 px-4 py-2 rounded-full shadow-sm">
+                    ¡Cada objeto tiene un amigo ideal, pero compartir con cualquiera es genial! 🌟
+                </div>
+            </div>
+
+            <!-- Columna Central: Flecha o Espacio de guía -->
+            <div class="hidden xl:flex flex-col items-center justify-center text-yellow-600/40">
+                <span class="text-6xl animate-pulse">➡️</span>
+                <span class="font-bold text-sm tracking-widest mt-2 uppercase">Arrastra</span>
+            </div>
+
+            <!-- Columna Derecha: Los Compañeros de Clase Virtuales -->
+            <div class="w-full lg:w-3/5 flex flex-col justify-center gap-4 lg:h-full z-10">
+                
+                <h3 class="text-xl md:text-2xl font-black text-purple-900 text-center lg:text-left mb-2">
+                    ¿Con quién quieres compartir hoy? 👧👦
+                </h3>
+
+                <!-- Grid de Compañeros -->
+                <div id="contenedor-companeros" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Se inyectan dinámicamente -->
+                </div>
+                
+                <!-- Guía móvil -->
+                <div class="lg:hidden text-center text-xs md:text-sm font-bold text-yellow-800 bg-white/80 py-2 rounded-full shadow-sm mt-2">
+                    👆 Abre la caja y arrastra el regalo a un compañero.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= PANTALLA FINAL ================= -->
+    <div id="pantalla-final" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-white/95 backdrop-blur-md transition-opacity duration-500">
+        <div class="text-9xl mb-6 floating">💖</div>
+        <h1 class="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500 mb-6 drop-shadow-sm">
+            ¡Súper Amigo/a!
+        </h1>
+        <p class="text-2xl text-gray-700 max-w-xl mb-10 font-bold leading-relaxed">
+            Compartiste tus sorpresas con todos tus compañeros. <br>
+            ¡Gracias a tu generosidad, hoy el salón de clase es un lugar más feliz! 🌈
+        </p>
+        <button onclick="reiniciarJuego()" class="group relative inline-flex items-center justify-center px-12 py-5 text-2xl font-bold text-white bg-gradient-to-r from-purple-500 to-pink-500 rounded-full overflow-hidden shadow-[0_8px_0_#a21caf] active:shadow-[0_0px_0_#a21caf] active:translate-y-2 transition-all">
+            <span class="relative flex items-center gap-2">Jugar otra vez <span class="text-3xl">🔄</span></span>
+        </button>
+    </div>
+
+    <!-- ================= LÓGICA DEL JUEGO ================= -->
+    <script>
+        // --- BASE DE DATOS DE COMPAÑEROS ---
+        const companeros = [
+            {
+                id: "mateo",
+                nombre: "Mateo",
+                emoji: "👦",
+                preferencia: "hambre",
+                descripcion: "¡Tiene un poquito de hambre!",
+                burbujaInicial: "¡Hola! Mi pancita hace ruido de hambre... 🥪",
+                reaccionIdeal: "¡Yummm! ¡Qué delicia de merienda! Muchas gracias por compartir conmigo. 😋",
+                reaccionGenerica: "¡Guau! Qué bonito detalle, me hiciste sonreír. ¡Gracias amigo/a! 🥰"
+            },
+            {
+                id: "sofia",
+                nombre: "Sofía",
+                emoji: "👧",
+                preferencia: "arte",
+                descripcion: "¡Le encanta pintar y crear!",
+                burbujaInicial: "¡Hola! Quiero hacer un dibujo hermoso hoy... 🎨",
+                reaccionIdeal: "¡Súper! Justo lo que quería para pintar mis mundos de colores. 🖍️✨",
+                reaccionGenerica: "¡Me encanta! Es hermoso recibir un regalo sorpresa. ¡Muchas gracias! 💖"
+            },
+            {
+                id: "lucas",
+                nombre: "Lucas",
+                emoji: "👦🏽",
+                preferencia: "juego",
+                descripcion: "¡Quiere jugar y divertirse!",
+                burbujaInicial: "¡Hola! Tengo ganas de correr y divertirme... ⚽",
+                reaccionIdeal: "¡Espectacular! Vamos a jugar juntos ahora mismo. ¡Eres genial! 🥳",
+                reaccionGenerica: "¡Qué divertido! Me alegra mucho que compartas conmigo. ¡Gracias! 🌟"
+            }
+        ];
+
+        // --- BASE DE DATOS DE OBJETOS SORPRESA ---
+        const sorpresasTodas = [
+            { texto: "Galleta de chocolate", emoji: "🍪", categoria: "hambre", razonIdeal: "A Mateo le encanta porque tenía mucha hambre.", razonGenerica: "A todos nos gusta recibir deliciosas galletas." },
+            { texto: "Caja de Crayones", emoji: "🖍️", categoria: "arte", razonIdeal: "Sofía la usará para pintar su próximo gran dibujo.", razonGenerica: "Los colores son divertidos para todos." },
+            { texto: "Pelota saltarina", emoji: "⚽", categoria: "juego", razonIdeal: "Lucas está emocionado por jugar al aire libre.", razonGenerica: "Un juego divertido se disfruta con todos." },
+            { texto: "Manzana dulce", emoji: "🍎", categoria: "hambre", razonIdeal: "Mateo necesita energía y fruta saludable.", razonGenerica: "Compartir la comida es un acto muy solidario." },
+            { texto: "Libro de Cuentos", emoji: "📖", categoria: "arte", razonIdeal: "A Sofía le encantan las historias imaginativas.", razonGenerica: "Leer cuentos juntos nos hace volar la imaginación." },
+            { texto: "Osito de Peluche", emoji: "🧸", categoria: "juego", razonIdeal: "A Lucas le encanta tener nuevos amigos de felpa.", razonGenerica: "Un peluche suave siempre nos da un tierno abrazo." }
+        ];
+
+        let sorpresasJuego = [];
+        let objetoRevelado = null; // Guardará el objeto actual
+        let indiceActual = 0;
+        let compartidosCorrectos = 0;
+
+        // Referencias DOM
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const pantallaJuego = document.getElementById('pantalla-juego');
+        const pantallaFinal = document.getElementById('pantalla-final');
+        const contenedorCompaneros = document.getElementById('contenedor-companeros');
+        const areaCaja = document.getElementById('area-caja');
+        const cajaEmoji = document.getElementById('caja-emoji');
+        const contenedorObjeto = document.getElementById('contenedor-objeto');
+        const instruccionCaja = document.getElementById('instruccion-caja');
+        const contadorProgreso = document.getElementById('contador-progreso');
+        const mensajeFeedback = document.getElementById('mensaje-feedback');
+
+        // Variables de Arrastre
+        let isDragging = false;
+        let currentTargetHover = null;
+        let startX, startY, currentX, currentY;
+        let zonasCaida = []; // Elementos DOM de los compañeros
+
+        // --- FLUJO GENERAL JUEGO ---
+
+        function mezclarArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function iniciarJuego() {
+            pantallaInicio.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaInicio.classList.add('hidden');
+                pantallaInicio.classList.remove('opacity-0');
+                pantallaJuego.classList.remove('hidden');
+                
+                sorpresasJuego = mezclarArray([...sorpresasTodas]);
+                indiceActual = 0;
+                compartidosCorrectos = 0;
+                
+                prepararCompaneros();
+                actualizarProgreso();
+                prepararCajaParaAbrir();
+            }, 500);
+        }
+
+        // Se modificó esta función para recargar completamente la página (F5)
+        function reiniciarJuego() {
+            pantallaFinal.classList.add('opacity-0');
+            setTimeout(() => {
+                window.location.reload();
+            }, 300);
+        }
+
+        function actualizarProgreso() {
+            contadorProgreso.innerText = `${indiceActual} / ${sorpresasJuego.length}`;
+        }
+
+        function prepararCajaParaAbrir() {
+            cajaEmoji.innerText = "🎁";
+            cajaEmoji.className = "text-9xl md:text-[11rem] drop-shadow-2xl floating cursor-pointer";
+            areaCaja.style.pointerEvents = "auto";
+            contenedorObjeto.innerHTML = '';
+            objetoRevelado = null;
+            instruccionCaja.innerText = "🎁 ¡Toca la caja para ver la sorpresa!";
+            instruccionCaja.className = "text-lg md:text-2xl font-black text-yellow-800 text-center mb-4 animate-pulse";
+        }
+
+        function prepararCompaneros() {
+            contenedorCompaneros.innerHTML = '';
+            zonasCaida = [];
+
+            companeros.forEach(comp => {
+                const card = document.createElement('div');
+                card.className = "bg-white border-4 border-purple-200 rounded-[2rem] p-4 flex flex-col items-center justify-between text-center shadow-md transition-all duration-300 relative bg-opacity-95 backdrop-blur-sm h-64 select-none";
+                card.dataset.id = comp.id;
+                card.dataset.preferencia = comp.preferencia;
+
+                card.innerHTML = `
+                    <div class="bubble-speak bg-purple-50 text-purple-900 border-2 border-purple-100 rounded-2xl px-3 py-1.5 text-xs md:text-sm font-bold w-full mb-3 shadow-inner">
+                        "${comp.burbujaInicial}"
+                    </div>
+                    <div class="text-6xl md:text-7xl mb-2 drop-shadow-sm filter">${comp.emoji}</div>
+                    <div class="w-full">
+                        <div class="font-black text-purple-900 text-lg md:text-xl leading-none">${comp.nombre}</div>
+                        <div class="text-xs font-bold text-gray-400 mt-1">${comp.descripcion}</div>
+                    </div>
+                `;
+
+                contenedorCompaneros.appendChild(card);
+                zonasCaida.push(card);
+            });
+        }
+
+        // --- MECÁNICA: ABRIR CAJA MÁGICA ---
+
+        function abrirCaja() {
+            areaCaja.style.pointerEvents = "none"; // Evita doble click
+            cajaEmoji.classList.remove('floating');
+            cajaEmoji.classList.add('shake');
+            instruccionCaja.innerText = "¡Abriendo... ✨!";
+
+            setTimeout(() => {
+                cajaEmoji.classList.remove('shake');
+                cajaEmoji.innerText = "📦"; // Caja abierta
+                revelarSorpresa();
+            }, 600);
+        }
+
+        function revelarSorpresa() {
+            const sorpresa = sorpresasJuego[indiceActual];
+            objetoRevelado = sorpresa;
+
+            // Crear el elemento del objeto flotante listo para arrastrar
+            const el = document.createElement('div');
+            el.className = "objeto-drag pop-in-object flex flex-col items-center justify-center p-4 bg-white rounded-3xl shadow-2xl border-4 border-yellow-400 w-44 md:w-52 z-50 cursor-grab select-none";
+            el.style.pointerEvents = "auto";
+            el.dataset.categoria = sorpresa.categoria;
+
+            el.innerHTML = `
+                <div class="text-6xl md:text-7xl mb-1 drop-shadow-md">${sorpresa.emoji}</div>
+                <div class="text-sm md:text-base font-black text-center text-gray-700 leading-tight">${sorpresa.texto}</div>
+            `;
+
+            // Agregar eventos Pointer (Mouse y Touch unificado)
+            el.addEventListener('pointerdown', iniciarArrastre);
+            
+            contenedorObjeto.appendChild(el);
+            instruccionCaja.innerHTML = "✨ ¡Arrastra la sorpresa a un amigo! ✨";
+            instruccionCaja.className = "text-lg md:text-2xl font-black text-pink-600 text-center mb-4 animate-bounce";
+        }
+
+        // --- SISTEMA ARRASTRAR Y SOLTAR (POINTER EVENTS) ---
+
+        function iniciarArrastre(e) {
+            isDragging = true;
+            const elDrag = e.currentTarget;
+            elDrag.setPointerCapture(e.pointerId);
+
+            startX = e.clientX;
+            startY = e.clientY;
+            currentX = 0;
+            currentY = 0;
+
+            elDrag.classList.remove('pop-in-object');
+            elDrag.style.transition = 'none';
+            elDrag.style.zIndex = '100';
+            elDrag.style.transform = 'scale(1.1)';
+
+            elDrag.addEventListener('pointermove', arrastrar);
+            elDrag.addEventListener('pointerup', soltarArrastre);
+            elDrag.addEventListener('pointercancel', soltarArrastre);
+        }
+
+        function arrastrar(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+
+            const elDrag = e.currentTarget;
+            currentX = e.clientX - startX;
+            currentY = e.clientY - startY;
+
+            // Mover con una inclinación juguetona
+            const rotacion = currentX * 0.08;
+            elDrag.style.transform = `translate(${currentX}px, ${currentY}px) scale(1.1) rotate(${rotacion}deg)`;
+
+            comprobarHover(e.clientX, e.clientY);
+        }
+
+        function comprobarHover(x, y) {
+            limpiarHovers();
+            const target = obtenerCompaneroBajoCursor(x, y);
+            if (target) {
+                target.classList.add('target-hover');
+                currentTargetHover = target;
+            } else {
+                currentTargetHover = null;
+            }
+        }
+
+        function limpiarHovers() {
+            zonasCaida.forEach(z => z.classList.remove('target-hover'));
+        }
+
+        function obtenerCompaneroBajoCursor(x, y) {
+            const padding = 15;
+            for (let i = 0; i < zonasCaida.length; i++) {
+                const rect = zonasCaida[i].getBoundingClientRect();
+                if (x > rect.left - padding && x < rect.right + padding && 
+                    y > rect.top - padding && y < rect.bottom + padding) {
+                    return zonasCaida[i];
+                }
+            }
+            return null;
+        }
+
+        function soltarArrastre(e) {
+            if (!isDragging) return;
+            isDragging = false;
+
+            const elDrag = e.currentTarget;
+            elDrag.releasePointerCapture(e.pointerId);
+
+            elDrag.removeEventListener('pointermove', arrastrar);
+            elDrag.removeEventListener('pointerup', soltarArrastre);
+            elDrag.removeEventListener('pointercancel', soltarArrastre);
+
+            elDrag.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            limpiarHovers();
+
+            if (currentTargetHover) {
+                // Compartir con el compañero detectado
+                procesarCompartir(elDrag, currentTargetHover);
+            } else {
+                // Volver a la caja
+                elDrag.style.transform = 'translate(0px, 0px) scale(1) rotate(0deg)';
+            }
+        }
+
+        // --- RETROALIMENTACIÓN PEDAGÓGICA Y JUICIO DE VALOR ---
+
+        function procesarCompartir(elDrag, targetCompanero) {
+            const idCompanero = targetCompanero.dataset.id;
+            const preferenciaCompanero = targetCompanero.dataset.preferencia;
+            const categoriaRegalo = elDrag.dataset.categoria;
+
+            // Datos del compañero de la BD
+            const datosComp = companeros.find(c => c.id === idCompanero);
+
+            // Determinar si es la preferencia ideal o un compartir genérico
+            const esIdeal = (preferenciaCompanero === categoriaRegalo);
+
+            // Animación de absorción del regalo
+            const rectTarget = targetCompanero.getBoundingClientRect();
+            const rectDrag = elDrag.getBoundingClientRect();
+            const destX = rectTarget.left + (rectTarget.width / 2) - (rectDrag.left + (rectDrag.width / 2));
+            const destY = rectTarget.top + (rectTarget.height / 2) - (rectDrag.top + (rectDrag.height / 2));
+
+            elDrag.style.transform = `translate(${destX}px, ${destY}px) scale(0.2)`;
+            elDrag.style.opacity = '0';
+
+            // Lanzar partículas de corazones desde el compañero
+            crearParticulas(rectTarget);
+
+            // Actualizar la burbuja del compañero con su reacción
+            const burbujaHabla = targetCompanero.querySelector('.bubble-speak');
+            const textoReaccion = esIdeal ? datosComp.reaccionIdeal : datosComp.reaccionGenerica;
+            burbujaHabla.innerText = `"${textoReaccion}"`;
+            burbujaHabla.className = "bubble-speak bg-pink-100 text-pink-900 border-2 border-pink-300 rounded-2xl px-3 py-1.5 text-xs md:text-sm font-black w-full mb-3 shadow-md transform scale-105 transition-all duration-300";
+
+            // Mostrar el feedback de aprendizaje (La burbuja superior)
+            mostrarFeedbackPedagogico(esIdeal, datosComp.nombre, objetoRevelado, targetCompanero);
+
+            setTimeout(() => {
+                // Restaurar la burbuja del compañero a su estado normal
+                burbujaHabla.className = "bubble-speak bg-purple-50 text-purple-900 border-2 border-purple-100 rounded-2xl px-3 py-1.5 text-xs md:text-sm font-bold w-full mb-3 shadow-inner";
+                burbujaHabla.innerText = `"${datosComp.burbujaInicial}"`;
+                
+                // Pasar al siguiente
+                indiceActual++;
+                actualizarProgreso();
+                
+                if (indiceActual >= sorpresasJuego.length) {
+                    finalizarJuego();
+                } else {
+                    prepararCajaParaAbrir();
+                }
+            }, 3800); // Dar suficiente tiempo para leer
+        }
+
+        function mostrarFeedbackPedagogico(esIdeal, nombreAmigo, objeto, tarjetaComp) {
+            // Animación para resaltar la tarjeta del amigo que recibió el regalo
+            tarjetaComp.classList.add('border-green-400', 'bg-green-50/50', 'scale-105');
+            setTimeout(() => {
+                tarjetaComp.classList.remove('border-green-400', 'bg-green-50/50', 'scale-105');
+            }, 3500);
+
+            let titulo = "¡Qué lindo gesto! ❤️";
+            let mensaje = "";
+            let colorBorde = "border-green-400";
+            let colorTexto = "text-green-600";
+
+            if (esIdeal) {
+                titulo = "¡Súper Compartido! 🌟💖";
+                mensaje = `Compartiste la <b>${objeto.texto}</b> con <b>${nombreAmigo}</b>. <br> ${objeto.razonIdeal} ¡Lograste suplir su necesidad con empatía!`;
+                colorBorde = "border-pink-400";
+                colorTexto = "text-pink-600";
+            } else {
+                mensaje = `Compartiste la <b>${objeto.texto}</b> con <b>${nombreAmigo}</b>. <br> ${objeto.razonGenerica} ¡Aunque no era su objeto soñado, le alegraste muchísimo el día!`;
+            }
+
+            mensajeFeedback.className = `absolute top-6 left-1/2 transform -translate-x-1/2 bg-white px-6 py-4 rounded-[2rem] shadow-2xl border-4 ${colorBorde} transition-all duration-300 z-50 text-center w-11/12 max-w-md scale-100 opacity-100`;
+            
+            mensajeFeedback.innerHTML = `
+                <div class="text-xl md:text-2xl font-black ${colorTexto} mb-1">${titulo}</div>
+                <div class="text-sm md:text-base font-bold text-gray-700 leading-snug">${mensaje}</div>
+            `;
+
+            setTimeout(() => {
+                mensajeFeedback.className = "absolute top-6 left-1/2 transform -translate-x-1/2 bg-white px-6 py-4 rounded-3xl shadow-2xl border-4 border-purple-400 opacity-0 transition-all duration-300 z-50 text-center max-w-md pointer-events-none scale-90";
+            }, 3500);
+        }
+
+        // --- EFECTOS VISUALES ---
+
+        function crearParticulas(rect) {
+            const emojis = ['❤️', '💖', '⭐', '✨', '🌸'];
+            const container = document.body;
+
+            for (let i = 0; i < 15; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                // Posicionar relativo al elemento compañero
+                const posX = rect.left + (rect.width / 2) + (Math.random() * 60 - 30);
+                const posY = rect.top + (rect.height / 2);
+                
+                p.style.left = `${posX}px`;
+                p.style.top = `${posY}px`;
+                p.style.fontSize = `${Math.random() * 20 + 20}px`;
+                p.style.animationDelay = `${Math.random() * 0.3}s`;
+                
+                container.appendChild(p);
+                
+                setTimeout(() => p.remove(), 1500);
+            }
+        }
+
+        function finalizarJuego() {
+            pantallaJuego.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaJuego.classList.add('hidden');
+                pantallaFinal.classList.remove('hidden');
+                setTimeout(() => pantallaFinal.classList.remove('opacity-0'), 50);
+                
+                // Celebración con corazones y estrellas
+                for (let i = 0; i < 4; i++) {
+                    setTimeout(() => {
+                        const randomRect = {
+                            left: Math.random() * window.innerWidth - 50,
+                            width: 100,
+                            top: window.innerHeight - 100,
+                            height: 100
+                        };
+                        crearParticulas(randomRect);
+                    }, i * 300);
+                }
+            }, 500);
+        }
+
+        // --- CARGA INICIAL ---
+        document.addEventListener('DOMContentLoaded', () => {
+            pantallaInicio.classList.remove('hidden');
+            setTimeout(() => pantallaInicio.classList.remove('opacity-0'), 50);
+        });
+
+    </script>
+</body>
+</html>

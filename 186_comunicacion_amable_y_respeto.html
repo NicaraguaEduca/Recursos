@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>El Mensajero Amable - Palabras Mágicas de Convivencia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #ecfdf5; /* Verde menta súper suave */
+            background-image: 
+                radial-gradient(#a7f3d0 3px, transparent 3px),
+                radial-gradient(#a7f3d0 3px, transparent 3px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        /* Animaciones para niños */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(1deg); }
+        }
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes walk {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.05) rotate(3deg); }
+            75% { transform: scale(1.05) rotate(-3deg); }
+        }
+        .walking {
+            animation: walk 0.6s infinite ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px) rotate(-2deg); }
+            40%, 80% { transform: translateX(8px) rotate(2deg); }
+        }
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        /* Partículas de estrellas y corazones */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            animation: flyUp 1.2s ease-out forwards;
+            z-index: 100;
+        }
+        @keyframes flyUp {
+            0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-100px) scale(1.5) rotate(180deg); opacity: 0; }
+        }
+
+        /* Estilos de botones interactivos */
+        .btn-opcion {
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .btn-opcion:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body class="w-screen h-screen flex flex-col relative text-gray-800 select-none">
+
+    <!-- ================= PANTALLA DE INICIO ================= -->
+    <div id="pantalla-inicio" class="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-emerald-50/95 backdrop-blur-md transition-opacity duration-500">
+        
+        <div class="bg-emerald-100 rounded-full px-6 py-2 mb-4 font-bold text-emerald-700 tracking-wider shadow-sm border border-emerald-200">
+            FORMACIÓN CÍVICA Y VALORES • 1º GRADO
+        </div>
+        
+        <h1 class="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 mb-6 drop-shadow-sm leading-tight">
+            El Mensajero Amable ✉️🐦
+        </h1>
+        
+        <div class="max-w-2xl bg-white p-8 rounded-[2.5rem] shadow-2xl border-4 border-emerald-400 mb-8 transform hover:scale-105 transition-transform duration-300 relative overflow-hidden">
+            <h2 class="text-3xl font-bold text-emerald-700 mb-4 flex items-center justify-center gap-3">
+                <span>🎯</span> Nuestro Objetivo de Aprendizaje
+            </h2>
+            <p class="text-xl text-gray-600 leading-relaxed font-semibold">
+                ¡Las palabras amables tienen el poder de abrir todos los caminos!<br>
+                Acompaña a <b>Tito, el cartero</b>, a entregar cartas en el bosque. Elige la palabra mágica correcta para superar los obstáculos con respeto y empatía.<br><br>
+                <span class="text-teal-600 font-black">¿Estás listo para usar tu lenguaje de cortesía?</span>
+            </p>
+            <div class="flex justify-center gap-6 mt-6 text-5xl">
+                <span class="floating" style="animation-delay: 0s;">🕊️</span>
+                <span class="floating" style="animation-delay: 0.3s;">🔑</span>
+                <span class="floating" style="animation-delay: 0.6s;">🌟</span>
+            </div>
+        </div>
+
+        <button onclick="iniciarJuego()" class="group relative inline-flex items-center justify-center px-12 py-5 text-2xl font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full overflow-hidden shadow-[0_8px_0_#047857] active:shadow-[0_0px_0_#047857] active:translate-y-2 transition-all">
+            <span class="relative flex items-center gap-2">¡Comenzar Viaje! <span class="text-3xl group-hover:animate-bounce">🎒</span></span>
+        </button>
+    </div>
+
+    <!-- ================= PANTALLA DEL JUEGO ================= -->
+    <div id="pantalla-juego" class="hidden absolute inset-0 z-10 flex flex-col h-full w-full">
+        
+        <!-- Cabecera -->
+        <div class="w-full flex justify-between items-center bg-white/95 p-4 shadow-md border-b-4 border-emerald-200 z-20 shrink-0">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl md:text-4xl bg-emerald-100 p-2 rounded-full">✉️</span>
+                <div>
+                    <h2 class="text-xl md:text-3xl font-black text-emerald-700">Tito, el Mensajero Amable</h2>
+                    <p class="hidden md:block text-xs font-bold text-gray-400">Respeto y Convivencia en el Aula • 1º Primaria</p>
+                </div>
+            </div>
+            <div class="flex flex-col items-end">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Cartas Entregadas</span>
+                <span id="contador-progreso" class="bg-teal-100 px-4 py-1 rounded-full text-teal-700 font-black border-2 border-teal-200 text-lg md:text-xl shadow-sm">0 / 4 📬</span>
+            </div>
+        </div>
+
+        <!-- Área Principal de Juego (Distribución Horizontal) -->
+        <div class="flex-1 w-full p-4 md:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 overflow-hidden relative">
+            
+            <!-- Burbuja de Guía Pedagógica (Feedback educativo) -->
+            <div id="burbuja-pedagogica" class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white px-6 py-4 rounded-[2.5rem] shadow-2xl border-4 border-emerald-400 opacity-0 transition-all duration-300 z-50 text-center w-11/12 max-w-lg pointer-events-none scale-90">
+                <!-- Inyección dinámica -->
+            </div>
+
+            <!-- Columna Izquierda: Escena de Tito y el Obstáculo -->
+            <div class="w-full lg:w-3/5 h-full flex flex-col justify-between bg-emerald-50/50 backdrop-blur-sm rounded-[2.5rem] p-6 border-4 border-dashed border-emerald-300 relative">
+                
+                <!-- Letrero de la situación -->
+                <div class="bg-white/90 px-4 py-2 rounded-2xl border-2 border-emerald-100 shadow-sm text-center">
+                    <h3 id="texto-situacion" class="text-base md:text-lg font-bold text-emerald-900 leading-snug">
+                        Tito quiere cruzar el puente, pero el Oso Dormilón está durmiendo tapando el paso...
+                    </h3>
+                </div>
+
+                <!-- Escenario Animado -->
+                <div class="flex-1 w-full flex items-center justify-around relative">
+                    <!-- Tito (El Cartero) -->
+                    <div id="personaje-tito" class="flex flex-col items-center justify-center transition-all duration-1000">
+                        <div class="text-7xl md:text-9xl filter drop-shadow-lg select-none floating">🕊️</div>
+                        <span class="bg-emerald-600 text-white text-xs font-black px-3 py-1 rounded-full shadow-sm mt-1">Tito</span>
+                    </div>
+
+                    <!-- El Puente / Conector Decorativo -->
+                    <div class="h-4 bg-emerald-200 border-y-2 border-emerald-300 flex-1 mx-4 rounded-full relative overflow-hidden -z-10">
+                        <div class="absolute inset-0 bg-gradient-to-r from-emerald-100 to-transparent animate-pulse"></div>
+                    </div>
+
+                    <!-- El Obstáculo actual -->
+                    <div id="personaje-obstaculo" class="flex flex-col items-center justify-center transition-all duration-500">
+                        <div id="emoji-obstaculo" class="text-7xl md:text-9xl filter drop-shadow-lg select-none">🐻</div>
+                        <span id="nombre-obstaculo" class="bg-emerald-800 text-white text-xs font-black px-3 py-1 rounded-full shadow-sm mt-1">Oso Dormilón</span>
+                    </div>
+                </div>
+
+                <!-- Barra de Camino del Bosque (Progreso en el mapa) -->
+                <div class="w-full bg-white/70 p-3 rounded-2xl border border-emerald-100 flex justify-between items-center px-6">
+                    <span class="text-sm font-black text-emerald-800">Camino de Tito:</span>
+                    <div class="flex gap-2" id="camino-progreso">
+                        <!-- Puntos de camino interactivos se llenan por JS -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Columna Derecha: Panel de Diálogo y Palabras Mágicas -->
+            <div class="w-full lg:w-2/5 h-72 lg:h-full flex flex-col justify-between bg-white rounded-[2.5rem] p-6 border-4 border-emerald-100 shadow-xl relative shrink-0">
+                
+                <!-- Encabezado de Diálogo -->
+                <div class="text-center shrink-0">
+                    <span class="text-xs font-black text-emerald-500 uppercase tracking-widest block mb-1">¿Qué debe decir Tito?</span>
+                    <h3 class="text-xl md:text-2xl font-black text-gray-700 leading-tight">Escoge tu respuesta amigable:</h3>
+                </div>
+
+                <!-- Grid de Opciones de Palabras Mágicas -->
+                <div id="contenedor-opciones" class="flex-1 my-6 flex flex-col justify-center gap-3 w-full">
+                    <!-- Se inyectan las opciones por JS -->
+                </div>
+
+                <!-- Nota Pedagógica Decorativa -->
+                <div class="text-center text-xs font-bold text-emerald-600/80 bg-emerald-50 py-2 rounded-2xl shrink-0">
+                    💡 ¡El respeto hace que las personas colaboren con alegría!
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= PANTALLA FINAL ================= -->
+    <div id="pantalla-final" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-white/95 backdrop-blur-md transition-opacity duration-500">
+        <!-- Contenedor ordenado para evitar cortes de emojis -->
+        <div class="flex gap-4 justify-center text-6xl md:text-8xl mb-6 floating select-none">
+            <span>✉️</span>
+            <span>🌈</span>
+            <span>💖</span>
+        </div>
+        <h1 class="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500 mb-6 drop-shadow-sm leading-tight">
+            ¡Súper Mensajero Amable!
+        </h1>
+        <p class="text-xl md:text-2xl text-gray-700 max-w-2xl mb-10 font-bold leading-relaxed">
+            Has ayudado a Tito a entregar todas sus cartas en el bosque usando palabras de respeto.<br>
+            ¡Tus buenos modales hicieron que todos los animales colaboraran con muchísima alegría! 🌟🤝
+        </p>
+        <button onclick="reiniciarJuego()" class="group relative inline-flex items-center justify-center px-12 py-5 text-2xl font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full overflow-hidden shadow-[0_8px_0_#047857] active:shadow-[0_0px_0_#047857] active:translate-y-2 transition-all">
+            <span class="relative flex items-center gap-2">Volver a Jugar <span class="text-3xl">🔄</span></span>
+        </button>
+    </div>
+
+    <!-- ================= LÓGICA DEL JUEGO ================= -->
+    <script>
+        // --- BASE DE DATOS DE DESAFÍOS DE RESPETO ---
+        const desafios = [
+            {
+                id: 1,
+                situacion: "Tito quiere cruzar el puente de madera, pero el Oso Dormilón 🐻 está durmiendo tapando todo el paso...",
+                obstaculoEmoji: "🐻",
+                obstaculoNombre: "Oso Dormilón",
+                opciones: [
+                    { texto: "¡Quítate de ahí, oso feo! 😡", esCorrecta: false, consejo: "¡Uy! Si le gritas así al osito, se va a asustar o se pondrá de mal humor. Las palabras fuertes no ayudan a solucionar las cosas. ¡Intenta con educación!" },
+                    { texto: "Con permiso, ¿me dejas pasar, por favor? 👉👈", esCorrecta: true, consejo: "¡Súper bien! Decir 'con permiso' y 'por favor' demuestra mucho respeto. El osito se despierta feliz y con mucho gusto se hace a un lado para dejarte pasar. 🐻✨" },
+                    { texto: "¡Oye, despierta rápido que tengo prisa! ⏰", esCorrecta: false, consejo: "¡Oh! Tito, exigir las cosas sin pedir por favor suena un poco mandón. A nadie le gusta que lo despierten con prisas o regaños." }
+                ]
+            },
+            {
+                id: 2,
+                situacion: "Tito llega con la Ardilla Susi 🐿️ y ella le da agua fresquita de coco para calmar su sed en el caluroso día...",
+                obstaculoEmoji: "🐿️",
+                obstaculoNombre: "Ardilla Susi",
+                opciones: [
+                    { texto: "¡Muchas gracias por el agua, Susi! 🥥", esCorrecta: true, consejo: "¡Maravilloso! Agradecer por la amabilidad de los demás hace que se sientan felices. ¡A Susi le dio un gran gusto ayudarte! 🐿️💖" },
+                    { texto: "Dame más, todavía tengo sed. 🥤", esCorrecta: false, consejo: "¡Cuidado! Susi te dio de su agua con mucho cariño. Pedir más sin dar las gracias primero suena un poco descortés." },
+                    { texto: "Ya no quiero, gracias. (Y tirar el coco) 🥥", esCorrecta: false, consejo: "¡Uy! Si tiramos la comida o el regalo de un amigo, lastimamos sus sentimientos. Debemos tratar los detalles de los demás con mucho aprecio." }
+                ]
+            },
+            {
+                id: 3,
+                situacion: "¡Cuidado! Tito iba volando rápido y tropezó sin querer con el Conejo Saltarín 🐰, tirándole su canasta de ricas zanahorias...",
+                obstaculoEmoji: "🐰",
+                obstaculoNombre: "Conejo Saltarín",
+                opciones: [
+                    { texto: "¡Oye, fíjate por dónde caminas! 🥕", esCorrecta: false, consejo: "¡No es así! Tito fue quien iba volando distraído. Culpar al conejito por nuestro tropiezo no es respetuoso ni honesto." },
+                    { texto: "¡No pasa nada! (Y seguir de largo) 🏃‍♂️", esCorrecta: false, consejo: "¡Ay! Si Tito se va sin ayudarle, el conejito se sentirá muy abandonado y triste con todas sus zanahorias en el suelo." },
+                    { texto: "Lo siento mucho conejito, ¿te ayudo a recogerlas? 🥕", esCorrecta: true, consejo: "¡Excelente! Disculparse de corazón cuando cometemos un accidente y ofrecer nuestra ayuda repara el problema y une a los amigos. 🐰❤️" }
+                ]
+            },
+            {
+                id: 4,
+                situacion: "Tito llega temprano por la mañana a la madriguera del Zorro Leo 🦊 para entregarle una hermosa carta de su abuelito...",
+                obstaculoEmoji: "🦊",
+                obstaculoNombre: "Zorro Leo",
+                opciones: [
+                    { texto: "¡Buenos días, Leo! Te traigo un mensaje hermoso. 🌅", esCorrecta: true, consejo: "¡Fantástico! Iniciar con un saludo alegre como 'Buenos días' demuestra respeto, buena educación y llena de alegría el día de Leo. 🦊✉️" },
+                    { texto: "¡Toma la carta, que tengo más cosas que hacer! 📬", esCorrecta: false, consejo: "¡Uy! Entregar el correo sin saludar o de forma apurada se siente un poco frío y descortés. Un saludo cordial no quita tiempo." },
+                    { texto: "¡Ábreme rápido la puerta, Leo! 🚪", esCorrecta: false, consejo: "¡Alto ahí! Ordenar que nos abran de esa manera puede asustar a Leo. Siempre es mejor saludar amablemente antes de pedir algo." }
+                ]
+            }
+        ];
+
+        let indiceActual = 0;
+        let bloqueandoAccion = false;
+
+        // Elementos DOM
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const pantallaJuego = document.getElementById('pantalla-juego');
+        const pantallaFinal = document.getElementById('pantalla-final');
+        const textoSituacion = document.getElementById('texto-situacion');
+        const contenedorOpciones = document.getElementById('contenedor-opciones');
+        const contadorProgreso = document.getElementById('contador-progreso');
+        const burbujaPedagogica = document.getElementById('burbuja-pedagogica');
+        
+        // Elementos del Escenario
+        const personajeTito = document.getElementById('personaje-tito');
+        const personajeObstaculo = document.getElementById('personaje-obstaculo');
+        const emojiObstaculo = document.getElementById('emoji-obstaculo');
+        const nombreObstaculo = document.getElementById('nombre-obstaculo');
+        const caminoProgreso = document.getElementById('camino-progreso');
+
+        // --- INICIALIZACIÓN ---
+
+        function iniciarJuego() {
+            pantallaInicio.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaInicio.classList.add('hidden');
+                pantallaInicio.classList.remove('opacity-0');
+                pantallaJuego.classList.remove('hidden');
+                
+                indiceActual = 0;
+                bloqueandoAccion = false;
+                
+                actualizarContador();
+                construirBarraCamino();
+                cargarDesafio();
+            }, 500);
+        }
+
+        function reiniciarJuego() {
+            pantallaFinal.classList.add('opacity-0');
+            setTimeout(() => {
+                window.location.reload(); // Recarga F5 impecable de variables y DOM
+            }, 300);
+        }
+
+        function actualizarContador() {
+            contadorProgreso.innerText = `${indiceActual} / ${desafios.length} 📬`;
+        }
+
+        function construirBarraCamino() {
+            caminoProgreso.innerHTML = '';
+            desafios.forEach((d, index) => {
+                const punto = document.createElement('div');
+                punto.id = `punto-camino-${index}`;
+                punto.className = "w-6 h-6 rounded-full border-2 border-emerald-300 bg-white transition-all duration-500 flex items-center justify-center text-xs";
+                punto.innerHTML = "•";
+                caminoProgreso.appendChild(punto);
+            });
+        }
+
+        // --- CARGAR NUEVO DESAFÍO ---
+
+        function cargarDesafio() {
+            if (indiceActual >= desafios.length) {
+                finalizarJuego();
+                return;
+            }
+
+            bloqueandoAccion = false;
+            burbujaPedagogica.className = "absolute top-4 left-1/2 transform -translate-x-1/2 bg-white px-6 py-4 rounded-[2.5rem] shadow-2xl border-4 border-emerald-400 opacity-0 transition-all duration-300 z-50 text-center w-11/12 max-w-lg pointer-events-none scale-90";
+
+            const d = desafios[indiceActual];
+
+            // Cargar textos e imágenes de escena
+            textoSituacion.innerText = d.situacion;
+            emojiObstaculo.innerText = d.obstaculoEmoji;
+            nombreObstaculo.innerText = d.obstaculoNombre;
+
+            // Restablecer posiciones de escena
+            personajeTito.style.transform = "translateX(0px)";
+            personajeObstaculo.style.transform = "translateX(0px)";
+            personajeObstaculo.style.opacity = "1";
+            personajeObstaculo.classList.remove('floating');
+
+            // Actualizar color de los puntos de camino en la barra inferior
+            desafios.forEach((_, idx) => {
+                const p = document.getElementById(`punto-camino-${idx}`);
+                if (idx < indiceActual) {
+                    p.className = "w-6 h-6 rounded-full bg-emerald-500 border-2 border-emerald-600 text-white flex items-center justify-center text-[10px] font-black";
+                    p.innerHTML = "✓";
+                } else if (idx === indiceActual) {
+                    p.className = "w-6 h-6 rounded-full bg-teal-300 border-2 border-teal-500 text-teal-800 flex items-center justify-center text-[10px] font-black animate-pulse";
+                    p.innerHTML = "✉️";
+                } else {
+                    p.className = "w-6 h-6 rounded-full border-2 border-emerald-300 bg-white flex items-center justify-center text-xs";
+                    p.innerHTML = "•";
+                }
+            });
+
+            // Cargar botones de opciones
+            contenedorOpciones.innerHTML = '';
+            d.opciones.forEach((op, index) => {
+                const btn = document.createElement('button');
+                btn.className = "btn-opcion w-full py-4 px-5 text-left bg-emerald-50 hover:bg-emerald-100/80 border-2 border-emerald-200 rounded-2xl font-bold text-sm md:text-base text-gray-700 flex items-center gap-3";
+                btn.innerHTML = `
+                    <span class="bg-emerald-200 text-emerald-800 rounded-full w-8 h-8 flex items-center justify-center font-black text-xs shrink-0">${index + 1}</span>
+                    <span class="leading-tight">${op.texto}</span>
+                `;
+                btn.addEventListener('pointerdown', () => procesarDecision(op, btn));
+                contenedorOpciones.appendChild(btn);
+            });
+        }
+
+        // --- SISTEMA DE RETROALIMENTACIÓN REFLEXIVA ---
+
+        function procesarDecision(opcion, botonDOM) {
+            if (bloqueandoAccion) return;
+
+            const d = desafios[indiceActual];
+
+            if (opcion.esCorrecta) {
+                bloqueandoAccion = true;
+                desactivarOpciones();
+
+                // Animación de Tito caminando hacia el animal
+                personajeTito.firstElementChild.classList.remove('floating');
+                personajeTito.firstElementChild.classList.add('walking');
+                personajeTito.style.transform = "translateX(50px)";
+
+                // Estilo exitoso para la opción seleccionada
+                botonDOM.className = "btn-opcion w-full py-4 px-5 text-left bg-emerald-500 border-2 border-emerald-600 text-white rounded-2xl font-black text-sm md:text-base flex items-center gap-3 shadow-lg scale-102";
+
+                // Lanzar lluvia de estrellas mágicas desde el obstáculo
+                const rectObstaculo = personajeObstaculo.getBoundingClientRect();
+                crearParticulasAmor(rectObstaculo);
+
+                // El obstáculo reacciona de manera feliz y flota
+                setTimeout(() => {
+                    personajeObstaculo.classList.add('floating');
+                    personajeObstaculo.style.transform = "translateY(-10px) scale(1.05)";
+                }, 600);
+
+                // Lanzar burbuja pedagógica con el consejo explicativo
+                lanzarFeedbackModo(true, opcion.consejo, "border-emerald-400 text-emerald-600", "¡Súper Amable! 🌟🔑");
+
+                // Tito entrega la carta, el obstáculo se retira alegre
+                setTimeout(() => {
+                    personajeObstaculo.style.transform = "translateX(150px)";
+                    personajeObstaculo.style.opacity = "0";
+                    personajeTito.firstElementChild.classList.remove('walking');
+                    personajeTito.firstElementChild.classList.add('floating');
+                    personajeTito.style.transform = "translateX(100px)";
+                }, 2200);
+
+                // Pasar al siguiente desafío
+                setTimeout(() => {
+                    indiceActual++;
+                    actualizarContador();
+                    cargarDesafio();
+                }, 5800);
+
+            } else {
+                // El niño eligió un letrero grosero o descortés
+                bloqueandoAccion = true;
+                desactivarOpciones();
+
+                botonDOM.classList.add('shake');
+                botonDOM.className = "btn-opcion w-full py-4 px-5 text-left bg-red-100 border-2 border-red-300 text-red-800 rounded-2xl font-bold text-sm md:text-base flex items-center gap-3";
+
+                // El personaje se asusta o tiembla
+                personajeObstaculo.classList.add('shake');
+
+                // Lanzar burbuja pedagógica de reintento con explicación
+                lanzarFeedbackModo(false, opcion.consejo, "border-teal-400 text-teal-700", "¡Piénsalo un poquito! 🤔✨");
+
+                // Restablecer estados de reintento
+                setTimeout(() => {
+                    botonDOM.classList.remove('shake');
+                    personajeObstaculo.classList.remove('shake');
+                    bloqueandoAccion = false;
+                    activarOpciones();
+                }, 6000);
+            }
+        }
+
+        function desactivarOpciones() {
+            const btns = contenedorOpciones.querySelectorAll('button');
+            btns.forEach(b => {
+                b.style.pointerEvents = "none";
+                if (!b.classList.contains('bg-emerald-500') && !b.classList.contains('bg-red-100')) {
+                    b.style.opacity = "0.5";
+                }
+            });
+        }
+
+        function activarOpciones() {
+            const btns = contenedorOpciones.querySelectorAll('button');
+            btns.forEach(b => {
+                b.style.pointerEvents = "auto";
+                b.style.opacity = "1";
+                if (b.classList.contains('bg-red-100')) {
+                    b.className = "btn-opcion w-full py-4 px-5 text-left bg-emerald-50 hover:bg-emerald-100/80 border-2 border-emerald-200 rounded-2xl font-bold text-sm md:text-base text-gray-700 flex items-center gap-3";
+                }
+            });
+        }
+
+        function lanzarFeedbackModo(esExito, mensaje, clasesColor, titulo) {
+            burbujaPedagogica.className = `absolute top-4 left-1/2 transform -translate-x-1/2 bg-white px-6 py-4 rounded-[2.5rem] shadow-2xl border-4 ${clasesColor.split(' ')[0]} transition-all duration-300 z-50 text-center w-11/12 max-w-lg scale-100 opacity-100`;
+            
+            burbujaPedagogica.innerHTML = `
+                <div class="text-xl md:text-2xl font-black ${clasesColor.split(' ')[1]} mb-1.5">${titulo}</div>
+                <div class="text-sm md:text-base font-bold text-gray-700 leading-snug">${mensaje}</div>
+            `;
+
+            // Si es un error, la burbuja desaparece sola para dejar reintentar
+            if (!esExito) {
+                setTimeout(() => {
+                    burbujaPedagogica.className = "absolute top-4 left-1/2 transform -translate-x-1/2 bg-white px-6 py-4 rounded-[2rem] shadow-2xl border-4 border-emerald-400 opacity-0 transition-all duration-300 z-50 text-center max-w-lg pointer-events-none scale-90";
+                }, 5800);
+            }
+        }
+
+        // --- EFECTOS VISUALES EXTRA ---
+
+        function crearParticulasAmor(rect) {
+            const emojis = ['🌟', '✨', '💖', '💌', '🌸'];
+            const container = document.body;
+
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                // Nacer en el centro del obstáculo resuelto
+                const posX = rect.left + (rect.width / 2) + (Math.random() * 80 - 40);
+                const posY = rect.top + (rect.height / 2) + (Math.random() * 40 - 20);
+                
+                p.style.left = `${posX}px`;
+                p.style.top = `${posY}px`;
+                p.style.fontSize = `${Math.random() * 15 + 20}px`;
+                p.style.animationDelay = `${Math.random() * 0.2}s`;
+                
+                container.appendChild(p);
+                
+                setTimeout(() => p.remove(), 1200);
+            }
+        }
+
+        function finalizarJuego() {
+            pantallaJuego.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaJuego.classList.add('hidden');
+                pantallaFinal.classList.remove('hidden');
+                setTimeout(() => pantallaFinal.classList.remove('opacity-0'), 50);
+                
+                // Megacelebración
+                for (let i = 0; i < 4; i++) {
+                    setTimeout(() => {
+                        const fakeRect = {
+                            left: Math.random() * window.innerWidth - 50,
+                            width: 100,
+                            top: window.innerHeight - 100,
+                            height: 100
+                        };
+                        crearParticulasAmor(fakeRect);
+                    }, i * 250);
+                }
+            }, 500);
+        }
+
+        // --- CARGA INICIAL ---
+        document.addEventListener('DOMContentLoaded', () => {
+            pantallaInicio.classList.remove('hidden');
+            setTimeout(() => pantallaInicio.classList.remove('opacity-0'), 50);
+        });
+
+    </script>
+</body>
+</html>

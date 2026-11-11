@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tribunal Escolar: Nivel Crítico</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap');
+
+        :root {
+            --judge-gold: #d4af37;
+            --court-dark: #0f172a;
+            --court-accent: #1e293b;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            overflow-x: hidden;
+        }
+
+        .law-font { font-family: 'Libre+Baskerville', serif; }
+
+        .court-bg {
+            background: radial-gradient(circle at top right, #f1f5f9 0%, #cbd5e1 100%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        .gold-border {
+            border-top: 8px solid var(--judge-gold);
+        }
+
+        .btn-verdict {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .btn-verdict:hover {
+            transform: scale(1.03) translateY(-5px);
+        }
+
+        .stamp-anim {
+            animation: stampIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.5);
+        }
+
+        @keyframes stampIn {
+            0% { transform: scale(5) rotate(20deg); opacity: 0; filter: blur(10px); }
+            100% { transform: scale(1) rotate(-15deg); opacity: 1; filter: blur(0); }
+        }
+
+        /* Aumento de tamaños globales para pantalla completa */
+        .text-huge { font-size: 1.5rem; line-height: 2.2rem; }
+        @media (min-width: 1024px) {
+            .text-huge { font-size: 1.85rem; line-height: 2.8rem; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col court-bg">
+
+    <!-- Barra de Estado Superior -->
+    <nav class="w-full bg-slate-900 text-white p-6 shadow-2xl flex justify-between items-center z-50">
+        <div class="flex items-center gap-4">
+            <div class="bg-amber-500 p-2 rounded">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="law-font text-2xl md:text-3xl font-bold tracking-tight">TRIBUNAL ESCOLAR</h1>
+                <p class="text-amber-400 text-xs uppercase tracking-widest font-bold">Módulo de Comprensión Crítica</p>
+            </div>
+        </div>
+        <div class="bg-slate-800 px-6 py-3 rounded-xl border border-slate-700">
+            <span class="text-lg font-semibold tracking-tighter">CASO <span id="progress-count" class="text-amber-400 text-2xl">0</span> / 3</span>
+        </div>
+    </nav>
+
+    <main class="flex-grow flex items-center justify-center p-4 md:p-12">
+        
+        <!-- Pantalla Inicial -->
+        <div id="intro-screen" class="max-w-4xl text-center animate__animated animate__fadeIn">
+            <h2 class="law-font text-5xl md:text-7xl mb-8 font-extrabold text-slate-800 leading-tight">El Juicio de la Razón</h2>
+            <p class="text-2xl md:text-3xl text-slate-600 mb-12 font-light leading-relaxed">
+                Subirás al estrado para evaluar dilemas éticos. Tu veredicto debe estar respaldado por la justicia y la lógica crítica.
+            </p>
+            <button onclick="startCourt()" class="group relative inline-flex items-center justify-center px-12 py-6 overflow-hidden font-bold text-white transition-all duration-300 bg-slate-900 rounded-2xl hover:bg-slate-800 shadow-2xl">
+                <span class="relative text-2xl">INICIAR SESIÓN JUDICIAL</span>
+            </button>
+        </div>
+
+        <!-- Pantalla de Juicio -->
+        <div id="court-screen" class="hidden w-full max-w-6xl animate__animated animate__fadeIn">
+            <div class="glass-card gold-border rounded-3xl overflow-hidden">
+                <div class="p-8 md:p-12">
+                    <div class="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
+                        <span class="bg-slate-200 text-slate-700 px-4 py-1 rounded-full text-sm font-bold tracking-widest">EXPEDIENTE Nº <span id="case-id">001</span></span>
+                        <h3 id="case-title" class="law-font text-3xl md:text-5xl font-bold text-slate-800">Cargando caso...</h3>
+                    </div>
+
+                    <!-- Texto del Caso (Agrandado) -->
+                    <div class="bg-slate-50 rounded-2xl p-8 md:p-10 border-l-8 border-slate-300 mb-10 shadow-inner">
+                        <p id="case-description" class="text-huge text-slate-700 leading-snug font-normal">
+                            ...
+                        </p>
+                    </div>
+
+                    <!-- Panel de Votación -->
+                    <div id="voting-panel" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <button onclick="openJustification(true)" class="btn-verdict group bg-emerald-600 hover:bg-emerald-500 text-white p-10 rounded-3xl flex items-center justify-center gap-6 shadow-xl">
+                            <span class="text-6xl">⚖️</span>
+                            <div class="text-left">
+                                <span class="block text-3xl font-black uppercase">ACCIÓN CORRECTA</span>
+                                <span class="text-emerald-100 opacity-80">Voto a favor del personaje</span>
+                            </div>
+                        </button>
+                        <button onclick="openJustification(false)" class="btn-verdict group bg-rose-700 hover:bg-rose-600 text-white p-10 rounded-3xl flex items-center justify-center gap-6 shadow-xl">
+                            <span class="text-6xl">🔨</span>
+                            <div class="text-left">
+                                <span class="block text-3xl font-black uppercase">ACCIÓN INCORRECTA</span>
+                                <span class="text-rose-100 opacity-80">Voto en contra del personaje</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Panel de Justificación (Agrandado) -->
+                    <div id="justification-panel" class="hidden animate__animated animate__fadeInUp">
+                        <div class="flex items-center gap-4 mb-8">
+                            <div class="h-px bg-slate-300 flex-grow"></div>
+                            <h4 class="law-font text-2xl font-bold text-slate-500 uppercase tracking-tighter">Justifica tu decisión</h4>
+                            <div class="h-px bg-slate-300 flex-grow"></div>
+                        </div>
+                        <div id="arguments-list" class="grid grid-cols-1 gap-4">
+                            <!-- Argumentos dinámicos aquí -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla de Veredicto Finalizado (Por caso) -->
+        <div id="result-screen" class="hidden flex flex-col items-center text-center animate__animated animate__fadeIn">
+            <div id="stamp-container" class="mb-12"></div>
+            <h3 id="result-message" class="law-font text-4xl md:text-5xl font-bold mb-6">Veredicto Registrado</h3>
+            <div class="bg-white p-10 rounded-3xl shadow-xl max-w-3xl border border-slate-200 mb-10">
+                <p id="reflection-text" class="text-2xl text-slate-700 leading-relaxed"></p>
+            </div>
+            <button onclick="nextCase()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-16 py-6 rounded-2xl font-black text-2xl transition shadow-2xl uppercase tracking-widest">
+                Siguiente Expediente
+            </button>
+        </div>
+
+    </main>
+
+    <script>
+        const cases = [
+            {
+                id: "001",
+                title: "El Examen Olvidado",
+                description: "Sofía encontró el examen de matemáticas resuelto en el pasillo antes de la prueba. En lugar de entregarlo, decidió no verlo pero tampoco avisar a nadie para que los demás tuvieran la misma dificultad que ella.",
+                arguments_correct: [
+                    "Sofía fue justa al no tomar ventaja personal del examen encontrado.",
+                    "No es responsabilidad de los estudiantes cuidar los documentos de los maestros.",
+                    "Actuó con integridad al resistir la tentación de hacer trampa."
+                ],
+                arguments_incorrect: [
+                    "Ocultar el examen impide que el maestro corrija su error con todo el grupo.",
+                    "La honestidad implica avisar cuando algo está fuera de su lugar, no solo ignorarlo.",
+                    "Sofía actuó con egoísmo al querer que todos sufran solo porque ella no sacó provecho."
+                ],
+                reflection: "La honestidad no es solo 'no robar', sino actuar para que el sistema sea justo para todos. ¿Hacerse la desentendida fue realmente íntegro?"
+            },
+            {
+                id: "002",
+                title: "La Verdad que Duele",
+                description: "Un grupo de estudiantes rompió un vidrio jugando. Pablo, el líder, dijo que si todos se mantenían en silencio, nadie sería castigado porque no había cámaras. El grupo aceptó para proteger su amistad.",
+                arguments_correct: [
+                    "La lealtad entre amigos es un valor fundamental que debe protegerse.",
+                    "Si el castigo es injusto o excesivo, el silencio es una forma de autoprotección.",
+                    "Un error accidental no debería arruinar el expediente de buenos alumnos."
+                ],
+                arguments_incorrect: [
+                    "La lealtad no debe usarse jamás para encubrir daños materiales o mentiras.",
+                    "Aceptar las consecuencias de los actos propios es la base de la madurez.",
+                    "El silencio del grupo obliga a la escuela a gastar fondos que podrían usarse en otros niños."
+                ],
+                reflection: "A veces confundimos lealtad con complicidad. ¿Es un buen amigo quien te pide que mientas por él?"
+            },
+            {
+                id: "003",
+                title: "El Robot Solidario",
+                description: "Leo usó una Inteligencia Artificial para escribir un cuento para el concurso escolar. El cuento ganó el primer premio, y Leo donó todo el dinero del premio a un refugio de animales local.",
+                arguments_correct: [
+                    "El fin justifica los medios si el resultado final ayuda a seres vivos necesitados.",
+                    "Utilizar herramientas tecnológicas avanzadas es una forma de inteligencia moderna.",
+                    "La generosidad de Leo al no quedarse con el dinero demuestra su buena intención."
+                ],
+                arguments_incorrect: [
+                    "Un concurso premia el talento humano y el esfuerzo, no la capacidad de copiar.",
+                    "La donación no borra el hecho de que el triunfo fue arrebatado injustamente a otros.",
+                    "Engañar a los jueces y compañeros destruye la confianza en la competencia escolar."
+                ],
+                reflection: "¿Puede una buena acción nacer de una mentira? El nivel crítico nos obliga a separar la intención del método."
+            }
+        ];
+
+        let currentCaseIdx = 0;
+        let userVeredict = null;
+
+        function startCourt() {
+            document.getElementById('intro-screen').classList.add('hidden');
+            document.getElementById('court-screen').classList.remove('hidden');
+            loadCase();
+        }
+
+        function loadCase() {
+            const c = cases[currentCaseIdx];
+            document.getElementById('case-id').innerText = c.id;
+            document.getElementById('case-title').innerText = c.title;
+            document.getElementById('case-description').innerText = c.description;
+            document.getElementById('progress-count').innerText = currentCaseIdx + 1;
+            
+            document.getElementById('court-screen').classList.remove('hidden');
+            document.getElementById('voting-panel').classList.remove('hidden');
+            document.getElementById('justification-panel').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+        }
+
+        function openJustification(isCorrect) {
+            userVeredict = isCorrect;
+            document.getElementById('voting-panel').classList.add('hidden');
+            const panel = document.getElementById('justification-panel');
+            panel.classList.remove('hidden');
+            
+            const list = document.getElementById('arguments-list');
+            list.innerHTML = '';
+            
+            const args = isCorrect ? cases[currentCaseIdx].arguments_correct : cases[currentCaseIdx].arguments_incorrect;
+            
+            args.forEach((arg, i) => {
+                const btn = document.createElement('button');
+                btn.className = "text-left p-6 md:p-8 rounded-2xl border-2 border-slate-200 bg-white hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all duration-300 flex items-center gap-6 animate__animated animate__fadeInUp shadow-md";
+                btn.style.animationDelay = `${i * 0.1}s`;
+                btn.innerHTML = `
+                    <div class="bg-amber-400 text-slate-900 w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full font-black text-xl">
+                        ${i+1}
+                    </div>
+                    <span class="text-xl md:text-2xl font-medium">${arg}</span>
+                `;
+                btn.onclick = () => finishCase(arg);
+                list.appendChild(btn);
+            });
+        }
+
+        function finishCase(selectedArg) {
+            document.getElementById('court-screen').classList.add('hidden');
+            const resultScreen = document.getElementById('result-screen');
+            resultScreen.classList.remove('hidden');
+            
+            const stampContainer = document.getElementById('stamp-container');
+            const stampColor = userVeredict ? 'text-emerald-600 border-emerald-600' : 'text-rose-700 border-rose-700';
+            const stampText = userVeredict ? 'ACEPTADO' : 'RECHAZADO';
+            
+            stampContainer.innerHTML = `
+                <div class="stamp-anim inline-block border-[12px] ${stampColor} px-10 py-4 rounded-3xl text-7xl md:text-9xl font-black rotate-[-15deg] law-font bg-white shadow-2xl">
+                    ${stampText}
+                </div>
+            `;
+
+            document.getElementById('reflection-text').innerText = cases[currentCaseIdx].reflection;
+        }
+
+        function nextCase() {
+            currentCaseIdx++;
+            if (currentCaseIdx < cases.length) {
+                loadCase();
+            } else {
+                showFinalSummary();
+            }
+        }
+
+        function showFinalSummary() {
+            const res = document.getElementById('result-screen');
+            res.innerHTML = `
+                <div class="animate__animated animate__zoomIn p-12 glass-card rounded-3xl max-w-4xl">
+                    <div class="text-9xl mb-8">⚖️</div>
+                    <h2 class="law-font text-6xl font-black mb-6 text-slate-900">JUICIO COMPLETADO</h2>
+                    <p class="text-3xl text-slate-600 mb-12 leading-relaxed">
+                        Has demostrado tener un criterio sólido. En el nivel crítico, no importa solo qué decides, sino <strong>por qué</strong> lo decides. ¡Sigue cuestionando el mundo!
+                    </p>
+                    <button onclick="location.reload()" class="bg-slate-900 text-white px-16 py-8 rounded-2xl font-black text-2xl hover:bg-slate-800 transition shadow-2xl uppercase tracking-widest">
+                        Nueva Sesión Judicial
+                    </button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

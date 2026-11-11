@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karaoke de Rimas - Fluidez Lectora</title>
+    
+    <!-- Fuentes Google: Righteous (Títulos Show) y Nunito (Lectura clara para niños) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&family=Righteous&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA PARA WORDPRESS -->
+    <script>
+        window.tailwind = {
+            config: {
+                important: '#recurso-wp-karaoke',
+                corePlugins: { preflight: false },
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            show: ['Righteous', 'cursive'],
+                            body: ['Nunito', 'sans-serif'],
+                        },
+                        colors: {
+                            stage: {
+                                dark: '#0f0616',      /* Fondo profundo escenario */
+                                curtain: '#7f1d1d',   /* Cortina roja */
+                                curtainDark: '#450a0a',
+                                neonPink: '#ec4899',
+                                neonCyan: '#06b6d4',
+                                neonYellow: '#eab308',
+                                neonGreen: '#10b981',
+                                textOff: '#64748b',   /* Texto apagado */
+                                textOn: '#fef08a'     /* Texto iluminado */
+                            }
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* MICRO-RESET LOCAL */
+        #recurso-wp-karaoke * { box-sizing: border-box; border-width: 0; border-style: solid; border-color: currentColor; line-height: normal; }
+        #recurso-wp-karaoke h1, #recurso-wp-karaoke h2, #recurso-wp-karaoke h3, #recurso-wp-karaoke p, #recurso-wp-karaoke span, #recurso-wp-karaoke div { margin: 0; padding: 0; }
+        #recurso-wp-karaoke button { background-color: transparent; cursor: pointer; padding: 0; font-family: inherit; }
+
+        /* ESTILOS PANTALLA COMPLETA & ESCENARIO */
+        #recurso-wp-karaoke {
+            font-family: 'Nunito', sans-serif;
+            background-color: #0f0616;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Telones del Escenario */
+        .curtain-left, .curtain-right {
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 15vw;
+            background: linear-gradient(90deg, #450a0a 0%, #7f1d1d 50%, #450a0a 100%);
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            z-index: 20;
+            pointer-events: none;
+        }
+        .curtain-left { left: 0; border-right: 4px solid #f59e0b; border-radius: 0 0 50% 0; }
+        .curtain-right { right: 0; border-left: 4px solid #f59e0b; border-radius: 0 0 0 50%; }
+
+        /* Luces del Escenario */
+        .spotlight {
+            position: absolute;
+            top: -10%;
+            width: 50vw;
+            height: 120vh;
+            background: radial-gradient(ellipse at 50% 0%, rgba(6, 182, 212, 0.4) 0%, transparent 60%);
+            z-index: 5;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+        .spot-left { left: 0; transform: rotate(15deg); animation: sweepLeft 4s ease-in-out infinite alternate; }
+        .spot-right { right: 0; transform: rotate(-15deg); animation: sweepRight 5s ease-in-out infinite alternate; }
+
+        @keyframes sweepLeft { 0% { transform: rotate(10deg); } 100% { transform: rotate(25deg); } }
+        @keyframes sweepRight { 0% { transform: rotate(-10deg); } 100% { transform: rotate(-25deg); } }
+
+        /* Paneles Neón */
+        #recurso-wp-karaoke .neon-panel {
+            background: rgba(15, 6, 22, 0.85);
+            border: 2px solid #ec4899;
+            border-radius: 1.5rem;
+            box-shadow: 0 0 15px rgba(236, 72, 153, 0.3), inset 0 0 15px rgba(236, 72, 153, 0.2);
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 30;
+        }
+
+        #recurso-wp-karaoke .neon-btn {
+            background: #0f0616;
+            border: 2px solid #06b6d4;
+            color: #06b6d4;
+            border-radius: 9999px;
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.4), inset 0 0 5px rgba(6, 182, 212, 0.2);
+            transition: all 0.2s;
+            font-family: 'Righteous', cursive;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        #recurso-wp-karaoke .neon-btn:hover:not(:disabled) {
+            background: #06b6d4;
+            color: #0f0616;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.8);
+            transform: scale(1.05);
+        }
+        #recurso-wp-karaoke .neon-btn:active:not(:disabled) { transform: scale(0.95); }
+
+        /* Efectos del Texto del Karaoke Silábico */
+        .karaoke-text-container {
+            line-height: 2.5;
+            text-align: center;
+        }
+        .k-word-wrapper {
+            display: inline-block;
+            margin: 0 8px;
+        }
+        .k-syl {
+            display: inline-block;
+            color: #475569; /* Gris oscuro / apagado */
+            font-size: clamp(1.5rem, 4vw, 3.8rem);
+            font-weight: 900;
+            transition: all 0.1s ease-out;
+            text-shadow: 1px 1px 2px #000;
+        }
+        
+        /* Sílaba iluminada en el momento exacto */
+        .k-syl.active {
+            color: #fef08a; /* Amarillo brillante */
+            transform: scale(1.3) translateY(-6px);
+            text-shadow: 0 0 15px #eab308, 0 0 30px #eab308, 2px 2px 0px #000;
+            z-index: 10;
+        }
+        
+        /* Sílabas que ya pasaron */
+        .k-syl.sung {
+            color: #06b6d4; /* Cian para las ya cantadas */
+            text-shadow: 0 0 5px #06b6d4;
+        }
+
+        /* Pantallas SPA */
+        #recurso-wp-karaoke .screen {
+            display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; position: absolute; top: 0; left: 0; overflow-y: auto; overflow-x: hidden; z-index: 10;
+        }
+        #recurso-wp-karaoke .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-karaoke .screen.active {
+            display: flex;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Bola Disco */
+        .disco-ball {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: clamp(4rem, 10vw, 6rem);
+            animation: spinDisco 4s linear infinite;
+            z-index: 25;
+            filter: drop-shadow(0 0 20px rgba(255,255,255,0.8));
+        }
+        @keyframes spinDisco {
+            0% { transform: translateX(-50%) rotate(0deg); }
+            100% { transform: translateX(-50%) rotate(360deg); }
+        }
+
+        /* Partículas (Confeti Final) */
+        .confetti {
+            position: absolute;
+            width: 12px; height: 12px;
+            animation: fall 3s linear forwards;
+            z-index: 60;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-karaoke">
+
+        <!-- Telones Globales -->
+        <div class="curtain-left"></div>
+        <div class="curtain-right"></div>
+        <div class="spot-left spotlight"></div>
+        <div class="spot-right spotlight"></div>
+
+        <!-- ==============================================
+             PANTALLA 1: PORTADA
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="neon-panel p-8 md:p-14 max-w-3xl w-full mx-4 flex flex-col items-center">
+                <div class="text-[5rem] md:text-[8rem] mb-2 animate__animated animate__tada animate__infinite drop-shadow-[0_0_20px_#ec4899]">🎤</div>
+                
+                <h2 class="text-xs md:text-sm text-stage-neonCyan font-body font-black mb-4 uppercase bg-stage-neonCyan/10 inline-block px-6 py-2 rounded-full border border-stage-neonCyan tracking-[0.2em]">
+                    Lectura en Voz Alta - 2do Grado
+                </h2>
+                
+                <h1 class="text-5xl md:text-7xl lg:text-[6rem] font-show text-white leading-none uppercase drop-shadow-[0_0_15px_#ec4899] mb-6">
+                    Karaoke <br><span class="text-stage-neonPink">de Rimas</span>
+                </h1>
+                
+                <p class="text-lg md:text-2xl text-gray-300 font-bold mb-10 px-2 leading-relaxed max-w-xl">
+                    ¡Afinen sus voces! Sube al escenario y lee en voz alta al ritmo de las sílabas. ¡Sigue la rima iluminada para no perderte!
+                </p>
+                
+                <button onclick="window.playBeep(); window.showScreen('screen-theory')" class="neon-btn text-xl md:text-3xl px-12 py-5 w-full md:w-auto">
+                    ENTRAR AL ESCENARIO 🌟
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: TEORÍA Y VELOCIDAD
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center">
+            <div class="neon-panel p-6 md:p-10 max-w-4xl w-full text-center my-auto">
+                <h2 class="text-3xl md:text-5xl font-show text-stage-neonYellow mb-6 uppercase border-b border-stage-neonYellow/30 pb-4 drop-shadow-[0_0_10px_#eab308]">
+                    ¿Cómo Cantar?
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 text-left">
+                    <div class="bg-black/50 p-6 rounded-2xl border border-stage-neonCyan shadow-[0_0_15px_rgba(6,182,212,0.2)] flex flex-col items-center text-center">
+                        <span class="text-4xl mb-3">👀</span>
+                        <h3 class="font-show text-xl text-stage-neonCyan uppercase mb-2">Mira la Luz</h3>
+                        <p class="text-sm md:text-base text-gray-300 font-bold">
+                            Lee la rima sílaba por sílaba. Presta atención cuando la parte de la palabra se ilumine en <strong class="text-stage-neonYellow">AMARILLO</strong>.
+                        </p>
+                    </div>
+                    <div class="bg-black/50 p-6 rounded-2xl border border-stage-neonPink shadow-[0_0_15px_rgba(236,72,153,0.2)] flex flex-col items-center text-center">
+                        <span class="text-4xl mb-3">🗣️</span>
+                        <h3 class="font-show text-xl text-stage-neonPink uppercase mb-2">Sigue el Ritmo</h3>
+                        <p class="text-sm md:text-base text-gray-300 font-bold">
+                            Habla fuerte y claro al ritmo de los tonos musicales. ¡Aprovecha la pausa larga en los puntos para tomar aire!
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Selector de Velocidad -->
+                <div class="bg-white/10 p-4 md:p-6 rounded-xl border border-white/20 mb-8">
+                    <h3 class="font-show text-lg md:text-2xl text-white uppercase mb-4 tracking-widest">Elige la velocidad por sílaba:</h3>
+                    <div class="flex flex-col sm:flex-row justify-center gap-3 md:gap-6">
+                        <!-- Velocidades en milisegundos por sílaba (Lento: 480ms, Medio: 340ms, Rápido: 240ms) -->
+                        <button onclick="window.setSpeed(480, this)" class="speed-btn neon-btn bg-black text-stage-neonCyan border-stage-neonCyan px-6 py-3 text-lg md:text-xl flex-1 hover:shadow-[0_0_15px_#06b6d4]">
+                            🐢 LENTO
+                        </button>
+                        <button onclick="window.setSpeed(340, this)" class="speed-btn neon-btn bg-stage-neonYellow text-stage-dark border-stage-neonYellow px-6 py-3 text-lg md:text-xl flex-1 shadow-[0_0_15px_#eab308]">
+                            🚶 MEDIO
+                        </button>
+                        <button onclick="window.setSpeed(240, this)" class="speed-btn neon-btn bg-black text-stage-neonPink border-stage-neonPink px-6 py-3 text-lg md:text-xl flex-1 hover:shadow-[0_0_15px_#ec4899]">
+                            🏃 RÁPIDO
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="window.playBeep(); window.showScreen('screen-start')" class="border-2 border-gray-500 text-gray-400 font-bold px-8 py-3 rounded-full text-sm uppercase hover:bg-gray-800 transition tracking-widest font-show">
+                        ⬅ SALIR
+                    </button>
+                    <button onclick="window.playBeep(); window.showMenu()" class="neon-btn border-stage-neonGreen text-stage-neonGreen text-xl md:text-2xl px-10 py-3">
+                        ELEGIR CANCIÓN 🎵
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: MENÚ DE CANCIONES
+             ============================================== -->
+        <div id="screen-menu" class="screen justify-start md:justify-center">
+            <div class="neon-panel p-6 md:p-10 max-w-4xl w-full text-center my-auto">
+                <h2 class="text-3xl md:text-5xl font-show text-stage-neonCyan mb-8 uppercase drop-shadow-[0_0_10px_#06b6d4]">
+                    Lista de Éxitos
+                </h2>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 w-full mb-8">
+                    <div id="song-list" class="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6"></div>
+                </div>
+
+                <button onclick="window.playBeep(); window.showScreen('screen-theory')" class="border-2 border-gray-500 text-gray-400 font-bold px-8 py-3 rounded-full text-sm uppercase hover:bg-gray-800 transition tracking-widest font-show">
+                    ⬅ VOLVER
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 4: EL JUEGO (Escenario de Karaoke)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start p-0 bg-transparent relative">
+            
+            <div class="disco-ball">🪩</div>
+            
+            <!-- HUD Superior -->
+            <div class="w-full bg-black/80 border-b border-stage-neonPink/50 p-3 flex justify-between items-center z-30 shrink-0 backdrop-blur-sm">
+                <div class="flex items-center gap-3 px-2 md:px-4">
+                    <span class="text-2xl md:text-3xl">🎙️</span>
+                    <span id="current-song-title" class="font-show text-lg md:text-2xl text-stage-neonPink tracking-widest uppercase">Título de la Rima</span>
+                </div>
+                <!-- BOTÓN REINICIAR (REEMPLAZA COMPLETAMENTE AL BOTÓN SALIR) -->
+                <button onclick="window.restartKaraoke()" class="bg-yellow-500/20 border border-yellow-500 text-yellow-300 hover:bg-yellow-500 hover:text-black transition-colors px-4 py-2 rounded-lg ml-2 shrink-0 font-show flex items-center gap-1">
+                    🔄 REINICIAR
+                </button>
+            </div>
+
+            <!-- Pantalla del Teleprompter (Letras) -->
+            <div class="w-full flex-grow flex flex-col items-center justify-center p-4 md:p-8 relative z-20 overflow-y-auto">
+                
+                <div class="bg-black/80 border-4 border-stage-neonCyan rounded-[2rem] p-4 md:p-12 w-full max-w-5xl shadow-[0_0_30px_rgba(6,182,212,0.4)] flex flex-col items-center justify-center min-h-[50vh]">
+                    
+                    <!-- Letra de la canción silábica inyectada aquí -->
+                    <div id="lyrics-container" class="karaoke-text-container w-full px-2">
+                        <!-- Spans de palabras y sílabas -->
+                    </div>
+
+                    <!-- Controles de Reproducción -->
+                    <div id="player-controls" class="mt-8 md:mt-10 flex flex-col items-center gap-4">
+                        <p class="text-gray-400 font-bold text-xs md:text-sm uppercase tracking-widest text-center">Toma aire y presiona Play para iniciar la pista silábica</p>
+                        <button id="btn-start-karaoke" onclick="window.startKaraokePlayback()" class="neon-btn bg-stage-neonGreen border-stage-neonGreen text-stage-dark text-xl md:text-3xl px-10 py-3 md:px-12 md:py-4 shadow-[0_0_20px_#10b981] animate-pulse">
+                            ▶ EMPEZAR
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (Resultados y Autoevaluación)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex-col items-center justify-center p-6 text-center bg-stage-dark/95 backdrop-blur-md">
+            <div id="confetti-layer" class="absolute inset-0 pointer-events-none overflow-hidden z-0"></div>
+            
+            <div class="neon-panel p-8 md:p-14 max-w-2xl w-full animate__animated animate__zoomIn text-center z-10 border-t-8 border-t-stage-neonYellow">
+                <div class="text-[5rem] md:text-[8rem] mb-4 drop-shadow-[0_0_20px_#fcd34d] animate-bounce">🏆</div>
+                <h2 class="font-show text-4xl md:text-6xl text-stage-neonYellow mb-4 uppercase drop-shadow-[0_0_10px_#eab308]">
+                    ¡Gran Actuación!
+                </h2>
+                
+                <div class="bg-black/40 p-6 rounded-xl border border-gray-600 mb-8">
+                    <h3 class="font-body text-xl md:text-2xl text-white font-bold mb-4">¿Lograste leer al ritmo de las sílabas?</h3>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button onclick="window.endFeedback(true)" class="neon-btn bg-stage-neonGreen border-stage-neonGreen text-stage-dark px-6 py-3 text-base md:text-lg">
+                            ¡SÍ, FUI EXCELENTE! 😎
+                        </button>
+                        <button onclick="window.endFeedback(false)" class="neon-btn bg-black text-stage-neonPink border-stage-neonPink px-6 py-3 text-base md:text-lg">
+                            ME FALTÓ UN POQUITO 😅
+                        </button>
+                    </div>
+                </div>
+
+                <div id="final-verdict" class="hidden text-base md:text-lg font-bold text-gray-300 mb-8 bg-black/80 p-4 rounded-xl border-2 border-stage-neonCyan">
+                    <!-- Se llena tras hacer clic arriba -->
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center mt-4">
+                    <!-- BOTÓN REINICIAR (SIN SALIR DE LA ACCIÓN) -->
+                    <button onclick="window.restartKaraoke()" class="border-2 border-yellow-500 text-yellow-400 hover:bg-yellow-500 hover:text-black px-8 py-3 rounded-full text-sm uppercase transition tracking-widest font-show">
+                        VOLVER A EMPEZAR 🔄
+                    </button>
+                    <button onclick="window.playBeep(); window.showMenu()" class="neon-btn border-stage-neonCyan text-stage-neonCyan text-lg md:text-xl px-10 py-3">
+                        CANTAR OTRA VEZ 🎤
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO (KARAOKE SILÁBICO RÍTMICO)
+         ============================================== -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- 1. SINTETIZADOR DE AUDIO SEGURO (Web Audio API) ---
+            let audioCtx = null;
+            function initAudio() {
+                try {
+                    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                } catch (e) {}
+            }
+            document.body.addEventListener('click', initAudio, { once: true });
+            document.body.addEventListener('touchstart', initAudio, { once: true });
+
+            function playTone(freq, duration, type, vol) {
+                try {
+                    initAudio();
+                    if (audioCtx && audioCtx.state !== 'suspended') {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = type;
+                        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + duration);
+                    }
+                } catch (e) {}
+            }
+
+            // Exponer tonos del sistema globalmente
+            window.playBeep = function() { 
+                playTone(600, 0.1, "sine", 0.05); 
+            };
+            const playBeep = window.playBeep;
+
+            // Notas de la escala pentatónica de Do Mayor (C4, D4, E4, G4, A4, C5)
+            const pentatonicScale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
+
+            // Generador de melodías pentatónicas por cada SÍLABA
+            function playSyllableBeat(index) {
+                try {
+                    initAudio();
+                    if (!audioCtx || audioCtx.state === 'suspended') return;
+                    
+                    const now = audioCtx.currentTime;
+                    
+                    // 1. Ritmo de fondo (Bombo suave en sílabas pares)
+                    if (index % 2 === 0) {
+                        const kickOsc = audioCtx.createOscillator();
+                        const kickGain = audioCtx.createGain();
+                        kickOsc.type = "sine";
+                        kickOsc.frequency.setValueAtTime(90, now);
+                        kickOsc.frequency.exponentialRampToValueAtTime(30, now + 0.12);
+                        kickGain.gain.setValueAtTime(0.12, now);
+                        kickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+                        kickOsc.connect(kickGain);
+                        kickGain.connect(audioCtx.destination);
+                        kickOsc.start(now);
+                        kickOsc.stop(now + 0.12);
+                    }
+
+                    // 2. Tono melódico dulce (Xilófono) que cambia por sílaba
+                    const melodyOsc = audioCtx.createOscillator();
+                    const melodyGain = audioCtx.createGain();
+                    
+                    // Nota basada en el índice de la sílaba
+                    const noteFreq = pentatonicScale[index % pentatonicScale.length];
+                    
+                    melodyOsc.type = "sine"; 
+                    melodyOsc.frequency.setValueAtTime(noteFreq, now);
+                    
+                    melodyGain.gain.setValueAtTime(0.06, now);
+                    melodyGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+                    
+                    melodyOsc.connect(melodyGain);
+                    melodyGain.connect(audioCtx.destination);
+                    melodyOsc.start(now);
+                    melodyOsc.stop(now + 0.3);
+
+                } catch(e) {}
+            }
+
+            function playEndSong() {
+                playTone(523.25, 0.15, "sine", 0.08); 
+                setTimeout(() => playTone(659.25, 0.15, "sine", 0.08), 150); 
+                setTimeout(() => playTone(1046.50, 0.4, "sine", 0.08), 300);
+            }
+
+            // --- 2. BASE DE DATOS DE CANCIONES (CON SILABEO SEPARADO POR GUIONES) ---
+            const songsDb = [
+                {
+                    id: 1,
+                    title: "El Mono Tito",
+                    icon: "🐒",
+                    lyrics: "El mo-no Ti-to\npe-ga un gri-to\npor-que se co-me\nun pla-ta-ni-to."
+                },
+                {
+                    id: 2,
+                    title: "La Araña Maña",
+                    icon: "🕷️",
+                    lyrics: "La a-ra-ña Ma-ña\nte-je su te-la-ra-ña\ncon mu-cha ma-ña\nen la ca-ba-ña."
+                },
+                {
+                    id: 3,
+                    title: "El Pato Renato",
+                    icon: "🦆",
+                    lyrics: "El pa-to Re-na-to\ndes-can-sa un ra-to\nlue-go se po-ne\nsu vie-jo za-pa-to."
+                },
+                {
+                    id: 4,
+                    title: "La Rana Susana",
+                    icon: "🐸",
+                    lyrics: "La ra-na Su-sa-na\nsal-ta en la ma-ña-na\nse co-me u-na mos-ca\ny to-ca la cam-pa-na."
+                }
+            ];
+
+            let selectedSpeedMs = 340; // Por defecto: Medio (340ms por sílaba)
+            let currentSong = null;
+            let syllablesArray = []; // Almacena { element, text, isEndOfLine, isEndOfWord }
+            let currentSylIndex = 0;
+            let isPlaying = false;
+            let karaokeTimer = null;
+
+            // --- NAVEGACIÓN ---
+            window.showScreen = function(screenId) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                const target = document.getElementById(screenId);
+                if (target) target.classList.add('active');
+            };
+            const showScreen = window.showScreen;
+
+            // Exponer botones de velocidad globales
+            window.setSpeed = function(ms, btnElement) {
+                playBeep();
+                selectedSpeedMs = ms;
+                
+                // Actualizar UI
+                document.querySelectorAll('.speed-btn').forEach(btn => {
+                    btn.classList.remove('bg-stage-neonCyan', 'text-stage-dark', 'shadow-[0_0_15px_#06b6d4]', 'bg-stage-neonPink', 'bg-stage-neonYellow');
+                    btn.classList.add('bg-black');
+                    
+                    if(btn.innerText.includes('LENTO')) btn.classList.add('text-stage-neonCyan', 'border-stage-neonCyan');
+                    if(btn.innerText.includes('MEDIO')) btn.classList.add('text-stage-neonYellow', 'border-stage-neonYellow');
+                    if(btn.innerText.includes('RÁPIDO')) btn.classList.add('text-stage-neonPink', 'border-stage-neonPink');
+                });
+
+                // Activar el presionado
+                btnElement.classList.remove('bg-black');
+                if (ms === 480) { btnElement.classList.add('bg-stage-neonCyan', 'text-stage-dark', 'shadow-[0_0_15px_#06b6d4]'); }
+                if (ms === 340) { btnElement.classList.add('bg-stage-neonYellow', 'text-stage-dark', 'shadow-[0_0_15px_#eab308]'); }
+                if (ms === 240) { btnElement.classList.add('bg-stage-neonPink', 'text-white', 'shadow-[0_0_15px_#ec4899]'); }
+            };
+
+            window.showMenu = function() {
+                document.getElementById('screen-result').classList.add('hidden');
+                document.getElementById('screen-result').classList.remove('flex');
+                
+                const list = document.getElementById('song-list');
+                list.innerHTML = '';
+
+                songsDb.forEach(song => {
+                    const btn = document.createElement('button');
+                    btn.className = "neon-btn bg-black border-stage-neonCyan text-white p-4 md:p-6 flex flex-col items-center justify-center gap-2 hover:bg-stage-neonCyan hover:text-stage-dark shadow-md";
+                    btn.innerHTML = `
+                        <span class="text-4xl md:text-5xl drop-shadow-md">${song.icon}</span>
+                        <span class="font-show text-lg md:text-xl tracking-widest uppercase">${song.title}</span>
+                    `;
+                    btn.onclick = () => { playBeep(); loadKaraoke(song); };
+                    list.appendChild(btn);
+                });
+
+                showScreen('screen-menu');
+            };
+
+            // Parsear e inyectar la letra silábica
+            function loadKaraoke(songData) {
+                currentSong = songData;
+                isPlaying = false;
+                syllablesArray = [];
+                if (karaokeTimer) clearTimeout(karaokeTimer);
+
+                document.getElementById('current-song-title').innerText = `${songData.icon} ${songData.title}`;
+                
+                const container = document.getElementById('lyrics-container');
+                container.innerHTML = '';
+                
+                // Procesar por líneas
+                const lines = songData.lyrics.split('\n');
+                let sylGlobalIdx = 0;
+
+                lines.forEach((line, lineIdx) => {
+                    const lineDiv = document.createElement('div');
+                    lineDiv.className = "mb-2 md:mb-4"; // Separar versos
+                    
+                    const words = line.trim().split(' ');
+                    words.forEach((wordStr, wordIdx) => {
+                        if (wordStr.length === 0) return;
+                        
+                        const wordWrapper = document.createElement('span');
+                        wordWrapper.className = "k-word-wrapper";
+
+                        // Separar la palabra en sílabas basándose en el guion '-'
+                        const syllables = wordStr.split('-');
+                        syllables.forEach((sylStr, sylIdx) => {
+                            const span = document.createElement('span');
+                            span.className = "k-syl";
+                            span.id = `syl-${sylGlobalIdx}`;
+                            
+                            // Si no es la última sílaba de la palabra, añadir guion visual
+                            const isEndOfWord = (sylIdx === syllables.length - 1);
+                            span.innerText = isEndOfWord ? sylStr : `${sylStr}-`;
+                            
+                            wordWrapper.appendChild(span);
+
+                            syllablesArray.push({
+                                element: span,
+                                text: sylStr,
+                                isEndOfWord: isEndOfWord,
+                                isEndOfLine: (isEndOfWord && wordIdx === words.length - 1)
+                            });
+                            sylGlobalIdx++;
+                        });
+
+                        lineDiv.appendChild(wordWrapper);
+                    });
+                    container.appendChild(lineDiv);
+                });
+
+                document.getElementById('player-controls').classList.remove('hidden');
+                showScreen('screen-game');
+            }
+
+            // --- PLAYBACK DEL KARAOKE SILÁBICO ---
+            window.startKaraokePlayback = function() {
+                if (isPlaying) return;
+                
+                initAudio();
+                isPlaying = true;
+                currentSylIndex = 0;
+                
+                // Ocultar play
+                document.getElementById('player-controls').classList.add('hidden');
+
+                // Cuenta regresiva mística
+                const container = document.getElementById('lyrics-container');
+                const originalHtml = container.innerHTML;
+                
+                container.innerHTML = `<div class="text-[6rem] md:text-[10rem] font-show text-stage-neonYellow animate__animated animate__zoomIn">3</div>`;
+                playTone(400, 0.1, "sine", 0.08);
+                
+                setTimeout(() => {
+                    container.innerHTML = `<div class="text-[6rem] md:text-[10rem] font-show text-stage-neonYellow animate__animated animate__zoomIn">2</div>`;
+                    playTone(400, 0.1, "sine", 0.08);
+                }, 1000);
+                
+                setTimeout(() => {
+                    container.innerHTML = `<div class="text-[6rem] md:text-[10rem] font-show text-stage-neonYellow animate__animated animate__zoomIn">1</div>`;
+                    playTone(400, 0.1, "sine", 0.08);
+                }, 2000);
+                
+                setTimeout(() => {
+                    // Restaurar las rimas y empezar bucle rítmico silábico
+                    container.innerHTML = originalHtml;
+                    
+                    // Re-vincular los spans recién creados del DOM
+                    syllablesArray = [];
+                    const lineDivs = container.querySelectorAll('.k-word-wrapper');
+                    let idx = 0;
+                    lineDivs.forEach(wordWrap => {
+                        const spans = wordWrap.querySelectorAll('.k-syl');
+                        spans.forEach((span, sylIdx) => {
+                            syllablesArray.push({
+                                element: span,
+                                text: span.innerText,
+                                isEndOfWord: (sylIdx === spans.length - 1)
+                            });
+                            idx++;
+                        });
+                    });
+
+                    runRhythmLoop();
+                }, 3000);
+            };
+
+            function runRhythmLoop() {
+                if (!isPlaying) return;
+
+                if (currentSylIndex >= syllablesArray.length) {
+                    // Fin de la rima
+                    setTimeout(() => {
+                        endSong();
+                    }, 1000);
+                    return;
+                }
+
+                // Desmarcar la sílaba anterior y marcarla como cantada
+                if (currentSylIndex > 0) {
+                    const prevSyl = syllablesArray[currentSylIndex - 1].element;
+                    prevSyl.classList.remove('active');
+                    prevSyl.classList.add('sung');
+                }
+
+                // Iluminar sílaba actual
+                const currentObj = syllablesArray[currentWordIndex = currentSylIndex];
+                currentObj.element.classList.add('active');
+                
+                // Tocar nota de la melodía silábica
+                playSyllableBeat(currentSylIndex);
+
+                // Determinar el delay para la siguiente sílaba
+                let delay = selectedSpeedMs;
+                
+                // Si la sílaba es el final de una palabra con puntuación (coma o punto)
+                // hacemos que espere un 80% más de tiempo para respirar
+                const lastChar = currentObj.text.slice(-1);
+                if (currentObj.isEndOfWord && (lastChar === ',' || lastChar === '.')) {
+                    delay += (selectedSpeedMs * 0.8);
+                }
+
+                currentSylIndex++;
+                karaokeTimer = setTimeout(runRhythmLoop, delay);
+            }
+
+            function endSong() {
+                isPlaying = false;
+                if (karaokeTimer) clearTimeout(karaokeTimer);
+                
+                playEndSong();
+                
+                const res = document.getElementById('screen-result');
+                document.getElementById('final-verdict').classList.add('hidden');
+                
+                // Lanzar confeti de celebración
+                const confettiContainer = document.getElementById('confetti-layer');
+                confettiContainer.innerHTML = '';
+                const colors = ['#ec4899', '#06b6d4', '#eab308', '#10b981', '#ffffff'];
+                for(let i=0; i<60; i++) {
+                    const c = document.createElement('div');
+                    c.className = 'confetti';
+                    c.style.left = Math.random() * 100 + '%';
+                    c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    c.style.animationDelay = Math.random() * 2 + 's';
+                    confettiContainer.appendChild(c);
+                }
+
+                res.classList.remove('hidden');
+                res.classList.add('flex');
+            }
+
+            window.endFeedback = function(isHappy) {
+                playBeep();
+                const verdict = document.getElementById('final-verdict');
+                verdict.classList.remove('hidden');
+                
+                if (isHappy) {
+                    verdict.innerHTML = `<span class="text-stage-neonGreen drop-shadow-[0_0_5px_rgba(16,185,129,0.8)]">¡Eres una estrella del escenario! Sigue leyendo así de fluido. 🌟</span>`;
+                } else {
+                    verdict.innerHTML = `<span class="text-stage-neonCyan drop-shadow-[0_0_5px_rgba(6,182,212,0.8)]">¡No te preocupes! Vuelve a intentar la misma rima seleccionando la velocidad 🐢 LENTA en las instrucciones. ¡La práctica hace al maestro!</span>`;
+                }
+            };
+
+            // FUNCIÓN GLOBAL REINICIAR (Sincronizada con el cambio rítmico por sílaba)
+            window.restartKaraoke = function() {
+                isPlaying = false;
+                if (karaokeTimer) clearTimeout(karaokeTimer);
+                
+                // Limpiar estilos y resets de sílabas
+                document.querySelectorAll('.k-syl').forEach(w => {
+                    w.className = 'k-syl';
+                });
+                
+                // Mostrar controles del player
+                document.getElementById('player-controls').classList.remove('hidden');
+                document.getElementById('screen-result').classList.add('hidden');
+                document.getElementById('screen-result').classList.remove('flex');
+                
+                // Redirigir suavemente al inicio del mismo nivel
+                loadKaraoke(currentSong);
+            };
+
+            window.exitGame = function() {
+                isPlaying = false;
+                if (karaokeTimer) clearTimeout(karaokeTimer);
+                showScreen('screen-start');
+            };
+
+        });
+    </script>
+</body>
+</html>

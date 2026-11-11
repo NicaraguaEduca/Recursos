@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2º Primaria | El Clasificador de Juguetes</title>
+    <!-- Tipografía infantil Fredoka -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS para diseño fluido y moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --toy-blue: #3B82F6;
+            --toy-red: #EF4444;
+            --toy-green: #10B981;
+            --toy-yellow: #F59E0B;
+            --wooden-brown: #78350F;
+            --wooden-light: #D97706;
+        }
+
+        * {
+            font-family: 'Fredoka', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: #FFFDF5;
+            background-image: 
+                radial-gradient(#F5E0B3 1.5px, transparent 1.5px);
+            background-size: 28px 28px;
+            color: #1F2937;
+        }
+
+        /* Diapositivas con transiciones animadas */
+        .slide-content {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Estilo para los cajones de madera */
+        .drawer {
+            border: 5px solid var(--wooden-brown);
+            background: linear-gradient(135deg, #FDF4E3, #F5E3C3);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 
+                        inset 0 4px 6px -1px rgba(0, 0, 0, 0.06);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .drawer:hover {
+            transform: scale(1.02);
+            border-color: var(--wooden-light);
+        }
+
+        /* Elemento de juguete interactivo */
+        .toy-element {
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .toy-element:hover {
+            transform: scale(1.1) rotate(2deg);
+        }
+
+        /* Animación suave de salto/flote */
+        .floating-toy {
+            animation: softFloat 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes softFloat {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-8px); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
+
+    <!-- Pantalla de Bienvenida Pedagógica -->
+    <div id="welcomeScreen" class="fixed inset-0 bg-[#FFFDF5] z-50 flex items-center justify-center p-4">
+        <div class="bg-white border-8 border-[#F59E0B] rounded-[32px] max-w-2xl w-full p-6 md:p-8 text-center shadow-2xl relative overflow-hidden">
+            <div class="absolute top-4 left-4 text-3xl opacity-20">🧸</div>
+            <div class="absolute bottom-6 right-6 text-3xl opacity-20">🚗</div>
+            <div class="absolute top-1/2 right-4 text-3xl opacity-20">🦖</div>
+
+            <span class="bg-[#10B981] text-white px-5 py-1.5 rounded-full font-bold text-sm uppercase tracking-wider mb-4 inline-block">
+                🎒 2º de Primaria
+            </span>
+            
+            <h1 class="text-3xl md:text-5xl font-bold text-[#1F2937] mb-4 leading-tight">
+                El Clasificador <br>
+                <span class="text-[#F59E0B]">de Juguetes</span>
+            </h1>
+
+            <div class="bg-[#FFFDF5] border-2 border-[#D97706] rounded-2xl p-5 text-left space-y-3 my-6">
+                <p class="text-gray-700 text-sm md:text-base">
+                    <strong>🧠 Área Académica:</strong> Pensamiento Lógico y Clasificación.
+                </p>
+                <p class="text-gray-700 text-sm md:text-base">
+                    <strong>🎯 Habilidad Clave:</strong> Categorización lógica compleja utilizando atributos múltiples.
+                </p>
+                <p class="text-gray-700 text-sm md:text-base border-t border-amber-200 pt-3 mt-3">
+                    <strong>💡 Objetivo Educativo:</strong> Aprender a organizar colecciones de objetos bajo múltiples criterios simultáneos (color, forma y tamaño), desarrollando la discriminación visual y el orden cognitivo.
+                </p>
+            </div>
+
+            <button onclick="startPresentation()" class="bg-[#F59E0B] hover:bg-[#D97706] text-white font-bold text-xl py-3.5 px-10 rounded-full shadow-lg transform transition-all hover:scale-105 active:scale-95 inline-flex items-center gap-2">
+                <span>¡Abrir el Taller! ⚙️🧸</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Cabecera Pedagógica Obligatoria -->
+    <header class="w-full max-w-5xl mx-auto bg-white border-2 border-amber-400 rounded-2xl px-6 py-3 flex flex-col sm:flex-row justify-between items-center gap-3 shadow-md">
+        <div class="flex items-center gap-3">
+            <span class="bg-[#10B981] text-white px-3 py-1 rounded-full font-bold text-xs uppercase">
+                2º Primaria
+            </span>
+            <div class="text-gray-700 font-semibold text-sm sm:text-base">
+                Contenido: <span class="text-[#F59E0B]">Pensamiento Lógico - Atributos Múltiples</span>
+            </div>
+        </div>
+        <div class="text-[#3B82F6] text-xs sm:text-sm font-bold uppercase tracking-wider">
+            Lógica de Categorización Compleja
+        </div>
+    </header>
+
+    <!-- Contenedor Principal de la Presentación -->
+    <main class="w-full max-w-5xl mx-auto flex-1 flex flex-col justify-center my-4 md:my-6">
+        <div class="bg-white border-2 border-amber-200 rounded-[32px] p-6 md:p-8 shadow-xl flex-1 flex flex-col justify-between min-h-[500px]">
+            
+            <!-- Diapositiva 1: Portada e Introducción -->
+            <div id="slide-1" class="slide-content flex flex-col md:flex-row items-center gap-8 h-full flex-1">
+                <div class="flex-1 space-y-5">
+                    <span class="text-[#10B981] text-sm font-bold uppercase tracking-widest block">¡Hola, Pequeño Científico! 🔬</span>
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 leading-tight">
+                        ¿Cómo ordenamos el <br>
+                        <span class="text-[#F59E0B]">caos del taller?</span>
+                    </h2>
+                    <p class="text-gray-600 text-base md:text-lg leading-relaxed">
+                        En el taller del Juguetero hay muchos objetos tirados. Para poder encontrar lo que buscamos, necesitamos clasificarlos.
+                    </p>
+                    <p class="text-gray-500 text-sm md:text-base">
+                        <strong>Clasificar</strong> significa agrupar elementos que se parecen en algo. Para lograrlo, miramos sus características, a las que llamamos <strong>atributos</strong> (como su color, su forma o lo grandes que son).
+                    </p>
+                    <div class="bg-amber-50 border-l-4 border-[#F59E0B] p-3 rounded-r-xl">
+                        <p class="text-[#78350F] text-xs md:text-sm font-semibold">
+                            💡 ¿Sabías qué? Clasificar cosas ayuda a nuestro cerebro a pensar con más claridad y a resolver problemas difíciles rápidamente.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex-1 flex justify-center items-center w-full">
+                    <div class="bg-[#FFFDF5] border-4 border-[#F59E0B] rounded-2xl p-6 text-center w-64 floating-toy relative">
+                        <span class="text-6xl block mb-2">🧸🚗⚽</span>
+                        <div class="text-sm font-bold text-gray-600">Juguetes Mezclados</div>
+                        <div class="text-xs text-amber-600 mt-2">¿Cómo los organizarías tú?</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diapositiva 2: Clasificar por un solo atributo (Color) -->
+            <div id="slide-2" class="slide-content hidden flex flex-col md:flex-row items-center gap-8 h-full flex-1">
+                <div class="flex-1 space-y-4">
+                    <span class="text-[#3B82F6] text-xs font-bold uppercase tracking-widest block">Nivel Inicial 🔴</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800">
+                        Paso 1: Clasificar por <span class="text-[#3B82F6]">un solo atributo</span>
+                    </h2>
+                    <p class="text-gray-600 text-sm md:text-base leading-relaxed">
+                        La forma más fácil de organizar es buscando **una sola regla**. Por ejemplo: **El Color**.
+                    </p>
+                    <p class="text-gray-600 text-sm md:text-base leading-relaxed">
+                        Mira estos juguetes mezclados. Si nuestra regla es guardar únicamente lo que es de color <span class="text-red-500 font-bold">Rojo</span> en un cajón y lo que es de color <span class="text-blue-500 font-bold">Azul</span> en otro, no nos importa qué forma tengan ni de qué tamaño sean.
+                    </p>
+                    <div class="pt-2">
+                        <button onclick="revealSlide2Classification()" class="bg-[#3B82F6] hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-full shadow transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2">
+                            <span>🔍 Aplicar Regla del Color</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex-1 w-full bg-[#FFFDF5] rounded-2xl p-4 border border-amber-200 flex flex-col justify-between gap-4 min-h-[250px]">
+                    <!-- Juguetes antes de ordenar -->
+                    <div id="slide2-mixed" class="flex justify-center gap-4 bg-white p-3 rounded-xl border border-dashed border-gray-300">
+                        <span class="text-3xl bg-red-100 p-1.5 rounded-lg border border-red-200 transition-all duration-500">🚗</span>
+                        <span class="text-3xl bg-blue-100 p-1.5 rounded-lg border border-blue-200 transition-all duration-500">⚽</span>
+                        <span class="text-3xl bg-red-100 p-1.5 rounded-lg border border-red-200 transition-all duration-500">🦖</span>
+                        <span class="text-3xl bg-blue-100 p-1.5 rounded-lg border border-blue-200 transition-all duration-500">🧱</span>
+                    </div>
+
+                    <!-- Dos Cajones Representativos -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="drawer rounded-xl p-3 text-center border-red-500">
+                            <span class="text-xs font-bold text-red-600 block uppercase mb-1">Cajón Rojo</span>
+                            <div id="slide2-red-box" class="min-h-[60px] bg-red-50/50 rounded-lg flex items-center justify-center gap-2">
+                                <span class="text-gray-400 text-xs">Vacío</span>
+                            </div>
+                        </div>
+                        <div class="drawer rounded-xl p-3 text-center border-blue-500">
+                            <span class="text-xs font-bold text-blue-600 block uppercase mb-1">Cajón Azul</span>
+                            <div id="slide2-blue-box" class="min-h-[60px] bg-blue-50/50 rounded-lg flex items-center justify-center gap-2">
+                                <span class="text-gray-400 text-xs">Vacío</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diapositiva 3: Atributos Múltiples (Forma, Color y Tamaño) -->
+            <div id="slide-3" class="slide-content hidden flex flex-col md:flex-row items-center gap-8 h-full flex-1">
+                <div class="flex-1 space-y-4">
+                    <span class="text-[#10B981] text-xs font-bold uppercase tracking-widest block">Lógica Compleja 📐</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800">
+                        Paso 2: ¿Y si usamos <span class="text-[#10B981]">tres reglas juntas</span>?
+                    </h2>
+                    <p class="text-gray-600 text-sm md:text-base leading-relaxed">
+                        ¡Ahora nos convertimos en expertos! Clasificaremos por **Múltiples Atributos**:
+                    </p>
+                    <ul class="text-gray-600 text-sm md:text-base list-disc list-inside space-y-1 pl-1">
+                        <li><strong>Forma:</strong> ¿Es una pelota (redonda) ⚽ o un cubo (cuadrado) 🧱?</li>
+                        <li><strong>Color:</strong> ¿Es verde o azul?</li>
+                        <li><strong>Tamaño:</strong> ¿Es gigante 🟢 o chiquito •?</li>
+                    </ul>
+                    <p class="text-gray-500 text-xs">
+                        Para entrar a un cajón especial, un juguete debe cumplir con las tres características exactamente al mismo tiempo.
+                    </p>
+                    <div class="pt-2">
+                        <button onclick="revealSlide3Classification()" class="bg-[#10B981] hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-full shadow transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2">
+                            <span>🔍 Clasificar por 3 Atributos</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex-1 w-full bg-[#FFFDF5] rounded-2xl p-4 border border-amber-200 flex flex-col justify-between gap-4 min-h-[250px]">
+                    <div class="text-center">
+                        <span class="bg-[#10B981] text-white font-bold text-xs px-3 py-1 rounded-full uppercase">¿Qué juguete cumple con: "Pelota + Azul + Pequeño"?</span>
+                    </div>
+
+                    <!-- Tres juguetes candidatos -->
+                    <div class="flex justify-center gap-4">
+                        <div id="s3-opt-1" class="flex flex-col items-center bg-white p-2.5 rounded-xl border border-gray-200 transition-all duration-500">
+                            <span class="text-5xl">🧱</span>
+                            <span class="text-[10px] text-gray-400 font-bold mt-1">Cubo Azul Grande</span>
+                        </div>
+                        <div id="s3-opt-2" class="flex flex-col items-center bg-white p-2.5 rounded-xl border border-gray-200 transition-all duration-500">
+                            <span class="text-2xl">⚽</span>
+                            <span class="text-[10px] text-gray-400 font-bold mt-1">Pelota Azul Chica</span>
+                        </div>
+                        <div id="s3-opt-3" class="flex flex-col items-center bg-white p-2.5 rounded-xl border border-gray-200 transition-all duration-500">
+                            <span class="text-2xl">⚽</span>
+                            <span class="text-[10px] text-gray-400 font-bold mt-1">Pelota Roja Chica</span>
+                        </div>
+                    </div>
+
+                    <!-- Cajón Objetivo Único -->
+                    <div class="drawer rounded-xl p-3 text-center border-[#10B981]">
+                        <span class="text-xs font-bold text-[#10B981] block uppercase">Cajón Exclusivo: Pelota - Azul - Chica</span>
+                        <div id="slide3-target-box" class="min-h-[50px] bg-emerald-50/50 rounded-lg flex items-center justify-center mt-1">
+                            <span class="text-gray-400 text-xs">Esperando selección...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diapositiva 4: Taller Práctico de Categorización (Explicativo) -->
+            <div id="slide-4" class="slide-content hidden flex flex-col h-full flex-1 justify-between">
+                <div class="space-y-1 mb-3">
+                    <span class="text-[#F59E0B] text-xs font-bold uppercase tracking-widest block">Taller Práctico del Juguetero ⚙️🧸</span>
+                    <h2 class="text-xl md:text-2xl font-bold text-gray-800">Interactúa y comprende las combinaciones</h2>
+                    <p class="text-gray-600 text-xs md:text-sm">
+                        Haz clic en un juguete para que viaje al cajón que le corresponda. Lee la explicación sobre sus atributos múltiples.
+                    </p>
+                </div>
+
+                <!-- Escenario de Clasificación -->
+                <div class="relative w-full flex flex-col lg:flex-row gap-4 items-stretch justify-center flex-1 min-h-[180px] mb-3">
+                    
+                    <!-- Lado izquierdo: Estantes de Juguetes y Cajones -->
+                    <div class="flex-1 bg-[#FFFDF5] rounded-2xl p-4 border border-[#F59E0B] flex flex-col justify-between gap-4">
+                        
+                        <!-- Juguetes disponibles para clasificar -->
+                        <div>
+                            <p class="text-[10px] text-amber-800 text-center uppercase tracking-widest font-bold mb-2">
+                                Juguetes en el Estante:
+                            </p>
+                            <div id="toy-shelf" class="flex justify-center gap-4">
+                                <!-- Elementos inyectados dinámicamente por JS -->
+                            </div>
+                        </div>
+
+                        <!-- Cajones de Clasificación Compleja -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="drawer rounded-xl p-2 border-amber-600 flex flex-col justify-between">
+                                <span class="text-[10px] font-bold text-amber-800 block text-center uppercase leading-tight">
+                                    Cajón 1:<br>🦕 Dinosaurio + Verde + Grande
+                                </span>
+                                <div id="drawer-1" class="min-h-[55px] bg-amber-50/60 rounded-lg flex items-center justify-center mt-1 gap-1 flex-wrap">
+                                    <span class="text-gray-400 text-[10px]">Vacío</span>
+                                </div>
+                            </div>
+
+                            <div class="drawer rounded-xl p-2 border-amber-600 flex flex-col justify-between">
+                                <span class="text-[10px] font-bold text-amber-800 block text-center uppercase leading-tight">
+                                    Cajón 2:<br>🚗 Carrito + Rojo + Pequeño
+                                </span>
+                                <div id="drawer-2" class="min-h-[55px] bg-amber-50/60 rounded-lg flex items-center justify-center mt-1 gap-1 flex-wrap">
+                                    <span class="text-gray-400 text-[10px]">Vacío</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lado derecho: El Juguetero Sabio -->
+                    <div class="w-full lg:w-[280px] bg-white border border-[#D97706] rounded-2xl p-4 flex flex-col justify-between items-center">
+                        <div class="text-center">
+                            <span class="text-5xl block animate-bounce">👴</span>
+                            <h4 class="text-[#78350F] font-bold text-sm mt-1">El Juguetero Sabio</h4>
+                        </div>
+                        
+                        <!-- Caja de diálogo descriptivo -->
+                        <div class="bg-amber-50 p-3 rounded-xl border border-amber-200 w-full text-center mt-2 flex-1 flex items-center justify-center">
+                            <p id="toymaker-text" class="text-gray-700 text-xs md:text-sm leading-relaxed font-medium">
+                                Haz clic sobre un juguete del estante y yo te explicaré por qué encaja en su respectivo cajón.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Diapositiva 5: Conclusión y Desafíos Cortos -->
+            <div id="slide-5" class="slide-content hidden flex flex-col md:flex-row items-center gap-8 h-full flex-1">
+                <div class="flex-1 space-y-4">
+                    <span class="text-[#10B981] text-xs font-bold uppercase tracking-widest block">¡Gran Aprendizaje! 🏆🚀</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 leading-tight">
+                        ¡Eres un as de la <br>
+                        <span class="text-[#F59E0B]">clasificación!</span>
+                    </h2>
+                    <p class="text-gray-600 text-sm md:text-base leading-relaxed">
+                        Has aprendido a examinar objetos buscando no solo un atributo, sino analizando combinaciones complejas de color, forma y tamaño al mismo tiempo.
+                    </p>
+                    <p class="text-gray-500 text-xs md:text-sm">
+                        Este entrenamiento lógico te ayudará en matemáticas al agrupar conjuntos de números, figuras geométricas y objetos en general.
+                    </p>
+                </div>
+                
+                <div class="flex-1 w-full bg-[#FFFDF5] rounded-2xl p-4 border border-[#F59E0B] flex flex-col justify-center space-y-4 shadow-inner">
+                    <h3 class="text-base font-bold text-[#78350F] text-center">🧠 ¡Resuelve las misiones lógicas!</h3>
+                    <p class="text-xs text-gray-500 text-center mt-0">Elige la opción correcta para cada clasificación:</p>
+                    
+                    <!-- Actividad 1 -->
+                    <div class="bg-white p-3 rounded-xl border border-gray-200 space-y-1">
+                        <p class="text-[11px] font-bold text-gray-600">
+                            1. Si tengo un oso de peluche 🧸 de color café y de tamaño pequeño, ¿a qué cajón pertenece?
+                        </p>
+                        <div class="flex items-center justify-between gap-2 pt-1">
+                            <select id="select-act-1" onchange="checkActivity(1)" class="w-full bg-[#FFFDF5] border-2 border-[#D97706] rounded-xl text-gray-800 text-xs px-2 py-2 focus:border-[#F59E0B] outline-none">
+                                <option value="">Elige el cajón correcto...</option>
+                                <option value="incorrecto1">Cajón de juguetes amarillos y grandes</option>
+                                <option value="correcto">Cajón de juguetes cafés y pequeños</option>
+                                <option value="incorrecto2">Cajón de dinosaurios verdes</option>
+                            </select>
+                        </div>
+                        <p id="feedback-act-1" class="text-[10px] font-bold text-center h-4"></p>
+                    </div>
+
+                    <!-- Actividad 2 -->
+                    <div class="bg-white p-3 rounded-xl border border-gray-200 space-y-1">
+                        <p class="text-[11px] font-bold text-gray-600">
+                            2. ¿Cuáles son los atributos exactos de este balón? ⚽ (Grande y Azul)
+                        </p>
+                        <div class="flex items-center justify-between gap-2 pt-1">
+                            <select id="select-act-2" onchange="checkActivity(2)" class="w-full bg-[#FFFDF5] border-2 border-[#D97706] rounded-xl text-gray-800 text-xs px-2 py-2 focus:border-[#F59E0B] outline-none">
+                                <option value="">Describe sus atributos...</option>
+                                <option value="incorrecto1">Forma: Balón | Color: Rojo | Tamaño: Chico</option>
+                                <option value="correcto">Forma: Balón | Color: Azul | Tamaño: Grande</option>
+                                <option value="incorrecto2">Forma: Cubo | Color: Azul | Tamaño: Grande</option>
+                            </select>
+                        </div>
+                        <p id="feedback-act-2" class="text-[10px] font-bold text-center h-4"></p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Controles de Navegación de la Presentación -->
+    <footer class="w-full max-w-5xl mx-auto bg-white border-2 border-amber-400 rounded-2xl p-4 flex justify-between items-center shadow-md">
+        <button id="btn-prev" onclick="changeSlide(-1)" class="bg-[#FFFDF5] hover:bg-amber-50 text-gray-700 border border-gray-300 font-bold py-2 px-5 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+            Anterior
+        </button>
+
+        <div class="text-gray-500 font-semibold text-xs sm:text-sm">
+            Sección <span id="current-slide-num" class="text-[#F59E0B]">1</span> de 5
+        </div>
+
+        <button id="btn-next" onclick="changeSlide(1)" class="bg-[#3B82F6] hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-xl transition-all">
+            Siguiente
+        </button>
+    </footer>
+
+    <script>
+        // --- Estado General de la Presentación ---
+        let currentSlide = 1;
+        const totalSlides = 5;
+
+        // --- Sintetizador de Sonido (Web Audio API) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'magic') {
+                const now = audioCtx.currentTime;
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+                osc.frequency.setValueAtTime(1046.50, now + 0.24); // C6
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            } else if (type === 'error') {
+                const now = audioCtx.currentTime;
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'click') {
+                const now = audioCtx.currentTime;
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, now);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                osc.start(now);
+                osc.stop(now + 0.12);
+            }
+        }
+
+        // --- Navegación entre Diapositivas ---
+        function startPresentation() {
+            playSound('magic');
+            const welcome = document.getElementById('welcomeScreen');
+            welcome.style.opacity = '0';
+            welcome.style.pointerEvents = 'none';
+            setTimeout(() => {
+                welcome.style.display = 'none';
+            }, 500);
+        }
+
+        function changeSlide(direction) {
+            playSound('click');
+
+            // Reiniciar presentación al presionar el botón final
+            if (currentSlide === totalSlides && direction === 1) {
+                document.getElementById(`slide-${currentSlide}`).classList.add('hidden');
+                currentSlide = 1;
+                document.getElementById(`slide-${currentSlide}`).classList.remove('hidden');
+                updateFooter();
+                return;
+            }
+
+            // Ocultar actual
+            document.getElementById(`slide-${currentSlide}`).classList.add('hidden');
+            // Mover índice
+            currentSlide += direction;
+            // Mostrar nueva diapositiva
+            document.getElementById(`slide-${currentSlide}`).classList.remove('hidden');
+
+            updateFooter();
+
+            // Disparar reinicializaciones de diapositivas interactivas
+            if (currentSlide === 2) {
+                resetSlide2();
+            } else if (currentSlide === 3) {
+                resetSlide3();
+            } else if (currentSlide === 4) {
+                initSlide4Workshop();
+            } else if (currentSlide === 5) {
+                resetSlide5();
+            }
+        }
+
+        function updateFooter() {
+            document.getElementById('current-slide-num').textContent = currentSlide;
+            document.getElementById('btn-prev').disabled = (currentSlide === 1);
+            
+            const btnNext = document.getElementById('btn-next');
+            if (currentSlide === totalSlides) {
+                btnNext.textContent = 'Volver a comenzar 🔄';
+                btnNext.className = "bg-[#10B981] hover:bg-emerald-700 text-white font-bold py-2 px-5 rounded-xl transition-all";
+            } else {
+                btnNext.textContent = 'Siguiente';
+                btnNext.className = "bg-[#3B82F6] hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-xl transition-all";
+            }
+        }
+
+        // --- STREAMING_CHUNK: Coding Slide 2 interactions... ---
+        // --- Lógica Diapositiva 2 (Clasificar por Color) ---
+        function resetSlide2() {
+            document.getElementById('slide2-mixed').innerHTML = `
+                <span id="s2-toy-1" class="text-3xl bg-red-100 p-1.5 rounded-lg border border-red-200 transition-all duration-500">🚗</span>
+                <span id="s2-toy-2" class="text-3xl bg-blue-100 p-1.5 rounded-lg border border-blue-200 transition-all duration-500">⚽</span>
+                <span id="s2-toy-3" class="text-3xl bg-red-100 p-1.5 rounded-lg border border-red-200 transition-all duration-500">🦖</span>
+                <span id="s2-toy-4" class="text-3xl bg-blue-100 p-1.5 rounded-lg border border-blue-200 transition-all duration-500">🧱</span>
+            `;
+            document.getElementById('slide2-red-box').innerHTML = `<span class="text-gray-400 text-xs">Vacío</span>`;
+            document.getElementById('slide2-blue-box').innerHTML = `<span class="text-gray-400 text-xs">Vacío</span>`;
+        }
+
+        function revealSlide2Classification() {
+            playSound('magic');
+            
+            // Ocultar juguetes de la fila de mezcla
+            const mixedContainer = document.getElementById('slide2-mixed');
+            mixedContainer.innerHTML = `<span class="text-gray-400 text-xs">¡Todos clasificados! 🌟</span>`;
+
+            // Agregar a sus cajones correspondientes
+            document.getElementById('slide2-red-box').innerHTML = `
+                <span class="text-3xl animate-pulse">🚗</span>
+                <span class="text-3xl animate-pulse">🦖</span>
+            `;
+            document.getElementById('slide2-blue-box').innerHTML = `
+                <span class="text-3xl animate-pulse">⚽</span>
+                <span class="text-3xl animate-pulse">🧱</span>
+            `;
+        }
+
+        // --- STREAMING_CHUNK: Coding Slide 3 interactions... ---
+        // --- Lógica Diapositiva 3 (Múltiples Atributos) ---
+        function resetSlide3() {
+            document.getElementById('s3-opt-1').className = "flex flex-col items-center bg-white p-2.5 rounded-xl border border-gray-200 transition-all duration-500";
+            document.getElementById('s3-opt-2').className = "flex flex-col items-center bg-white p-2.5 rounded-xl border border-gray-200 transition-all duration-500";
+            document.getElementById('s3-opt-3').className = "flex flex-col items-center bg-white p-2.5 rounded-xl border border-gray-200 transition-all duration-500";
+            document.getElementById('slide3-target-box').innerHTML = `<span class="text-gray-400 text-xs">Esperando selección...</span>`;
+        }
+
+        function revealSlide3Classification() {
+            playSound('magic');
+            
+            const opt1 = document.getElementById('s3-opt-1');
+            const opt2 = document.getElementById('s3-opt-2');
+            const opt3 = document.getElementById('s3-opt-3');
+
+            // El correcto es la pelota azul chica (Opt 2)
+            opt1.className = "flex flex-col items-center bg-gray-100 p-2.5 rounded-xl border border-gray-300 opacity-30 transition-all duration-500";
+            opt2.className = "flex flex-col items-center bg-green-50 p-2.5 rounded-xl border-2 border-emerald-500 transition-all duration-500 scale-105 shadow-md";
+            opt3.className = "flex flex-col items-center bg-gray-100 p-2.5 rounded-xl border border-gray-300 opacity-30 transition-all duration-500";
+
+            document.getElementById('slide3-target-box').innerHTML = `
+                <div class="flex items-center gap-2 animate-bounce">
+                    <span class="text-2xl">⚽</span>
+                    <span class="text-xs font-bold text-emerald-800">¡Pelota Azul Chica agregada! 🌟</span>
+                </div>
+            `;
+        }
+
+        // --- STREAMING_CHUNK: Coding Slide 4 Interactive Workshop... ---
+        // --- Lógica Diapositiva 4: Taller del Juguetero (Atributos Múltiples) ---
+        const workshopToys = [
+            { id: "toy1", emoji: "🦕", type: "dinosaurio", color: "verde", size: "grande", correctDrawer: 1 },
+            { id: "toy2", emoji: "🚗", type: "carrito", color: "rojo", size: "pequeño", correctDrawer: 2 },
+            { id: "toy3", emoji: "🧸", type: "peluche", color: "marrón", size: "pequeño", correctDrawer: 0 }, // no tiene cajón
+            { id: "toy4", emoji: "🧱", type: "bloque", color: "azul", size: "grande", correctDrawer: 0 } // no tiene cajón
+        ];
+
+        function initSlide4Workshop() {
+            document.getElementById('toymaker-text').innerHTML = `
+                Haz clic sobre un juguete del estante y yo te explicaré por qué encaja en su respectivo cajón.
+            `;
+            document.getElementById('drawer-1').innerHTML = `<span class="text-gray-400 text-[10px]">Vacío</span>`;
+            document.getElementById('drawer-2').innerHTML = `<span class="text-gray-400 text-[10px]">Vacío</span>`;
+
+            const shelf = document.getElementById('toy-shelf');
+            shelf.innerHTML = '';
+
+            workshopToys.forEach(toy => {
+                const div = document.createElement('div');
+                div.id = toy.id;
+                // Escalar visualmente el tamaño del juguete según su atributo "size"
+                const sizeClass = toy.size === "grande" ? "text-5xl" : "text-3xl";
+                div.className = `toy-element bg-white border border-gray-200 p-3 rounded-xl flex items-center justify-center shadow-sm w-16 h-16 ${sizeClass}`;
+                div.innerHTML = `<span>${toy.emoji}</span>`;
+                div.onclick = () => selectWorkshopToy(toy);
+                shelf.appendChild(div);
+            });
+        }
+
+        function selectWorkshopToy(toy) {
+            const toyNode = document.getElementById(toy.id);
+            if (!toyNode) return;
+
+            if (toy.correctDrawer > 0) {
+                playSound('magic');
+                
+                // Moverlo al cajón correspondiente
+                const drawerBox = document.getElementById(`drawer-${toy.correctDrawer}`);
+                if (drawerBox.querySelector('span.text-gray-400')) {
+                    drawerBox.innerHTML = ''; // Limpiar el "Vacío"
+                }
+
+                // Generar elemento en el cajón
+                const sizeClass = toy.size === "grande" ? "text-3xl" : "text-xl";
+                const item = document.createElement('span');
+                item.className = `${sizeClass} animate-bounce`;
+                item.textContent = toy.emoji;
+                drawerBox.appendChild(item);
+
+                // Remover del estante original
+                toyNode.style.display = 'none';
+
+                // Explicación detallada del Juguetero
+                if (toy.correctDrawer === 1) {
+                    document.getElementById('toymaker-text').innerHTML = `
+                        <span class="text-emerald-600 font-bold block mb-1">¡Excelente combinación! 🦕✅</span>
+                        El <strong>${toy.emoji} dinosaurio</strong> es de color <strong>${toy.color}</strong> y de tamaño <strong>${toy.size}</strong>. <br>
+                        <span class="text-[11px] text-gray-500 block mt-1">Cumple perfectamente los tres atributos del Cajón 1.</span>
+                    `;
+                } else if (toy.correctDrawer === 2) {
+                    document.getElementById('toymaker-text').innerHTML = `
+                        <span class="text-emerald-600 font-bold block mb-1">¡Clasificación Perfecta! 🚗✅</span>
+                        El <strong>${toy.emoji} carrito</strong> es de color <strong>${toy.color}</strong> y es de tamaño <strong>${toy.size}</strong>. <br>
+                        <span class="text-[11px] text-gray-500 block mt-1">Cumple con los tres atributos configurados para el Cajón 2.</span>
+                    `;
+                }
+            } else {
+                // El juguete no cumple las reglas de ningún cajón
+                playSound('error');
+                
+                // Animación de error
+                toyNode.classList.add('shake');
+                setTimeout(() => toyNode.classList.remove('shake'), 500);
+
+                // Explicación lógica del Juguetero sobre por qué se descarta
+                document.getElementById('toymaker-text').innerHTML = `
+                    <span class="text-red-500 font-bold block mb-1">¡Espera! Ese juguete no va ahí... 🧐</span>
+                    Este es un <strong>${toy.emoji} (${toy.color}, ${toy.size})</strong>. <br>
+                    <span class="text-[11px] text-gray-500 block mt-1">No cumple con los atributos de ningún cajón de abajo. ¡Dejémoslo en el estante de arriba!</span>
+                `;
+            }
+        }
+
+        // --- STREAMING_CHUNK: Coding Slide 5 Select verification... ---
+        // --- Lógica Diapositiva 5 (Validaciones de Evaluación Corta) ---
+        function resetSlide5() {
+            document.getElementById('select-act-1').value = "";
+            document.getElementById('select-act-2').value = "";
+            document.getElementById('select-act-1').className = "w-full bg-[#FFFDF5] border-2 border-[#D97706] rounded-xl text-gray-800 text-xs px-2 py-2 focus:border-[#F59E0B] outline-none";
+            document.getElementById('select-act-2').className = "w-full bg-[#FFFDF5] border-2 border-[#D97706] rounded-xl text-gray-800 text-xs px-2 py-2 focus:border-[#F59E0B] outline-none";
+            document.getElementById('feedback-act-1').textContent = "";
+            document.getElementById('feedback-act-2').textContent = "";
+        }
+
+        function checkActivity(num) {
+            const select = document.getElementById(`select-act-${num}`);
+            const feedback = document.getElementById(`feedback-act-${num}`);
+            const val = select.value;
+
+            if (val === "") {
+                feedback.textContent = "";
+                return;
+            }
+
+            if (val === "correcto") {
+                playSound('magic');
+                feedback.innerHTML = "<span class='text-emerald-600'>¡Excelente! Tus habilidades lógicas son fantásticas. 🌟</span>";
+                select.className = "w-full bg-emerald-50 border-2 border-emerald-500 rounded-xl text-gray-800 text-xs px-2 py-2 outline-none";
+            } else {
+                playSound('error');
+                feedback.innerHTML = "<span class='text-red-500'>No es correcto. ¡Examina los atributos otra vez! ❌</span>";
+                select.className = "w-full bg-red-50 border-2 border-red-400 rounded-xl text-gray-800 text-xs px-2 py-2 outline-none";
+            }
+        }
+    </script>
+</body>
+</html>

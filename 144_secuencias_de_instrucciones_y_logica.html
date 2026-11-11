@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camino a Casa - Secuencias Lógicas</title>
+    
+    <!-- Fuentes Google: Fredoka One (Títulos) y Quicksand (Lectura clara) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA PARA WORDPRESS -->
+    <script>
+        tailwind.config = {
+            important: '#recurso-wp-camino',
+            corePlugins: { preflight: false },
+            theme: {
+                extend: {
+                    fontFamily: {
+                        toon: ['"Fredoka One"', 'cursive'],
+                        body: ['Quicksand', 'sans-serif'],
+                    },
+                    colors: {
+                        logic: {
+                            dark: '#0f172a',      
+                            panel: '#1e293b',     
+                            cyan: '#06b6d4',      
+                            green: '#10b981',     
+                            red: '#ef4444',       
+                            yellow: '#fbbf24',    
+                            grass1: '#a7f3d0',    
+                            grass2: '#86efac'     
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* MICRO-RESET LOCAL */
+        #recurso-wp-camino * { box-sizing: border-box; border-width: 0; border-style: solid; border-color: currentColor; line-height: normal; }
+        #recurso-wp-camino h1, #recurso-wp-camino h2, #recurso-wp-camino h3, #recurso-wp-camino p, #recurso-wp-camino span { margin: 0; padding: 0; }
+        #recurso-wp-camino button { background-color: transparent; cursor: pointer; padding: 0; font-family: inherit; }
+
+        /* ESTILOS GENERALES (Pantalla Completa) */
+        #recurso-wp-camino {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #0f172a; 
+            background-image: radial-gradient(#1e293b 3px, transparent 3px);
+            background-size: 35px 35px;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Paneles Estilo Toon */
+        #recurso-wp-camino .toon-panel {
+            background-color: #ffffff;
+            border: 5px solid #000;
+            border-radius: 2rem;
+            box-shadow: 8px 8px 0px #000;
+            color: #1e293b;
+        }
+
+        #recurso-wp-camino .toon-btn {
+            border: 4px solid #000;
+            border-radius: 1rem;
+            box-shadow: 4px 4px 0px #000;
+            transition: all 0.1s ease-out;
+            font-family: 'Fredoka One', cursive;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        #recurso-wp-camino .toon-btn:hover:not(:disabled) {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #000;
+        }
+        #recurso-wp-camino .toon-btn:active:not(:disabled) {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px #000;
+        }
+        #recurso-wp-camino .toon-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: 4px 4px 0px #000 !important;
+        }
+
+        /* Grilla del Mapa del Laberinto */
+        .map-grid-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.5rem, 4vh, 2.5rem);
+            position: relative;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        /* Colores de las celdas (Tablero de Ajedrez de Pasto) */
+        .cell-light { background-color: #a7f3d0; } /* logic-grass1 */
+        .cell-dark { background-color: #86efac; }  /* logic-grass2 */
+
+        .obstacle-tree {
+            background-color: #4ade80 !important; 
+            box-shadow: inset 0 0 15px rgba(0,100,0,0.2);
+        }
+        .obstacle-water {
+            background-color: #93c5fd !important; 
+            box-shadow: inset 0 0 15px rgba(0,0,200,0.2);
+            animation: waterFlow 3s infinite alternate ease-in-out;
+        }
+        @keyframes waterFlow {
+            0% { background-color: #93c5fd; }
+            100% { background-color: #60a5fa; }
+        }
+
+        /* Personaje Firulais */
+        .player-blip {
+            z-index: 10;
+            filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.4));
+        }
+
+        /* Slots del algoritmo */
+        .algo-slot {
+            background: rgba(0,0,0,0.4);
+            border: 2px dashed #475569;
+            border-radius: 8px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            color: #94a3b8;
+        }
+        .algo-slot.filled {
+            border-style: solid;
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.15);
+            color: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #064e3b;
+        }
+
+        /* Pantallas SPA */
+        #recurso-wp-camino .screen {
+            display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; position: absolute; top: 0; left: 0; overflow-y: auto; overflow-x: hidden; z-index: 10;
+        }
+        #recurso-wp-camino .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-camino .screen.active {
+            display: flex;
+            animation: bounceInUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+        }
+        @keyframes bounceInUp {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Temblor de Error */
+        .shake { animation: shakeAnim 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shakeAnim {
+            10%, 90% { transform: translate3d(-4px, 0, 0); }
+            20%, 80% { transform: translate3d(6px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
+        /* Letras de Coordenadas */
+        .coord-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Fredoka One', cursive;
+            color: #64748b;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-camino">
+
+        <!-- ==============================================
+             PANTALLA 1: PORTADA
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="toon-panel p-8 md:p-12 max-w-3xl w-full mx-4 flex flex-col items-center transform -rotate-1">
+                <div class="flex gap-4 mb-2 md:mb-4">
+                    <span class="text-[4rem] md:text-[5.5rem] animate-bounce">🐶</span>
+                    <span class="text-[4rem] md:text-[5.5rem] animate-bounce" style="animation-delay: 0.15s">➡️</span>
+                    <span class="text-[4rem] md:text-[5.5rem] animate-bounce" style="animation-delay: 0.3s">🏠</span>
+                </div>
+                
+                <h2 class="text-xs md:text-sm text-black font-body font-black mb-4 uppercase bg-logic-yellow inline-block px-4 py-1 border-4 border-black rounded-full rotate-1 shadow-[4px_4px_0_#000]">
+                    Tecnología - 5/6to Grado
+                </h2>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-toon text-logic-dark leading-none uppercase drop-shadow-[2px_2px_0_#000] mb-4">
+                    Camino <br><span class="text-logic-green">a Casa</span>
+                </h1>
+                <p class="text-lg md:text-xl text-gray-700 font-bold mb-8 px-2 leading-relaxed">
+                    ¡Firulais se ha perdido! Los robots y computadoras necesitan secuencias <strong>exactas</strong> para moverse. ¿Podrás programar su ruta casilla por casilla sin chocar?
+                </p>
+                <button id="btn-to-theory" class="toon-btn bg-logic-yellow text-black text-lg md:text-2xl px-10 py-4 w-full md:w-auto">
+                    ¿CÓMO PROGRAMAR? 📜
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: EXPLICACIÓN (TEORÍA)
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center">
+            <div class="toon-panel p-6 md:p-10 max-w-5xl w-full text-center my-auto">
+                <h2 class="text-3xl md:text-5xl font-toon text-logic-dark mb-6 uppercase border-b-4 border-dashed border-gray-300 pb-2">
+                    Secuencias Lógicas (Algoritmos)
+                </h2>
+                <p class="text-sm md:text-lg text-gray-700 font-bold mb-8 max-w-3xl mx-auto">
+                    Para que nuestro perrito se mueva en el tablero, debemos darle órdenes precisas. Recuerda las reglas de la programación:
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-left">
+                    <!-- Paso 1 -->
+                    <div class="bg-emerald-50 p-5 rounded-2xl border-4 border-black shadow-[4px_4px_0_#000]">
+                        <span class="text-3xl">1️⃣</span>
+                        <h3 class="font-toon text-lg text-logic-green uppercase mt-2">Paso Exacto</h3>
+                        <p class="text-xs md:text-sm text-gray-700 font-bold mt-1 leading-snug">
+                            Cada flecha de dirección (Instrucción) hace que Firulais avance <strong>una sola casilla</strong> en el mapa.
+                        </p>
+                    </div>
+                    <!-- Paso 2 -->
+                    <div class="bg-amber-50 p-5 rounded-2xl border-4 border-black shadow-[4px_4px_0_#000]">
+                        <span class="text-3xl">2️⃣</span>
+                        <h3 class="font-toon text-lg text-logic-yellow uppercase mt-2">Evita Obstáculos</h3>
+                        <p class="text-xs md:text-sm text-gray-700 font-bold mt-1 leading-snug">
+                            No puedes atravesar árboles 🌳 ni caer al agua 🌊. ¡Calcula bien tu ruta antes de ejecutarla!
+                        </p>
+                    </div>
+                    <!-- Paso 3 -->
+                    <div class="bg-rose-50 p-5 rounded-2xl border-4 border-black shadow-[4px_4px_0_#000]">
+                        <span class="text-3xl">3️⃣</span>
+                        <h3 class="font-toon text-lg text-logic-red uppercase mt-2">Depuración (Bugs)</h3>
+                        <p class="text-xs md:text-sm text-gray-700 font-bold mt-1 leading-snug">
+                            Si el código falla y chocas, usa el botón de <strong>"Deshacer"</strong> para borrar el error y corregir tu algoritmo.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button id="btn-back-lobby" class="toon-btn bg-gray-200 text-gray-700 px-8 py-3 text-lg">
+                        ⬅ LOBBY
+                    </button>
+                    <button id="btn-to-game" class="toon-btn bg-logic-green text-white text-lg md:text-2xl px-10 py-3">
+                        ¡ABRIR CONSOLA! 💻
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: EL JUEGO (Grilla y Consola)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start p-0 bg-transparent">
+            
+            <!-- HUD Superior -->
+            <div class="w-full bg-white border-b-4 border-black p-2 md:p-3 flex justify-between items-center z-30 shrink-0 shadow-lg">
+                <div class="flex items-center gap-2 px-2 md:px-4">
+                    <span class="text-2xl md:text-3xl">🎮</span>
+                    <div class="flex flex-col">
+                        <span class="text-xs text-gray-500 font-black uppercase tracking-widest leading-none mb-1">Misiones</span>
+                        <span class="font-toon text-xl md:text-3xl text-logic-dark leading-none"><span id="level-indicator">1</span>/3</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-center">
+                    <span class="text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-none mb-1">Proyecto Activo</span>
+                    <span id="level-title" class="px-4 py-1 border-2 border-logic-cyan bg-cyan-50 text-logic-cyan font-toon text-sm rounded-full uppercase tracking-wider shadow-sm">Cargando...</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <div class="flex flex-col text-right">
+                        <span class="text-xs text-gray-500 font-black uppercase tracking-widest leading-none mb-1">Batería</span>
+                        <span id="lives-display" class="text-lg md:text-xl tracking-widest mt-1">🔋🔋🔋</span>
+                    </div>
+                    <button id="btn-exit-game" class="toon-btn bg-logic-red text-white p-1 md:p-2 ml-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 md:h-8 md:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard de Lógica -->
+            <div class="w-full flex-grow flex flex-col md:flex-row gap-4 p-3 md:p-6 overflow-hidden relative">
+                
+                <!-- SECCIÓN IZQUIERDA: La Grilla de Mapa con Coordenadas -->
+                <div class="w-full md:w-6/12 flex items-center justify-center relative bg-white border-4 border-black rounded-[2rem] shadow-[8px_8px_0_#000] p-4">
+                    
+                    <div class="flex flex-col w-full max-w-[320px] md:max-w-[400px]">
+                        <!-- Letras Superiores (Columnas: 1 a 5) -->
+                        <div class="flex w-full ml-6 md:ml-8 mb-1">
+                            <div class="flex-1 coord-label">1</div>
+                            <div class="flex-1 coord-label">2</div>
+                            <div class="flex-1 coord-label">3</div>
+                            <div class="flex-1 coord-label">4</div>
+                            <div class="flex-1 coord-label">5</div>
+                        </div>
+                        
+                        <div class="flex w-full">
+                            <!-- Números Laterales (Filas: A a E) -->
+                            <div class="flex flex-col w-6 md:w-8 justify-around mr-1 h-full py-2">
+                                <div class="coord-label flex-1">A</div>
+                                <div class="coord-label flex-1">B</div>
+                                <div class="coord-label flex-1">C</div>
+                                <div class="coord-label flex-1">D</div>
+                                <div class="coord-label flex-1">E</div>
+                            </div>
+                            
+                            <!-- Contenedor del Mapa 5x5 -->
+                            <div id="map-container" class="grid grid-cols-5 grid-rows-5 flex-grow aspect-square border-4 border-black rounded-lg overflow-hidden shadow-inner">
+                                <!-- Las 25 celdas se inyectan dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- SECCIÓN DERECHA: Consola de Programación -->
+                <div class="w-full md:w-6/12 flex flex-col justify-between h-full">
+                    <div class="toon-panel p-4 flex flex-col justify-start h-full overflow-y-auto">
+                        <span class="font-toon text-logic-dark text-base uppercase tracking-wider block border-b-2 border-dashed border-gray-300 pb-2 mb-2">💻 Memoria del Algoritmo:</span>
+                        
+                        <!-- Bloque de Cola de Instrucciones -->
+                        <div class="flex flex-wrap gap-2 my-2 min-h-[60px]" id="program-queue">
+                            <!-- Los slots dinámicos se inyectan aquí -->
+                        </div>
+
+                        <!-- Panel de Controles Direccionales (D-PAD Estilo Consola) -->
+                        <div class="mt-4 bg-gray-100 p-4 rounded-2xl border-4 border-gray-300 shadow-inner">
+                            <h4 class="font-toon text-sm text-gray-500 uppercase tracking-widest text-center mb-4">Cruceta de Comandos:</h4>
+                            
+                            <!-- D-Pad Grid -->
+                            <div class="grid grid-cols-3 grid-rows-2 gap-2 max-w-[180px] mx-auto">
+                                <div class="col-start-2">
+                                    <button id="btn-dir-up" class="toon-btn bg-white text-black w-full py-3 text-2xl md:text-3xl flex items-center justify-center">⬆️</button>
+                                </div>
+                                <div class="col-start-1 row-start-2">
+                                    <button id="btn-dir-left" class="toon-btn bg-white text-black w-full py-3 text-2xl md:text-3xl flex items-center justify-center">⬅️</button>
+                                </div>
+                                <div class="col-start-2 row-start-2">
+                                    <button id="btn-dir-down" class="toon-btn bg-white text-black w-full py-3 text-2xl md:text-3xl flex items-center justify-center">⬇️</button>
+                                </div>
+                                <div class="col-start-3 row-start-2">
+                                    <button id="btn-dir-right" class="toon-btn bg-white text-black w-full py-3 text-2xl md:text-3xl flex items-center justify-center">➡️</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones de Acción de Algoritmo -->
+                        <div class="flex gap-2 mt-auto pt-4 border-t-2 border-dashed border-gray-300 shrink-0 flex-wrap">
+                            <button id="btn-undo-queue" class="toon-btn bg-orange-400 text-black py-2 px-3 flex-1 text-xs md:text-sm font-bold shadow-[2px_2px_0_#000]">
+                                DESHACER ↩️
+                            </button>
+                            <button id="btn-clear-queue" class="toon-btn bg-gray-200 text-gray-700 py-2 px-3 flex-1 text-xs md:text-sm font-bold shadow-[2px_2px_0_#000]">
+                                LIMPIAR 🗑️
+                            </button>
+                            <button id="btn-execute-queue" class="toon-btn bg-logic-green text-white py-2 px-4 w-full md:w-auto md:flex-grow text-base md:text-lg font-bold" disabled>
+                                ▶ EJECUTAR
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ==============================================
+             MODAL DE FEEDBACK (Explicación del Bug)
+             ============================================== -->
+        <div id="feedback-modal" class="hidden absolute inset-0 z-[60] flex-col items-center justify-center bg-black/90 p-4 text-center backdrop-blur-sm">
+            <div id="feedback-card" class="toon-panel p-6 md:p-10 max-w-xl w-full animate__animated text-center border-t-8 border-t-logic-red shadow-[0_0_30px_rgba(239,68,68,0.5)]">
+                <div id="feedback-icon" class="text-[5rem] md:text-[6rem] mb-2 leading-none drop-shadow-md">🐛</div>
+                <h3 id="feedback-title" class="font-toon text-2xl md:text-4xl text-logic-red mb-4 uppercase drop-shadow-sm">¡Bug Detectado!</h3>
+                <div class="bg-gray-100 p-4 rounded-xl border-4 border-dashed border-gray-300 mb-6 text-left">
+                    <p id="feedback-reason" class="text-sm md:text-lg font-bold text-gray-700 leading-relaxed"></p>
+                </div>
+                <button id="btn-next" class="toon-btn bg-logic-yellow text-black text-lg md:text-2xl px-10 py-4 w-full">
+                    Depurar Algoritmo 🛠️
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (Victoria)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex flex-col items-center justify-center p-6 text-center bg-logic-dark bg-[radial-gradient(circle_at_center,rgba(0,0,0,0)_0%,rgba(0,0,0,0.8)_100%)]">
+            <div id="result-card" class="toon-panel p-8 md:p-12 max-w-2xl w-full animate__animated animate__zoomIn text-center z-10 border-t-[10px] border-t-logic-green shadow-[0_0_40px_rgba(16,185,129,0.4)]">
+                <div class="text-[5rem] md:text-[7rem] mb-4 drop-shadow-md">🏆🐶🏠</div>
+                <h2 id="result-title" class="font-toon text-4xl md:text-6xl text-logic-green mb-4 uppercase drop-shadow-sm">¡Código Perfecto!</h2>
+                <p id="result-msg" class="text-base md:text-xl text-gray-800 mb-8 font-bold leading-relaxed">
+                    ¡Excelente trabajo, programador! Creaste secuencias lógicas perfectas usando la cuadrícula espacial. Firulais está a salvo en casa.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button id="btn-restart" class="toon-btn bg-gray-200 text-gray-700 px-8 py-3 text-lg">
+                        APAGAR SISTEMA
+                    </button>
+                    <button id="btn-retry" class="toon-btn bg-logic-yellow text-black text-xl md:text-2xl px-10 py-3">
+                        NUEVO LABERINTO 🔄
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO (ALGORITMO ESTRICTO POR PASO)
+         ============================================== -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- SINTETIZADOR DE AUDIO GLOBAL SEGURO ---
+            let audioCtx = null;
+            function initAudio() {
+                try {
+                    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                } catch (e) {}
+            }
+            document.body.addEventListener('click', initAudio, { once: true });
+
+            function playBeep(freq = 600, duration = 0.1, type = "sine") {
+                try {
+                    if (audioCtx && audioCtx.state !== 'suspended') {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = type;
+                        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + duration);
+                    }
+                } catch (e) {}
+            }
+
+            function playBlip() { playBeep(900, 0.05, "square"); }
+            function playSuccess() { playBeep(523.25, 0.1); setTimeout(() => playBeep(659.25, 0.1), 80); setTimeout(() => playBeep(783.99, 0.25), 160); }
+            function playError() { playBeep(200, 0.3, "sawtooth"); setTimeout(() => playBeep(150, 0.4, "sawtooth"), 200); }
+
+            // --- NIVELES (CONFIGURACIONES DE REJILLA 5x5 EXACTA) ---
+            // Coordenadas: x (0 a 4) => Cols 1-5, y (0 a 4) => Filas A-E
+            const levels = [
+                {
+                    id: 1,
+                    name: "El Sendero Básico",
+                    requiredSteps: 4,
+                    start: { x: 0, y: 0 }, // A1
+                    end: { x: 2, y: 2 },   // C3
+                    obstacles: [
+                        { x: 1, y: 0, type: "tree", emoji: "🌳" } // B1 bloqueado
+                    ]
+                    // Ruta correcta: Abajo, Abajo, Derecha, Derecha
+                },
+                {
+                    id: 2,
+                    name: "Cruzando el Río",
+                    requiredSteps: 6,
+                    start: { x: 0, y: 0 }, // A1
+                    end: { x: 4, y: 2 },   // C5
+                    obstacles: [
+                        { x: 0, y: 1, type: "water", emoji: "🌊" }, // B1
+                        { x: 2, y: 0, type: "tree", emoji: "🌳" },  // A3
+                        { x: 2, y: 1, type: "tree", emoji: "🌳" }   // B3
+                    ]
+                },
+                {
+                    id: 3,
+                    name: "El Gran Laberinto",
+                    requiredSteps: 8,
+                    start: { x: 0, y: 4 }, // E1
+                    end: { x: 4, y: 0 },   // A5
+                    obstacles: [
+                        { x: 1, y: 4, type: "tree", emoji: "🌳" },
+                        { x: 1, y: 3, type: "tree", emoji: "🌳" },
+                        { x: 3, y: 1, type: "water", emoji: "🌊" },
+                        { x: 3, y: 2, type: "water", emoji: "🌊" }
+                    ]
+                }
+            ];
+
+            let currentLevelIndex = 0;
+            let currentLevel = null;
+            let lives = 3;
+            let programQueue = []; 
+            let isExecuting = false;
+
+            // --- MANEJADOR DE PANTALLAS ---
+            function showScreen(screenId) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                const target = document.getElementById(screenId);
+                if (target) target.classList.add('active');
+            }
+
+            // --- INICIAR JUEGO ---
+            function startGame() {
+                currentLevelIndex = 0;
+                lives = 3;
+                programQueue = [];
+                isExecuting = false;
+
+                document.getElementById('screen-result').classList.add('hidden');
+                document.getElementById('screen-result').classList.remove('flex');
+                
+                updateUI();
+                showScreen('screen-game');
+                loadLevel();
+            }
+
+            function updateUI() {
+                document.getElementById('level-indicator').innerText = currentLevelIndex + 1;
+                let battery = "";
+                for(let i=0; i<3; i++) { battery += i < lives ? "🔋" : "🪫"; }
+                document.getElementById('lives-display').innerText = battery;
+            }
+
+            // --- CARGAR NIVEL ---
+            function loadLevel() {
+                if (currentLevelIndex >= levels.length) {
+                    endGame(true);
+                    return;
+                }
+
+                currentLevel = levels[currentLevelIndex];
+                programQueue = [];
+                isExecuting = false;
+
+                document.getElementById('level-title').innerText = currentLevel.name;
+                
+                toggleControls(false);
+                buildMap();
+                buildQueueSlots();
+            }
+
+            // --- CONSTRUIR MAPA 5x5 CON DISEÑO CHECKERBOARD ---
+            function buildMap() {
+                const container = document.getElementById('map-container');
+                container.innerHTML = '';
+
+                for (let y = 0; y < 5; y++) {
+                    for (let x = 0; x < 5; x++) {
+                        const cell = document.createElement('div');
+                        
+                        // Tablero de ajedrez para el pasto
+                        const isLight = (x + y) % 2 === 0;
+                        cell.className = `map-grid-cell ${isLight ? 'cell-light' : 'cell-dark'}`;
+                        cell.id = `cell-${x}-${y}`;
+
+                        // Verificar obstáculos
+                        const obs = currentLevel.obstacles.find(o => o.x === x && o.y === y);
+                        if (obs) {
+                            cell.innerHTML = `<span class="drop-shadow-md text-3xl">${obs.emoji}</span>`;
+                            if (obs.type === 'tree') cell.classList.add('obstacle-tree');
+                            if (obs.type === 'water') cell.classList.add('obstacle-water');
+                        }
+
+                        // Meta (casa)
+                        if (currentLevel.end.x === x && currentLevel.end.y === y) {
+                            // Si Firulais NO está aquí, dibujar la casa
+                            // Si Firulais ESTÁ aquí (en modo victoria), se dibujan ambos luego
+                            cell.innerHTML = '<span class="drop-shadow-md text-3xl">🏠</span>';
+                        }
+
+                        // Inicio (Firulais)
+                        if (currentLevel.start.x === x && currentLevel.start.y === y) {
+                            cell.innerHTML = '<span class="player-blip text-3xl animate__animated animate__bounceIn" id="firulais">🐶</span>';
+                        }
+
+                        container.appendChild(cell);
+                    }
+                }
+            }
+
+            // --- CONSTRUIR SLOTS DE ALGORITMO (Envolventes) ---
+            function buildQueueSlots() {
+                const queueContainer = document.getElementById('program-queue');
+                queueContainer.innerHTML = '';
+
+                for (let i = 0; i < currentLevel.requiredSteps; i++) {
+                    const slot = document.createElement('div');
+                    slot.className = "algo-slot w-[40px] md:w-[50px] shrink-0 font-pixel text-[10px]";
+                    slot.id = `slot-${i}`;
+                    slot.innerText = `${i + 1}`;
+                    queueContainer.appendChild(slot);
+                }
+
+                updateQueueVisuals();
+            }
+
+            // --- GESTIÓN DE LA COLA ---
+            function handleDirectionInput(dir) {
+                if (isExecuting) return;
+
+                if (programQueue.length < currentLevel.requiredSteps) {
+                    playBlip();
+                    programQueue.push(dir);
+                    updateQueueVisuals();
+                }
+            }
+
+            function undoLastStep() {
+                if (isExecuting) return;
+                if (programQueue.length > 0) {
+                    playBlip();
+                    programQueue.pop(); // Saca el último
+                    updateQueueVisuals();
+                }
+            }
+
+            function clearQueue() {
+                if (isExecuting) return;
+                if (programQueue.length > 0) {
+                    playBlip();
+                    programQueue = [];
+                    updateQueueVisuals();
+                    buildMap(); // Resetear huellas visuales
+                }
+            }
+
+            function updateQueueVisuals() {
+                const btnExecute = document.getElementById('btn-execute-queue');
+
+                for (let i = 0; i < currentLevel.requiredSteps; i++) {
+                    const slot = document.getElementById(`slot-${i}`);
+                    if (i < programQueue.length) {
+                        slot.className = "algo-slot filled font-toon text-xl md:text-2xl w-[40px] md:w-[50px] shrink-0 shadow-sm";
+                        slot.innerText = getArrowEmoji(programQueue[i]);
+                    } else {
+                        slot.className = "algo-slot w-[40px] md:w-[50px] shrink-0 font-pixel text-[10px]";
+                        slot.innerText = `${i + 1}`;
+                    }
+                }
+
+                if (programQueue.length === currentLevel.requiredSteps) {
+                    btnExecute.disabled = false;
+                    btnExecute.classList.remove('bg-gray-400');
+                    btnExecute.classList.add('bg-logic-green', 'shadow-[4px_4px_0_#000]');
+                } else {
+                    btnExecute.disabled = true;
+                    btnExecute.classList.remove('bg-logic-green', 'shadow-[4px_4px_0_#000]');
+                    btnExecute.classList.add('bg-gray-400');
+                }
+            }
+
+            function getArrowEmoji(dir) {
+                if (dir === 'up') return '⬆️';
+                if (dir === 'down') return '⬇️';
+                if (dir === 'left') return '⬅️';
+                if (dir === 'right') return '➡️';
+                return '';
+            }
+
+            function toggleControls(disabled) {
+                document.getElementById('btn-dir-up').disabled = disabled;
+                document.getElementById('btn-dir-down').disabled = disabled;
+                document.getElementById('btn-dir-left').disabled = disabled;
+                document.getElementById('btn-dir-right').disabled = disabled;
+                document.getElementById('btn-clear-queue').disabled = disabled;
+                document.getElementById('btn-undo-queue').disabled = disabled;
+                document.getElementById('btn-execute-queue').disabled = disabled;
+            }
+
+            // Utilidad para traducir coordenada a formato "Letra+Número" (Ej: 0,0 -> A1)
+            function getCoordName(x, y) {
+                const rows = ['A', 'B', 'C', 'D', 'E'];
+                return `${rows[y]}${x + 1}`;
+            }
+
+            // --- EJECUCIÓN PASO A PASO EXACTA ---
+            async function executeAlgorithm() {
+                if (isExecuting) return;
+                isExecuting = true;
+
+                toggleControls(true);
+
+                // Coordenadas actuales lógicas
+                let posX = currentLevel.start.x;
+                let posY = currentLevel.start.y;
+
+                for (let i = 0; i < programQueue.length; i++) {
+                    const dir = programQueue[i];
+                    
+                    // Dejar huella en la celda vieja
+                    const oldCell = document.getElementById(`cell-${posX}-${posY}`);
+                    if (oldCell) {
+                        // Si era la meta, mantener la casa. Si no, poner huella.
+                        if (posX === currentLevel.end.x && posY === currentLevel.end.y) {
+                            oldCell.innerHTML = '<span class="text-3xl opacity-50">🏠</span>';
+                        } else {
+                            oldCell.innerHTML = '<span class="text-xl md:text-2xl opacity-40">🐾</span>';
+                        }
+                    }
+
+                    // Calcular nuevo movimiento
+                    if (dir === 'up') posY--;
+                    if (dir === 'down') posY++;
+                    if (dir === 'left') posX--;
+                    if (dir === 'right') posX++;
+
+                    playBlip();
+
+                    // REGLA 1: LIMITE DEL MAPA
+                    if (posX < 0 || posX > 4 || posY < 0 || posY > 4) {
+                        triggerBug(`¡Oh no! Firulais se salió de los límites de la cuadrícula en el <strong>Paso ${i+1}</strong>. ¡Revisa tu ruta!`);
+                        return; // Se aborta la ejecución
+                    }
+
+                    // REGLA 2: OBSTÁCULOS
+                    const targetCell = document.getElementById(`cell-${posX}-${posY}`);
+                    const obstacle = currentLevel.obstacles.find(o => o.x === posX && o.y === posY);
+                    
+                    if (obstacle) {
+                        targetCell.innerHTML = `<span class="player-blip animate__animated animate__shakeX text-4xl" id="firulais">💥🐶</span>`;
+                        
+                        if (obstacle.type === 'tree') {
+                            triggerBug(`¡Auch! En el <strong>Paso ${i+1}</strong>, Firulais chocó contra un árbol en la coordenada <strong>${getCoordName(posX, posY)}</strong>.`);
+                        } else {
+                            triggerBug(`¡Plop! En el <strong>Paso ${i+1}</strong>, Firulais cayó al agua en la coordenada <strong>${getCoordName(posX, posY)}</strong>.`);
+                        }
+                        return; // Aborta
+                    }
+
+                    // MOVIMIENTO NORMAL
+                    // Si llegamos a la meta y no es el último paso, mostramos a Firulais en la casa.
+                    if (posX === currentLevel.end.x && posY === currentLevel.end.y) {
+                        targetCell.innerHTML = '<span class="player-blip text-3xl animate__animated animate__bounceIn" id="firulais">🐶🏠</span>';
+                    } else {
+                        targetCell.innerHTML = '<span class="player-blip text-3xl animate__animated animate__bounceIn" id="firulais">🐶</span>';
+                    }
+
+                    // Esperamos que termine de animarse
+                    await new Promise(r => setTimeout(r, 600));
+                }
+
+                // EVALUACIÓN FINAL: ¿Llegó a la casa?
+                if (posX === currentLevel.end.x && posY === currentLevel.end.y) {
+                    // ¡ÉXITO!
+                    playSuccess();
+                    const finalCell = document.getElementById(`cell-${posX}-${posY}`);
+                    finalCell.innerHTML = '<span class="player-blip text-4xl animate__animated animate__heartBeat">🐶❤️🏠</span>';
+
+                    setTimeout(() => {
+                        currentLevelIndex++;
+                        updateUI();
+                        if (currentLevelIndex >= levels.length) {
+                            endGame(true);
+                        } else {
+                            loadLevel();
+                        }
+                    }, 1500);
+
+                } else {
+                    // Error de cálculo: el algoritmo terminó pero no está en la meta
+                    triggerBug(`¡Te faltó calcular! El algoritmo terminó pero Firulais se quedó en la coordenada <strong>${getCoordName(posX, posY)}</strong>, lejos de su casa en <strong>${getCoordName(currentLevel.end.x, currentLevel.end.y)}</strong>.`);
+                }
+            }
+
+            function triggerBug(reasonText) {
+                playError();
+                
+                lives--;
+                updateUI();
+
+                const container = document.getElementById('map-container');
+                container.classList.add('shake', 'border-red-500');
+
+                setTimeout(() => {
+                    container.classList.remove('shake', 'border-red-500');
+                    
+                    const modal = document.getElementById('feedback-modal');
+                    document.getElementById('feedback-reason').innerHTML = reasonText;
+                    
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    card = document.getElementById('feedback-card');
+                    card.classList.add('animate__bounceIn');
+                }, 500);
+            }
+
+            function closeFeedback() {
+                const modal = document.getElementById('feedback-modal');
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                
+                if (lives <= 0) {
+                    endGame(false);
+                } else {
+                    // Clave: No borramos el programa de la cola, solo reseteamos el mapa visual
+                    isExecuting = false;
+                    buildMap(); 
+                    toggleControls(false); // Reactivamos botones para que pueda modificar su código
+                }
+            }
+
+            function endGame(victory) {
+                const res = document.getElementById('screen-result');
+                const title = document.getElementById('result-title');
+                const msg = document.getElementById('result-msg');
+                const card = document.getElementById('result-card');
+                
+                card.classList.remove('border-t-logic-green', 'border-t-logic-red');
+
+                if (victory) {
+                    title.innerText = "¡Algoritmo Perfecto!";
+                    title.className = "font-toon text-3xl md:text-5xl lg:text-6xl text-logic-green mb-4 uppercase drop-shadow-sm";
+                    msg.innerHTML = "¡Excelente, programador! Dominaste el plano cartesiano y las secuencias lógicas. Lograste guiar a Firulais a casa sin chocar. ¡Eres un maestro!";
+                    card.classList.add('border-t-logic-green');
+                } else {
+                    title.innerText = "¡Batería Agotada!";
+                    title.className = "font-toon text-3xl md:text-5xl lg:text-6xl text-logic-red mb-4 uppercase drop-shadow-sm";
+                    msg.innerHTML = "Tuviste demasiados bugs y Firulais está cansado de dar vueltas. ¡No te rindas! Depurar el código es parte de ser un gran programador.";
+                    card.classList.add('border-t-logic-red');
+                }
+
+                res.classList.remove('hidden');
+                res.classList.add('flex');
+            }
+
+            function exitGame() {
+                currentLevelIndex = 0;
+                programQueue = [];
+                showScreen('screen-start');
+            }
+
+            function playBlip() { playBeep(800, 0.05, "square"); }
+
+            // --- ASIGNACIÓN DE EVENTOS SEGUROS PARA WP ---
+            document.getElementById('btn-to-theory').addEventListener('click', () => { playBlip(); showScreen('screen-theory'); });
+            document.getElementById('btn-back-lobby').addEventListener('click', () => { playBlip(); showScreen('screen-start'); });
+            document.getElementById('btn-to-game').addEventListener('click', () => { playBlip(); startGame(); });
+            document.getElementById('btn-exit-game').addEventListener('click', () => { playBlip(); exitGame(); });
+            
+            document.getElementById('btn-clear-queue').addEventListener('click', clearQueue);
+            document.getElementById('btn-undo-queue').addEventListener('click', undoLastStep);
+            document.getElementById('btn-execute-queue').addEventListener('click', executeAlgorithm);
+            
+            document.getElementById('btn-next').addEventListener('click', () => { playBlip(); closeFeedback(); });
+            document.getElementById('btn-restart').addEventListener('click', () => { playBlip(); exitGame(); });
+            document.getElementById('btn-retry').addEventListener('click', () => { playBlip(); startGame(); });
+
+            // Botonera de Direcciones
+            document.getElementById('btn-dir-up').addEventListener('click', () => handleDirectionInput('up'));
+            document.getElementById('btn-dir-down').addEventListener('click', () => handleDirectionInput('down'));
+            document.getElementById('btn-dir-left').addEventListener('click', () => handleDirectionInput('left'));
+            document.getElementById('btn-dir-right').addEventListener('click', () => handleDirectionInput('right'));
+
+        });
+    </script>
+</body>
+</html>

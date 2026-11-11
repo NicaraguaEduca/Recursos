@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentación Interactiva | Dentro y Fuera</title>
+    <!-- Tipografía infantil Fredoka -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS para maquetación limpia -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --primary: #4D96FF;
+            --success: #6BCB77;
+            --warning: #FFD93D;
+            --purple: #9B72CF;
+            --wooden-brown: #854D0E;
+        }
+
+        * {
+            font-family: 'Fredoka', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: #F8FAFC;
+            background-image: 
+                radial-gradient(#E2E8F0 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+        }
+
+        /* Efectos de transición de diapositivas */
+        .slide-content {
+            animation: slideFadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes slideFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Estilo del Corral Fijo */
+        .fence-boundary {
+            border: 8px solid var(--wooden-brown);
+            background: #FEF08A; /* Color paja */
+            box-shadow: inset 0 8px 16px rgba(0,0,0,0.06);
+            position: relative;
+        }
+
+        /* Estilo del Estanque */
+        .pond-boundary {
+            background: #60A5FA;
+            border: 6px solid #2563EB;
+            box-shadow: inset 0 8px 12px rgba(0,0,0,0.1);
+            border-radius: 50%;
+        }
+
+        /* Animaciones sencillas para elementos */
+        .hop-animation {
+            animation: softHop 0.6s ease infinite alternate;
+        }
+
+        @keyframes softHop {
+            from { transform: translateY(0); }
+            to { transform: translateY(-6px); }
+        }
+
+        .swim-animation {
+            animation: softSwim 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes softSwim {
+            from { transform: translateX(-4px) rotate(-2deg); }
+            to { transform: translateX(4px) rotate(2deg); }
+        }
+
+        .draggable-animal {
+            cursor: grab;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            touch-action: none;
+        }
+
+        .draggable-animal:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
+
+    <!-- Cabecera Pedagógica -->
+    <header class="w-full max-w-5xl mx-auto bg-white border-2 border-slate-200 rounded-2xl px-6 py-3 flex flex-col sm:flex-row justify-between items-center gap-3 shadow-sm">
+        <div class="flex items-center gap-3">
+            <span class="bg-purple-600 text-white px-4 py-1 rounded-full font-bold text-xs uppercase tracking-wider">
+                1º de Primaria
+            </span>
+            <div class="text-slate-700 font-semibold text-sm sm:text-base">
+                Contenido: <span class="text-purple-600">Orientación Espacial - Dentro y Fuera</span>
+            </div>
+        </div>
+        <div class="text-slate-500 text-xs sm:text-sm font-medium">
+            Presentación Interactiva y Explicativa
+        </div>
+    </header>
+
+    <!-- Contenedor Maestro de la Presentación -->
+    <main class="w-full max-w-5xl mx-auto flex-1 flex flex-col justify-center my-6">
+        <div class="bg-white border-2 border-slate-200 rounded-3xl p-6 md:p-8 shadow-md flex-1 flex flex-col justify-between min-h-[500px]">
+            
+            <!-- Diapositiva 1: Portada e Introducción -->
+            <div id="slide-1" class="slide-content flex flex-col md:flex-row items-center gap-8 h-full flex-1">
+                <div class="flex-1 space-y-6">
+                    <span class="text-emerald-600 text-sm font-bold uppercase tracking-widest block">¡Comenzamos la Lección! 🌾</span>
+                    <h2 class="text-4xl md:text-5xl font-bold text-slate-800 leading-tight">
+                        El Corral de Mascotas: <br>
+                        <span class="text-amber-600">Dentro y Fuera</span>
+                    </h2>
+                    <p class="text-slate-600 text-lg leading-relaxed">
+                        En esta presentación interactiva vamos a descubrir cómo los objetos y los seres vivos se ubican en el espacio. Aprenderemos a reconocer cuándo algo está <strong>dentro</strong> de un lugar seguro y cuándo está en el espacio exterior, es decir, <strong>fuera</strong>.
+                    </p>
+                    <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl">
+                        <p class="text-amber-800 text-sm font-medium">
+                            🎯 <strong>Objetivo de aprendizaje:</strong> Comprender y describir de forma práctica las nociones espaciales básicas "dentro" y "fuera" utilizando un entorno rural como ejemplo.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex-1 flex justify-center items-center bg-slate-50 rounded-2xl p-6 border border-slate-100 w-full">
+                    <div class="text-center space-y-4">
+                        <div class="relative w-48 h-48 mx-auto flex items-center justify-center">
+                            <!-- Cesta decorativa -->
+                            <span class="text-9xl">🧺</span>
+                            <span class="absolute top-1/4 text-5xl hop-animation">🐥</span>
+                        </div>
+                        <p class="text-sm text-slate-500 font-semibold uppercase tracking-wider">¡Acompáñanos a la granja!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diapositiva 2: Qué significa DENTRO -->
+            <div id="slide-2" class="slide-content hidden flex flex-col md:flex-row items-center gap-8 h-full flex-1">
+                <div class="flex-1 space-y-5">
+                    <span class="text-amber-600 text-sm font-bold uppercase tracking-widest block">Concepto 1 🚪</span>
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-800">
+                        ¿Qué significa estar <span class="text-amber-600">DENTRO</span>?
+                    </h2>
+                    <p class="text-slate-600 text-lg leading-relaxed">
+                        Decimos que algo o alguien está <strong>DENTRO</strong> cuando está rodeado por límites o barreras que lo protegen. 
+                    </p>
+                    <p class="text-slate-600 text-lg leading-relaxed">
+                        En la granja, los pollitos prefieren estar <strong>dentro de su corral de madera</strong> para comer su maíz tranquilos y estar protegidos del viento.
+                    </p>
+                    <div class="pt-2">
+                        <button onclick="toggleInsideExample()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-full shadow transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2">
+                            <span>💡 Interactuar: Meter pollitos al corral</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex-1 w-full bg-emerald-50/50 rounded-2xl p-6 border border-emerald-100 flex flex-col justify-between min-h-[300px]">
+                    <div class="text-center">
+                        <span class="bg-amber-800 text-white font-bold text-xs px-3 py-1 rounded-full uppercase">Corral de madera</span>
+                    </div>
+                    
+                    <!-- Corral de ejemplo -->
+                    <div id="slide2-corral" class="fence-boundary w-full h-48 rounded-2xl mt-4 flex items-center justify-center gap-4 p-4 transition-all duration-500">
+                        <!-- Pollitos iniciales afuera -->
+                        <div class="absolute -top-12 left-1/4 text-4xl opacity-40 transition-all duration-500" id="s2-p1">🐥</div>
+                        <div class="absolute -top-8 right-1/4 text-4xl opacity-40 transition-all duration-500" id="s2-p2">🐥</div>
+                        <p id="s2-status" class="text-amber-800/80 font-bold text-sm text-center">¡El corral está vacío! Los pollitos están afuera.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diapositiva 3: Qué significa FUERA -->
+            <div id="slide-3" class="slide-content hidden flex flex-col md:flex-row items-center gap-8 h-full flex-1">
+                <div class="flex-1 space-y-5">
+                    <span class="text-blue-600 text-sm font-bold uppercase tracking-widest block">Concepto 2 🌊</span>
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-800">
+                        ¿Qué significa estar <span class="text-blue-600">FUERA</span>?
+                    </h2>
+                    <p class="text-slate-600 text-lg leading-relaxed">
+                        Decimos que algo o alguien está <strong>FUERA</strong> cuando se encuentra en el espacio exterior, libre de vallas o límites cerrados.
+                    </p>
+                    <p class="text-slate-600 text-lg leading-relaxed">
+                        A los patitos les encanta estar <strong>fuera del corral</strong>, nadando libres en el agua fresca del estanque donde el espacio es abierto.
+                    </p>
+                    <div class="pt-2">
+                        <button onclick="toggleOutsideExample()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-full shadow transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2">
+                            <span>💡 Interactuar: Sacar patitos al estanque</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex-1 w-full bg-blue-50/30 rounded-2xl p-6 border border-blue-100 flex flex-col justify-between min-h-[300px]">
+                    <div class="text-center">
+                        <span class="bg-blue-600 text-white font-bold text-xs px-3 py-1 rounded-full uppercase">El Prado y el Estanque</span>
+                    </div>
+
+                    <!-- Estanque de ejemplo -->
+                    <div class="relative w-full h-48 flex items-center justify-center mt-4 bg-green-100 border border-green-200 rounded-2xl overflow-hidden">
+                        <div id="slide3-pond" class="pond-boundary w-44 h-32 flex items-center justify-center p-4 transition-all duration-500">
+                            <span id="s3-duck1" class="text-4xl transition-all duration-500 opacity-0 transform translate-y-8">🦆</span>
+                            <span id="s3-duck2" class="text-4xl transition-all duration-500 opacity-0 transform translate-y-8">🦆</span>
+                        </div>
+                        <div id="s3-closed-box" class="absolute bottom-2 right-4 bg-amber-800 text-white px-2 py-1 rounded text-xs font-bold transition-all duration-500">
+                            Patitos encerrados 📦
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diapositiva 4: Taller y Observación Descriptiva -->
+            <div id="slide-4" class="slide-content hidden flex flex-col h-full flex-1 justify-between">
+                <div class="space-y-2 mb-4">
+                    <span class="text-purple-600 text-sm font-bold uppercase tracking-widest block">Taller de Observación Activa 🔬</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-800">Ubicamos y Explicamos el Entorno</h2>
+                    <p class="text-slate-600 text-sm">
+                        Arrastra a los animales libremente. Observa cómo cambia la descripción educativa en la caja de abajo.
+                    </p>
+                </div>
+
+                <!-- Escenario interactivo reducido de la granja -->
+                <div class="relative w-full flex flex-col md:flex-row gap-4 items-stretch flex-1 min-h-[260px] mb-4">
+                    
+                    <!-- Área Izquierda: El Prado Exterior y Estanque -->
+                    <div class="flex-1 bg-green-100 rounded-2xl p-4 border border-green-300 relative flex flex-col justify-between">
+                        <div class="text-center z-10">
+                            <span class="bg-green-600 text-white font-bold text-[10px] px-3 py-1 rounded-full uppercase">
+                                Prado (FUERA) 🌿
+                            </span>
+                        </div>
+
+                        <!-- Estanque -->
+                        <div id="pond-zone" class="pond-boundary w-32 h-24 mx-auto my-auto flex items-center justify-center">
+                            <span class="text-white/80 text-xs font-bold uppercase tracking-wider block">Estanque</span>
+                        </div>
+
+                        <!-- Área donde los animales se depositan en el prado -->
+                        <div id="meadow-zone" class="w-full min-h-[60px] bg-green-200/50 rounded-xl border border-dashed border-green-300 p-2 flex flex-wrap gap-2 justify-center items-center z-10">
+                            <!-- Los animales se moverán aquí -->
+                        </div>
+                    </div>
+
+                    <!-- Área Derecha: El Corral de Madera -->
+                    <div class="flex-1 bg-amber-50 rounded-2xl p-4 border border-amber-200 relative flex flex-col justify-between">
+                        <div class="text-center z-10 mb-2">
+                            <span class="bg-amber-700 text-white font-bold text-[10px] px-3 py-1 rounded-full uppercase">
+                                Corral (DENTRO) 🚜
+                            </span>
+                        </div>
+
+                        <!-- Valla del Corral -->
+                        <div id="corral-zone" class="fence-boundary w-full h-[140px] rounded-2xl mx-auto flex flex-wrap justify-center items-center p-2 content-center gap-2">
+                            <!-- Los animales se colocarán aquí -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Caja de Explicación en Tiempo Real (No es un juego, es descriptivo) -->
+                <div class="bg-purple-50 border-2 border-purple-200 rounded-2xl p-4 flex items-start gap-3">
+                    <span class="text-2xl">🦉</span>
+                    <div>
+                        <h4 class="text-purple-800 font-bold text-sm">Descripción del Búho Explicador:</h4>
+                        <p id="analysis-text" class="text-slate-700 text-sm mt-1">
+                            Calculando el estado de la granja...
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diapositiva 5: Conclusión y Cierre -->
+            <div id="slide-5" class="slide-content hidden flex flex-col md:flex-row items-center gap-8 h-full flex-1">
+                <div class="flex-1 space-y-5">
+                    <span class="text-emerald-600 text-sm font-bold uppercase tracking-widest block">¡Gran Trabajo! 🏆</span>
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-800">
+                        ¿Qué hemos aprendido hoy?
+                    </h2>
+                    <p class="text-slate-600 text-lg leading-relaxed">
+                        ¡Ahora eres un experto en orientación espacial! Recuerda siempre estos dos conceptos:
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center gap-3 text-slate-700 text-base">
+                            <span class="bg-amber-100 text-amber-700 p-1.5 rounded-full text-xs">🚧</span>
+                            <span><strong>DENTRO:</strong> Significa estar delimitado o resguardado por fronteras (como los pollitos en su corral).</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-slate-700 text-base">
+                            <span class="bg-blue-100 text-blue-700 p-1.5 rounded-full text-xs">🌍</span>
+                            <span><strong>FUERA:</strong> Significa estar al aire libre, sin vallas o barreras que nos rodeen (como los patos en el prado).</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="flex-1 w-full bg-slate-50 rounded-2xl p-6 border border-slate-100 flex flex-col justify-center items-center text-center space-y-4">
+                    <span class="text-7xl">🚜🌾</span>
+                    <p class="text-slate-700 font-bold text-lg">¡La lección espacial ha terminado con éxito!</p>
+                    <p class="text-slate-500 text-sm max-w-xs">Puedes regresar a las diapositivas anteriores utilizando los botones de abajo para repasar los conceptos.</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Controles de Navegación de la Presentación -->
+    <footer class="w-full max-w-5xl mx-auto bg-white border-2 border-slate-200 rounded-2xl p-4 flex justify-between items-center shadow-sm">
+        <button id="btn-prev" onclick="changeSlide(-1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-6 rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+            Anterior
+        </button>
+
+        <div class="text-slate-500 font-semibold text-sm">
+            Diapositiva <span id="current-slide-num" class="text-purple-600">1</span> de 5
+        </div>
+
+        <button id="btn-next" onclick="changeSlide(1)" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-xl transition-all">
+            Siguiente
+        </button>
+    </footer>
+
+    <script>
+        // --- STREAMING_CHUNK: Managing slide state and transitions... ---
+        let currentSlide = 1;
+        const totalSlides = 5;
+
+        // Cambiar de Diapositiva
+        function changeSlide(direction) {
+            // Si estamos en la última diapositiva y presionamos "Volver a comenzar"
+            if (currentSlide === totalSlides && direction === 1) {
+                document.getElementById(`slide-${currentSlide}`).classList.add('hidden');
+                currentSlide = 1;
+                document.getElementById(`slide-${currentSlide}`).classList.remove('hidden');
+                
+                document.getElementById('current-slide-num').textContent = currentSlide;
+                document.getElementById('btn-prev').disabled = true;
+                
+                const btnNext = document.getElementById('btn-next');
+                btnNext.textContent = 'Siguiente';
+                btnNext.className = "bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-xl transition-all";
+                return;
+            }
+
+            // Ocultar la diapositiva actual
+            document.getElementById(`slide-${currentSlide}`).classList.add('hidden');
+
+            // Calcular nuevo índice
+            currentSlide += direction;
+
+            // Mostrar la nueva diapositiva
+            document.getElementById(`slide-${currentSlide}`).classList.remove('hidden');
+
+            // Actualizar botones y contador
+            document.getElementById('current-slide-num').textContent = currentSlide;
+            document.getElementById('btn-prev').disabled = (currentSlide === 1);
+            
+            const btnNext = document.getElementById('btn-next');
+            if (currentSlide === totalSlides) {
+                btnNext.textContent = 'Volver a comenzar';
+                btnNext.className = "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-xl transition-all";
+            } else {
+                btnNext.textContent = 'Siguiente';
+                btnNext.className = "bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-xl transition-all";
+            }
+
+            // Acciones especiales al entrar a diapositivas específicas
+            if (currentSlide === 2) {
+                resetSlide2();
+            } else if (currentSlide === 3) {
+                resetSlide3();
+            } else if (currentSlide === 4) {
+                initSandbox();
+            }
+        }
+
+        // --- STREAMING_CHUNK: Implementing interactive Slide 2 logic... ---
+        // Lógica Interactiva Diapositiva 2 (Dentro)
+        let slide2State = false;
+        function resetSlide2() {
+            slide2State = false;
+            const p1 = document.getElementById('s2-p1');
+            const p2 = document.getElementById('s2-p2');
+            const status = document.getElementById('s2-status');
+            const corral = document.getElementById('slide2-corral');
+
+            p1.style.transform = 'translate(0, 0)';
+            p1.style.opacity = '0.4';
+            p2.style.transform = 'translate(0, 0)';
+            p2.style.opacity = '0.4';
+            status.innerHTML = '¡El corral está vacío! Los pollitos están afuera.';
+            corral.classList.remove('border-amber-600', 'bg-amber-100');
+        }
+
+        function toggleInsideExample() {
+            slide2State = !slide2State;
+            const p1 = document.getElementById('s2-p1');
+            const p2 = document.getElementById('s2-p2');
+            const status = document.getElementById('s2-status');
+            const corral = document.getElementById('slide2-corral');
+
+            if (slide2State) {
+                // Mover pollitos hacia adentro del corral
+                p1.style.transform = 'translate(40px, 120px)';
+                p1.style.opacity = '1';
+                p2.style.transform = 'translate(-40px, 120px)';
+                p2.style.opacity = '1';
+                status.innerHTML = '<strong>¡Excelente!</strong> Ahora los pollitos están protegidos <strong>DENTRO</strong> del corral.';
+                corral.classList.add('border-amber-600', 'bg-amber-100/40');
+            } else {
+                resetSlide2();
+            }
+        }
+
+        // --- STREAMING_CHUNK: Implementing interactive Slide 3 logic... ---
+        // Lógica Interactiva Diapositiva 3 (Fuera)
+        let slide3State = false;
+        function resetSlide3() {
+            slide3State = false;
+            document.getElementById('s3-duck1').className = 'text-4xl transition-all duration-500 opacity-0 transform translate-y-8';
+            document.getElementById('s3-duck2').className = 'text-4xl transition-all duration-500 opacity-0 transform translate-y-8';
+            document.getElementById('s3-closed-box').style.opacity = '1';
+            document.getElementById('s3-closed-box').textContent = 'Patitos encerrados 📦';
+        }
+
+        function toggleOutsideExample() {
+            slide3State = !slide3State;
+            const d1 = document.getElementById('s3-duck1');
+            const d2 = document.getElementById('s3-duck2');
+            const box = document.getElementById('s3-closed-box');
+
+            if (slide3State) {
+                // Liberar patos al prado y estanque (FUERA)
+                d1.className = 'text-4xl transition-all duration-500 opacity-1 transform translate-y-0 swim-animation';
+                d2.className = 'text-4xl transition-all duration-500 opacity-1 transform translate-y-0 swim-animation delay-100';
+                box.style.opacity = '0.4';
+                box.textContent = '¡Caja vacía! 💨';
+            } else {
+                resetSlide3();
+            }
+        }
+
+        // --- STREAMING_CHUNK: Setting up sandbox data and Drag Engine... ---
+        // Lógica Sandbox Descriptivo (Diapositiva 4)
+        const sandboxAnimals = [
+            { id: 'sb-p1', type: 'pollito', emoji: '🐥', initialZone: 'corral' },
+            { id: 'sb-p2', type: 'pollito', emoji: '🐥', initialZone: 'corral' },
+            { id: 'sb-d1', type: 'patito', emoji: '🦆', initialZone: 'meadow' },
+            { id: 'sb-d2', type: 'patito', emoji: '🦆', initialZone: 'meadow' },
+            { id: 'sb-d3', type: 'patito', emoji: '🦆', initialZone: 'meadow' }
+        ];
+
+        let activeDragElement = null;
+        let dragOffset = { x: 0, y: 0 };
+        let dragStartPos = { x: 0, y: 0 };
+
+        function initSandbox() {
+            const meadow = document.getElementById('meadow-zone');
+            const corral = document.getElementById('corral-zone');
+
+            meadow.innerHTML = '';
+            
+            // Vaciar corral preservando el texto de fondo si lo hubiera
+            const currentDraggables = corral.querySelectorAll('.draggable-animal');
+            currentDraggables.forEach(el => el.remove());
+
+            // Crear y acomodar animales de forma estructurada según su zona inicial didáctica
+            sandboxAnimals.forEach(animal => {
+                const el = document.createElement('div');
+                el.id = animal.id;
+                el.className = 'draggable-animal w-12 h-12 bg-white rounded-xl shadow-sm border border-slate-200 flex items-center justify-center text-2xl';
+                el.setAttribute('data-type', animal.type);
+                el.textContent = animal.emoji;
+
+                el.addEventListener('pointerdown', handlePointerDown);
+
+                if (animal.initialZone === 'corral') {
+                    corral.appendChild(el);
+                } else {
+                    meadow.appendChild(el);
+                }
+            });
+
+            explainSandboxLayout();
+        }
+
+        // Motor de Arrastre Adaptativo para Presentación
+        function handlePointerDown(e) {
+            e.preventDefault();
+            activeDragElement = e.currentTarget;
+
+            const rect = activeDragElement.getBoundingClientRect();
+            dragStartPos = {
+                parent: activeDragElement.parentElement,
+                position: activeDragElement.style.position || 'static',
+                left: activeDragElement.style.left || 'auto',
+                top: activeDragElement.style.top || 'auto'
+            };
+
+            activeDragElement.style.width = `${rect.width}px`;
+            activeDragElement.style.height = `${rect.height}px`;
+            activeDragElement.style.position = 'fixed';
+            activeDragElement.style.left = `${rect.left}px`;
+            activeDragElement.style.top = `${rect.top}px`;
+            activeDragElement.style.zIndex = '100';
+
+            dragOffset = {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+
+            document.addEventListener('pointermove', handlePointerMove);
+            document.addEventListener('pointerup', handlePointerUp);
+        }
+
+        function handlePointerMove(e) {
+            if (!activeDragElement) return;
+            activeDragElement.style.left = `${e.clientX - dragOffset.x}px`;
+            activeDragElement.style.top = `${e.clientY - dragOffset.y}px`;
+        }
+
+        function handlePointerUp(e) {
+            if (!activeDragElement) return;
+
+            document.removeEventListener('pointermove', handlePointerMove);
+            document.removeEventListener('pointerup', handlePointerUp);
+
+            const elem = activeDragElement;
+            activeDragElement = null;
+
+            const corralZone = document.getElementById('corral-zone');
+            const meadowZone = document.getElementById('meadow-zone');
+
+            const corralRect = corralZone.getBoundingClientRect();
+            const elemRect = elem.getBoundingClientRect();
+            
+            const elemCenterX = elemRect.left + elemRect.width / 2;
+            const elemCenterY = elemRect.top + elemRect.height / 2;
+
+            const isInsideCorral = (
+                elemCenterX >= corralRect.left &&
+                elemCenterX <= corralRect.right &&
+                elemCenterY >= corralRect.top &&
+                elemCenterY <= corralRect.bottom
+            );
+
+            // Reestablecer estilos CSS
+            elem.style.position = 'static';
+            elem.style.width = '';
+            elem.style.height = '';
+            elem.style.left = '';
+            elem.style.top = '';
+            elem.style.zIndex = '40';
+
+            if (isInsideCorral) {
+                corralZone.appendChild(elem);
+            } else {
+                meadowZone.appendChild(elem);
+            }
+
+            explainSandboxLayout();
+        }
+
+        // --- STREAMING_CHUNK: Explaining dynamic sandbox layout in real-time... ---
+        // Generar explicación en tiempo real según la ubicación espacial de los elementos
+        function explainSandboxLayout() {
+            const corralZone = document.getElementById('corral-zone');
+            const meadowZone = document.getElementById('meadow-zone');
+
+            const insideAnimals = corralZone.querySelectorAll('.draggable-animal');
+            const outsideAnimals = meadowZone.querySelectorAll('.draggable-animal');
+
+            let insidePollitos = 0;
+            let insidePatitos = 0;
+            let outsidePollitos = 0;
+            let outsidePatitos = 0;
+
+            insideAnimals.forEach(el => {
+                if (el.getAttribute('data-type') === 'pollito') insidePollitos++;
+                else insidePatitos++;
+            });
+
+            outsideAnimals.forEach(el => {
+                if (el.getAttribute('data-type') === 'pollito') outsidePollitos++;
+                else outsidePatitos++;
+            });
+
+            // Redacción puramente pedagógica y descriptiva
+            let text = `Actualmente en el escenario tenemos un total de <strong>${insideAnimals.length} animales DENTRO</strong> del corral (`;
+            text += `${insidePollitos} pollitos 🐥 y ${insidePatitos} patitos 🦆). `;
+            text += `En el prado, tenemos <strong>${outsideAnimals.length} animales FUERA</strong> del corral, disfrutando del agua y pasto (`;
+            text += `${outsidePollitos} pollitos 🐥 y ${outsidePatitos} patitos 🦆).`;
+
+            if (insidePollitos === 2 && outsidePatitos === 3 && insidePatitos === 0 && outsidePollitos === 0) {
+                text += " <br><span class='text-emerald-600 font-semibold'>💡 ¡Organización Perfecta! Todos los pollitos están seguros DENTRO del corral y los patitos disfrutan nadando FUERA en el agua.</span>";
+            } else {
+                text += " <br><span class='text-slate-500 font-medium'>Puedes seguir moviéndolos para observar cómo cambia la distribución espacial.</span>";
+            }
+
+            document.getElementById('analysis-text').innerHTML = text;
+        }
+    </script>
+</body>
+</html>

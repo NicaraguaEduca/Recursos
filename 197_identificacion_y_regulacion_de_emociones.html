@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>La Súper Ruleta de las Emociones - Creciendo en Valores</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f5f3ff;
+            background-image: 
+                radial-gradient(#ddd6fe 3px, transparent 3px),
+                radial-gradient(#ddd6fe 3px, transparent 3px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(1.5deg); }
+        }
+        .floating {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes pulseOwl {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+        }
+        .pulse-owl {
+            animation: pulseOwl 2s infinite ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px) rotate(-1deg); }
+            40%, 80% { transform: translateX(6px) rotate(1deg); }
+        }
+        .shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        /* Confites Físicos */
+        .confite {
+            position: absolute;
+            pointer-events: none;
+            z-index: 100;
+            animation: fall linear forwards;
+        }
+        @keyframes fall {
+            0% {
+                transform: translateY(-50px) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg) scale(0.6);
+                opacity: 0;
+            }
+        }
+
+        /* Estilos de botones interactivos */
+        .tarjeta-opcion {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .tarjeta-opcion:active {
+            transform: scale(0.97);
+        }
+    </style>
+</head>
+<body class="w-full h-screen flex flex-col relative text-gray-800 select-none overflow-hidden">
+
+    <!-- ================= PANTALLA DE INICIO ================= -->
+    <div id="pantalla-inicio" class="absolute inset-0 z-50 flex flex-col items-center justify-center p-4 text-center bg-violet-50/95 backdrop-blur-md transition-opacity duration-500 overflow-y-auto">
+        <div class="bg-violet-100 rounded-full px-5 py-2 mb-4 font-bold text-violet-700 tracking-wider shadow-sm border border-violet-200 text-xs md:text-sm">
+            🌳 CRECIENDO EN VALORES • I UP (1º/2º GRADO)
+        </div>
+        
+        <!-- CORRECCIÓN: Separamos los emojis de la clase de gradiente para que se vean perfectos -->
+        <h1 class="text-4xl sm:text-5xl md:text-7xl font-black mb-6 drop-shadow-sm leading-tight">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-600">La Súper Ruleta<br>de las Emociones</span>
+            <span class="inline-block mt-2 sm:mt-0 select-none">🎡✨</span>
+        </h1>
+        
+        <div class="w-full max-w-xl bg-white p-6 sm:p-8 rounded-[2rem] shadow-2xl border-4 border-violet-400 mb-8 transform hover:scale-[1.01] transition-transform relative overflow-hidden">
+            <h2 class="text-2xl font-bold text-violet-700 mb-3 flex items-center justify-center gap-3">
+                <span>🦉</span> ¡Hola, Amiguito/a!
+            </h2>
+            <p class="text-base sm:text-lg text-gray-600 leading-relaxed font-semibold">
+                ¿Sabías que todas las emociones son súper importantes? 😊😢😡😨😲<br>
+                Gira la gran ruleta mágica, descubre qué emoción te ha tocado y aprende con el Búho Tutor a comprender lo que sentimos en el corazón.<br><br>
+                <span class="text-fuchsia-600 font-black">¡Conviértete en un experto del corazón! 💖</span>
+            </p>
+            <div class="flex justify-center gap-6 mt-4 text-4xl">
+                <span class="floating" style="animation-delay: 0s;">😊</span>
+                <span class="floating" style="animation-delay: 0.3s;">😢</span>
+                <span class="floating" style="animation-delay: 0.6s;">😡</span>
+            </div>
+        </div>
+
+        <button onclick="iniciarJuego()" class="relative inline-flex items-center justify-center px-8 py-4 text-lg sm:text-xl font-black text-white bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full shadow-[0_6px_0_#6d28d9] active:translate-y-1 active:shadow-[0_2px_0_#6d28d9] transition-all">
+            ¡Entrar al Bosque Emocional! 🎡🌲
+        </button>
+    </div>
+
+    <!-- ================= PANTALLA DEL JUEGO ================= -->
+    <div id="pantalla-juego" class="hidden absolute inset-0 z-10 flex flex-col h-full w-full bg-[#f5f3ff]">
+        
+        <!-- Cabecera de Progreso -->
+        <div class="w-full flex justify-between items-center bg-white p-3 shadow-md border-b-4 border-violet-200 z-30 shrink-0">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl bg-violet-100 p-1.5 rounded-full">🎡</span>
+                <div>
+                    <h2 class="text-base sm:text-lg font-black text-violet-700 leading-tight">La Ruleta de las Emociones</h2>
+                </div>
+            </div>
+            <div class="flex flex-col items-end">
+                <span class="text-[9px] font-black text-gray-400 uppercase">Estrellas</span>
+                <span id="contador-progreso" class="bg-violet-100 px-3 py-0.5 rounded-full text-violet-700 font-black border border-violet-200 text-sm shadow-sm">0 / 5 ⭐</span>
+            </div>
+        </div>
+
+        <!-- Área Central de la Ruleta -->
+        <div class="flex-1 flex flex-col items-center justify-center p-4 gap-6 select-none relative z-10">
+            
+            <div class="bg-white/95 px-5 py-2 rounded-2xl border-2 border-violet-200 shadow-sm text-center max-w-sm">
+                <h3 id="instruccion-ruleta" class="text-sm sm:text-base font-black text-violet-900 leading-tight">
+                    🎡 ¡Toca el botón de abajo para girar la ruleta!
+                </h3>
+            </div>
+
+            <!-- Contenedor del Canvas de la Ruleta -->
+            <div class="relative w-full max-w-[270px] sm:max-w-[310px] aspect-square flex items-center justify-center bg-white rounded-full p-3 shadow-2xl border-4 border-violet-200">
+                
+                <!-- Flecha Pointer Superior -->
+                <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-2 z-20 pointer-events-none filter drop-shadow-sm">
+                    <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 100 L15 20 L85 20 Z" fill="#6d28d9" stroke="#ffffff" stroke-width="10" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+
+                <!-- Canvas -->
+                <canvas id="canvas-ruleta" class="w-full h-full rounded-full"></canvas>
+            </div>
+
+            <!-- Botón de Giro -->
+            <button id="btn-girar" onclick="girarRuleta()" class="w-full max-w-[200px] py-3.5 text-lg font-black text-white bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full shadow-[0_5px_0_#6d28d9] active:translate-y-1 active:shadow-[0_1px_0_#6d28d9] transition-all flex items-center justify-center gap-2">
+                🎡 ¡GIRAR!
+            </button>
+        </div>
+    </div>
+
+    <!-- ================= MODAL DE APRENDIZAJE ================= -->
+    <div id="modal-aprendizaje" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        
+        <div id="modal-contenido" class="bg-white w-full max-w-md rounded-[2.5rem] border-4 border-violet-400 p-5 shadow-2xl relative transform scale-95 transition-transform duration-300 max-h-[92vh] flex flex-col justify-between overflow-hidden">
+            
+            <!-- Encabezado Modal -->
+            <div class="text-center border-b-2 border-slate-100 pb-3 shrink-0">
+                <span id="modal-tag" class="text-[10px] font-black text-violet-500 uppercase tracking-widest block mb-0.5">Fase 1: Aprendiendo con el Búho</span>
+                <h3 id="modal-titulo" class="text-xl font-black text-slate-800 leading-tight">¡Salió una Emoción!</h3>
+            </div>
+
+            <!-- Cuerpo dinámico del Modal -->
+            <div id="modal-cuerpo" class="flex-1 my-4 flex flex-col justify-center overflow-y-auto pr-1">
+                <!-- Se inyectará por Javascript -->
+            </div>
+
+            <!-- Acciones del Modal -->
+            <div class="border-t-2 border-slate-100 pt-3 shrink-0 flex justify-center" id="modal-acciones">
+                <!-- Se inyectará dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PANTALLA FINAL ================= -->
+    <div id="pantalla-final" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center p-4 text-center bg-white/95 backdrop-blur-md transition-opacity duration-500 overflow-y-auto">
+        <div class="flex gap-4 justify-center text-6xl mb-6 floating">
+            <span>🦉</span>
+            <span>⭐</span>
+            <span>💖</span>
+        </div>
+        
+        <!-- CORRECCIÓN: Separamos la copa emoji del gradiente en la pantalla final también -->
+        <h1 class="text-4xl sm:text-5xl font-black mb-6 drop-shadow-sm leading-tight">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-600">¡Súper Campeón/a<br>de las Emociones!</span>
+            <span class="inline-block mt-2 sm:mt-0 select-none">🏆</span>
+        </h1>
+        
+        <div class="w-full max-w-md bg-violet-50 p-5 rounded-[2rem] border-4 border-violet-200 mb-8 font-bold text-gray-700 text-sm leading-relaxed">
+            <span class="text-violet-600 font-black text-lg block mb-1">🌱 Creciendo en Valores:</span>
+            ¡Has aprendido a reconocer tus emociones y a tener empatía con tus amigos! Al comprender lo que sienten los demás, tu corazón se vuelve más amable y solidario. ¡Sigue esparciendo valores! 🌟🌈
+        </div>
+        <button onclick="reiniciarJuego()" class="relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full shadow-[0_6px_0_#6d28d9] active:translate-y-1 active:shadow-[0_2px_0_#6d28d9] transition-all">
+            Jugar otra vez 🔄
+        </button>
+    </div>
+
+    <!-- ================= SCRIPTS DE CONTROL ================= -->
+    <script>
+        const emocionesData = [
+            {
+                index: 0,
+                emocion: "Alegría",
+                emoji: "😊",
+                color: "#facc15",
+                letrero: "¡Salió Alegría! 😊",
+                pregunta: "¿Cuál de estos amigos siente ALEGRÍA en este momento?",
+                tutorExplicacion: "La alegría es una emoción brillante que sentimos cuando compartimos con amigos, recibimos cariño o jugamos. Nos da ganas de sonreír, saltar y dar abrazos amables. ¡Es genial celebrar!",
+                opciones: [
+                    {
+                        texto: "Mati sopla las velas de su pastel rodeado de todos sus amigos. 🎂🥳",
+                        esCorrecta: true,
+                        reflexion: "¡Excelente! Compartir momentos especiales y recibir amor nos llena de muchísima ALEGRÍA. ¡Celebrar con amigos es un valor precioso! ✨💖"
+                    },
+                    {
+                        texto: "Santi ve que se le escapó su globo de helio y vuela muy alto. 🎈",
+                        esCorrecta: false,
+                        reflexion: "¡Uy! Perder un juguete o un globo divertido causa tristeza o disgusto, no alegría. ¡Mati de veras está muy alegre con su pastel!"
+                    },
+                    {
+                        texto: "A Lucía le asusta cuando se apagan las luces y truena fuerte. ⛈️",
+                        esCorrecta: false,
+                        reflexion: "¡Oh! Sentir miedo cuando hay ruidos fuertes es natural. Pero no es alegría. ¡Busquemos la correcta!"
+                    }
+                ]
+            },
+            {
+                index: 1,
+                emocion: "Tristeza",
+                emoji: "😢",
+                color: "#60a5fa",
+                letrero: "¡Salió Tristeza! 😢",
+                pregunta: "¿Cuál de estos amigos siente TRISTEZA en este momento?",
+                tutorExplicacion: "La tristeza es un sentimiento suave que aparece cuando perdemos un juguete o algo no sale bien. Nos ayuda a reflexionar y pedir un gran abrazo de papá, mamá o amigos.",
+                opciones: [
+                    {
+                        texto: "Mateo ríe a carcajadas jugando con su tierno cachorrito. 🐶",
+                        esCorrecta: false,
+                        reflexion: "¡Uy! Jugar de forma feliz con un cachorrito nos da alegría y felicidad, no tristeza. ¡Busquemos la correcta!"
+                    },
+                    {
+                        texto: "A Sofía se le cayó su helado de fresa al suelo antes de probarlo. 🍦",
+                        esCorrecta: true,
+                        reflexion: "¡Exacto! Sentir pena o TRISTEZA cuando ocurre un accidente es natural. Lo mejor es hablar de ello con calma o pedir un gran abrazo. ❤️🩹"
+                    },
+                    {
+                        texto: "A Lucas le enoja que su torre de bloques se derrumbó de repente. 🧱",
+                        esCorrecta: false,
+                        reflexion: "¡Oh! Cuando el esfuerzo de un niño se cae, puede frustrarse o enojarse de repente. ¡Busquemos qué causa pena!"
+                    }
+                ]
+            },
+            {
+                index: 2,
+                emocion: "Enojo",
+                emoji: "😡",
+                color: "#f87171",
+                letrero: "¡Salió Enojo! 😡",
+                pregunta: "¿Cuál de estos amigos siente ENOJO en este momento?",
+                tutorExplicacion: "El enojo aparece cuando sentimos que algo es injusto o se rompen las reglas de convivencia. Está bien enojarse, pero debemos calmar el corazón respirando hondo, sin gritar ni agredir.",
+                opciones: [
+                    {
+                        texto: "Diego está asustado de que se apagó la luz de su cuarto. 🔦",
+                        esCorrecta: false,
+                        reflexion: "¡No es así! Quedar en la oscuridad sin ver puede causar miedo, no enojo. ¡Diego necesita una linterna para sentirse seguro!"
+                    },
+                    {
+                        texto: "Lia recibe una caja sorpresa llena de serpentinas mágicas. 🎉",
+                        esCorrecta: false,
+                        reflexion: "¡Oh! Recibir una sorpresa de repente causa asombro y alegría inmediata. ¡Busquemos dónde hay enojo!"
+                    },
+                    {
+                        texto: "A Lucas le rayaron su hermoso dibujo de clase sin querer. 🎨🖍️",
+                        esCorrecta: true,
+                        reflexion: "¡Excelente! El ENOJO aparece cuando sentimos que algo es injusto. Está bien enojarse, pero lo ideal es hablar con calma para solucionarlo con respeto. 🌬️💬"
+                    }
+                ]
+            },
+            {
+                index: 3,
+                emocion: "Miedo",
+                emoji: "😨",
+                color: "#4ade80",
+                letrero: "¡Salió Miedo! 😨",
+                pregunta: "¿Cuál de estos amigos siente MIEDO en este momento?",
+                tutorExplicacion: "El miedo nos ayuda a cuidarnos del peligro, como cuando escuchamos música de suspenso o misterio, truenos fuertes o estamos en una situación peligrosa. ¡Es muy natural pedir ayuda a un adulto!",
+                opciones: [
+                    {
+                        texto: "A Ana le asusta mucho cruzar por el puente colgante del parque. 🌉",
+                        esCorrecta: true,
+                        reflexion: "¡Fabuloso! Sentir MIEDO ante cosas altas o peligrosas es normal. Tomar de la mano a papá o mamá nos da una súper fuerza. 🤝🧸"
+                    },
+                    {
+                        texto: "Juan salta de felicidad al ganar una carrera con sus amigos. 🏆",
+                        esCorrecta: false,
+                        reflexion: "¡Uy! Ganar y divertirse corriendo causa una gran alegría y orgullo. ¡Búscame la situación del miedo!"
+                    },
+                    {
+                        texto: "Elena llora porque extraña a su mamá que se fue a trabajar. 💼",
+                        esCorrecta: false,
+                        reflexion: "¡Oh! Extrañar a las personas que amamos suele causarnos un poquito de tristeza y añoranza. ¡Busquemos el susto!"
+                    }
+                ]
+            },
+            {
+                index: 4,
+                emocion: "Sorpresa",
+                emoji: "😲",
+                color: "#c084fc",
+                letrero: "¡Salió Sorpresa! 😲",
+                pregunta: "¿Cuál de estos amigos siente SORPRESA en este momento?",
+                tutorExplicacion: "La sorpresa es una emoción muy rápida e inesperada. Abre nuestros ojos como platos gigantes. Aparece con regalos misteriosos o situaciones inesperadas del día a día.",
+                opciones: [
+                    {
+                        texto: "Hugo ve cómo brota una plantita mágica de su maceta un día antes. 🌱",
+                        esCorrecta: true,
+                        reflexion: "¡Súper correcto! Ver algo asombroso e inesperado causa SORPRESA. ¡La naturaleza nos regala sorpresas hermosas todos los días! 🌍✨"
+                    },
+                    {
+                        texto: "Gaby toma un vaso de leche fresquita antes de dormir tranquilo. 🥛",
+                        esCorrecta: false,
+                        reflexion: "¡Uy! Beber leche antes de dormir es una rutina relajante que da paz y tranquilidad, no sorpresa."
+                    },
+                    {
+                        texto: "Tomás se enoja porque no encuentra su lápiz de color favorito. ✏️",
+                        esCorrecta: false,
+                        reflexion: "¡Oh! Perder tus cosas de trabajo causa disgusto o enojo de repente. ¡Búscame el asombro!"
+                    }
+                ]
+            }
+        ];
+
+        let nivelActual = 0;
+        let completadas = [];
+        let emocionActiva = null;
+        let bloqueandoAccion = false;
+        let currentAngle = 0;
+
+        const canvas = document.getElementById('canvas-ruleta');
+        const ctx = canvas.getContext('2d');
+
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const pantallaJuego = document.getElementById('pantalla-juego');
+        const pantallaFinal = document.getElementById('pantalla-final');
+        const contadorProgreso = document.getElementById('contador-progreso');
+        
+        const modal = document.getElementById('modal-aprendizaje');
+        const modalContenido = document.getElementById('modal-contenido');
+        const modalTag = document.getElementById('modal-tag');
+        const modalTitulo = document.getElementById('modal-titulo');
+        const modalCuerpo = document.getElementById('modal-cuerpo');
+        const modalAcciones = document.getElementById('modal-acciones');
+
+        const btnGirar = document.getElementById('btn-girar');
+        const instruccionRuleta = document.getElementById('instruccion-ruleta');
+
+        function adaptarCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * 2;
+            canvas.height = rect.height * 2;
+            dibujarRuleta();
+        }
+
+        function dibujarRuleta() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const r = Math.min(w, h) / 2 * 0.95;
+            
+            ctx.clearRect(0, 0, w, h);
+            ctx.save();
+            ctx.translate(w / 2, h / 2);
+            ctx.rotate(currentAngle);
+
+            const numSlices = emocionesData.length;
+            const sliceAngle = (2 * Math.PI) / numSlices;
+
+            emocionesData.forEach((em, i) => {
+                const start = i * sliceAngle;
+                const end = start + sliceAngle;
+
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.arc(0, 0, r, start, end);
+                ctx.closePath();
+                ctx.fillStyle = em.color;
+                ctx.fill();
+
+                ctx.lineWidth = 6;
+                ctx.strokeStyle = '#ffffff';
+                ctx.stroke();
+
+                ctx.save();
+                ctx.rotate(start + sliceAngle / 2);
+                
+                // Dibujamos el emoji
+                ctx.fillStyle = '#1e1b4b';
+                ctx.font = 'bold 42px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(em.emoji, r * 0.62, -22);
+
+                // Dibujamos el texto de la emoción
+                ctx.fillStyle = '#1e1b4b';
+                ctx.font = '900 18px Nunito, sans-serif';
+                ctx.fillText(em.emocion, r * 0.62, 22);
+
+                ctx.restore();
+            });
+
+            ctx.beginPath();
+            ctx.arc(0, 0, 45, 0, 2 * Math.PI);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = '#6d28d9';
+            ctx.stroke();
+
+            // Dibujamos el búho central de forma correcta
+            ctx.fillStyle = '#1e1b4b';
+            ctx.font = 'bold 36px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText("🦉", 0, 0);
+
+            ctx.restore();
+        }
+
+        function girarRuleta() {
+            if (bloqueandoAccion) return;
+            bloqueandoAccion = true;
+
+            btnGirar.style.pointerEvents = 'none';
+            btnGirar.style.opacity = '0.5';
+            instruccionRuleta.innerText = "🎡 ¡Girando la ruleta con emoción! ✨";
+
+            let disponibles = emocionesData.filter(e => !completadas.includes(e.index));
+            if (disponibles.length === 0) {
+                completadas = [];
+                disponibles = [...emocionesData];
+            }
+
+            const ganador = disponibles[Math.floor(Math.random() * disponibles.length)];
+            emocionActiva = ganador;
+
+            const numSlices = emocionesData.length;
+            const sliceAngle = (2 * Math.PI) / numSlices;
+            const sectorCenter = (ganador.index + 0.5) * sliceAngle;
+            
+            let targetSectorAngle = 1.5 * Math.PI - sectorCenter;
+            while (targetSectorAngle < 0) targetSectorAngle += 2 * Math.PI;
+
+            const totalGiro = targetSectorAngle + (Math.PI * 2 * 5);
+            
+            let start = null;
+            const duration = 3000;
+            const startAngle = currentAngle % (Math.PI * 2);
+
+            function animar(timestamp) {
+                if (!start) start = timestamp;
+                const elapsed = timestamp - start;
+                const t = Math.min(elapsed / duration, 1);
+                const easeOut = 1 - Math.pow(1 - t, 3);
+                currentAngle = startAngle + (totalGiro - startAngle) * easeOut;
+
+                dibujarRuleta();
+
+                if (t < 1) {
+                    requestAnimationFrame(animar);
+                } else {
+                    frenarYMostrarModal();
+                }
+            }
+            requestAnimationFrame(animar);
+        }
+
+        function abrirModal() {
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modalContenido.classList.remove('scale-95');
+            modalContenido.classList.add('scale-100');
+        }
+
+        function cerrarModal() {
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modalContenido.classList.remove('scale-100');
+            modalContenido.classList.add('scale-95');
+        }
+
+        function frenarYMostrarModal() {
+            lanzarConfites(15);
+            instruccionRuleta.innerHTML = `🎡 ¡Frenó en la emoción de hoy!`;
+            
+            setTimeout(() => {
+                bloqueandoAccion = false;
+                cargarPaso1Tutor();
+            }, 600);
+        }
+
+        function cargarPaso1Tutor() {
+            const em = emocionActiva;
+
+            modalTag.innerText = "Fase 1: El Búho Sabio Explica";
+            modalTitulo.innerText = em.letrero;
+
+            modalCuerpo.innerHTML = `
+                <div class="flex flex-col items-center text-center gap-3">
+                    <span class="text-7xl pulse-owl select-none">🦉</span>
+                    <p class="text-slate-600 font-bold text-sm sm:text-base leading-relaxed bg-violet-50 p-4 rounded-2xl border border-violet-100">
+                        ${em.tutorExplicacion}
+                    </p>
+                </div>
+            `;
+
+            modalAcciones.innerHTML = `
+                <button onclick="cargarPaso2Desafio()" class="px-8 py-3 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-black rounded-full shadow-[0_4px_0_#6d28d9] active:translate-y-0.5 active:shadow-[0_1px_0_#6d28d9] transition-all flex items-center gap-2">
+                    ¡Ver Súper Desafío! ➡️
+                </button>
+            `;
+
+            abrirModal();
+        }
+
+        function cargarPaso2Desafio() {
+            const em = emocionActiva;
+
+            modalTag.innerText = "Fase 2: Súper Desafío";
+            modalTitulo.innerText = em.pregunta;
+
+            let opcionesHTML = `<div class="flex flex-col gap-2 w-full">`;
+            em.opciones.forEach((op, idx) => {
+                const letras = ["A", "B", "C"];
+                opcionesHTML += `
+                    <button onclick="evaluarRespuesta(${idx})" class="tarjeta-opcion w-full text-left bg-violet-50 hover:bg-violet-100 border-2 border-violet-200 rounded-xl p-3 flex items-center gap-3 shadow-sm">
+                        <span class="bg-violet-200 text-violet-800 rounded-full w-7 h-7 flex items-center justify-center font-black text-xs shrink-0">${letras[idx]}</span>
+                        <span class="font-bold text-xs sm:text-sm text-gray-700 leading-tight">${op.texto}</span>
+                    </button>
+                `;
+            });
+            opcionesHTML += `</div>`;
+
+            modalCuerpo.innerHTML = opcionesHTML;
+            modalAcciones.innerHTML = '';
+        }
+
+        function evaluarRespuesta(indiceOpcion) {
+            const em = emocionActiva;
+            const op = em.opciones[indiceOpcion];
+
+            if (op.esCorrecta) {
+                lanzarConfites(20);
+                
+                if (!completadas.includes(em.index)) {
+                    completadas.push(em.index);
+                }
+
+                modalTag.innerText = "Fase 3: ¡Excelente Identificación! 🌟";
+                modalTitulo.innerText = "¡Lo lograste!";
+
+                modalCuerpo.innerHTML = `
+                    <div class="flex flex-col items-center text-center gap-3">
+                        <span class="text-7xl select-none">💖</span>
+                        <p class="text-emerald-700 font-black text-base">¡Respuesta Correcta!</p>
+                        <p class="text-slate-600 font-bold text-xs sm:text-sm leading-relaxed bg-emerald-50 p-4 rounded-2xl border border-emerald-200">
+                            ${op.reflexion}
+                        </p>
+                    </div>
+                `;
+
+                modalAcciones.innerHTML = `
+                    <button onclick="continuarSiguienteFlujo()" class="px-8 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black rounded-full shadow-[0_4px_0_#047857] active:translate-y-0.5 active:shadow-[0_1px_0_#047857] transition-all flex items-center gap-2">
+                        ¡Genial, Siguiente! 🌟
+                    </button>
+                `;
+            } else {
+                modalContenido.classList.add('shake');
+                setTimeout(() => modalContenido.classList.remove('shake'), 500);
+
+                modalTag.innerText = "Fase 3: Inténtalo de nuevo 🤔";
+                modalTitulo.innerText = "¡Piénsalo un poquito!";
+
+                modalCuerpo.innerHTML = `
+                    <div class="flex flex-col items-center text-center gap-3">
+                        <span class="text-6xl select-none">🦉💡</span>
+                        <p class="text-red-700 font-black text-sm sm:text-base">Esa situación causa otra emoción...</p>
+                        <p class="text-slate-600 font-bold text-xs sm:text-sm leading-relaxed bg-red-50 p-4 rounded-2xl border border-red-200">
+                            ${op.reflexion}
+                        </p>
+                    </div>
+                `;
+
+                modalAcciones.innerHTML = `
+                    <button onclick="cargarPaso2Desafio()" class="px-8 py-3 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-black rounded-full shadow-[0_4px_0_#6d28d9] active:translate-y-0.5 active:shadow-[0_1px_0_#6d28d9] transition-all flex items-center gap-2">
+                        🔄 Intentar otra vez
+                    </button>
+                `;
+            }
+        }
+
+        function continuarSiguienteFlujo() {
+            cerrarModal();
+            nivelActual++;
+            contadorProgreso.innerText = `${nivelActual} / 5 ⭐`;
+
+            btnGirar.style.pointerEvents = 'auto';
+            btnGirar.style.opacity = '1';
+            instruccionRuleta.innerText = "🎡 ¡Toca el botón de abajo para girar la ruleta!";
+
+            if (completadas.length >= emocionesData.length) {
+                setTimeout(finalizarJuego, 400);
+            }
+        }
+
+        function lanzarConfites(cantidad) {
+            const colores = ["#facc15", "#60a5fa", "#f87171", "#4ade80", "#c084fc", "#ff007f", "#00ffff"];
+            for (let i = 0; i < cantidad; i++) {
+                const confite = document.createElement('div');
+                confite.className = 'confite';
+                
+                const left = Math.random() * 100;
+                const size = Math.random() * 14 + 10;
+                const delay = Math.random() * 0.5;
+                const duration = Math.random() * 2 + 1.5;
+                const color = colores[Math.floor(Math.random() * colores.length)];
+                
+                confite.style.left = `${left}vw`;
+                confite.style.width = `${size}px`;
+                confite.style.height = `${size}px`;
+                confite.style.backgroundColor = color;
+                confite.style.animationDelay = `${delay}s`;
+                confite.style.animationDuration = `${duration}s`;
+                
+                const forma = Math.random();
+                if (forma < 0.3) {
+                    confite.style.borderRadius = '50%';
+                } else if (forma < 0.6) {
+                    confite.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
+                }
+
+                document.body.appendChild(confite);
+                
+                setTimeout(() => confite.remove(), (duration + delay) * 1000);
+            }
+        }
+
+        function iniciarJuego() {
+            pantallaInicio.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaInicio.classList.add('hidden');
+                pantallaInicio.classList.remove('opacity-0');
+                pantallaJuego.classList.remove('hidden');
+                
+                completadas = [];
+                nivelActual = 0;
+                contadorProgreso.innerText = "0 / 5 ⭐";
+                adaptarCanvas();
+            }, 500);
+        }
+
+        function finalizarJuego() {
+            pantallaJuego.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaJuego.classList.add('hidden');
+                pantallaFinal.classList.remove('hidden');
+                setTimeout(() => pantallaFinal.classList.remove('opacity-0'), 50);
+                
+                for (let i = 0; i < 4; i++) {
+                    setTimeout(() => lanzarConfites(30), i * 350);
+                }
+            }, 500);
+        }
+
+        function reiniciarJuego() {
+            pantallaFinal.classList.add('opacity-0');
+            setTimeout(() => {
+                window.location.reload();
+            }, 300);
+        }
+
+        window.addEventListener('resize', () => {
+            if (!pantallaJuego.classList.contains('hidden')) {
+                adaptarCanvas();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            pantallaInicio.classList.remove('hidden');
+            setTimeout(() => pantallaInicio.classList.remove('opacity-0'), 50);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Misión: Buzón de Becas 2.0 📬</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Public+Sans:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --formal-blue: #1e40af;
+            --informal-orange: #f59e0b;
+            --dark: #0f172a;
+            --paper: #fffef2;
+            --green: #10b981;
+            --red: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Public Sans', sans-serif; }
+        h1, h2, h3, .btn-main { font-family: 'Unbounded', sans-serif; text-transform: uppercase; }
+
+        body {
+            background: #cbd5e1;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            color: var(--dark);
+        }
+
+        .navbar {
+            height: 60px;
+            background: var(--dark);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            border-bottom: 4px solid var(--formal-blue);
+            flex-shrink: 0;
+        }
+
+        .pantalla {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(10px, 3vw, 20px);
+            position: relative;
+        }
+
+        /* --- FRASES (PIEZAS) --- */
+        .frase-container {
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            perspective: 1000px;
+            margin-bottom: 20px;
+        }
+
+        .frase-card {
+            background: var(--paper);
+            padding: clamp(15px, 4vw, 25px);
+            border: 4px solid var(--dark);
+            border-radius: 15px;
+            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+            font-weight: 800;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 10px 10px 0 var(--dark);
+            position: relative;
+            z-index: 20;
+        }
+
+        /* --- SOBRES --- */
+        .postal-zone {
+            display: flex;
+            gap: clamp(15px, 5vw, 40px);
+            width: 100%;
+            max-width: 1000px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .sobre {
+            width: 300px;
+            padding: 25px;
+            border-radius: 25px;
+            text-align: center;
+            border: 5px solid var(--dark);
+            position: relative;
+            transition: transform 0.2s, background-color 0.3s;
+            cursor: pointer;
+            box-shadow: 10px 10px 0 rgba(0,0,0,0.1);
+        }
+
+        .sobre-formal { background: white; border-color: var(--formal-blue); }
+        .sobre-informal { background: white; border-color: var(--informal-orange); }
+
+        /* Estados de los sobres */
+        .sobre.correct { background-color: #dcfce7; border-color: var(--green); transform: scale(0.95); }
+        .sobre.wrong { background-color: #fee2e2; border-color: var(--red); animation: shake 0.4s; }
+
+        .btn-main {
+            background: var(--formal-blue);
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.3rem;
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #1e3a8a;
+        }
+
+        /* --- ANIMACIONES --- */
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 850px) {
+            body { overflow-y: auto; height: auto; }
+            .pantalla { height: auto; min-height: calc(100vh - 60px); padding: 15px; justify-content: flex-start; }
+            .postal-zone { flex-direction: column; align-items: center; }
+            .sobre { width: 100%; padding: 15px; }
+            .frase-container { height: 120px; }
+        }
+    </style>
+</head>
+<body x-data="correoApp()">
+
+    <nav class="navbar">
+        <div style="font-weight: 900; letter-spacing: -1px;">📬 MISIÓN: CARTAS DE SOLICITUD</div>
+        <div style="background: var(--green); padding: 5px 15px; border-radius: 20px; font-weight: 900; font-size: 0.8rem; color: white;">
+            BECAS: <span x-text="indice"></span> / 6
+        </div>
+    </nav>
+
+    <main class="pantalla" x-show="paso === 'inicio'">
+        <div style="font-size: 5rem;">🎓</div>
+        <h1>¿Formal o Informal?</h1>
+        
+        <div style="background:white; padding:25px; border-radius:20px; border:3px dashed var(--formal-blue); max-width:700px; margin: 20px 0;">
+            <p><b>📚 MATERIA:</b> Lengua (Registros lingüísticos).</p>
+            <p><b>🎯 OBJETIVO:</b> Diferenciar frases para una carta formal de solicitud.</p>
+            <p><b>🧒 GRADO:</b> 4º a 6º de Primaria.</p>
+            <hr style="margin:15px 0; border:none; border-top:1px solid #eee;">
+            <p style="color: var(--formal-blue); font-weight: 700;">¡Hola, aprendiz! Para ganar la beca debes clasificar las piezas. Solo las frases **Formales** van al sobre de la Institución.</p>
+        </div>
+
+        <button class="btn-main" @click="paso = 'juego'">¡ENTENDIDO!</button>
+    </main>
+
+    <main class="pantalla" x-show="paso === 'juego'" x-transition>
+        
+        <h2 style="font-size: 1rem; margin-bottom: 20px; color: var(--formal-blue);">Lee la pieza y elige el buzón correcto:</h2>
+
+        <div class="frase-container">
+            <template x-if="indice < frases.length">
+                <div class="frase-card" 
+                     id="pieza"
+                     x-text="frases[indice].texto">
+                </div>
+            </template>
+        </div>
+
+        <div class="postal-zone">
+            <div class="sobre sobre-formal" 
+                 id="sobre-formal"
+                 @click="verificar('formal')">
+                <div style="font-size: 3rem;">🏛️</div>
+                <h3 style="color: var(--formal-blue); font-size: 1.1rem; margin-top: 5px;">INSTITUCIÓN</h3>
+                <p style="font-size: 0.7rem; font-weight: 900;">(Carta Formal)</p>
+            </div>
+
+            <div class="sobre sobre-informal" 
+                 id="sobre-informal"
+                 @click="verificar('informal')">
+                <div style="font-size: 3rem;">🏠</div>
+                <h3 style="color: var(--informal-orange); font-size: 1.1rem; margin-top: 5px;">FAMILIA/AMIGOS</h3>
+                <p style="font-size: 0.7rem; font-weight: 900;">(Carta Informal)</p>
+            </div>
+        </div>
+
+        <div id="feedback-txt" style="margin-top: 20px; font-weight: 900; font-size: 1.1rem; min-height: 25px;"></div>
+    </main>
+
+    <main class="pantalla" x-show="paso === 'fin'">
+        <div style="background: white; padding: 40px; border-radius: 30px; border: 8px double var(--green); text-align: center;">
+            <div style="font-size: 6rem;">🏅</div>
+            <h1 style="color: var(--green);">¡BECARIO EXPERTO!</h1>
+            <p style="font-size: 1.2rem; margin: 15px 0;">Has clasificado todas las cartas con éxito.<br>¡Ya puedes redactar tus propias solicitudes!</p>
+            <button class="btn-main" style="background: var(--green); box-shadow: 0 6px 0 #065f46;" @click="location.reload()">REPETIR MISIÓN</button>
+        </div>
+    </main>
+
+    <script>
+        function correoApp() {
+            return {
+                paso: 'inicio',
+                indice: 0,
+                frases: [
+                    { texto: "A quien corresponda: Solicito formalmente una beca.", tipo: "formal" },
+                    { texto: "¡Hola! ¿Cómo estás? Te escribo para saludarte.", tipo: "informal" },
+                    { texto: "Quedo a su entera disposición para una entrevista.", tipo: "formal" },
+                    { texto: "Avísame si vas a ir al parque mañana por la tarde.", tipo: "informal" },
+                    { texto: "Adjunto mi expediente académico para su revisión.", tipo: "formal" },
+                    { texto: "Bueno, te mando un abrazo fuerte. ¡Nos vemos!", tipo: "informal" }
+                ],
+                verificar(seleccion) {
+                    const correcta = this.frases[this.indice].tipo;
+                    const pieza = document.getElementById('pieza');
+                    const sobre = document.getElementById('sobre-' + seleccion);
+                    const fb = document.getElementById('feedback-txt');
+
+                    if (seleccion === correcta) {
+                        // ACIERTO: Animación de "entrar al sobre"
+                        sobre.classList.add('correct');
+                        fb.innerText = "¡Perfecto! Directo al sobre. ✅";
+                        fb.style.color = "var(--green)";
+
+                        // Obtenemos coordenadas del sobre para mover la pieza
+                        const rectSobre = sobre.getBoundingClientRect();
+                        const rectPieza = pieza.getBoundingClientRect();
+                        const moveX = (rectSobre.left + rectSobre.width/2) - (rectPieza.left + rectPieza.width/2);
+                        const moveY = (rectSobre.top + rectSobre.height/2) - (rectPieza.top + rectPieza.height/2);
+
+                        gsap.to("#pieza", {
+                            x: moveX,
+                            y: moveY,
+                            scale: 0.1,
+                            opacity: 0,
+                            duration: 0.6,
+                            ease: "back.in(1.7)",
+                            onComplete: () => {
+                                sobre.classList.remove('correct');
+                                this.indice++;
+                                if (this.indice >= this.frases.length) {
+                                    confetti({ particleCount: 200, spread: 70 });
+                                    this.paso = 'fin';
+                                } else {
+                                    // Resetear posición de la nueva pieza y aparecer
+                                    gsap.set("#pieza", { x: 0, y: 0, scale: 0, opacity: 1 });
+                                    gsap.to("#pieza", { scale: 1, duration: 0.4, ease: "bounce.out" });
+                                }
+                            }
+                        });
+                    } else {
+                        // ERROR: Animación de rebote y shake
+                        sobre.classList.add('wrong');
+                        fb.innerText = "¡Oops! Ese lenguaje no encaja aquí. ❌";
+                        fb.style.color = "var(--red)";
+                        
+                        setTimeout(() => {
+                            sobre.classList.remove('wrong');
+                            fb.innerText = "";
+                        }, 1000);
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

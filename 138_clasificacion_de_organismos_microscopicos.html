@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mundo Microscópico - Clasificación</title>
+    
+    <!-- Fuentes Google: Rajdhani (UI Tecnológica) y Nunito (Lectura clara) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA PARA WORDPRESS -->
+    <script>
+        tailwind.config = {
+            important: '#recurso-wp-micro',
+            corePlugins: {
+                preflight: false,
+            },
+            theme: {
+                extend: {
+                    fontFamily: {
+                        tech: ['Rajdhani', 'sans-serif'],
+                        body: ['Nunito', 'sans-serif'],
+                    },
+                    colors: {
+                        bio: {
+                            dark: '#090d16',     /* Fondo ultra-oscuro */
+                            panel: '#111827',    /* Gris pizarra oscuro */
+                            cyan: '#06b6d4',     /* Cyan neón */
+                            green: '#10b981',    /* Verde bio-luminiscente */
+                            red: '#f43f5e',      /* Rojo alerta */
+                            purple: '#a855f7',   /* Violeta científico */
+                            grid: '#1e293b'      
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* =========================================================
+           MICRO-RESET LOCAL: Protege el recurso del tema de WP
+           ========================================================= */
+        #recurso-wp-micro * {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: currentColor;
+            line-height: normal;
+        }
+        #recurso-wp-micro h1, #recurso-wp-micro h2, #recurso-wp-micro h3, #recurso-wp-micro p, #recurso-wp-micro span, #recurso-wp-micro div {
+            margin: 0; padding: 0;
+        }
+        #recurso-wp-micro button {
+            background-color: transparent; background-image: none; cursor: pointer; padding: 0; font-family: inherit;
+        }
+
+        /* =========================================================
+           ESTILOS PANTALLA COMPLETA & ALTO CONTRASTE (Datashow)
+           ========================================================= */
+        #recurso-wp-micro {
+            font-family: 'Nunito', sans-serif;
+            background-color: #090d16; 
+            background-image: 
+                linear-gradient(rgba(30, 41, 59, 0.5) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(30, 41, 59, 0.5) 1px, transparent 1px);
+            background-size: 40px 40px;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Paneles de Laboratorio */
+        #recurso-wp-micro .bio-panel {
+            background: rgba(17, 24, 39, 0.9);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(6, 182, 212, 0.3);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(6, 182, 212, 0.05);
+            position: relative;
+        }
+
+        /* Botones Tecnológicos */
+        #recurso-wp-micro .tech-btn {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(16, 185, 129, 0.2));
+            border: 2px solid #06b6d4;
+            color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.3);
+            transition: all 0.2s ease;
+            font-family: 'Rajdhani', sans-serif;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        #recurso-wp-micro .tech-btn:hover {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.4), rgba(16, 185, 129, 0.4));
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.6);
+            transform: scale(1.05);
+        }
+        #recurso-wp-micro .tech-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Lente del Microscopio Central */
+        .microscope-lens {
+            width: clamp(180px, 35vw, 290px);
+            height: clamp(180px, 35vw, 290px);
+            background: radial-gradient(circle at 50% 50%, #111827 0%, #030712 100%);
+            border: 14px solid #374151;
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 0 40px rgba(6, 182, 212, 0.5),
+                inset 0 0 30px rgba(6, 182, 212, 0.4),
+                inset 0 0 80px rgba(0, 0, 0, 0.95);
+            overflow: hidden;
+            transition: border-color 0.3s ease;
+        }
+
+        /* Retícula del Lente (Mira concéntrica) */
+        .microscope-lens::before {
+            content: '';
+            position: absolute;
+            width: 70%; height: 70%;
+            border: 1px dashed rgba(6, 182, 212, 0.25);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* Muestra Biológica (Filtrada por Blur Dinámico) */
+        .specimen-holder {
+            width: 80%;
+            height: 80%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: filter 0.2s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
+        }
+
+        /* Animación suave de flotación de microorganismo vivo */
+        .float-bio {
+            animation: floatSpecimen 6s ease-in-out infinite alternate;
+        }
+        @keyframes floatSpecimen {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(5px, -10px) rotate(3deg); }
+            100% { transform: translate(-5px, 5px) rotate(-3deg); }
+        }
+
+        /* Placas Clasificadoras (Botones) */
+        .category-btn {
+            border: 3px solid;
+            border-radius: 16px;
+            padding: 12px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .category-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
+        .cat-bacteria { border-color: #10b981; background: rgba(16, 185, 129, 0.08); color: #10b981; }
+        .cat-bacteria:hover:not(:disabled) { background: rgba(16, 185, 129, 0.25); box-shadow: 0 0 20px rgba(16, 185, 129, 0.5); transform: translateY(-3px); }
+        
+        .cat-virus { border-color: #f43f5e; background: rgba(244, 63, 94, 0.08); color: #f43f5e; }
+        .cat-virus:hover:not(:disabled) { background: rgba(244, 63, 94, 0.25); box-shadow: 0 0 20px rgba(244, 63, 94, 0.5); transform: translateY(-3px); }
+        
+        .cat-hongo { border-color: #a855f7; background: rgba(168, 85, 247, 0.08); color: #a855f7; }
+        .cat-hongo:hover:not(:disabled) { background: rgba(168, 85, 247, 0.25); box-shadow: 0 0 20px rgba(168, 85, 247, 0.5); transform: translateY(-3px); }
+
+        /* Deslizador de Enfoque personalizado (Neomorfismo BioTech) */
+        input[type=range].focus-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            background: #1f2937;
+            height: 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+        input[type=range].focus-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px; width: 24px;
+            border-radius: 50%;
+            background: #06b6d4;
+            border: 2px solid #ffffff;
+            cursor: pointer;
+            box-shadow: 0 0 10px #06b6d4;
+            transition: transform 0.1s;
+        }
+        input[type=range].focus-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* Pantallas SPA */
+        #recurso-wp-micro .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            position: absolute;
+            top: 0; left: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 10;
+        }
+        #recurso-wp-micro .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-micro .screen.active {
+            display: flex;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.97); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Escáner Holográfico */
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background: rgba(6, 182, 212, 0.6);
+            box-shadow: 0 0 15px #06b6d4;
+            opacity: 0;
+            z-index: 20;
+            top: -10px;
+        }
+        .scanning .scan-line {
+            animation: scanAnim 1.2s ease-in-out infinite;
+        }
+        @keyframes scanAnim {
+            0% { top: 0%; opacity: 0; }
+            50% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        .shake-error { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-3px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+
+        /* Animación de carga de placa (deslizar) */
+        .slide-in-plate {
+            animation: slidePlate 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
+        }
+        @keyframes slidePlate {
+            from { transform: translateX(-150px) rotate(-10deg); opacity: 0; }
+            to { transform: translateX(0) rotate(0deg); opacity: 1; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-micro">
+
+        <!-- Decoraciones de fondo de alta tecnología -->
+        <div class="absolute top-10 left-10 text-[6rem] text-bio-cyan/5 pointer-events-none">🧬</div>
+        <div class="absolute bottom-10 right-10 text-[8rem] text-bio-green/5 pointer-events-none">🦠</div>
+
+        <!-- ==============================================
+             PANTALLA 1: INICIO
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="bio-panel p-8 md:p-14 max-w-3xl w-full mx-4 flex flex-col items-center">
+                <div class="text-[5rem] md:text-[7rem] mb-4 text-bio-cyan drop-shadow-[0_0_15px_rgba(6,182,212,0.6)] animate__animated animate__pulse animate__infinite">🔬</div>
+                <h2 class="text-sm md:text-base text-bio-cyan font-tech font-bold mb-2 uppercase tracking-[0.3em] bg-bio-cyan/10 px-6 py-2 rounded-full border border-bio-cyan/30">
+                    Ciencias Naturales - 5/6to Grado
+                </h2>
+                <h1 class="text-5xl md:text-7xl lg:text-[5.5rem] font-tech text-white mt-4 mb-6 leading-none tracking-widest drop-shadow-lg uppercase">
+                    Mundo <br><span class="text-bio-green drop-shadow-[0_0_15px_rgba(16,185,129,0.6)]">Microscópico</span>
+                </h1>
+                <p class="text-base md:text-xl text-gray-300 mb-8 font-bold px-4 leading-relaxed max-w-2xl">
+                    ¡Bienvenido al laboratorio de microbiología! Hemos recolectado muestras biológicas raras. Deberás cargarlas, calibrar el enfoque de nuestro microscopio digital y clasificarlas de forma ordenada.
+                </p>
+                <button onclick="playBeep(); showScreen('screen-theory')" class="tech-btn text-xl md:text-3xl px-12 py-4 w-full md:w-auto font-bold">
+                    INICIAR SESIÓN 🔑
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: TEORÍA Y REGLAS
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center">
+            <div class="bio-panel p-6 md:p-10 max-w-5xl w-full text-center my-auto">
+                <h2 class="text-3xl md:text-5xl font-tech text-bio-cyan mb-6 tracking-widest border-b border-bio-cyan/30 pb-4 uppercase drop-shadow-md">
+                    Guía de Laboratorio
+                </h2>
+                <p class="text-sm md:text-lg text-gray-300 font-bold mb-8 max-w-3xl mx-auto">
+                    Aprende las características clave de cada grupo de microorganismos antes de empezar a operar:
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-left">
+                    
+                    <!-- BACTERIAS -->
+                    <div class="bg-slate-900 p-6 rounded-xl border border-bio-green/40 shadow-lg">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="text-4xl">🦠</span>
+                            <h3 class="font-tech text-2xl md:text-3xl text-bio-green tracking-widest font-bold">BACTERIAS</h3>
+                        </div>
+                        <p class="text-sm md:text-base text-gray-300 font-medium leading-relaxed">
+                            • Seres de <strong>una sola célula</strong> (unicelulares) muy antiguos.<br>
+                            • No tienen un núcleo definido (su ADN está suelto).<br>
+                            • Se ven con formas de <strong>bastones</strong> (bacilos) o esferas (cocos).
+                        </p>
+                    </div>
+
+                    <!-- VIRUS -->
+                    <div class="bg-slate-900 p-6 rounded-xl border border-bio-red/40 shadow-lg">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="text-4xl">🧬</span>
+                            <h3 class="font-tech text-2xl md:text-3xl text-bio-red tracking-widest font-bold">VIRUS</h3>
+                        </div>
+                        <p class="text-sm md:text-base text-gray-300 font-medium leading-relaxed">
+                            • No son células verdaderas (<strong>acelulares</strong>).<br>
+                            • Extremadamente diminutos, con formas geométricas o espaciales.<br>
+                            • Solo pueden reproducirse invadiendo la célula de un huésped.
+                        </p>
+                    </div>
+
+                    <!-- HONGOS -->
+                    <div class="bg-slate-900 p-6 rounded-xl border border-bio-purple/40 shadow-lg">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="text-4xl">🍄</span>
+                            <h3 class="font-tech text-2xl md:text-3xl text-bio-purple tracking-widest font-bold">HONGOS</h3>
+                        </div>
+                        <p class="text-sm md:text-base text-gray-300 font-medium leading-relaxed">
+                            • Células con <strong>núcleo definido</strong> (eucariotas).<br>
+                            • Se reproducen por <strong>esporas</strong> y filamentos largos.<br>
+                            • Les encantan los ambientes húmedos y cálidos.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="playBeep(); showScreen('screen-start')" class="border-2 border-gray-600 text-gray-400 font-bold px-8 py-3 rounded-lg text-sm uppercase hover:bg-gray-800 transition tracking-widest font-tech">
+                        ⬅ LOBBY
+                    </button>
+                    <button onclick="playBeep(); startGame()" class="tech-btn text-xl md:text-3xl px-12 py-3 font-bold">
+                        ENCENDER MICROSCOPIO 🔬
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: EL JUEGO (Simulador de Microscopio)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start p-0 relative overflow-hidden bg-bio-dark">
+            
+            <!-- HUD Superior -->
+            <div class="w-full bg-bio-panel border-b border-bio-cyan/30 p-3 md:p-4 flex justify-between items-center z-30 shrink-0 shadow-[0_5px_20px_rgba(0,0,0,0.5)]">
+                <div class="flex items-center gap-4 px-2 md:px-4">
+                    <div class="w-10 h-10 border-2 border-bio-cyan rounded-full flex items-center justify-center animate-spin" style="animation-duration: 6s;">
+                        <div class="w-1 h-8 bg-bio-cyan/60 rounded"></div>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-widest leading-none mb-1">Muestras Archivadas</span>
+                        <span class="font-tech font-bold text-2xl md:text-3xl text-bio-cyan leading-none tracking-widest"><span id="score-display">0</span><span class="text-gray-600 text-lg">/6</span></span>
+                    </div>
+                </div>
+
+                <!-- Estado del Enfoque -->
+                <div class="hidden lg:flex flex-col items-center">
+                    <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none mb-1">Estatus del Lente</span>
+                    <div id="focus-indicator" class="px-4 py-1 border-2 border-bio-red bg-bio-red/10 text-bio-red font-tech font-bold text-lg rounded-full tracking-widest uppercase transition-all duration-300">
+                        Óptica Desenfocada
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <div class="flex flex-col text-right">
+                        <span class="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-widest leading-none mb-1">Pila de Filtros</span>
+                        <span id="lives-display" class="text-lg md:text-2xl tracking-widest mt-1 drop-shadow-[0_0_5px_rgba(244,63,94,0.8)]">❤️ ❤️ ❤️</span>
+                    </div>
+                </div>
+
+                <button onclick="playBeep(); exitGame()" class="border border-bio-red/40 text-bio-red hover:bg-bio-red/20 transition-colors p-2 rounded-md ml-2 md:ml-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Dashboard de Laboratorio Principal -->
+            <div class="w-full flex-grow flex flex-col lg:flex-row gap-4 p-4 md:p-6 overflow-hidden relative">
+                
+                <!-- PANEL IZQUIERDO: Controles del Microscopio -->
+                <div class="w-full lg:w-4/12 flex flex-col gap-4 shrink-0 justify-between">
+                    
+                    <!-- Tarjeta de Diagnóstico / Pistas -->
+                    <div class="bio-panel p-4 flex-grow flex flex-col justify-start">
+                        <span class="font-tech text-bio-cyan text-sm uppercase tracking-widest mb-1 block border-b border-bio-cyan/20 pb-1">🔬 Telemetría de la Muestra:</span>
+                        <p id="specimen-desc" class="text-sm md:text-base font-semibold text-gray-200 leading-relaxed mt-2">Cargando...</p>
+                    </div>
+
+                    <!-- Perilla de Enfoque y Aumentos -->
+                    <div class="bio-panel p-4 flex flex-col gap-4">
+                        <span class="font-tech text-bio-cyan text-sm uppercase tracking-widest block border-b border-bio-cyan/20 pb-1">🎛️ Controles Ópticos:</span>
+                        
+                        <!-- Selectores de zoom -->
+                        <div>
+                            <span class="text-xs text-gray-400 font-bold block mb-2 uppercase">Aumento del Objetivo:</span>
+                            <div class="flex gap-2">
+                                <button onclick="setMagnification(1.0, this)" class="zoom-btn flex-1 py-1 bg-bio-cyan/10 border border-bio-cyan text-bio-cyan font-tech font-bold rounded hover:bg-bio-cyan/20 transition active">10x</button>
+                                <button onclick="setMagnification(1.7, this)" class="zoom-btn flex-1 py-1 bg-gray-800 border border-gray-700 text-gray-400 font-tech font-bold rounded hover:bg-gray-700 transition">40x</button>
+                                <button onclick="setMagnification(2.5, this)" class="zoom-btn flex-1 py-1 bg-gray-800 border border-gray-700 text-gray-400 font-tech font-bold rounded hover:bg-gray-700 transition">100x</button>
+                            </div>
+                        </div>
+
+                        <!-- Perilla deslizante de enfoque -->
+                        <div class="mt-2">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-xs text-gray-400 font-bold uppercase">Tornillo Micrométrico (Enfoque):</span>
+                                <span id="focus-percentage" class="text-xs font-tech text-bio-cyan font-bold">0%</span>
+                            </div>
+                            <input type="range" id="focus-slider" min="0" max="100" value="0" class="focus-slider w-full" oninput="adjustFocus(this.value)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL CENTRAL: Visor del Lente del Microscopio -->
+                <div class="w-full lg:w-5/12 flex flex-col items-center justify-center relative">
+                    <div id="microscope-view" class="microscope-lens">
+                        <div class="scan-line"></div>
+                        <div id="specimen-holder" class="specimen-holder float-bio">
+                            <!-- Inyectado por JS (Detallados SVGs Científicos) -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL DERECHO: Clasificadores -->
+                <div class="w-full lg:w-3/12 flex flex-col gap-4 shrink-0 justify-between">
+                    <div class="bio-panel p-4 flex-grow flex flex-col justify-center">
+                        <h3 class="font-tech text-gray-400 text-sm uppercase tracking-widest text-center mb-4">¿Cuál es su Reino/Grupo?</h3>
+                        <div class="flex flex-col gap-3 md:gap-4">
+                            <button id="btn-bacteria" onclick="checkAnswer('Bacteria')" disabled class="category-btn cat-bacteria font-tech">
+                                <span class="text-2xl md:text-3xl">🦠</span>
+                                <span class="text-lg md:text-xl font-bold tracking-widest uppercase">Bacteria</span>
+                            </button>
+                            <button id="btn-virus" onclick="checkAnswer('Virus')" disabled class="category-btn cat-virus font-tech">
+                                <span class="text-2xl md:text-3xl">🧬</span>
+                                <span class="text-lg md:text-xl font-bold tracking-widest uppercase">Virus</span>
+                            </button>
+                            <button id="btn-hongo" onclick="checkAnswer('Hongo')" disabled class="category-btn cat-hongo font-tech">
+                                <span class="text-2xl md:text-3xl">🍄</span>
+                                <span class="text-lg md:text-xl font-bold tracking-widest uppercase">Hongo</span>
+                            </button>
+                        </div>
+                        <p id="focus-warning" class="text-xs text-bio-red text-center mt-4 font-bold animate-pulse">
+                            ⚠️ Ajusta el enfoque micrométrico primero
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ==============================================
+             MODAL DE FEEDBACK (Transmisión)
+             ============================================== -->
+        <div id="feedback-modal" class="hidden absolute inset-0 z-[60] flex-col items-center justify-center bg-black/90 p-4 text-center backdrop-blur-sm">
+            <div id="feedback-card" class="bio-panel p-6 md:p-10 max-w-xl w-full animate__animated text-center border-t-4">
+                <div id="feedback-icon" class="text-[4rem] md:text-[5rem] mb-2 leading-none drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">🔬</div>
+                <h3 id="feedback-title" class="font-tech font-bold text-2xl md:text-4xl text-white mb-4 tracking-widest uppercase drop-shadow-md">Título</h3>
+                <div class="bg-black/50 p-4 rounded border border-gray-700 mb-6">
+                    <p id="feedback-reason" class="text-sm md:text-base font-medium text-gray-300 leading-relaxed text-left md:text-center"></p>
+                </div>
+                <button onclick="closeFeedback()" class="tech-btn text-lg md:text-xl px-10 py-3 w-full font-bold">
+                    Siguiente Muestra ➡
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (Resultados)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex flex-col items-center justify-center p-6 text-center bg-bio-dark">
+            <div id="result-card" class="bio-panel p-8 md:p-12 max-w-2xl w-full animate__animated animate__zoomIn text-center z-10 border-t-[8px]">
+                <div id="result-icon" class="text-[5rem] md:text-[7rem] mb-4 drop-shadow-[0_0_20px_rgba(255,255,255,0.6)] leading-none">🏆</div>
+                <h2 id="result-title" class="font-tech font-bold text-4xl md:text-6xl mb-4 tracking-widest uppercase drop-shadow-lg">
+                    ¡Análisis Exitoso!
+                </h2>
+                <p id="result-msg" class="text-base md:text-xl text-gray-300 mb-8 font-bold leading-relaxed">
+                    Mensaje de victoria
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="playBeep(); exitGame()" class="bg-transparent border-2 border-gray-600 text-gray-400 font-bold hover:bg-gray-800 hover:text-white px-8 py-3 rounded-lg text-lg uppercase transition-colors font-tech tracking-widest">
+                        CERRAR SISTEMA
+                    </button>
+                    <button onclick="playBeep(); startGame()" class="tech-btn text-xl md:text-2xl px-12 py-3 font-bold">
+                        NUEVO LOTE 🔄
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO CON SVGS CIENTÍFICOS Y AUDIO
+         ============================================== -->
+    <script>
+        // --- SINTETIZADOR DE AUDIO GLOBAL SEGURO (Web Audio API) ---
+        let audioCtx = null;
+
+        function initAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playBeep(freq = 600, duration = 0.1, type = "sine") {
+            try {
+                initAudioContext();
+                if (audioCtx && audioCtx.state !== 'suspended') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + duration);
+                }
+            } catch (e) {
+                // Failsafe: el juego continúa en silencio si el audio falla
+            }
+        }
+
+        function playSuccessSound() {
+            try {
+                playBeep(523.25, 0.12); // C5
+                setTimeout(() => playBeep(659.25, 0.12), 80); // E5
+                setTimeout(() => playBeep(783.99, 0.25), 160); // G5
+            } catch (e) {}
+        }
+
+        function playErrorSound() {
+            try {
+                playBeep(220, 0.3, "sawtooth"); // Sonido rasposo de error
+            } catch (e) {}
+        }
+
+        // --- SISTEMA AUXILIAR: MEZCLADOR ---
+        function shuffleArray(arr) {
+            let array = [...arr];
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // --- DIBUJOS CIENTÍFICOS VECTORIALES (SVGs) ---
+        function getSpecimenSVG(id) {
+            switch(id) {
+                case "Lactobacillus": // Bacteria - Bacilos en cadena
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <rect x="0" y="0" width="100" height="100" fill="transparent"/>
+                        <!-- Bacterias Bacilos verdes -->
+                        <rect x="15" y="40" width="30" height="12" rx="6" fill="#10b981" stroke="#047857" stroke-width="2" transform="rotate(-15 30 46)"/>
+                        <rect x="40" y="30" width="35" height="12" rx="6" fill="#059669" stroke="#047857" stroke-width="2" transform="rotate(10 57 36)"/>
+                        <rect x="25" y="55" width="28" height="11" rx="5.5" fill="#34d399" stroke="#047857" stroke-width="2" transform="rotate(25 39 60)"/>
+                        <!-- Organelos internos simulados -->
+                        <ellipse cx="25" cy="42" rx="2" ry="1" fill="#064e3b" transform="rotate(-15 30 46)"/>
+                        <ellipse cx="50" cy="36" rx="3" ry="1" fill="#064e3b" transform="rotate(10 57 36)"/>
+                        <circle cx="35" cy="59" r="1" fill="#064e3b" transform="rotate(25 39 60)"/>
+                        <circle cx="45" cy="62" r="1" fill="#064e3b" transform="rotate(25 39 60)"/>
+                    </svg>
+                    `;
+                case "Influenza": // Virus esférico con espículas
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <!-- Núcleo cápside -->
+                        <circle cx="50" cy="50" r="25" fill="#1e1b4b" stroke="#f43f5e" stroke-width="3"/>
+                        <!-- Espículas/Glicoproteínas alrededor -->
+                        <g stroke="#f43f5e" stroke-width="2">
+                            <!-- Superior -->
+                            <line x1="50" y1="25" x2="50" y2="15"/>
+                            <circle cx="50" cy="14" r="3" fill="#f43f5e"/>
+                            <!-- Inferior -->
+                            <line x1="50" y1="75" x2="50" y2="85"/>
+                            <circle cx="50" cy="86" r="3" fill="#f43f5e"/>
+                            <!-- Izquierda -->
+                            <line x1="25" y1="50" x2="15" y2="50"/>
+                            <circle cx="14" cy="50" r="3" fill="#f43f5e"/>
+                            <!-- Derecha -->
+                            <line x1="75" y1="50" x2="85" y2="50"/>
+                            <circle cx="86" cy="50" r="3" fill="#f43f5e"/>
+                            <!-- Diagonales -->
+                            <line x1="32" y1="32" x2="25" y2="25"/>
+                            <circle cx="24" cy="24" r="3" fill="#f43f5e"/>
+                            <line x1="68" y1="32" x2="75" y2="25"/>
+                            <circle cx="76" cy="24" r="3" fill="#f43f5e"/>
+                            <line x1="32" y1="68" x2="25" y2="75"/>
+                            <circle cx="24" cy="76" r="3" fill="#f43f5e"/>
+                            <line x1="68" y1="68" x2="75" y2="75"/>
+                            <circle cx="76" cy="76" r="3" fill="#f43f5e"/>
+                        </g>
+                        <!-- Hebras de ARN interno -->
+                        <path d="M43,45 Q48,40 45,55 T49,60" fill="none" stroke="#fbbf24" stroke-width="2"/>
+                    </svg>
+                    `;
+                case "Levadura": // Hongo - Células de levadura gemando
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <!-- Madre -->
+                        <circle cx="45" cy="55" r="22" fill="#4c1d95" stroke="#a855f7" stroke-width="3"/>
+                        <!-- Brote o gema -->
+                        <circle cx="68" cy="40" r="13" fill="#581c87" stroke="#a855f7" stroke-width="3"/>
+                        <!-- Núcleo de levadura -->
+                        <circle cx="42" cy="52" r="5" fill="#310e5d"/>
+                        <circle cx="66" cy="38" r="3" fill="#310e5d"/>
+                        <!-- Vacuolas -->
+                        <circle cx="53" cy="62" r="3" fill="#a855f7" opacity="0.5"/>
+                    </svg>
+                    `;
+                case "Salmonella": // Bacteria flagelada
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <!-- Flagelos de bacteria -->
+                        <path d="M20,50 Q10,40 5,60 T10,80" fill="none" stroke="#34d399" stroke-width="1.5" opacity="0.7"/>
+                        <path d="M30,35 Q15,20 2,40 T15,55" fill="none" stroke="#34d399" stroke-width="1.5" opacity="0.7"/>
+                        <path d="M70,60 Q85,75 98,60 T85,45" fill="none" stroke="#34d399" stroke-width="1.5" opacity="0.7"/>
+                        <!-- Cuerpo celular -->
+                        <rect x="25" y="40" width="50" height="20" rx="10" fill="#10b981" stroke="#065f46" stroke-width="3" transform="rotate(-15 50 50)"/>
+                    </svg>
+                    `;
+                case "Bacteriófago": // Virus complejo alienígena
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <!-- Cabeza Icosaédrica -->
+                        <polygon points="50,15 65,25 65,45 50,55 35,45 35,25" fill="#1e1b4b" stroke="#f43f5e" stroke-width="3"/>
+                        <line x1="50" y1="15" x2="50" y2="55" stroke="#f43f5e" stroke-width="1"/>
+                        <line x1="35" y1="25" x2="65" y2="45" stroke="#f43f5e" stroke-width="1"/>
+                        <!-- Vaina de cola -->
+                        <rect x="47" y="55" width="6" height="20" fill="#f43f5e"/>
+                        <line x1="47" y1="60" x2="53" y2="60" stroke="#090d16"/>
+                        <line x1="47" y1="65" x2="53" y2="65" stroke="#090d16"/>
+                        <line x1="47" y1="70" x2="53" y2="70" stroke="#090d16"/>
+                        <!-- Fibras de cola (patas) -->
+                        <path d="M47,75 L30,90 L25,95" fill="none" stroke="#f43f5e" stroke-width="2"/>
+                        <path d="M53,75 L70,90 L75,95" fill="none" stroke="#f43f5e" stroke-width="2"/>
+                        <path d="M48,75 L40,88 L38,95" fill="none" stroke="#f43f5e" stroke-width="2"/>
+                        <path d="M52,75 L60,88 L62,95" fill="none" stroke="#f43f5e" stroke-width="2"/>
+                    </svg>
+                    `;
+                case "Moho del Pan": // Hongo pluricelular con esporangióforos
+                    return `
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <!-- Tallos (Hifas) -->
+                        <path d="M30,90 Q40,55 45,35" fill="none" stroke="#a855f7" stroke-width="2"/>
+                        <path d="M50,90 Q50,60 55,40" fill="none" stroke="#a855f7" stroke-width="2"/>
+                        <path d="M70,90 Q65,65 62,45" fill="none" stroke="#a855f7" stroke-width="2"/>
+                        <!-- Cabezas de esporas -->
+                        <circle cx="45" cy="35" r="8" fill="#581c87" stroke="#a855f7" stroke-width="2"/>
+                        <circle cx="55" cy="40" r="10" fill="#4c1d95" stroke="#a855f7" stroke-width="2"/>
+                        <circle cx="62" cy="45" r="7" fill="#581c87" stroke="#a855f7" stroke-width="2"/>
+                        <!-- Pequeñas esporas flotando alrededor -->
+                        <circle cx="42" cy="22" r="1.5" fill="#a855f7"/>
+                        <circle cx="58" cy="25" r="1.5" fill="#a855f7"/>
+                        <circle cx="66" cy="32" r="1" fill="#a855f7"/>
+                    </svg>
+                    `;
+            }
+        }
+
+        // --- SISTEMA DE ENFOQUE Y ZOOM OPTICO ---
+        let currentFocusValue = 0;
+        let targetFocusValue = 0; // Valor de calibración del microscopio
+        let isFocused = false;
+        let currentZoomScale = 1.0;
+
+        function setMagnification(scale, btn) {
+            playBeep(800, 0.05);
+            currentZoomScale = scale;
+            
+            // Actualizar interfaz
+            document.querySelectorAll('.zoom-btn').forEach(b => {
+                b.className = "zoom-btn flex-1 py-1 bg-gray-800 border border-gray-700 text-gray-400 font-tech font-bold rounded hover:bg-gray-700 transition";
+            });
+            btn.className = "zoom-btn flex-1 py-1 bg-bio-cyan/10 border border-bio-cyan text-bio-cyan font-tech font-bold rounded hover:bg-bio-cyan/20 transition active";
+            
+            applyOpticalTransformation();
+        }
+
+        function adjustFocus(val) {
+            currentFocusValue = parseInt(val);
+            document.getElementById('focus-percentage').innerText = `${currentFocusValue}%`;
+            
+            // El nivel de blur depende de qué tan lejos esté del punto de enfoque calibrado (target)
+            const distance = Math.abs(currentFocusValue - targetFocusValue);
+            const blurAmount = Math.max(0, (distance / 5)); // Escala de blur óptico
+            
+            const holder = document.getElementById('specimen-holder');
+            holder.style.filter = `blur(${blurAmount}px)`;
+
+            // Si está muy cerca del punto óptimo de enfoque
+            if (distance <= 4) {
+                if (!isFocused) {
+                    isFocused = true;
+                    playSuccessSound();
+                    
+                    // Actualizar estatus visual
+                    const ind = document.getElementById('focus-indicator');
+                    ind.innerText = "Óptica Calibrada";
+                    ind.className = "px-4 py-1 border-2 border-bio-green bg-bio-green/10 text-bio-green font-tech font-bold text-lg rounded-full tracking-widest uppercase transition-all duration-300 shadow-[0_0_10px_#10b981]";
+                    
+                    // Activar botones de clasificación
+                    toggleClassificationButtons(false);
+                    document.getElementById('focus-warning').classList.add('hidden');
+                }
+            } else {
+                if (isFocused) {
+                    isFocused = false;
+                    
+                    const ind = document.getElementById('focus-indicator');
+                    ind.innerText = "Óptica Desenfocada";
+                    ind.className = "px-4 py-1 border-2 border-bio-red bg-bio-red/10 text-bio-red font-tech font-bold text-lg rounded-full tracking-widest uppercase transition-all duration-300";
+                    
+                    toggleClassificationButtons(true);
+                    document.getElementById('focus-warning').classList.remove('hidden');
+                }
+            }
+
+            applyOpticalTransformation();
+        }
+
+        function applyOpticalTransformation() {
+            const holder = document.getElementById('specimen-holder');
+            // Aplicar escala (zoom) + rotación/posición de flotado
+            holder.style.transform = `scale(${currentZoomScale})`;
+        }
+
+        function toggleClassificationButtons(disabled) {
+            document.getElementById('btn-bacteria').disabled = disabled;
+            document.getElementById('btn-virus').disabled = disabled;
+            document.getElementById('btn-hongo').disabled = disabled;
+        }
+
+        // --- SISTEMA DEL JUEGO ---
+        const microorganismData = [
+            {
+                name: "Lactobacillus",
+                visual: "💊",
+                type: "Bacteria",
+                desc: "Organismo unicelular sin núcleo. Es 'bueno' y vive en tu estómago ayudando a la digestión y a hacer el yogur.",
+                explanation: "Las bacterias son unicelulares y procariontes. ¡Y no todas son malas!"
+            },
+            {
+                name: "Influenza",
+                visual: "🦠",
+                type: "Virus",
+                desc: "No es una célula viva. Es diminuto y necesita meterse dentro de tus células para poder multiplicarse y causarte la gripe.",
+                explanation: "Los virus son acelulares (no tienen células) y son parásitos obligados."
+            },
+            {
+                name: "Levadura",
+                visual: "🍞",
+                type: "Hongo",
+                desc: "Microorganismo eucariota unicelular al que le encanta el azúcar. Ayuda a que la masa del pan se infle.",
+                explanation: "Las levaduras pertenecen al reino Fungi (hongos) aunque sean de una sola célula."
+            },
+            {
+                name: "Salmonella",
+                visual: "🌭",
+                type: "Bacteria",
+                desc: "Unicelular con forma de bastoncito (bacilo). Puede darte un fuerte dolor de panza si comes pollo crudo o mal cocinado.",
+                explanation: "Es una bacteria infecciosa muy común en alimentos mal procesados."
+            },
+            {
+                name: "Bacteriófago",
+                visual: "👾",
+                type: "Virus",
+                desc: "Parece una nave espacial alienígena en miniatura. Su único trabajo en la vida es colocar sus patas sobre las bacterias e infectarlas.",
+                explanation: "Son virus que atacan exclusivamente a las bacterias. ¡Acelulares!"
+            },
+            {
+                name: "Moho del Pan",
+                visual: "🍄",
+                type: "Hongo",
+                desc: "Crece como una pelusilla verde o blanca sobre la comida vieja. Le encantan los lugares oscuros y con mucha humedad.",
+                explanation: "Es un hongo pluricelular muy común que descompone materia orgánica."
+            }
+        ];
+
+        let score = 0;
+        let lives = 3;
+        let currentLevel = 0;
+        let gameQueue = [];
+        let isProcessing = false;
+
+        // DOM Elements
+        const scoreDisplay = document.getElementById('score-display');
+        const livesDisplay = document.getElementById('lives-display');
+        const specDesc = document.getElementById('specimen-desc');
+        const specVisual = document.getElementById('specimen-visual');
+        const microscopeView = document.getElementById('microscope-view');
+
+        function showScreen(screenId) {
+            const container = document.getElementById('recurso-wp-micro');
+            container.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startGame() {
+            score = 0;
+            lives = 3;
+            currentLevel = 0;
+            isProcessing = false;
+            
+            // Mezclado seguro de elementos
+            gameQueue = shuffleArray([...microorganismData]);
+            
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('flex');
+            
+            updateUI();
+            showScreen('screen-game');
+            loadSpecimen();
+        }
+
+        function updateUI() {
+            scoreDisplay.innerText = score;
+            let hearts = "";
+            for(let i=0; i<3; i++) {
+                hearts += i < lives ? "❤️ " : "❌ ";
+            }
+            livesDisplay.innerText = hearts;
+        }
+
+        function loadSpecimen() {
+            if (currentLevel >= gameQueue.length) {
+                setTimeout(() => endGame(true), 600);
+                return;
+            }
+
+            const data = gameQueue[currentLevel];
+            isProcessing = false;
+
+            // Resetear enfoque óptico
+            isFocused = false;
+            targetFocusValue = Math.floor(Math.random() * 60) + 20; // Punto óptico aleatorio entre 20% y 80%
+            currentFocusValue = 0;
+            document.getElementById('focus-slider').value = 0;
+            document.getElementById('focus-percentage').innerText = "0%";
+            
+            // Actualizar HUD de enfoque
+            const ind = document.getElementById('focus-indicator');
+            ind.innerText = "Óptica Desenfocada";
+            ind.className = "px-4 py-1 border-2 border-bio-red bg-bio-red/10 text-bio-red font-tech font-bold text-lg rounded-full tracking-widest uppercase transition-all duration-300";
+            
+            toggleClassificationButtons(true);
+            document.getElementById('focus-warning').classList.remove('hidden');
+
+            // Cargar descripción del microorganismo
+            document.getElementById('specimen-desc').innerText = data.desc;
+
+            // Inyectar el dibujo científico (SVG) en lugar de emojis
+            const holder = document.getElementById('specimen-holder');
+            holder.innerHTML = getSpecimenSVG(data.name);
+            
+            // Desenfocar de entrada
+            holder.style.filter = "blur(15px)";
+            holder.className = "specimen-holder float-bio slide-in-plate";
+            
+            // Cambiar zoom predeterminado a 10x
+            const firstZoomBtn = document.querySelector('.zoom-btn');
+            if (firstZoomBtn) {
+                setMagnification(1.0, firstZoomBtn);
+            }
+            
+            setTimeout(() => {
+                holder.classList.remove('slide-in-plate');
+            }, 600);
+        }
+
+        function checkAnswer(selectedCategory) {
+            if (isProcessing) return;
+            isProcessing = true;
+
+            const data = gameQueue[currentLevel];
+            const isCorrect = selectedCategory === data.type;
+
+            if (isCorrect) {
+                // ACIERTO
+                score++;
+                updateUI();
+                playSuccessSound();
+                
+                microscopeView.style.borderColor = '#10b981'; // Luz Verde
+                
+                setTimeout(() => {
+                    showFeedback(true, "¡Muestra Identificada!", `<strong>Muestra:</strong> ${data.name}.<br><strong>Grupo:</strong> ${data.type}.<br><br>${data.explanation}`);
+                }, 400);
+
+            } else {
+                // ERROR
+                lives--;
+                updateUI();
+                playErrorSound();
+
+                microscopeView.classList.add('shake-error');
+                microscopeView.style.borderColor = '#f43f5e'; // Luz Roja
+
+                setTimeout(() => {
+                    microscopeView.classList.remove('shake-error');
+                    showFeedback(false, "¡Alarma de Contaminación!", `<strong>Muestra:</strong> ${data.name}.<br><strong>Grupo correcto:</strong> ${data.type}.<br><br>${data.explanation}`);
+                }, 800);
+            }
+        }
+
+        function showFeedback(isSuccess, titleText, reasonText) {
+            const modal = document.getElementById('feedback-modal');
+            const card = document.getElementById('feedback-card');
+            const icon = document.getElementById('feedback-icon');
+            const title = document.getElementById('feedback-title');
+            const reason = document.getElementById('feedback-reason');
+
+            card.classList.remove('animate__bounceIn', 'border-bio-green', 'border-bio-red');
+            void card.offsetWidth;
+
+            if (isSuccess) {
+                icon.innerText = "🔬✅";
+                title.innerText = titleText;
+                title.className = "font-tech font-bold text-3xl md:text-5xl mb-4 tracking-widest uppercase drop-shadow-md text-bio-green";
+                card.classList.add('border-bio-green');
+            } else {
+                icon.innerText = "☣️❌";
+                title.innerText = titleText;
+                title.className = "font-tech font-bold text-3xl md:text-5xl mb-4 tracking-widest uppercase drop-shadow-md text-bio-red";
+                card.classList.add('border-bio-red');
+            }
+
+            reason.innerHTML = reasonText;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            card.classList.add('animate__bounceIn');
+        }
+
+        function closeFeedback() {
+            const modal = document.getElementById('feedback-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            
+            currentLevel++;
+            
+            if (lives <= 0) {
+                endGame(false);
+            } else {
+                loadSpecimen();
+            }
+        }
+
+        function endGame(victory) {
+            const screenResult = document.getElementById('screen-result');
+            const title = document.getElementById('result-title');
+            const msg = document.getElementById('result-msg');
+            const icon = document.getElementById('result-icon');
+            const card = document.getElementById('result-card');
+            
+            card.classList.remove('border-bio-cyan', 'border-bio-red');
+
+            if (victory) {
+                icon.innerText = "🏆🔬";
+                title.innerText = "INFORME COMPLETADO";
+                title.className = "font-tech font-bold text-4xl md:text-6xl mb-4 tracking-widest uppercase drop-shadow-lg text-bio-cyan";
+                msg.innerHTML = `Análisis finalizado sin fallos. Lograste catalogar exitosamente ${score} de 6 microorganismos. ¡Tus habilidades en el microscopio son excelentes!`;
+                card.classList.add('border-bio-cyan');
+            } else {
+                icon.innerText = "☣️🚨";
+                title.innerText = "LABORATORIO BLOQUEADO";
+                title.className = "font-tech font-bold text-4xl md:text-6xl mb-4 tracking-widest uppercase drop-shadow-lg text-bio-red";
+                msg.innerHTML = "Se ha violado la seguridad biológica debido a clasificaciones fallidas. Deberás revisar la Guía de Especies e intentarlo de nuevo.";
+                card.classList.add('border-bio-red');
+            }
+
+            screenResult.classList.remove('hidden');
+            screenResult.classList.add('flex');
+        }
+
+        function exitGame() {
+            currentLevel = 0;
+            isProcessing = false;
+            gameQueue = [];
+            showScreen('screen-start');
+        }
+    </script>
+</body>
+</html>

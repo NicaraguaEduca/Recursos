@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mina de Palabras - Uso de la J</title>
+    
+    <!-- Scripts Externos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA PARA WORDPRESS -->
+    <script>
+        tailwind.config = {
+            important: '#recurso-wp-mina', /* Fuerza Tailwind solo en este contenedor */
+            corePlugins: {
+                preflight: false, /* Evita que Tailwind rompa el tema de WP */
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lilita+One&family=Outfit:wght@400;700;900&display=swap');
+
+        /* =========================================================
+           MICRO-RESET LOCAL: Protege el recurso del tema de WP
+           ========================================================= */
+        #recurso-wp-mina * {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: currentColor;
+            line-height: normal;
+        }
+        #recurso-wp-mina h1, #recurso-wp-mina h2, #recurso-wp-mina h3, #recurso-wp-mina p, #recurso-wp-mina span, #recurso-wp-mina div {
+            margin: 0; padding: 0;
+        }
+        #recurso-wp-mina button {
+            background-color: transparent; background-image: none; cursor: pointer; padding: 0; font-family: inherit;
+        }
+
+        /* =========================================================
+           ESTILOS PANTALLA COMPLETA & ALTO CONTRASTE (Datashow)
+           ========================================================= */
+        #recurso-wp-mina {
+            font-family: 'Outfit', sans-serif;
+            background-color: #2e1065; 
+            background-image: 
+                radial-gradient(#4c1d95 3px, transparent 3px),
+                radial-gradient(#4c1d95 3px, transparent 3px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            color: #000;
+            display: flex;
+            flex-direction: column;
+            
+            /* TRUCO WP: Forzar ancho y alto de pantalla completa */
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        #recurso-wp-mina .font-mine { 
+            font-family: 'Lilita One', cursive; 
+            letter-spacing: 2px; 
+            text-transform: uppercase;
+        }
+
+        /* Paneles de Alto Contraste */
+        #recurso-wp-mina .neo-panel {
+            background: #ffffff;
+            border: 6px solid #000;
+            border-radius: 20px;
+            box-shadow: 8px 8px 0px #000;
+            position: relative;
+        }
+
+        #recurso-wp-mina .neo-btn {
+            border: 4px solid #000;
+            box-shadow: 4px 4px 0px #000;
+            transition: all 0.1s;
+        }
+        #recurso-wp-mina .neo-btn:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px #000;
+        }
+
+        /* =========================================================
+           CURSOR DE PICO INTERACTIVO
+           ========================================================= */
+        #recurso-wp-mina .cursor-pico {
+            cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><text y='24' font-size='24'>⛏️</text></svg>") 0 24, pointer !important;
+        }
+        #recurso-wp-mina .cursor-pico:active {
+            cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><g transform='rotate(-40 16 16)'><text y='24' font-size='24'>⛏️</text></g></svg>") 0 24, pointer !important;
+        }
+
+        /* =========================================================
+           ESTILOS DE LAS ROCAS (Datashow contrast)
+           ========================================================= */
+        #recurso-wp-mina .rock-btn {
+            background: #cbd5e1; 
+            border-radius: 12px;
+            border: 4px solid #000;
+            box-shadow: 0 6px 0px #475569, 4px 8px 0px #000;
+            transition: all 0.1s ease;
+            position: relative;
+            overflow: hidden;
+            color: #000;
+        }
+        
+        #recurso-wp-mina .rock-btn:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+
+        /* Efecto de temblor al picar */
+        @keyframes smashRock {
+            0% { transform: scale(1) rotate(0); filter: brightness(1.5); }
+            20% { transform: scale(0.95) rotate(-4deg); }
+            40% { transform: scale(0.95) rotate(4deg); }
+            60% { transform: scale(0.95) rotate(-4deg); }
+            80% { transform: scale(0.95) rotate(4deg); }
+            100% { transform: scale(1) rotate(0); }
+        }
+        #recurso-wp-mina .rock-smashing {
+            animation: smashRock 0.3s ease-in-out;
+            pointer-events: none;
+        }
+
+        #recurso-wp-mina .rock-cracked {
+            background: #475569;
+            background-image: 
+                linear-gradient(45deg, transparent 45%, #000 45%, #000 50%, transparent 50%),
+                linear-gradient(-60deg, transparent 30%, #000 30%, #000 33%, transparent 33%);
+            border: 4px solid #000;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.8), 2px 2px 0px #000;
+            pointer-events: none;
+            color: #94a3b8;
+            transform: translateY(6px);
+        }
+
+        #recurso-wp-mina .rock-gem {
+            background: #22d3ee; 
+            border: 4px solid #000;
+            box-shadow: 0 0 15px rgba(34, 211, 238, 0.8), inset 0 2px 8px #fff, 3px 3px 0px #000;
+            color: #000;
+            pointer-events: none;
+            transform: translateY(4px);
+        }
+
+        #recurso-wp-mina .rock-trap {
+            background: #f43f5e; 
+            border: 4px solid #000;
+            box-shadow: 3px 3px 0px #000;
+            color: white;
+            pointer-events: none;
+            transform: translateY(4px);
+        }
+
+        /* Pantallas SPA */
+        #recurso-wp-mina .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            position: absolute;
+            top: 0; left: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        #recurso-wp-mina .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-mina .screen { -ms-overflow-style: none; scrollbar-width: none; }
+        #recurso-wp-mina .screen.active {
+            display: flex;
+            animation: fadeIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Sistema de Partículas Avanzado */
+        .dust-particle {
+            position: absolute;
+            background: #94a3b8;
+            border: 2px solid #000;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: dustBurst 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            z-index: 100;
+        }
+        .gem-particle {
+            position: absolute;
+            background: #22d3ee;
+            border: 2px solid #000;
+            border-radius: 0px;
+            pointer-events: none;
+            animation: dustBurst 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            z-index: 100;
+        }
+
+        @keyframes dustBurst {
+            0% { transform: scale(1) translate(0, 0); opacity: 1; }
+            100% { transform: scale(0) translate(var(--tx), var(--ty)); opacity: 0; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <!-- CONTENEDOR WP-SHIELD FULLSCREEN ESCALADO -->
+    <div id="recurso-wp-mina">
+
+        <!-- ==============================================
+             PANTALLA 1: INICIO
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="neo-panel p-6 md:p-10 max-w-2xl w-full mx-4 transform -rotate-1">
+                <div class="text-[4rem] md:text-[6rem] mb-2 animate__animated animate__swing drop-shadow-[3px_3px_0_#000]">⛏️</div>
+                <h2 class="text-base md:text-xl text-black font-black mb-2 uppercase tracking-widest bg-yellow-400 inline-block px-3 py-1 border-4 border-black shadow-[3px_3px_0_#000] -rotate-2">
+                    Ortografía - 6to Grado
+                </h2>
+                <h1 class="text-5xl md:text-6xl lg:text-7xl font-mine text-purple-700 mt-4 mb-4 drop-shadow-[3px_3px_0_#000] leading-none uppercase">
+                    Mina de Palabras
+                    <br><span class="text-cyan-500 text-3xl md:text-5xl drop-shadow-[2px_2px_0_#000]">Uso de la "J"</span>
+                </h1>
+                <p class="text-base md:text-xl text-gray-800 mb-6 font-bold px-2 leading-snug">
+                    Equípate con tu pico y entra a las profundidades. Tu misión es extraer solo las gemas: palabras escritas <strong>correctamente con J</strong>.
+                </p>
+                <button onclick="showScreen('screen-theory')" class="neo-btn bg-yellow-400 text-black font-mine text-xl md:text-3xl px-8 py-4 rounded-xl w-full md:w-auto">
+                    VER MAPA DE REGLAS 📜
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: TEORÍA Y REGLAS MEJORADAS
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center">
+            <div class="neo-panel p-5 md:p-8 max-w-5xl w-full text-center my-auto">
+                <h2 class="text-4xl md:text-5xl font-mine text-purple-700 mb-4 drop-shadow-[2px_2px_0_#000]">
+                    Leyes de la Mina (La J)
+                </h2>
+                <p class="text-base md:text-lg text-gray-800 mb-6 font-black max-w-3xl mx-auto leading-snug bg-cyan-100 p-3 border-4 border-black rounded-lg">
+                    El gran problema es que la <strong>G</strong> y la <strong>J</strong> suenan IGUAL delante de la "E" y la "I" (ge/je, gi/ji). <br> ¡Memoriza estas 3 leyes para encontrar las gemas!
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 text-left">
+                    <!-- Regla 1 -->
+                    <div class="bg-yellow-400 p-4 rounded-xl border-4 border-black shadow-[4px_4px_0_#000] transform hover:-translate-y-1 transition">
+                        <div class="bg-white border-4 border-black w-12 h-12 rounded-full flex items-center justify-center text-2xl mb-3 shadow-[3px_3px_0_#000]">🚗</div>
+                        <h3 class="font-mine text-xl md:text-2xl text-black mb-2 uppercase">1. Terminaciones</h3>
+                        <p class="text-sm md:text-base text-black font-bold mb-3 leading-snug">
+                            Las palabras que terminan en <strong>-aje</strong> y <strong>-eje</strong> siempre llevan J.
+                        </p>
+                        <div class="bg-white border-4 border-black p-2 rounded-lg text-purple-700 font-black text-sm md:text-base text-center">
+                            Garaje, Viaje, Hereje
+                        </div>
+                    </div>
+                    
+                    <!-- Regla 2 -->
+                    <div class="bg-cyan-400 p-4 rounded-xl border-4 border-black shadow-[4px_4px_0_#000] transform hover:-translate-y-1 transition">
+                        <div class="bg-white border-4 border-black w-12 h-12 rounded-full flex items-center justify-center text-2xl mb-3 shadow-[3px_3px_0_#000]">♟️</div>
+                        <h3 class="font-mine text-xl md:text-2xl text-black mb-2 uppercase">2. Inicios</h3>
+                        <p class="text-sm md:text-base text-black font-bold mb-3 leading-snug">
+                            Las palabras que empiezan por <strong>aje-</strong> y <strong>eje-</strong> (excepto "agencia").
+                        </p>
+                        <div class="bg-white border-4 border-black p-2 rounded-lg text-purple-700 font-black text-sm md:text-base text-center">
+                            Ajedrez, Ejemplo, Ejecutivo
+                        </div>
+                    </div>
+
+                    <!-- Regla 3 MEJORADA -->
+                    <div class="bg-pink-500 p-4 rounded-xl border-4 border-black shadow-[4px_4px_0_#000] transform hover:-translate-y-1 transition">
+                        <div class="bg-white border-4 border-black w-12 h-12 rounded-full flex items-center justify-center text-2xl mb-3 shadow-[3px_3px_0_#000]">🧶</div>
+                        <h3 class="font-mine text-xl md:text-2xl text-black mb-2 uppercase">3. Los Rebeldes</h3>
+                        <p class="text-sm md:text-base text-white font-bold mb-3 leading-snug">
+                            Casi todos los verbos terminan en G (coger, elegir)... <strong>PERO</strong> memoriza a estos dos rebeldes:
+                        </p>
+                        <div class="bg-white border-4 border-black p-2 rounded-lg text-purple-700 font-black text-sm md:text-base text-center">
+                            Tejer y Crujir
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button onclick="showScreen('screen-start')" class="neo-btn bg-white text-black font-black px-6 py-3 rounded-lg text-lg">
+                        ⬅ VOLVER
+                    </button>
+                    <button onclick="startGame()" class="neo-btn bg-lime-400 text-black font-mine text-2xl md:text-3xl px-8 py-3 rounded-lg">
+                        ¡ENTRAR A LA MINA! ⛏️
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: EL JUEGO (Con Cursor de Pico)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start md:justify-center relative cursor-pico">
+            
+            <!-- UI Header (Score & Lives) -->
+            <div class="w-full max-w-4xl mx-auto flex justify-between items-center mb-4 bg-white p-3 md:p-4 rounded-2xl border-4 border-black shadow-[6px_6px_0_#000] shrink-0">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl md:text-4xl drop-shadow-[2px_2px_0_#000]">💎</span>
+                    <div class="flex flex-col">
+                        <span class="text-xs text-black font-black uppercase tracking-widest leading-none mb-1">Gemas</span>
+                        <span class="font-mine text-2xl md:text-4xl text-cyan-500 drop-shadow-[2px_2px_0_#000] leading-none"><span id="score-display">0</span><span class="text-gray-400">/6</span></span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <div class="flex flex-col text-right">
+                        <span class="text-xs text-black font-black uppercase tracking-widest leading-none mb-1">Picos (Vidas)</span>
+                        <span id="lives-display" class="font-mine text-xl md:text-3xl text-white tracking-widest mt-1 drop-shadow-[2px_2px_0_#000]">⛏️⛏️⛏️</span>
+                    </div>
+                </div>
+
+                <button onclick="exitGame()" class="neo-btn bg-red-500 text-white p-2 md:p-3 rounded-xl">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 md:h-8 md:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Tablero de Rocas -->
+            <div class="w-full max-w-4xl mx-auto flex-grow flex flex-col items-center justify-center">
+                <div class="bg-yellow-400 border-4 border-black px-6 py-2 rounded-full shadow-[4px_4px_0_#000] mb-4 transform -rotate-1">
+                    <p class="text-center text-black font-black text-lg md:text-xl">
+                        Pica SOLO las palabras correctamente escritas con <strong>"J"</strong>.
+                    </p>
+                </div>
+                <div class="text-xs md:text-base text-black bg-white border-4 border-black px-4 py-2 rounded-full mb-6 font-bold flex items-center gap-2 shadow-[3px_3px_0_#000] transform rotate-1 text-center">
+                    <span class="text-xl">💡</span> Consejo: Si viene de una palabra con J (hoja), su familia también (hojear).
+                </div>
+
+                <!-- Modifiqué los gaps y paddings para encajar mejor en la pantalla -->
+                <div id="mine-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 w-full p-4 md:p-6 bg-purple-900 border-[6px] border-black rounded-[2rem] shadow-[inset_0_0_20px_rgba(0,0,0,0.8),8px_8px_0_#000] cursor-pico">
+                    <!-- Las rocas se inyectan aquí -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ==============================================
+             MODAL DE FEEDBACK (Error al picar)
+             ============================================== -->
+        <div id="feedback-modal" class="hidden absolute inset-0 z-[60] flex-col items-center justify-center bg-black/80 p-4 text-center backdrop-blur-md">
+            <div class="neo-panel p-6 md:p-10 max-w-xl w-full animate__animated animate__bounceIn text-center border-t-[10px] border-t-red-500">
+                <div class="text-[4rem] md:text-[6rem] mb-2 drop-shadow-[3px_3px_0_#000]">💥</div>
+                <h3 class="font-mine text-3xl md:text-5xl text-red-500 mb-4 uppercase drop-shadow-[2px_2px_0_#000]">¡Trampa G!</h3>
+                <p id="feedback-reason" class="text-lg md:text-xl font-bold text-gray-800 leading-snug mb-6 bg-gray-100 p-4 border-4 border-black rounded-xl"></p>
+                <button onclick="closeFeedback()" class="neo-btn bg-yellow-400 text-black px-8 py-4 rounded-xl font-black uppercase tracking-widest text-lg md:text-xl w-full">
+                    Continuar Picando
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (Resultados)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex flex-col items-center justify-center p-6 text-center bg-black/90 backdrop-blur-md">
+            <div id="result-card" class="neo-panel p-8 md:p-12 max-w-2xl w-full animate__animated animate__zoomIn text-center transform rotate-1">
+                <div id="result-icon" class="text-[5rem] md:text-[8rem] mb-4 drop-shadow-[4px_4px_0_#000]">🏆</div>
+                <h2 id="result-title" class="font-mine text-4xl md:text-6xl text-purple-700 mb-4 uppercase leading-none drop-shadow-[2px_2px_0_#000]">¡Mina Vaciada!</h2>
+                <p id="result-msg" class="text-lg md:text-2xl text-gray-800 mb-8 font-bold leading-snug">
+                    Has recolectado todas las gemas sin romper tus picos. ¡Eres un maestro de la ortografía!
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="showScreen('screen-start')" class="neo-btn bg-white text-black font-black px-8 py-4 rounded-xl text-lg uppercase">
+                        🏠 Inicio
+                    </button>
+                    <button onclick="startGame()" class="neo-btn bg-cyan-400 text-black font-mine text-2xl md:text-3xl px-10 py-4 rounded-xl">
+                        JUGAR DE NUEVO 🔄
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO Y SPA
+         ============================================== -->
+    <script>
+        const wordBank = [
+            { word: "Garaje", correct: true, rule: "Termina en -aje." },
+            { word: "Viaje", correct: true, rule: "Termina en -aje." },
+            { word: "Mensaje", correct: true, rule: "Termina en -aje." },
+            { word: "Ajedrez", correct: true, rule: "Empieza con aje-." },
+            { word: "Ejemplo", correct: true, rule: "Empieza con eje-." },
+            { word: "Tejer", correct: true, rule: "Los rebeldes: Tejer y Crujir siempre van con J." },
+            { word: "Hojear", correct: true, rule: "Viene de la palabra 'Hoja' (que lleva J), y los verbos en -jear van con J." },
+            { word: "Crujir", correct: true, rule: "Los rebeldes: Tejer y Crujir siempre van con J." },
+            
+            { word: "Garage", correct: false, rule: "Error común por el inglés. En español la regla dice que las palabras terminadas en 'aje' van con J (Garaje)." },
+            { word: "Viage", correct: false, rule: "Incorrecto. Recuerda la regla número 1: Las terminaciones -aje y -eje siempre van con J." },
+            { word: "Agedrez", correct: false, rule: "Incorrecto. Las palabras que empiezan por 'aje-' o 'eje-' llevan J." },
+            { word: "Egemplo", correct: false, rule: "Incorrecto. La regla dicta que si empieza con 'eje-' lleva J." },
+            { word: "Teger", correct: false, rule: "Incorrecto. Aunque muchos verbos van con G (coger, elegir), 'tejer' es un verbo rebelde y va con J." },
+            { word: "Hogear", correct: false, rule: "Incorrecto. Si la palabra original lleva J (Hoja), su verbo también la lleva (Hojear)." }
+        ];
+
+        let lives = 3;
+        let gemsFound = 0;
+        const gemsToFind = 6;
+        let isProcessing = false;
+
+        function showScreen(screenId) {
+            const container = document.getElementById('recurso-wp-mina');
+            container.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function shuffleArray(arr) {
+            let array = [...arr];
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startGame() {
+            lives = 3;
+            gemsFound = 0;
+            isProcessing = false;
+            
+            updateUI();
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('flex');
+            showScreen('screen-game');
+            
+            buildMine();
+        }
+
+        function updateUI() {
+            document.getElementById('score-display').innerText = gemsFound;
+            
+            let picos = "";
+            for(let i=0; i<3; i++) {
+                picos += i < lives ? "⛏️" : "❌";
+            }
+            document.getElementById('lives-display').innerText = picos;
+        }
+
+        function buildMine() {
+            const grid = document.getElementById('mine-grid');
+            grid.innerHTML = '';
+
+            const correctWords = shuffleArray(wordBank.filter(w => w.correct)).slice(0, 6);
+            const incorrectWords = shuffleArray(wordBank.filter(w => !w.correct)).slice(0, 6);
+            const boardWords = shuffleArray([...correctWords, ...incorrectWords]);
+
+            boardWords.forEach((item, index) => {
+                const btn = document.createElement('button');
+                // Reduje el padding y texto para que ajuste mejor a la pantalla
+                btn.className = 'rock-btn cursor-pico p-3 md:p-5 text-center font-black text-lg md:text-2xl animate__animated animate__fadeIn';
+                btn.style.animationDelay = `${index * 0.05}s`;
+                btn.innerText = item.word;
+                
+                btn.onclick = (e) => handleRockClick(btn, item, e);
+                grid.appendChild(btn);
+            });
+        }
+
+        function handleRockClick(btn, item, e) {
+            if (isProcessing || btn.classList.contains('rock-cracked') || btn.classList.contains('rock-gem')) return;
+
+            // 1. Efecto Visual de Golpe y Polvo
+            createParticles(e.clientX, e.clientY, false);
+            btn.classList.add('rock-smashing'); // Inicia vibración
+
+            // 2. Pausa dramática mientras tiembla la piedra
+            setTimeout(() => {
+                btn.classList.remove('rock-smashing');
+
+                if (item.correct) {
+                    // ÉXITO: Aparece Gema
+                    createParticles(e.clientX, e.clientY, true); 
+                    btn.classList.add('rock-gem', 'animate__animated', 'animate__tada');
+                    btn.classList.remove('rock-btn');
+                    btn.innerHTML = `<span class="block text-3xl mb-1 drop-shadow-[2px_2px_0_#000]">💎</span>${item.word}`;
+                    
+                    gemsFound++;
+                    updateUI();
+
+                    if (gemsFound >= gemsToFind) {
+                        isProcessing = true;
+                        setTimeout(() => endGame(true), 1200);
+                    }
+
+                } else {
+                    // ERROR: Roca vacía y Modal
+                    isProcessing = true;
+                    btn.classList.add('rock-trap');
+                    btn.classList.remove('rock-btn');
+                    
+                    lives--;
+                    updateUI();
+
+                    setTimeout(() => {
+                        showFeedback(item);
+                        // Convertirla visualmente a rota
+                        btn.classList.replace('rock-trap', 'rock-cracked');
+                    }, 400);
+                }
+            }, 300); // 300ms de vibración
+        }
+
+        // Sistema de Partículas Avanzado
+        function createParticles(x, y, isGem) {
+            const container = document.getElementById('recurso-wp-mina');
+            const rect = container.getBoundingClientRect();
+            
+            const localX = x - rect.left;
+            const localY = y - rect.top;
+            const particleCount = isGem ? 12 : 8;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = isGem ? 'gem-particle' : 'dust-particle';
+                
+                const size = Math.random() * (isGem ? 12 : 16) + 6;
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 80 + 30;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${localX}px`;
+                particle.style.top = `${localY}px`;
+                particle.style.setProperty('--tx', `${tx}px`);
+                particle.style.setProperty('--ty', `${ty}px`);
+                
+                container.appendChild(particle);
+                setTimeout(() => particle.remove(), 600);
+            }
+        }
+
+        function showFeedback(item) {
+            const modal = document.getElementById('feedback-modal');
+            document.getElementById('feedback-reason').innerHTML = `Has picado la palabra <strong>"${item.word}"</strong>. <br><br> ${item.rule}`;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeFeedback() {
+            const modal = document.getElementById('feedback-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            
+            if (lives <= 0) {
+                endGame(false);
+            } else {
+                isProcessing = false;
+            }
+        }
+
+        function endGame(victory) {
+            const screenResult = document.getElementById('screen-result');
+            const title = document.getElementById('result-title');
+            const msg = document.getElementById('result-msg');
+            const icon = document.getElementById('result-icon');
+            const card = document.getElementById('result-card');
+            
+            if (victory) {
+                icon.innerText = "💎";
+                title.innerText = "¡Mina Vaciada!";
+                title.className = "font-mine text-4xl md:text-6xl text-cyan-500 mb-4 uppercase leading-none drop-shadow-[2px_2px_0_#000]";
+                msg.innerText = "¡Excelente trabajo! Has extraído todas las palabras correctas. Tu ortografía brilla como el diamante.";
+                card.style.borderTop = "10px solid #22d3ee"; // cyan
+            } else {
+                icon.innerText = "🏚️";
+                title.innerText = "¡Picos Rotos!";
+                title.className = "font-mine text-4xl md:text-6xl text-red-500 mb-4 uppercase leading-none drop-shadow-[2px_2px_0_#000]";
+                msg.innerText = "Golpeaste demasiadas rocas equivocadas (Con 'G'). Repasa las reglas en el Mapa y vuelve a intentarlo.";
+                card.style.borderTop = "10px solid #ef4444"; // red
+            }
+
+            screenResult.classList.remove('hidden');
+            screenResult.classList.add('flex');
+        }
+
+        function exitGame() {
+            if(confirm("¿Deseas salir de la mina? Perderás tu progreso actual.")) {
+                isProcessing = false;
+                showScreen('screen-start');
+            }
+        }
+    </script>
+</body>
+</html>

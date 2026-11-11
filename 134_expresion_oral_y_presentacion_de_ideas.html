@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Podio Virtual - Expresión Oral</title>
+    
+    <!-- Fuentes Google: Righteous (Show) y Nunito (Lectura) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Righteous&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA PARA WORDPRESS -->
+    <script>
+        tailwind.config = {
+            important: '#recurso-wp-podio', /* Fuerza Tailwind solo en este contenedor */
+            corePlugins: {
+                preflight: false, /* Evita que Tailwind rompa el tema de WP */
+            },
+            theme: {
+                extend: {
+                    fontFamily: {
+                        show: ['Righteous', 'cursive'],
+                        body: ['Nunito', 'sans-serif'],
+                    },
+                    colors: {
+                        theater: {
+                            dark: '#450a0a',     /* Rojo súper oscuro */
+                            curtain: '#991b1b',  /* Rojo telón */
+                            gold: '#fbbf24',     /* Dorado luces */
+                            wood: '#78350f',     /* Madera escenario */
+                            woodLight: '#92400e' /* Madera clara */
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* =========================================================
+           MICRO-RESET LOCAL: Protege el recurso del tema de WP
+           ========================================================= */
+        #recurso-wp-podio * {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: currentColor;
+            line-height: normal;
+        }
+        #recurso-wp-podio h1, #recurso-wp-podio h2, #recurso-wp-podio h3, #recurso-wp-podio p, #recurso-wp-podio span, #recurso-wp-podio div {
+            margin: 0; padding: 0;
+        }
+        #recurso-wp-podio button {
+            background-color: transparent; background-image: none; cursor: pointer; padding: 0; font-family: inherit;
+        }
+
+        /* =========================================================
+           ESTILOS PANTALLA COMPLETA & ALTO CONTRASTE (Datashow)
+           ========================================================= */
+        #recurso-wp-podio {
+            font-family: 'Nunito', sans-serif;
+            background-color: #1a0606; /* Casi negro rojizo */
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            
+            /* TRUCO WP: Forzar ancho y alto de pantalla completa */
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Paneles de Show */
+        #recurso-wp-podio .show-panel {
+            background: linear-gradient(145deg, #7f1d1d, #450a0a);
+            border: 4px solid #fbbf24;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(251, 191, 36, 0.2);
+            position: relative;
+        }
+
+        #recurso-wp-podio .show-btn {
+            background: linear-gradient(to bottom, #fbbf24, #d97706);
+            border: 4px solid #78350f;
+            color: #450a0a;
+            box-shadow: 0 8px 0 #78350f, 0 15px 20px rgba(0,0,0,0.4);
+            transition: all 0.15s ease;
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.4);
+        }
+        #recurso-wp-podio .show-btn:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 0 #78350f, 0 20px 25px rgba(0,0,0,0.5);
+        }
+        #recurso-wp-podio .show-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #78350f, 0 5px 10px rgba(0,0,0,0.3);
+        }
+
+        /* Opciones del juego */
+        #recurso-wp-podio .option-btn {
+            background: #ffffff;
+            color: #1e293b;
+            border: 4px solid #cbd5e1;
+            border-radius: 1rem;
+            transition: all 0.2s;
+            box-shadow: 0 6px 0 #94a3b8;
+        }
+        #recurso-wp-podio .option-btn:hover {
+            border-color: #fbbf24;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 0 #d97706;
+        }
+        #recurso-wp-podio .option-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #d97706;
+        }
+
+        /* Telones y Escenario */
+        .stage-floor {
+            background: repeating-linear-gradient(
+                to right,
+                #78350f,
+                #78350f 40px,
+                #92400e 40px,
+                #92400e 42px
+            );
+            border-top: 8px solid #450a0a;
+            perspective: 1000px;
+            transform-style: preserve-3d;
+        }
+        
+        .spotlight {
+            position: absolute;
+            top: -20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 1000px;
+            background: radial-gradient(ellipse at 50% 0%, rgba(251, 191, 36, 0.4) 0%, rgba(251, 191, 36, 0.1) 40%, transparent 70%);
+            pointer-events: none;
+            z-index: 5;
+            transition: all 0.5s ease;
+        }
+
+        .spotlight-success { background: radial-gradient(ellipse at 50% 0%, rgba(74, 222, 128, 0.5) 0%, rgba(74, 222, 128, 0.15) 40%, transparent 70%); }
+        .spotlight-error { background: radial-gradient(ellipse at 50% 0%, rgba(239, 68, 68, 0.5) 0%, rgba(239, 68, 68, 0.15) 40%, transparent 70%); }
+
+        /* Pantallas SPA */
+        #recurso-wp-podio .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            position: absolute;
+            top: 0; left: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 10;
+        }
+        #recurso-wp-podio .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-podio .screen.active {
+            display: flex;
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .shake-error { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-4px, 0, 0); }
+            20%, 80% { transform: translate3d(8px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-12px, 0, 0); }
+            40%, 60% { transform: translate3d(12px, 0, 0); }
+        }
+
+        .confetti {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            border-radius: 2px;
+            animation: fall 2.5s linear forwards;
+            z-index: 60;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-50px) rotate(0deg); opacity: 1;}
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0;}
+        }
+
+        /* Avatar del orador */
+        .avatar-speaker {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(0 20px 10px rgba(0,0,0,0.5));
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-podio">
+
+        <!-- ==============================================
+             PANTALLA 1: INICIO
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center bg-theater-curtain bg-[radial-gradient(circle_at_center,rgba(0,0,0,0)_0%,rgba(0,0,0,0.8)_100%)]">
+            <div class="spotlight"></div>
+            
+            <div class="show-panel p-8 md:p-14 max-w-3xl w-full mx-4 z-10 text-center flex flex-col items-center">
+                <div class="text-[5rem] md:text-[7rem] mb-2 animate__animated animate__pulse animate__infinite">🎤</div>
+                <h2 class="text-sm md:text-xl text-theater-gold font-bold mb-4 uppercase tracking-[0.3em] bg-black/50 inline-block px-4 py-1 rounded-full border border-theater-gold">
+                    Expresión Oral - 6to Grado
+                </h2>
+                <h1 class="text-5xl md:text-7xl lg:text-[6rem] font-show text-white mt-2 mb-6 leading-none drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)]">
+                    El Podio <br><span class="text-theater-gold">Virtual</span>
+                </h1>
+                <p class="text-lg md:text-2xl text-gray-200 mb-10 font-bold px-4 leading-relaxed">
+                    Un buen orador no solo usa palabras, ¡usa todo su cuerpo! Sube al escenario y descubre cómo tu voz y tu postura pueden convencer a cualquier público.
+                </p>
+                <button onclick="showScreen('screen-theory')" class="show-btn font-show text-2xl md:text-4xl px-12 py-5 rounded-2xl uppercase tracking-wider w-full md:w-auto">
+                    ENTRAR AL TEATRO 🎟️
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: TEORÍA Y REGLAS
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center bg-theater-dark">
+            <div class="show-panel p-6 md:p-12 max-w-5xl w-full text-center my-auto">
+                <h2 class="text-4xl md:text-6xl font-show text-theater-gold mb-6 tracking-widest border-b-2 border-theater-gold/30 pb-4 drop-shadow-md">
+                    El Arte de Hablar
+                </h2>
+                <p class="text-lg md:text-xl text-gray-200 mb-8 font-bold leading-relaxed max-w-3xl mx-auto">
+                    Tu cuerpo habla antes de que tú abras la boca. Presta atención a estas dos herramientas secretas:
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 mb-10 text-left">
+                    
+                    <!-- Tarjeta VOZ -->
+                    <div class="bg-white p-6 md:p-8 rounded-2xl border-4 border-theater-gold shadow-[0_10px_20px_rgba(0,0,0,0.5)] transform hover:-translate-y-2 transition-transform">
+                        <div class="flex items-center gap-4 mb-4 border-b-2 border-gray-200 pb-4">
+                            <div class="bg-theater-curtain text-white p-3 rounded-full text-3xl shadow-inner">🗣️</div>
+                            <h3 class="text-3xl md:text-4xl font-show text-theater-curtain uppercase">La Voz</h3>
+                        </div>
+                        <ul class="text-base md:text-lg text-gray-800 font-bold space-y-3">
+                            <li>🔊 <strong>Volumen:</strong> Ni gritar, ni susurrar. Que todos te escuchen.</li>
+                            <li>🎵 <strong>Tono:</strong> Cambia según la emoción (alegre, serio, misterioso).</li>
+                            <li>⏱️ <strong>Ritmo:</strong> Haz pausas. No corras como si te persiguieran.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Tarjeta POSTURA -->
+                    <div class="bg-white p-6 md:p-8 rounded-2xl border-4 border-theater-gold shadow-[0_10px_20px_rgba(0,0,0,0.5)] transform hover:-translate-y-2 transition-transform">
+                        <div class="flex items-center gap-4 mb-4 border-b-2 border-gray-200 pb-4">
+                            <div class="bg-blue-600 text-white p-3 rounded-full text-3xl shadow-inner">🧍‍♂️</div>
+                            <h3 class="text-3xl md:text-4xl font-show text-blue-600 uppercase">La Postura</h3>
+                        </div>
+                        <ul class="text-base md:text-lg text-gray-800 font-bold space-y-3">
+                            <li>📏 <strong>Espalda:</strong> Recta y segura, demuestra confianza.</li>
+                            <li>👀 <strong>Mirada:</strong> Observa a tu público, haz contacto visual.</li>
+                            <li>👐 <strong>Manos:</strong> Úsalas para explicar, ¡no las escondas en los bolsillos!</li>
+                        </ul>
+                    </div>
+
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="showScreen('screen-start')" class="bg-gray-800 border-2 border-gray-600 text-white font-bold px-8 py-4 rounded-xl text-lg uppercase hover:bg-gray-700 transition">
+                        ⬅ VOLVER AL LOBBY
+                    </button>
+                    <button onclick="startGame()" class="show-btn font-show text-2xl md:text-3xl px-12 py-4 rounded-xl uppercase">
+                        SUBIR AL ESCENARIO 🎬
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: EL JUEGO (Simulación)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start p-0 bg-theater-dark relative overflow-hidden">
+            
+            <!-- HUD Superior -->
+            <div class="w-full bg-black/60 p-3 md:p-4 flex justify-between items-center z-30 border-b border-theater-gold/30 shrink-0">
+                <div class="flex items-center gap-4 px-4">
+                    <div class="text-3xl md:text-4xl drop-shadow-[0_0_10px_#fbbf24]">🌟</div>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-widest leading-none mb-1">Satisfacción del Público</span>
+                        <span class="font-show text-2xl md:text-4xl text-theater-gold leading-none"><span id="score-display">0</span><span class="text-gray-500 text-xl">/5</span></span>
+                    </div>
+                </div>
+
+                <button onclick="exitGame()" class="bg-red-900/50 border border-red-500 text-red-300 hover:bg-red-600 hover:text-white transition-colors p-2 rounded-lg mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Escenario y Orador -->
+            <div class="relative w-full h-[40vh] md:h-[45vh] flex flex-col items-center justify-end shrink-0 overflow-hidden bg-theater-curtain bg-[radial-gradient(circle_at_center,rgba(0,0,0,0)_0%,rgba(0,0,0,0.8)_100%)]">
+                <!-- Spotlight dinámico -->
+                <div id="stage-spotlight" class="spotlight"></div>
+                
+                <!-- Teleprompter (La situación) -->
+                <div class="absolute top-4 w-11/12 max-w-3xl bg-black/80 border-2 border-theater-gold/50 p-4 rounded-xl text-center z-20 shadow-[0_10px_20px_rgba(0,0,0,0.5)] backdrop-blur-sm">
+                    <span class="text-theater-gold font-bold text-xs md:text-sm uppercase tracking-widest block mb-1">El Teleprompter dice:</span>
+                    <p id="scenario-text" class="text-white font-bold text-lg md:text-2xl leading-snug"></p>
+                </div>
+
+                <!-- Avatar Animado -->
+                <div id="speaker-avatar" class="avatar-speaker text-[8rem] md:text-[12rem] z-10 leading-none pb-4 relative">
+                    🧍‍♂️
+                    <!-- Micrófono -->
+                    <span class="absolute bottom-4 -right-4 text-[3rem] md:text-[4rem]">🎤</span>
+                </div>
+
+                <!-- Piso del escenario -->
+                <div class="stage-floor w-[150%] h-16 md:h-24 absolute bottom-0 z-0"></div>
+            </div>
+
+            <!-- Panel de Opciones (Controles del orador) -->
+            <div class="w-full flex-grow bg-gray-100 flex flex-col items-center justify-start p-4 md:p-6 z-30 shadow-[0_-10px_20px_rgba(0,0,0,0.5)] overflow-y-auto">
+                <h3 class="font-show text-gray-800 text-xl md:text-2xl uppercase mb-4 text-center">¿Cómo actuarás ante el público?</h3>
+                
+                <div id="options-container" class="w-full max-w-4xl flex flex-col gap-3 md:gap-4 pb-4">
+                    <!-- Botones de opciones inyectados por JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             MODAL DE FEEDBACK (Aplausos o Grillos)
+             ============================================== -->
+        <div id="feedback-modal" class="hidden absolute inset-0 z-[60] flex-col items-center justify-center bg-black/85 p-4 text-center backdrop-blur-sm">
+            <div id="feedback-card" class="show-panel p-8 md:p-12 max-w-2xl w-full animate__animated text-center">
+                <div id="feedback-icon" class="text-[5rem] md:text-[8rem] mb-2 leading-none drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">👏</div>
+                <h3 id="feedback-title" class="font-show text-4xl md:text-6xl text-white mb-4 uppercase tracking-widest drop-shadow-[0_2px_2px_rgba(0,0,0,1)]">Título</h3>
+                <div class="bg-black/40 p-4 rounded-xl border border-theater-gold/30 mb-8">
+                    <p id="feedback-reason" class="text-lg md:text-xl font-bold text-gray-200 leading-relaxed"></p>
+                </div>
+                <button onclick="closeFeedback()" class="show-btn font-show text-xl md:text-2xl px-10 py-4 rounded-xl uppercase w-full">
+                    Siguiente Escena
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (Resultados)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex flex-col items-center justify-center p-6 text-center bg-theater-dark bg-[radial-gradient(circle_at_center,rgba(0,0,0,0)_0%,rgba(0,0,0,0.9)_100%)]">
+            <div id="confetti-layer" class="absolute inset-0 pointer-events-none overflow-hidden z-0"></div>
+            
+            <div id="result-card" class="show-panel p-10 md:p-16 max-w-3xl w-full animate__animated animate__zoomIn text-center z-10">
+                <div id="result-icon" class="text-[6rem] md:text-[9rem] mb-4 drop-shadow-[0_0_20px_rgba(251,191,36,0.6)]">🎭🌟</div>
+                <h2 id="result-title" class="font-show text-4xl md:text-6xl lg:text-7xl text-theater-gold mb-6 uppercase drop-shadow-[0_4px_4px_rgba(0,0,0,1)] leading-none">
+                    ¡Ovación de Pie!
+                </h2>
+                <p id="result-msg" class="text-xl md:text-2xl text-white mb-10 font-bold leading-relaxed">
+                    Mensaje final.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="exitGame()" class="bg-gray-800 text-white font-bold border-2 border-gray-600 hover:bg-gray-700 px-8 py-4 rounded-xl text-lg uppercase transition-colors">
+                        SALIR DEL TEATRO
+                    </button>
+                    <button onclick="startGame()" class="show-btn font-show text-2xl md:text-3xl px-12 py-4 rounded-xl">
+                        NUEVO SHOW 🔄
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO
+         ============================================== -->
+    <script>
+        // Base de Datos de Escenarios (Contexto, Opciones, Feedback)
+        const stageScenarios = [
+            {
+                context: "Tienes que dar la bienvenida a los padres de familia en el acto cívico del colegio.",
+                avatar: "🧍‍♂️",
+                options: [
+                    { text: "Mirar al piso, encorvarte y hablar muy bajito.", actionAvatar: "🙇‍♂️", correct: false, reason: "Si miras al piso y hablas bajo, el público pensará que estás asustado y no podrán escucharte." },
+                    { text: "Pararte derecho, sonreír, mirar al público y hablar con volumen claro.", actionAvatar: "🙋‍♂️", correct: true, reason: "¡Excelente postura! Transmites seguridad, respeto y tu voz llegará a todos en el salón." },
+                    { text: "Cruzar los brazos y gritar muy rápido para terminar pronto.", actionAvatar: "🙅‍♂️", correct: false, reason: "Cruzar los brazos parece enojo o aburrimiento, y si hablas muy rápido nadie entenderá tu mensaje." }
+                ]
+            },
+            {
+                context: "Vas a contar una historia de terror y misterio en una fogata con tus amigos.",
+                avatar: "🧍‍♂️",
+                options: [
+                    { text: "Hablar rapidísimo y sin respirar para que no te dé miedo.", actionAvatar: "🏃‍♂️", correct: false, reason: "Para que una historia dé miedo, el público necesita tiempo para imaginar. Hablar rápido arruina el suspenso." },
+                    { text: "Usar un tono de voz misterioso, hacer pausas largas y tener una mirada intensa.", actionAvatar: "🕵️‍♂️", correct: true, reason: "¡Manejo perfecto del ritmo y tono! Las pausas crean tensión y atrapan la atención de tus amigos." },
+                    { text: "Voz muy aguda, riendo a carcajadas y saltando por todas partes.", actionAvatar: "🤹‍♂️", correct: false, reason: "Esa es una buena postura para un chiste, pero si cuentas una historia de terror riendo, nadie se asustará." }
+                ]
+            },
+            {
+                context: "Es tu turno de explicar tu experimento de ciencias frente a toda la clase.",
+                avatar: "🧍‍♂️",
+                options: [
+                    { text: "Darle la espalda a tus compañeros para leer la cartulina pegada en la pizarra.", actionAvatar: "🚶‍♂️", correct: false, reason: "¡Nunca des la espalda! Tu voz irá hacia la pizarra en lugar de ir hacia tus compañeros, y perderás la conexión." },
+                    { text: "Meter las manos en los bolsillos y susurrar los resultados.", actionAvatar: "🧍‍♂️", correct: false, reason: "Las manos en los bolsillos demuestran desinterés o nervios. ¡Usa tus manos para expresarte!" },
+                    { text: "Ver al público, usar las manos para señalar el experimento y hablar claro.", actionAvatar: "👨‍🏫", correct: true, reason: "¡Magnífico! Al usar tus manos como herramienta visual ayudas a que todos entiendan mejor tu experimento." }
+                ]
+            },
+            {
+                context: "Tu equipo acaba de perder la final deportiva y quieres darles palabras de ánimo.",
+                avatar: "🧍‍♂️",
+                options: [
+                    { text: "Espalda recta, voz enérgica pero amable, y contacto visual con todos.", actionAvatar: "🦸‍♂️", correct: true, reason: "¡Esa es la actitud de un líder! Tu postura recta y voz fuerte les contagiará energía y motivación." },
+                    { text: "Bostezar, mirar el reloj a cada rato y hablar sin ganas.", actionAvatar: "🥱", correct: false, reason: "Si tu postura refleja aburrimiento, tu equipo se sentirá aún peor. El cuerpo transmite emociones." },
+                    { text: "Llorar, tirarte al piso y hablar con voz temblorosa.", actionAvatar: "🤦‍♂️", correct: false, reason: "Aunque es normal estar triste, si quieres animarlos necesitas transmitir fuerza y esperanza con tu voz." }
+                ]
+            },
+            {
+                context: "Tienes que disculparte con el director por haber roto accidentalmente una ventana.",
+                avatar: "🧍‍♂️",
+                options: [
+                    { text: "Reírte a carcajadas, encogerte de hombros y gritar.", actionAvatar: "🤷‍♂️", correct: false, reason: "La risa y los gritos en este momento demuestran falta de respeto. ¡El tono de voz no coincide con la situación!" },
+                    { text: "Esconderte detrás de una silla, temblar y no decir ninguna palabra.", actionAvatar: "🥶", correct: false, reason: "El silencio no soluciona el problema. Necesitas usar tu voz para explicar lo que pasó." },
+                    { text: "Mirar a los ojos, tono de voz sincero y postura tranquila y respetuosa.", actionAvatar: "🙏", correct: true, reason: "¡Madurez total! Un tono sincero y mirar a los ojos demuestra que dices la verdad y estás arrepentido." }
+                ]
+            }
+        ];
+
+        let currentScenarioIndex = 0;
+        let audienceScore = 0;
+        let isProcessing = false;
+        let gameQueue = [];
+
+        // DOM Elements
+        const scenarioText = document.getElementById('scenario-text');
+        const optionsContainer = document.getElementById('options-container');
+        const speakerAvatar = document.getElementById('speaker-avatar');
+        const spotlight = document.getElementById('stage-spotlight');
+
+        function showScreen(screenId) {
+            const container = document.getElementById('recurso-wp-podio');
+            container.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function shuffleArray(arr) {
+            let array = [...arr];
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startGame() {
+            audienceScore = 0;
+            isProcessing = false;
+            gameQueue = shuffleArray(stageScenarios).slice(0, 5); // Tomar 5 aleatorios
+            
+            updateUI();
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('flex');
+            
+            showScreen('screen-game');
+            loadScenario();
+        }
+
+        function updateUI() {
+            document.getElementById('score-display').innerText = audienceScore;
+        }
+
+        function loadScenario() {
+            if (gameQueue.length === 0) {
+                setTimeout(() => endGame(), 500);
+                return;
+            }
+
+            const data = gameQueue.shift();
+            isProcessing = false;
+
+            // Reset Stage visual
+            spotlight.className = "spotlight";
+            speakerAvatar.innerHTML = `${data.avatar} <span class="absolute bottom-4 -right-4 text-[3rem] md:text-[4rem]">🎤</span>`;
+            speakerAvatar.classList.remove('animate__animated', 'animate__tada', 'animate__shakeX');
+
+            // Set text
+            scenarioText.innerText = data.context;
+
+            // Generate Options
+            optionsContainer.innerHTML = '';
+            const shuffledOptions = shuffleArray(data.options);
+
+            shuffledOptions.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn p-4 md:p-5 w-full text-left flex items-center gap-4 animate__animated animate__fadeInUp';
+                btn.style.animationDelay = `${idx * 0.1}s`;
+                
+                btn.innerHTML = `
+                    <div class="text-3xl md:text-4xl bg-gray-200 rounded-full w-12 h-12 md:w-16 md:h-16 flex items-center justify-center shrink-0 shadow-inner">
+                        ${String.fromCharCode(65 + idx)}
+                    </div>
+                    <span class="text-base md:text-xl font-bold leading-snug">${opt.text}</span>
+                `;
+                
+                btn.onclick = () => handleChoice(opt, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function handleChoice(option, btnElement) {
+            if (isProcessing) return;
+            isProcessing = true;
+
+            // Actuar (Cambiar avatar)
+            speakerAvatar.innerHTML = `${option.actionAvatar} <span class="absolute bottom-4 -right-4 text-[3rem] md:text-[4rem]">🎤</span>`;
+            
+            // Evaluar y dar feedback escénico
+            if (option.correct) {
+                audienceScore++;
+                updateUI();
+                
+                // Visuales de Acierto
+                spotlight.className = "spotlight spotlight-success";
+                speakerAvatar.classList.add('animate__animated', 'animate__tada');
+                btnElement.classList.replace('border-cbd5e1', 'border-green-500');
+                btnElement.classList.add('bg-green-100');
+
+                setTimeout(() => {
+                    showFeedback(true, "¡Aplausos del Público!", option.reason);
+                }, 1200);
+
+            } else {
+                // Visuales de Error
+                spotlight.className = "spotlight spotlight-error";
+                speakerAvatar.classList.add('animate__animated', 'animate__shakeX');
+                btnElement.classList.replace('border-cbd5e1', 'border-red-500');
+                btnElement.classList.add('bg-red-100');
+
+                setTimeout(() => {
+                    showFeedback(false, "Silencio Incómodo... 🦗", option.reason);
+                }, 1200);
+            }
+        }
+
+        function showFeedback(isSuccess, titleText, reasonText) {
+            const modal = document.getElementById('feedback-modal');
+            const card = document.getElementById('feedback-card');
+            const icon = document.getElementById('feedback-icon');
+            const title = document.getElementById('feedback-title');
+            const reason = document.getElementById('feedback-reason');
+
+            card.classList.remove('animate__bounceIn');
+            void card.offsetWidth;
+
+            if (isSuccess) {
+                icon.innerText = "👏🌹";
+                title.innerText = titleText;
+                title.className = "font-show text-4xl md:text-6xl mb-4 uppercase tracking-widest drop-shadow-[0_2px_2px_rgba(0,0,0,1)] text-green-400";
+            } else {
+                icon.innerText = "🦗💧";
+                title.innerText = titleText;
+                title.className = "font-show text-4xl md:text-6xl mb-4 uppercase tracking-widest drop-shadow-[0_2px_2px_rgba(0,0,0,1)] text-red-400";
+            }
+
+            reason.innerHTML = reasonText;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            card.classList.add('animate__bounceIn');
+        }
+
+        function closeFeedback() {
+            const modal = document.getElementById('feedback-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            
+            loadScenario();
+        }
+
+        function endGame() {
+            const screenResult = document.getElementById('screen-result');
+            const title = document.getElementById('result-title');
+            const msg = document.getElementById('result-msg');
+            const icon = document.getElementById('result-icon');
+            const confettiLayer = document.getElementById('confetti-layer');
+            
+            if (audienceScore >= 4) {
+                icon.innerText = "🎭🏆";
+                title.innerText = "¡Ovación de Pie!";
+                title.className = "font-show text-5xl md:text-7xl text-theater-gold mb-6 uppercase drop-shadow-[0_4px_4px_rgba(0,0,0,1)] leading-none";
+                msg.innerText = "¡Eres un orador nato! Sabes exactamente cómo usar tu voz y tu cuerpo para conectar con cualquier público.";
+                createConfetti(confettiLayer);
+            } else {
+                icon.innerText = "🎬📝";
+                title.innerText = "¡A Seguir Ensayando!";
+                title.className = "font-show text-4xl md:text-6xl text-white mb-6 uppercase drop-shadow-[0_4px_4px_rgba(0,0,0,1)] leading-none";
+                msg.innerText = "Lograste captar la atención un par de veces, pero aún puedes mejorar. Recuerda: ¡Tu cuerpo también habla!";
+                confettiLayer.innerHTML = ''; // Sin confeti
+            }
+
+            screenResult.classList.remove('hidden');
+            screenResult.classList.add('flex');
+        }
+
+        function createConfetti(container) {
+            container.innerHTML = '';
+            const colors = ['#fbbf24', '#ef4444', '#3b82f6', '#10b981', '#ffffff'];
+            for(let i=0; i<80; i++) {
+                const c = document.createElement('div');
+                c.className = 'confetti';
+                c.style.left = Math.random() * 100 + '%';
+                c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                c.style.animationDelay = Math.random() * 2 + 's';
+                c.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                container.appendChild(c);
+            }
+        }
+
+        function exitGame() {
+            // Simulamos un F5 (refresh) limpiando las variables internamente
+            audienceScore = 0;
+            isProcessing = false;
+            gameQueue = [];
+            
+            // Limpiamos los efectos visuales del escenario
+            const spotlight = document.getElementById('stage-spotlight');
+            const speakerAvatar = document.getElementById('speaker-avatar');
+            
+            if(spotlight) spotlight.className = "spotlight";
+            if(speakerAvatar) {
+                speakerAvatar.innerHTML = '🧍‍♂️ <span class="absolute bottom-4 -right-4 text-[3rem] md:text-[4rem]">🎤</span>';
+                speakerAvatar.classList.remove('animate__animated', 'animate__tada', 'animate__shakeX');
+            }
+            
+            // Volvemos al inicio de forma inmediata, sin mensajes de alerta
+            showScreen('screen-start');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escuadrón Inmune: La Gran Batalla</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --secondary: #ec4899;
+            --virus: #22c55e;
+            --bg: #0f172a;
+        }
+        
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--bg);
+            color: white;
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .title-font { font-family: 'Luckiest Guy', cursive; letter-spacing: 2px; }
+
+        .slide-container {
+            display: flex;
+            width: 600vw; /* 6 diapositivas */
+            height: 100vh;
+            transition: transform 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            flex-shrink: 0;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 40px;
+            padding: 3rem;
+            max-width: 1000px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Estilos de Diapositivas Específicas */
+        .slide-intro { background: radial-gradient(circle, #4338ca, #1e1b4b); }
+        .slide-soldiers { background: radial-gradient(circle, #be185d, #701a75); }
+        .slide-virus { background: radial-gradient(circle, #15803d, #064e3b); }
+        .slide-vaccine { background: radial-gradient(circle, #0369a1, #0c4a6e); }
+        .slide-game { background: #1e293b; position: relative; }
+
+        /* Estilo de los Personajes */
+        .character-box {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 1.5rem;
+            transition: transform 0.3s;
+        }
+        .character-box:hover { transform: scale(1.05); background: rgba(255, 255, 255, 0.25); }
+
+        /* Botones Animados */
+        .btn-action {
+            background: linear-gradient(to right, #fbbf24, #f59e0b);
+            color: #1e293b;
+            padding: 1rem 2rem;
+            border-radius: 9999px;
+            font-weight: 800;
+            text-transform: uppercase;
+            box-shadow: 0 10px 0 #b45309;
+            transition: all 0.1s;
+        }
+        .btn-action:active { transform: translateY(6px); box-shadow: 0 4px 0 #b45309; }
+
+        /* Juego Canvas */
+        #gameCanvas {
+            background: #000;
+            border-radius: 20px;
+            cursor: crosshair;
+            width: 100%;
+            max-width: 800px;
+            height: 400px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            z-index: 100;
+        }
+
+        .nav-dot {
+            width: 15px;
+            height: 15px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .nav-dot.active { background: #fbbf24; transform: scale(1.3); }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <button onclick="prev()" id="btnPrev" class="bg-white/20 p-4 rounded-full hover:bg-white/40 disabled:opacity-20">⬅️</button>
+        <div id="dots" class="flex items-center gap-2"></div>
+        <button onclick="next()" id="btnNext" class="bg-white/20 p-4 rounded-full hover:bg-white/40">➡️</button>
+    </div>
+
+    <div class="slide-container" id="container">
+        
+        <!-- 1. PORTADA -->
+        <section class="slide slide-intro">
+            <div class="text-center">
+                <div class="text-[120px] mb-6 animate-pulse">🛡️</div>
+                <h1 class="title-font text-7xl md:text-9xl mb-4">Escuadrón Inmune</h1>
+                <p class="text-2xl md:text-4xl font-light text-blue-200">¡Tu cuerpo es una fortaleza bajo ataque!</p>
+                <div class="mt-12">
+                    <button class="btn-action text-xl" onclick="next()">Reportarse al Deber 🫡</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. LAS DEFENSAS -->
+        <section class="slide slide-soldiers">
+            <div class="glass-card">
+                <h2 class="title-font text-5xl mb-8 text-pink-300">¿Quién nos defiende? 💂‍♂️</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="character-box">
+                        <div class="text-5xl mb-2">👮‍♂️ Piel y Mucosas</div>
+                        <h4 class="font-bold text-xl mb-2">¡La Gran Muralla!</h4>
+                        <p>Son los muros de tu castillo. No dejan entrar a casi ningún invasor.</p>
+                    </div>
+                    <div class="character-box">
+                        <div class="text-5xl mb-2">🤺 Glóbulos Blancos</div>
+                        <h4 class="font-bold text-xl mb-2">¡Los Soldados!</h4>
+                        <p>Patrullan tu sangre buscando monstruos (bacterias y virus) para eliminarlos.</p>
+                    </div>
+                    <div class="character-box">
+                        <div class="text-5xl mb-2">🎯 Anticuerpos</div>
+                        <h4 class="font-bold text-xl mb-2">¡Los Detectores!</h4>
+                        <p>Son pegatinas que se pegan al virus para que los soldados sepan a quién atacar.</p>
+                    </div>
+                    <div class="character-box">
+                        <div class="text-5xl mb-2">🧠 Memoria Inmune</div>
+                        <h4 class="font-bold text-xl mb-2">¡El Archivo Secreto!</h4>
+                        <p>Tu cuerpo guarda fotos de los virus viejos para que nunca te enfermen dos veces.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. LOS ENEMIGOS -->
+        <section class="slide slide-virus">
+            <div class="glass-card text-center">
+                <h2 class="title-font text-5xl mb-8 text-green-400">¡Alerta de Intrusos! 👾</h2>
+                <p class="text-xl mb-8">Los virus son como pequeños piratas que quieren entrar a tus células para convertirlas en fábricas de virus.</p>
+                <div class="flex flex-wrap justify-center gap-8">
+                    <div class="bg-black/30 p-6 rounded-3xl w-64 border-2 border-green-500/50">
+                        <div class="text-6xl mb-4">🦠</div>
+                        <h3 class="font-bold text-2xl text-green-300">Virus de la Gripe</h3>
+                        <p class="text-sm mt-2">¡Entra por la nariz y te hace estornudar!</p>
+                    </div>
+                    <div class="bg-black/30 p-6 rounded-3xl w-64 border-2 border-red-500/50">
+                        <div class="text-6xl mb-4">👺</div>
+                        <h3 class="font-bold text-2xl text-red-300">Virus "X"</h3>
+                        <p class="text-sm mt-2">Se disfraza para que tus defensas no lo vean.</p>
+                    </div>
+                </div>
+                <div class="mt-10 p-6 bg-white/10 rounded-2xl">
+                    <p class="text-2xl italic">"¡Sin ayuda, a veces nuestros soldados no saben contra quién pelear!"</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. LAS VACUNAS -->
+        <section class="slide slide-vaccine">
+            <div class="glass-card">
+                <h2 class="title-font text-5xl mb-6 text-blue-300 text-center">La Vacuna: ¡El Entrenamiento! 💉</h2>
+                <div class="flex flex-col md:flex-row items-center gap-8">
+                    <div class="text-[150px] animate-bounce">💉</div>
+                    <div class="space-y-6">
+                        <p class="text-xl">Una vacuna <b>NO es medicina</b> para cuando ya estás enfermo. ¡Es un simulacro!</p>
+                        <ul class="space-y-4">
+                            <li class="flex items-center gap-4 bg-white/5 p-4 rounded-xl">
+                                <span class="text-3xl">1️⃣</span>
+                                <span>La vacuna le muestra a tus soldados una <b>foto del virus</b> (un pedacito inofensivo).</span>
+                            </li>
+                            <li class="flex items-center gap-4 bg-white/5 p-4 rounded-xl">
+                                <span class="text-3xl">2️⃣</span>
+                                <span>Tus defensas practican cómo derrotarlo sin ponerse enfermas.</span>
+                            </li>
+                            <li class="flex items-center gap-4 bg-white/5 p-4 rounded-xl">
+                                <span class="text-3xl">3️⃣</span>
+                                <span>Cuando el virus real llega... <b>¡PUM!</b> Tus soldados ya saben qué hacer.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. JUEGO -->
+        <section class="slide slide-game" id="gameSlide">
+            <div class="text-center z-10 w-full">
+                <h2 class="title-font text-4xl mb-4">¡ENTRENA A TUS DEFENSAS! 🎮</h2>
+                <p class="mb-4 text-yellow-300 font-bold">Haz clic en los virus para enviar ANTICUERPOS</p>
+                
+                <canvas id="gameCanvas"></canvas>
+
+                <div class="mt-4 flex justify-center gap-10 text-2xl font-bold">
+                    <div id="scoreBox">Puntaje: 0</div>
+                    <div id="livesBox">Vidas: ❤️❤️❤️</div>
+                </div>
+
+                <div id="gameOverlay" class="hidden absolute inset-0 bg-black/80 flex items-center justify-center flex-col p-10 rounded-3xl">
+                    <h3 class="title-font text-6xl text-yellow-400 mb-4" id="gameStatus">¡SISTEMA PROTEGIDO!</h3>
+                    <p class="text-2xl mb-8">Has entrenado a tus soldados con éxito.</p>
+                    <button class="btn-action" onclick="resetGame()">Reintentar Entrenamiento</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. CIERRE -->
+        <section class="slide bg-black">
+            <div class="text-center">
+                <div class="text-9xl mb-8">💪✨</div>
+                <h2 class="title-font text-7xl mb-6">¡Cuerpo Sano, Mente Lista!</h2>
+                <p class="text-3xl text-gray-400 mb-12">Recuerda lavarte las manos y visitar al médico.<br>¡Tus soldados te lo agradecerán!</p>
+                <button class="btn-action text-2xl" onclick="goToSlide(0)">Volver al Inicio</button>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // Lógica de Navegación
+        let currentSlide = 0;
+        const totalSlides = 6;
+        const container = document.getElementById('container');
+        const dotsBox = document.getElementById('dots');
+
+        for(let i=0; i<totalSlides; i++) {
+            const d = document.createElement('div');
+            d.className = 'nav-dot' + (i===0?' active':'');
+            d.onclick = () => goToSlide(i);
+            dotsBox.appendChild(d);
+        }
+
+        function updateNav() {
+            container.style.transform = `translateX(-${currentSlide * 100}vw)`;
+            document.getElementById('btnPrev').disabled = currentSlide === 0;
+            document.querySelectorAll('.nav-dot').forEach((d, i) => {
+                d.className = 'nav-dot' + (i === currentSlide ? ' active' : '');
+            });
+            if(currentSlide === 4) startGame();
+            else stopGame();
+        }
+
+        function next() { if(currentSlide < totalSlides-1) { currentSlide++; updateNav(); } }
+        function prev() { if(currentSlide > 0) { currentSlide--; updateNav(); } }
+        function goToSlide(n) { currentSlide = n; updateNav(); }
+
+        // Lógica del Juego
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let score = 0;
+        let lives = 3;
+        let gameActive = false;
+        let enemies = [];
+        let particles = [];
+        let spawnRate = 1500;
+        let lastSpawn = 0;
+
+        function startGame() {
+            resetGame();
+            gameActive = true;
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            gameLoop();
+        }
+
+        function stopGame() { gameActive = false; }
+
+        function resetGame() {
+            score = 0;
+            lives = 3;
+            enemies = [];
+            particles = [];
+            gameActive = true;
+            document.getElementById('gameOverlay').classList.add('hidden');
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('scoreBox').innerText = `Puntaje: ${score}`;
+            document.getElementById('livesBox').innerText = `Vidas: ${"❤️".repeat(lives)}`;
+        }
+
+        class Enemy {
+            constructor() {
+                this.x = Math.random() * (canvas.width - 40) + 20;
+                this.y = -50;
+                this.size = 40;
+                this.speed = 1 + Math.random() * 2;
+                this.emoji = ['🦠', '👾', '👺'][Math.floor(Math.random()*3)];
+            }
+            update() {
+                this.y += this.speed;
+                if(this.y > canvas.height) {
+                    lives--;
+                    updateStats();
+                    return true;
+                }
+                return false;
+            }
+            draw() {
+                ctx.font = "40px Arial";
+                ctx.fillText(this.emoji, this.x - 20, this.y);
+            }
+        }
+
+        function gameLoop(time = 0) {
+            if(!gameActive) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if(time - lastSpawn > spawnRate) {
+                enemies.push(new Enemy());
+                lastSpawn = time;
+                if(spawnRate > 600) spawnRate -= 10;
+            }
+
+            enemies = enemies.filter(e => {
+                const isDead = e.update();
+                if(!isDead) e.draw();
+                return !isDead;
+            });
+
+            if(lives <= 0) {
+                gameActive = false;
+                document.getElementById('gameStatus').innerText = "¡OH NO, INTRUSOS!";
+                document.getElementById('gameOverlay').classList.remove('hidden');
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            if(!gameActive) return;
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            enemies.forEach((enemy, index) => {
+                const dist = Math.hypot(enemy.x - mouseX, enemy.y - mouseY);
+                if(dist < 40) {
+                    enemies.splice(index, 1);
+                    score += 10;
+                    updateStats();
+                    // Efecto visual
+                    ctx.fillStyle = "yellow";
+                    ctx.font = "20px Luckiest Guy";
+                    ctx.fillText("+10 ANTICUERPOS", enemy.x, enemy.y);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

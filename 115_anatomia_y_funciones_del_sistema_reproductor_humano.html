@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Anatómico: Sistema Reproductor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #f1f5f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+        }
+        
+        @media (min-width: 768px) {
+            body { overflow: hidden; height: 100vh; }
+        }
+
+        .kids-title { font-family: 'Fredoka', sans-serif; }
+        
+        /* Pantalla de Inicio */
+        #splash-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+
+        .anatomical-card {
+            transition: all 0.3s ease;
+        }
+
+        .svg-hotspot {
+            cursor: pointer;
+            transform-origin: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .svg-hotspot circle.main-circle {
+            fill: #facc15;
+            stroke: white;
+            stroke-width: 3;
+        }
+        .svg-hotspot circle.pulse {
+            fill: #facc15;
+            opacity: 0.4;
+            animation: svg-pulse 2s infinite;
+        }
+
+        @keyframes svg-pulse {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(1.8); opacity: 0; }
+        }
+
+        /* SVG dinámico para llenar el espacio */
+        .system-svg {
+            width: 100%;
+            height: auto;
+            max-width: 420px; /* Incremento general para reducir espacios negativos */
+            filter: drop-shadow(0 15px 35px rgba(0,0,0,0.15));
+            transition: transform 0.4s ease;
+        }
+
+        /* Ajuste específico para el masculino para que no se vea pequeño */
+        .male-scale {
+            transform: scale(1.15); 
+        }
+
+        .tab-active {
+            background-color: #334155;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 1rem;
+        }
+
+        .diagram-container {
+            background: radial-gradient(circle at center, #ffffff 0%, #f1f5f9 100%);
+            border: 2px solid rgba(226, 232, 240, 0.8);
+        }
+
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="p-2 md:p-4">
+
+    <!-- Pantalla Inicial -->
+    <div id="splash-screen">
+        <div class="max-w-md w-full m-4 bg-white p-8 rounded-[40px] shadow-2xl border-4 border-slate-800 text-center">
+            <div class="text-6xl mb-6">🧬</div>
+            <h1 class="text-3xl font-bold text-slate-800 kids-title mb-4">Atlas Anatómico</h1>
+            <p class="text-slate-600 mb-8 leading-relaxed">
+                Bienvenido al mapa interactivo del <b>Sistema Reproductor</b>. Aprenderemos sobre las partes principales y su funcionamiento biológico.
+            </p>
+            <button onclick="closeSplash()" class="bg-slate-800 text-white px-10 py-4 rounded-2xl font-bold hover:scale-105 transition-transform shadow-lg">
+                ¡COMENZAR EXPLORACIÓN!
+            </button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="text-center mb-2 shrink-0">
+        <h1 class="text-xl md:text-2xl font-bold text-slate-800 kids-title">Anatomía Humana 🔬</h1>
+    </header>
+
+    <!-- Selector -->
+    <div class="flex justify-center mb-4 shrink-0">
+        <div class="bg-slate-200 p-1 rounded-2xl flex gap-1 shadow-inner border border-slate-300">
+            <button id="btn-female" onclick="switchSystem('female')" class="px-6 py-2 rounded-xl font-bold transition-all tab-active text-xs md:text-sm">
+                Sist. Femenino
+            </button>
+            <button id="btn-male" onclick="switchSystem('male')" class="px-6 py-2 rounded-xl font-bold transition-all text-slate-600 hover:bg-white/50 text-xs md:text-sm">
+                Sist. Masculino
+            </button>
+        </div>
+    </div>
+
+    <!-- Contenido -->
+    <main class="max-w-6xl mx-auto w-full">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 w-full h-full items-stretch">
+            
+            <!-- Área del Diagrama -->
+            <div class="md:col-span-7 lg:col-span-8 diagram-container rounded-[32px] md:rounded-[48px] p-4 md:p-6 shadow-sm relative flex items-center justify-center overflow-hidden min-h-[400px]">
+                
+                <!-- Sistema Femenino -->
+                <div id="diagram-female" class="w-full h-full flex justify-center items-center">
+                    <svg viewBox="0 0 400 320" class="system-svg">
+                        <defs>
+                            <radialGradient id="grad-female" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#fda4af" />
+                                <stop offset="100%" style="stop-color:#f43f5e" />
+                            </radialGradient>
+                        </defs>
+                        <path d="M140,120 Q200,40 260,120 L245,220 Q200,260 155,220 Z" fill="url(#grad-female)" stroke="#e11d48" stroke-width="2.5"/>
+                        <path d="M140,120 Q80,100 40,160" fill="none" stroke="#fb7185" stroke-width="9" stroke-linecap="round"/>
+                        <path d="M260,120 Q320,100 360,160" fill="none" stroke="#fb7185" stroke-width="9" stroke-linecap="round"/>
+                        <ellipse cx="30" cy="170" rx="18" ry="14" fill="#fff1f2" stroke="#f43f5e" stroke-width="2"/>
+                        <ellipse cx="370" cy="170" rx="18" ry="14" fill="#fff1f2" stroke="#f43f5e" stroke-width="2"/>
+                        <rect x="180" y="240" width="40" height="65" rx="8" fill="#fb7185" opacity="0.35"/>
+
+                        <g class="svg-hotspot" onclick="updateInfo('Ovarios', 'Son dos órganos pequeños donde se producen y guardan los óvulos.', 'Cada mes, un ovario libera un óvulo listo para la vida.')">
+                            <circle class="pulse" cx="30" cy="170" r="16" />
+                            <circle class="main-circle" cx="30" cy="170" r="10" />
+                        </g>
+                        <g class="svg-hotspot" onclick="updateInfo('Útero', 'Es un órgano elástico donde crece el bebé durante el embarazo.', '¡Tiene el tamaño de una pera pero puede estirarse mucho!')">
+                            <circle class="pulse" cx="200" cy="135" r="16" />
+                            <circle class="main-circle" cx="200" cy="135" r="10" />
+                        </g>
+                        <g class="svg-hotspot" onclick="updateInfo('Trompas de Falopio', 'Son los conductos que conectan los ovarios con el útero.', 'Es el camino que recorre el óvulo para llegar a su casita.')">
+                            <circle class="pulse" cx="95" cy="108" r="16" />
+                            <circle class="main-circle" cx="95" cy="108" r="10" />
+                        </g>
+                    </svg>
+                </div>
+
+                <!-- Sistema Masculino (Agrandado un 15% extra vía clase male-scale) -->
+                <div id="diagram-male" class="w-full h-full flex justify-center items-center hidden">
+                    <svg viewBox="20 40 360 280" class="system-svg male-scale">
+                        <defs>
+                            <radialGradient id="grad-male" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#93c5fd" />
+                                <stop offset="100%" style="stop-color:#3b82f6" />
+                            </radialGradient>
+                        </defs>
+                        <!-- Conductos -->
+                        <path d="M150,240 Q145,140 190,130" fill="none" stroke="#2563eb" stroke-width="4" stroke-dasharray="5 3" opacity="0.5"/>
+                        <path d="M250,240 Q255,140 210,130" fill="none" stroke="#2563eb" stroke-width="4" stroke-dasharray="5 3" opacity="0.5"/>
+                        <!-- Testículos -->
+                        <ellipse cx="150" cy="270" rx="26" ry="32" fill="#dbeafe" stroke="#3b82f6" stroke-width="2.5"/>
+                        <ellipse cx="250" cy="270" rx="26" ry="32" fill="#dbeafe" stroke="#3b82f6" stroke-width="2.5"/>
+                        <!-- Pene -->
+                        <path d="M180,120 L220,120 L220,220 Q200,245 180,220 Z" fill="url(#grad-male)" stroke="#2563eb" stroke-width="2.5"/>
+
+                        <g class="svg-hotspot" onclick="updateInfo('Testículos', 'Son los órganos encargados de producir los espermatozoides.', 'Se encuentran protegidos fuera del cuerpo para mantener la temperatura ideal.')">
+                            <circle class="pulse" cx="150" cy="270" r="16" />
+                            <circle class="main-circle" cx="150" cy="270" r="10" />
+                        </g>
+                        <g class="svg-hotspot" onclick="updateInfo('Pene', 'Es el órgano externo del sistema reproductor masculino.', 'Forma parte del sistema reproductor y también del urinario.')">
+                            <circle class="pulse" cx="200" cy="180" r="16" />
+                            <circle class="main-circle" cx="200" cy="180" r="10" />
+                        </g>
+                        <g class="svg-hotspot" onclick="updateInfo('Conductos', 'Llevan las células desde los testículos hacia el exterior.', 'Son como pequeñas autopistas de transporte muy eficientes.')">
+                            <circle class="pulse" cx="165" cy="165" r="16" />
+                            <circle class="main-circle" cx="165" cy="165" r="10" />
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Panel de Información -->
+            <div class="md:col-span-5 lg:col-span-4 flex flex-col justify-center">
+                <div id="info-card" class="anatomical-card bg-white p-6 md:p-8 rounded-[32px] shadow-xl border border-slate-200">
+                    <div class="flex items-center gap-4 mb-5">
+                        <div class="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center text-3xl shadow-sm" id="info-icon">🔍</div>
+                        <h3 class="text-2xl font-bold text-slate-800" id="info-title">Explora</h3>
+                    </div>
+                    <p class="text-slate-600 text-base md:text-lg leading-relaxed mb-6" id="info-desc">
+                        Toca los <b>puntos amarillos</b> en el diagrama para descubrir cómo funciona cada parte del sistema.
+                    </p>
+                    
+                    <div class="pt-5 border-t border-slate-100">
+                        <div class="flex items-start gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <div class="text-2xl shrink-0">💡</div>
+                            <p class="text-xs md:text-sm font-medium text-slate-700 leading-snug" id="info-tip">
+                                Selecciona una parte del mapa para ver datos curiosos aquí.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="mt-auto py-3 border-t border-slate-200 shrink-0 flex justify-center gap-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+        <span>Web & Móvil Adaptable</span>
+        <span>Atlas v2.5</span>
+    </footer>
+
+    <script>
+        function closeSplash() {
+            const splash = document.getElementById('splash-screen');
+            splash.style.opacity = '0';
+            setTimeout(() => {
+                splash.style.display = 'none';
+            }, 500);
+        }
+
+        function updateInfo(title, desc, tip) {
+            document.getElementById('info-title').innerText = title;
+            document.getElementById('info-desc').innerText = desc;
+            document.getElementById('info-tip').innerText = tip;
+            
+            const card = document.getElementById('info-card');
+            card.classList.add('scale-[1.02]', 'ring-2', 'ring-amber-400', 'bg-amber-50');
+            setTimeout(() => {
+                card.classList.remove('scale-[1.02]', 'ring-2', 'ring-amber-400', 'bg-amber-50');
+            }, 500);
+        }
+
+        function switchSystem(system) {
+            const femDiag = document.getElementById('diagram-female');
+            const maleDiag = document.getElementById('diagram-male');
+            const btnFem = document.getElementById('btn-female');
+            const btnMale = document.getElementById('btn-male');
+
+            if (system === 'female') {
+                femDiag.classList.remove('hidden');
+                maleDiag.classList.add('hidden');
+                btnFem.classList.add('tab-active');
+                btnMale.classList.remove('tab-active');
+                btnMale.classList.add('text-slate-600');
+            } else {
+                maleDiag.classList.remove('hidden');
+                femDiag.classList.add('hidden');
+                btnMale.classList.add('tab-active');
+                btnMale.classList.remove('text-slate-600');
+                btnFem.classList.remove('tab-active');
+                btnFem.classList.add('text-slate-600');
+            }
+            updateInfo('Explora', 'Toca los puntos amarillos en el diagrama para descubrir cómo funciona cada parte del sistema.', 'Selecciona una parte del mapa para ver datos curiosos aquí.');
+        }
+    </script>
+</body>
+</html>

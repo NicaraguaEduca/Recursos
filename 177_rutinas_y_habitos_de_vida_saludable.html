@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>🌈 Mis Rutinas de Vida | 1º Primaria 🌈</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #c8e6f5 0%, #b0d4e8 100%);
+            font-family: 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', 'Patrick Hand', cursive, sans-serif;
+            padding: 30px 20px;
+        }
+
+        /* Contenedor principal con efecto flotante */
+        .app-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            background: rgba(255, 250, 235, 0.95);
+            border-radius: 100px 100px 80px 80px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2), inset 0 1px 4px rgba(255, 255, 200, 0.9);
+            overflow: hidden;
+            backdrop-filter: blur(2px);
+        }
+
+        /* Pantallas */
+        .screen {
+            display: none;
+            padding: 2.5rem 2.8rem 3rem;
+            animation: floatIn 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
+        }
+
+        @keyframes floatIn {
+            0% {
+                opacity: 0;
+                transform: translateY(30px) scale(0.96);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Intro */
+        .intro-screen {
+            background: linear-gradient(135deg, #fff9ef, #fff3e0);
+            text-align: center;
+        }
+
+        .title-badge {
+            background: linear-gradient(90deg, #ffaa44, #ffcc66);
+            display: inline-block;
+            padding: 10px 35px;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #3d2a1a;
+            box-shadow: 0 6px 0 #c27a2e;
+            letter-spacing: 1px;
+        }
+
+        h1 {
+            font-size: 3.4rem;
+            background: linear-gradient(135deg, #e67e22, #f39c12);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 3px 3px 0 #ffe0aa;
+            margin: 25px 0 15px;
+        }
+
+        .grade {
+            background: #5dade2;
+            padding: 8px 30px;
+            border-radius: 50px;
+            font-size: 1.4rem;
+            color: white;
+            display: inline-block;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .objective-card {
+            background: #ffffffdd;
+            backdrop-filter: blur(8px);
+            border-radius: 60px;
+            padding: 28px;
+            margin: 30px 0;
+            border: 2px solid #ffdd99;
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.08);
+            text-align: left;
+        }
+
+        /* Tarjetas de rutina - REDISEÑO AIREADO */
+        .routines-menu {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            margin: 45px 0 30px;
+        }
+
+        .routine-card {
+            background: linear-gradient(145deg, #ffffff, #fff9f0);
+            border-radius: 70px;
+            width: 240px;
+            padding: 30px 20px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            border: none;
+            box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .routine-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,215,130,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .routine-card:hover::before {
+            left: 100%;
+        }
+
+        .routine-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: 0 30px 35px -12px rgba(0, 0, 0, 0.3);
+            background: #fffff5;
+        }
+
+        .routine-emoji {
+            font-size: 5rem;
+            margin-bottom: 15px;
+            display: inline-block;
+            filter: drop-shadow(2px 4px 8px rgba(0,0,0,0.15));
+        }
+
+        .routine-card strong {
+            font-size: 1.6rem;
+            color: #c25d2e;
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        .routine-card p {
+            font-size: 1rem;
+            color: #af7f55;
+        }
+
+        /* Botón global */
+        .btn {
+            background: linear-gradient(90deg, #f7b05e, #f39c12);
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 80px;
+            font-family: inherit;
+            box-shadow: 0 8px 0 #b4621a;
+            cursor: pointer;
+            transition: 0.07s linear;
+            margin: 10px;
+            letter-spacing: 1px;
+        }
+
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #b4621a;
+        }
+
+        /* Pantalla de juego - diseño más espacioso */
+        .game-screen {
+            background: #fff6e8;
+        }
+
+        .routine-header {
+            background: linear-gradient(120deg, #ffdd99, #ffcc88);
+            border-radius: 90px;
+            padding: 20px;
+            text-align: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #8b4513;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+
+        .instruction {
+            background: #fff0dd;
+            border-radius: 60px;
+            padding: 18px 25px;
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            border-left: 12px solid #f9a26c;
+            box-shadow: 0 5px 12px rgba(0,0,0,0.05);
+        }
+
+        .sequence-area {
+            background: #fbebcd;
+            border-radius: 70px;
+            padding: 30px 25px;
+            margin: 25px 0;
+            border: 2px solid #ffcd94;
+            box-shadow: inset 0 0 0 4px white, 0 15px 20px rgba(0,0,0,0.05);
+        }
+
+        .sequence-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 25px;
+            color: #a5521c;
+        }
+
+        .sequence-slots {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 25px;
+        }
+
+        .slot {
+            background: #fff6e6;
+            border-radius: 65px;
+            width: 170px;
+            min-height: 150px;
+            padding: 18px 12px;
+            text-align: center;
+            border: 3px solid #ffbc6e;
+            box-shadow: 0 12px 0 #c2813a;
+            transition: 0.1s ease;
+        }
+
+        .slot.empty {
+            background: #e2d4bb;
+            border: 3px dashed #d4a15a;
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .slot.filled {
+            background: #fffae8;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .slot.filled:hover {
+            transform: scale(0.98);
+            background: #fff1d0;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin: 35px 0;
+        }
+
+        .option-card {
+            background: linear-gradient(145deg, #fffaf0, #fff3e0);
+            border-radius: 70px;
+            width: 180px;
+            padding: 20px 12px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid #ffcf8a;
+            box-shadow: 0 15px 20px -8px rgba(0, 0, 0, 0.15);
+            transition: all 0.15s ease;
+        }
+
+        .option-card:active {
+            transform: translateY(5px);
+            box-shadow: 0 8px 12px -4px rgba(0, 0, 0, 0.15);
+        }
+
+        .option-card:hover {
+            background: #fffffc;
+            border-color: #ffaa44;
+            transform: translateY(-3px);
+        }
+
+        .feedback-area {
+            font-size: 1.25rem;
+            padding: 16px;
+            border-radius: 80px;
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+            font-weight: bold;
+        }
+
+        .success-feedback {
+            background: #b8e4b8;
+            color: #2a6b2a;
+            border-left: 12px solid #4caf50;
+        }
+
+        .warning-feedback {
+            background: #ffefc0;
+            color: #b45f2b;
+            border-left: 12px solid #f39c12;
+        }
+
+        /* Medalla */
+        .medal-screen {
+            background: radial-gradient(circle at 30% 20%, #fff0cf, #ffddb0);
+            text-align: center;
+        }
+
+        .medal {
+            font-size: 8rem;
+            animation: medalPop 0.6s cubic-bezier(0.34, 1.3, 0.64, 1);
+            display: inline-block;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));
+        }
+
+        @keyframes medalPop {
+            0% { transform: scale(0) rotate(-200deg); opacity: 0; }
+            60% { transform: scale(1.1) rotate(8deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 35px;
+            font-size: 0.9rem;
+            color: #c9894b;
+            font-weight: bold;
+        }
+
+        @media (max-width: 750px) {
+            .screen { padding: 1.5rem; }
+            .slot, .option-card { width: 140px; }
+            .routine-card { width: 200px; padding: 20px; }
+            h1 { font-size: 2rem; }
+            .routine-header { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container" id="app">
+    <!-- INTRO -->
+    <div id="introScreen" class="screen intro-screen active">
+        <div class="title-badge">🌟 Ciencias Naturales - Autocuidado 🌟</div>
+        <h1>📅 Mis Rutinas de Vida 📅</h1>
+        <div class="grade">📖 1º Grado - Primaria</div>
+        <div class="objective-card">
+            <p>🎯 <strong>Objetivo: SECUENCIACIÓN DE HÁBITOS DE VIDA</strong><br>
+            Aprender el orden correcto de las acciones diarias: <strong>🌅 MAÑANA</strong> , <strong>☀️ TARDE</strong> y <strong>🌙 NOCHE</strong>.<br>
+            ¡Ordena cada rutina y gana medallas por ser un niño o niña muy ordenado(a)!</p>
+        </div>
+        <div class="routines-menu">
+            <div class="routine-card" data-routine="morning">
+                <div class="routine-emoji">🌅🧸</div>
+                <strong>Rutina de Mañana</strong>
+                <p>¡A empezar el día con energía!</p>
+            </div>
+            <div class="routine-card" data-routine="afternoon">
+                <div class="routine-emoji">☀️📚</div>
+                <strong>Rutina de Tarde</strong>
+                <p>Juego, tareas y merienda</p>
+            </div>
+            <div class="routine-card" data-routine="night">
+                <div class="routine-emoji">🌙💤</div>
+                <strong>Rutina de Noche</strong>
+                <p>Prepararse para dormir feliz</p>
+            </div>
+        </div>
+        <footer>✨ Elige una tarjeta, ordena los pasos y conviértete en experto ✨</footer>
+    </div>
+
+    <!-- JUEGO -->
+    <div id="gameScreen" class="screen game-screen">
+        <div class="routine-header" id="routineHeader">🌅 Rutina de Mañana</div>
+        <div class="instruction">
+            🧸 ¡Ordena los hábitos! Haz clic en las acciones (abajo) y colócalas en el orden correcto (arriba).<br>
+            ✨ Si te equivocas, toca una acción de arriba para devolverla.
+        </div>
+        <div class="sequence-area">
+            <div class="sequence-title">📋 Mi rutina en orden (1 → 2 → 3 → 4)</div>
+            <div class="sequence-slots" id="sequenceSlots"></div>
+        </div>
+        <div class="options-grid" id="optionsGrid"></div>
+        <div id="feedbackMsg" class="feedback-area"></div>
+        <div style="text-align:center;">
+            <button class="btn" id="verifyBtn" style="background:#6fbf4c; font-size:1.3rem;">✅ Verificar orden ✅</button>
+            <button class="btn" id="resetRoutineBtn" style="background:#ffaa66; font-size:1.3rem;">🔄 Reintentar</button>
+            <button class="btn" id="backToMenuBtn" style="background:#f7b05e; font-size:1.3rem;">🏠 Volver al menú</button>
+        </div>
+        <footer>🌟 ¡Cada rutina correcta te acerca a la medalla de experto en hábitos!</footer>
+    </div>
+
+    <!-- MEDALLA GLOBAL -->
+    <div id="medalScreen" class="screen medal-screen">
+        <div class="medal" id="medalEmoji">🏅</div>
+        <div class="congrats" style="font-size:2rem; margin:20px;">🎉 ¡FELICIDADES! 🎉</div>
+        <div id="medalMessage" style="font-size:1.4rem; background: rgba(255,255,210,0.95); border-radius: 60px; padding:22px; margin:20px;">
+            Has completado todas las rutinas correctamente.<br>¡Eres un experto en secuenciación de hábitos de vida!
+        </div>
+        <button class="btn" id="playAgainGlobalBtn" style="background:#ff9966;">🌟 Jugar más rutinas 🌟</button>
+        <footer>💪 Sigue practicando tus hábitos cada día 💪</footer>
+    </div>
+</div>
+
+<script>
+    // RUTINAS CON SUS SECUENCIAS
+    const ROUTINES = {
+        morning: {
+            name: "🌅 Rutina de Mañana",
+            steps: [
+                { id: "wake", emoji: "🛏️😴➡️😊", text: "Levantarse de la cama" },
+                { id: "wash", emoji: "🪥🧼", text: "Lavarse la cara y dientes" },
+                { id: "dress", emoji: "👕👖", text: "Vestirse solo/a" },
+                { id: "breakfast", emoji: "🥛🍎", text: "Desayunar nutritivo" }
+            ]
+        },
+        afternoon: {
+            name: "☀️ Rutina de Tarde",
+            steps: [
+                { id: "lunch", emoji: "🍲🥗", text: "Comer el almuerzo" },
+                { id: "homework", emoji: "📚✏️", text: "Hacer tareas / estudiar" },
+                { id: "play", emoji: "🎮🤸", text: "Jugar y divertirse" },
+                { id: "snack", emoji: "🍎🥛", text: "Merienda saludable" }
+            ]
+        },
+        night: {
+            name: "🌙 Rutina de Noche",
+            steps: [
+                { id: "dinner", emoji: "🍽️🥘", text: "Cena en familia" },
+                { id: "bath", emoji: "🛁🧼", text: "Baño relajante" },
+                { id: "pajamas", emoji: "👕🩳", text: "Ponerse la pijama" },
+                { id: "sleep", emoji: "📖💤", text: "Leer cuento y apagar luz" }
+            ]
+        }
+    };
+
+    let currentRoutineId = "morning";
+    let currentStepsOrder = [];
+    let availableOptions = [];
+
+    // Audio
+    let audioCtx = null;
+    let soundEnabled = false;
+
+    function initAudio() {
+        if (audioCtx) return;
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        } catch(e) { console.log("Sin soporte audio"); }
+    }
+
+    function playSound(type) {
+        if (!audioCtx || !soundEnabled) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const now = audioCtx.currentTime;
+        if (type === 'place') {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = 659.25;
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+            osc.start();
+            osc.stop(now + 0.2);
+        } else if (type === 'success') {
+            [523.25, 659.25, 783.99].forEach((f, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.value = f;
+                gain.gain.setValueAtTime(0.2, now + i*0.12);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + i*0.12 + 0.3);
+                osc.start(now + i*0.12);
+                osc.stop(now + i*0.12 + 0.3);
+            });
+        } else if (type === 'wrong') {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = 349.23;
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+            osc.start();
+            osc.stop(now + 0.4);
+        } else if (type === 'medal') {
+            [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.value = f;
+                gain.gain.setValueAtTime(0.25, now + i*0.12);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + i*0.12 + 0.4);
+                osc.start(now + i*0.12);
+                osc.stop(now + i*0.12 + 0.4);
+            });
+        }
+    }
+
+    function enableSound() {
+        if (!audioCtx) initAudio();
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        soundEnabled = true;
+        playSound('place');
+    }
+
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function loadRoutine(routineId) {
+        currentRoutineId = routineId;
+        const routine = ROUTINES[routineId];
+        document.getElementById('routineHeader').innerHTML = routine.name;
+        currentStepsOrder = [null, null, null, null];
+        availableOptions = shuffleArray([...routine.steps]);
+        renderSequence();
+        renderOptions();
+        const fb = document.getElementById('feedbackMsg');
+        fb.style.display = 'none';
+        fb.innerHTML = '';
+    }
+
+    function renderSequence() {
+        const container = document.getElementById('sequenceSlots');
+        if (!container) return;
+        container.innerHTML = '';
+        currentStepsOrder.forEach((step, idx) => {
+            const slotDiv = document.createElement('div');
+            slotDiv.className = 'slot';
+            if (step === null) {
+                slotDiv.classList.add('empty');
+                slotDiv.innerHTML = `<div style="font-size:2.5rem;">❓</div><div style="font-size:1rem;">Paso ${idx+1}</div><small>vacío</small>`;
+            } else {
+                slotDiv.classList.add('filled');
+                slotDiv.innerHTML = `
+                    <div style="font-size:3rem;">${step.emoji}</div>
+                    <div style="font-weight:bold; margin:8px 0;">${step.text}</div>
+                    <div style="font-size:0.7rem; color:#c0392b;">✖️ devolver</div>
+                `;
+                slotDiv.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (currentStepsOrder[idx] !== null) {
+                        const returned = currentStepsOrder[idx];
+                        currentStepsOrder[idx] = null;
+                        availableOptions.push(returned);
+                        renderSequence();
+                        renderOptions();
+                        if (soundEnabled) playSound('place');
+                        showFeedback(`📦 Devolviste: ${returned.text}`, 'warning');
+                    }
+                });
+            }
+            container.appendChild(slotDiv);
+        });
+    }
+
+    function renderOptions() {
+        const container = document.getElementById('optionsGrid');
+        if (!container) return;
+        container.innerHTML = '';
+        if (availableOptions.length === 0) {
+            const msgDiv = document.createElement('div');
+            msgDiv.style.width = '100%';
+            msgDiv.style.textAlign = 'center';
+            msgDiv.style.padding = '20px';
+            msgDiv.style.fontSize = '1.3rem';
+            msgDiv.style.color = '#b45f2b';
+            msgDiv.innerText = '🎉 ¡Colocaste todas las acciones! Presiona "Verificar orden" 🎉';
+            container.appendChild(msgDiv);
+            return;
+        }
+        availableOptions.forEach((opt, idx) => {
+            const card = document.createElement('div');
+            card.className = 'option-card';
+            card.innerHTML = `<div style="font-size:3rem;">${opt.emoji}</div><div style="font-weight:bold;">${opt.text}</div>`;
+            card.addEventListener('click', () => {
+                const firstEmpty = currentStepsOrder.findIndex(s => s === null);
+                if (firstEmpty === -1) {
+                    showFeedback('⚠️ Ya están los 4 pasos. Toca uno arriba para cambiarlo.', 'warning');
+                    if (soundEnabled) playSound('wrong');
+                    return;
+                }
+                const selected = availableOptions[idx];
+                currentStepsOrder[firstEmpty] = selected;
+                availableOptions.splice(idx, 1);
+                renderSequence();
+                renderOptions();
+                if (soundEnabled) playSound('place');
+                showFeedback(`✅ Colocaste: ${selected.text} en posición ${firstEmpty+1} ✅`, 'success');
+            });
+            container.appendChild(card);
+        });
+    }
+
+    function showFeedback(msg, type) {
+        const fb = document.getElementById('feedbackMsg');
+        fb.style.display = 'block';
+        fb.innerHTML = msg;
+        fb.className = `feedback-area ${type === 'success' ? 'success-feedback' : 'warning-feedback'}`;
+        setTimeout(() => {
+            if (fb.innerHTML === msg) fb.style.display = 'none';
+        }, 1800);
+    }
+
+    function verifyCurrentOrder() {
+        const routine = ROUTINES[currentRoutineId];
+        let perfect = true;
+        for (let i = 0; i < routine.steps.length; i++) {
+            if (currentStepsOrder[i] === null || currentStepsOrder[i].id !== routine.steps[i].id) {
+                perfect = false;
+                break;
+            }
+        }
+        const fb = document.getElementById('feedbackMsg');
+        fb.style.display = 'block';
+        if (perfect && currentStepsOrder.every(s => s !== null)) {
+            fb.className = 'feedback-area success-feedback';
+            fb.innerHTML = `🎉✨ ¡CORRECTO! Has ordenado la ${routine.name} perfectamente. ✨🎉`;
+            if (soundEnabled) playSound('success');
+            markRoutineCompleted(currentRoutineId);
+            checkAllRoutinesCompleted();
+        } else {
+            fb.className = 'feedback-area warning-feedback';
+            let errorMsg = '';
+            for (let i = 0; i < routine.steps.length; i++) {
+                if (currentStepsOrder[i] === null) errorMsg += `❓ Paso ${i+1}: vacío. `;
+                else if (currentStepsOrder[i].id !== routine.steps[i].id) errorMsg += `❌ Paso ${i+1}: debería ser "${routine.steps[i].text}". `;
+            }
+            fb.innerHTML = `😅 Casi. ${errorMsg} El orden correcto: ${routine.steps.map(s=>s.text).join(' → ')}. ¡Inténtalo!`;
+            if (soundEnabled) playSound('wrong');
+        }
+    }
+
+    let completedRoutines = { morning: false, afternoon: false, night: false };
+
+    function markRoutineCompleted(routineId) {
+        completedRoutines[routineId] = true;
+        localStorage.setItem('habitRoutinesComplete', JSON.stringify(completedRoutines));
+    }
+
+    function loadProgress() {
+        const saved = localStorage.getItem('habitRoutinesComplete');
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                completedRoutines = { ...completedRoutines, ...data };
+            } catch(e) {}
+        }
+    }
+
+    function checkAllRoutinesCompleted() {
+        if (completedRoutines.morning && completedRoutines.afternoon && completedRoutines.night) {
+            showGlobalMedal();
+        } else {
+            const remain = [];
+            if (!completedRoutines.morning) remain.push("🌅 Mañana");
+            if (!completedRoutines.afternoon) remain.push("☀️ Tarde");
+            if (!completedRoutines.night) remain.push("🌙 Noche");
+            if (remain.length) {
+                setTimeout(() => {
+                    const fb = document.getElementById('feedbackMsg');
+                    if (fb && fb.innerHTML.includes('CORRECTO')) {
+                        fb.innerHTML += `<br>📌 Te falta ordenar: ${remain.join(', ')}. ¡Sigue practicando!`;
+                    }
+                }, 800);
+            }
+        }
+    }
+
+    function showGlobalMedal() {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        const medalDiv = document.getElementById('medalScreen');
+        medalDiv.classList.add('active');
+        if (soundEnabled) playSound('medal');
+        for (let i=0;i<80;i++) {
+            const conf = document.createElement('div');
+            conf.textContent = ['✨','🌟','⭐','🏅','🌅','☀️','🌙','🧸'][Math.floor(Math.random()*8)];
+            conf.style.position = 'fixed';
+            conf.style.left = Math.random() * 100 + '%';
+            conf.style.top = '-20px';
+            conf.style.fontSize = (Math.random() * 22 + 16) + 'px';
+            conf.style.pointerEvents = 'none';
+            conf.style.zIndex = '999';
+            conf.style.transition = 'all 1.2s ease-out';
+            document.body.appendChild(conf);
+            setTimeout(() => {
+                conf.style.transform = `translateY(${window.innerHeight+80}px) rotate(${Math.random()*360}deg)`;
+                conf.style.opacity = '0';
+            }, 20);
+            setTimeout(() => conf.remove(), 1500);
+        }
+    }
+
+    function resetCurrentRoutine() {
+        loadRoutine(currentRoutineId);
+        showFeedback('🔄 Reiniciaste la rutina. ¡Ordénala de nuevo!', 'warning');
+    }
+
+    function backToMenu() {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('introScreen').classList.add('active');
+    }
+
+    function restartFromMedal() {
+        completedRoutines = { morning: false, afternoon: false, night: false };
+        localStorage.removeItem('habitRoutinesComplete');
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('introScreen').classList.add('active');
+    }
+
+    // Eventos
+    document.querySelectorAll('.routine-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const routine = card.getAttribute('data-routine');
+            if (routine && ROUTINES[routine]) {
+                enableSound();
+                loadRoutine(routine);
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById('gameScreen').classList.add('active');
+            }
+        });
+    });
+
+    document.getElementById('verifyBtn').addEventListener('click', verifyCurrentOrder);
+    document.getElementById('resetRoutineBtn').addEventListener('click', resetCurrentRoutine);
+    document.getElementById('backToMenuBtn').addEventListener('click', backToMenu);
+    document.getElementById('playAgainGlobalBtn').addEventListener('click', restartFromMedal);
+
+    initAudio();
+    loadProgress();
+
+    document.body.addEventListener('click', function firstSound() {
+        if (!soundEnabled) enableSound();
+    }, { once: true });
+</script>
+</body>
+</html>

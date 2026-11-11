@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Cuento y su Estructura</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Fredoka+One&display=swap" rel="stylesheet">
+    <style>
+        /* Contenedor principal para evitar afectar a todo el WordPress */
+        .story-lesson-container {
+            font-family: 'Outfit', sans-serif;
+            background-color: #f8fafc;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        .slide {
+            display: none;
+            min-height: 100vh;
+            width: 100%;
+            padding: 2rem;
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .title-font {
+            font-family: 'Fredoka One', cursive;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 2rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Modal Corregido para WordPress */
+        #storyModalOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 99999; /* Valor muy alto para estar sobre el tema de WP */
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .story-modal-content {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 2rem;
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: popInStory 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        @keyframes popInStory {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .floating {
+            animation: floatEffect 3s ease-in-out infinite;
+        }
+        
+        @keyframes floatEffect {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        .example-box {
+            background: rgba(255, 255, 255, 0.5);
+            border-left: 4px solid currentColor;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="story-lesson-container">
+    <!-- DIAPOSITIVA 1: PORTADA -->
+    <div class="slide active bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white" id="slide-1">
+        <div class="text-center max-w-4xl px-4">
+            <div class="mb-6 inline-block bg-white/20 backdrop-blur-md px-6 py-2 rounded-full text-sm font-bold tracking-widest uppercase">
+                Recurso Educativo: 3º a 5º Grado
+            </div>
+            <h1 class="title-font text-6xl md:text-8xl mb-8 floating text-white drop-shadow-2xl">El Cuento</h1>
+            
+            <div class="grid md:grid-cols-2 gap-6 text-left mb-10">
+                <div class="bg-white/10 p-6 rounded-2xl border border-white/20">
+                    <h3 class="font-bold text-yellow-300 mb-2">🎯 Objetivo</h3>
+                    <p class="text-lg">Comprender la importancia de la estructura narrativa y aprender a identificar sus partes fundamentales.</p>
+                </div>
+                <div class="bg-white/10 p-6 rounded-2xl border border-white/20">
+                    <h3 class="font-bold text-yellow-300 mb-2">📚 Contenido</h3>
+                    <ul class="list-disc list-inside text-lg">
+                        <li>Definición de cuento</li>
+                        <li>Estructura: Inicio, Nudo y Desenlace</li>
+                        <li>Actividad interactiva</li>
+                    </ul>
+                </div>
+            </div>
+
+            <button onclick="changeSlide(1)" class="transition-transform hover:scale-105 bg-white text-purple-600 font-bold py-4 px-10 rounded-full text-xl shadow-xl hover:bg-yellow-300 hover:text-purple-800">
+                Comenzar Lección ➔
+            </button>
+        </div>
+    </div>
+
+    <!-- DIAPOSITIVA 2: DEFINICIÓN -->
+    <div class="slide bg-blue-50 text-slate-800" id="slide-2">
+        <div class="max-w-4xl w-full">
+            <h2 class="title-font text-5xl text-blue-600 mb-8 text-center">¿Qué es el Cuento?</h2>
+            <div class="card p-10">
+                <p class="text-2xl leading-relaxed text-gray-700">
+                    El <span class="font-bold text-blue-600">cuento</span> es una narración corta en la que intervienen personajes que realizan acciones en un lugar y un tiempo determinado.
+                </p>
+                <div class="mt-8 p-6 bg-blue-100 rounded-xl border-l-8 border-blue-500 italic text-xl text-blue-900">
+                    "Es como una pequeña ventana a un mundo imaginario donde todo es posible."
+                </div>
+            </div>
+            <div class="flex justify-between mt-10">
+                <button onclick="changeSlide(-1)" class="font-bold text-blue-600 hover:underline">⬅ Volver</button>
+                <button onclick="changeSlide(1)" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-blue-700">Continuar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIAPOSITIVA 3: INICIO -->
+    <div class="slide bg-emerald-50 text-slate-800" id="slide-3">
+        <div class="max-w-4xl w-full">
+            <h2 class="title-font text-5xl text-emerald-600 mb-8 text-center">1. El Inicio</h2>
+            <div class="card p-10 border-b-8 border-emerald-500">
+                <p class="text-2xl mb-4 text-gray-700">
+                    Es la parte inicial de la historia de donde se presentan todos los personajes y sus propósitos. Pero principalmente, se presenta la normalidad de la historia.
+                </p>
+                <p class="text-xl text-emerald-700 font-semibold mb-4">
+                    💡 Se suelen usar frases como: "Había una vez...", "En un lugar muy lejano...", "Hace mucho tiempo..."
+                </p>
+                <div class="example-box text-emerald-900">
+                    <span class="font-bold block mb-1 text-emerald-600">📖 Ejemplo:</span>
+                    "Hace mucho tiempo, en un pequeño planeta azul, vivía una niña llamada Sara que soñaba con tocar las estrellas. Cada noche miraba el cielo con su viejo telescopio."
+                </div>
+            </div>
+            <div class="flex justify-between mt-10">
+                <button onclick="changeSlide(-1)" class="font-bold text-emerald-600 hover:underline">⬅ Volver</button>
+                <button onclick="changeSlide(1)" class="bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-emerald-700">Continuar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIAPOSITIVA 4: NUDO -->
+    <div class="slide bg-amber-50 text-slate-800" id="slide-4">
+        <div class="max-w-4xl w-full">
+            <h2 class="title-font text-5xl text-amber-600 mb-8 text-center">2. El Nudo</h2>
+            <div class="card p-10 border-b-8 border-amber-500">
+                <p class="text-2xl mb-6 text-gray-700">
+                    Es la parte más importante del cuento, la más larga y donde se diferencia dos partes:
+                </p>
+                <ul class="space-y-4 text-xl">
+                    <li class="flex items-start">
+                        <span class="bg-amber-200 p-2 rounded-lg mr-3">🚩</span>
+                        <span><strong>El Problema:</strong> Algo rompe la normalidad del inicio.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="bg-amber-200 p-2 rounded-lg mr-3">🧗</span>
+                        <span><strong>Las Acciones:</strong> Los personajes intentan resolver el problema.</span>
+                    </li>
+                </ul>
+                <div class="example-box text-amber-900">
+                    <span class="font-bold block mb-1 text-amber-600">📖 Ejemplo:</span>
+                    "Un día, su telescopio se rompió y Sara se puso muy triste. Entonces, decidió construir un cohete de cartón y metal para subir ella misma a ver las estrellas. Trabajó día y noche buscando piezas en el jardín."
+                </div>
+            </div>
+            <div class="flex justify-between mt-10">
+                <button onclick="changeSlide(-1)" class="font-bold text-amber-600 hover:underline">⬅ Volver</button>
+                <button onclick="changeSlide(1)" class="bg-amber-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-amber-700">Continuar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIAPOSITIVA 5: DESENLACE -->
+    <div class="slide bg-rose-50 text-slate-800" id="slide-5">
+        <div class="max-w-4xl w-full">
+            <h2 class="title-font text-5xl text-rose-600 mb-8 text-center">3. El Desenlace</h2>
+            <div class="card p-10 border-b-8 border-rose-500">
+                <p class="text-2xl mb-6 text-gray-700">
+                    Es la parte final en la que los problemas se resuelven de manera positiva o negativa. La historia concluye y el orden se restablece (aunque sea un orden nuevo).
+                </p>
+                <p class="text-xl text-rose-700 font-semibold mb-4">
+                    ✨ Frases típicas: "Y colorín colorado...", "Fueron felices y comieron perdices...", "Finalmente..."
+                </p>
+                <div class="example-box text-rose-900">
+                    <span class="font-bold block mb-1 text-rose-600">📖 Ejemplo:</span>
+                    "Finalmente, logró arreglar el telescopio con una pieza de su cohete. Sara descubrió que no necesitaba viajar lejos para ver la belleza del universo. Y colorín colorado, este sueño estelar se ha acabado."
+                </div>
+            </div>
+            <div class="flex justify-between mt-10">
+                <button onclick="changeSlide(-1)" class="font-bold text-rose-600 hover:underline">⬅ Volver</button>
+                <button onclick="changeSlide(1)" class="bg-rose-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-rose-700">Juego Final ➔</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIAPOSITIVA 6: ACTIVIDAD -->
+    <div class="slide bg-slate-900 text-white" id="slide-6">
+        <h2 class="title-font text-4xl mb-8 text-yellow-400 text-center uppercase tracking-wider">¡Organiza la Historia!</h2>
+        <div class="grid md:grid-cols-3 gap-6 w-full max-w-6xl px-4">
+            <div class="bg-slate-800 p-6 rounded-3xl border-2 border-emerald-500/30" ondrop="dropStory(event, 'inicio')" ondragover="allowDropStory(event)">
+                <h3 class="text-emerald-400 font-bold mb-4 uppercase text-center border-b border-emerald-500/20 pb-2">Inicio</h3>
+                <div id="target-inicio" class="min-h-[140px] flex flex-col gap-3"></div>
+            </div>
+            <div class="bg-slate-800 p-6 rounded-3xl border-2 border-amber-500/30" ondrop="dropStory(event, 'nudo')" ondragover="allowDropStory(event)">
+                <h3 class="text-amber-400 font-bold mb-4 uppercase text-center border-b border-amber-500/20 pb-2">Nudo</h3>
+                <div id="target-nudo" class="min-h-[140px] flex flex-col gap-3"></div>
+            </div>
+            <div class="bg-slate-800 p-6 rounded-3xl border-2 border-rose-500/30" ondrop="dropStory(event, 'final')" ondragover="allowDropStory(event)">
+                <h3 class="text-rose-400 font-bold mb-4 uppercase text-center border-b border-rose-500/20 pb-2">Desenlace</h3>
+                <div id="target-final" class="min-h-[140px] flex flex-col gap-3"></div>
+            </div>
+        </div>
+
+        <div class="mt-12 flex flex-wrap justify-center gap-4 max-w-4xl px-4">
+            <div id="drag1" draggable="true" ondragstart="dragStory(event)" data-type="inicio" class="bg-white text-slate-900 px-6 py-4 rounded-xl cursor-grab font-medium shadow-lg hover:scale-105 transition-transform border-b-4 border-emerald-500">"Había una vez un gigante muy amable..."</div>
+            <div id="drag2" draggable="true" ondragstart="dragStory(event)" data-type="nudo" class="bg-white text-slate-900 px-6 py-4 rounded-xl cursor-grab font-medium shadow-lg hover:scale-105 transition-transform border-b-4 border-amber-500">"De pronto, el mapa se rompió en mil pedazos..."</div>
+            <div id="drag3" draggable="true" ondragstart="dragStory(event)" data-type="final" class="bg-white text-slate-900 px-6 py-4 rounded-xl cursor-grab font-medium shadow-lg hover:scale-105 transition-transform border-b-4 border-rose-500">"Y por fin, regresaron a casa con el tesoro."</div>
+        </div>
+
+        <button onclick="changeSlide(-1)" class="mt-10 text-slate-400 hover:text-white underline font-bold">⬅ Repasar Lección</button>
+    </div>
+
+    <!-- CUSTOM MODAL CON IDs ÚNICOS -->
+    <div id="storyModalOverlay">
+        <div class="story-modal-content">
+            <div class="text-7xl mb-4">🏆</div>
+            <h2 class="text-3xl font-bold text-gray-800 mb-3">¡Excelente Trabajo!</h2>
+            <div class="bg-indigo-50 p-4 rounded-xl mb-6">
+                <p class="text-gray-700 text-lg">Has organizado la estructura del cuento correctamente. ¡Eres todo un experto narrador!</p>
+            </div>
+            <button onclick="closeStoryModal()" class="bg-indigo-600 text-white w-full py-4 rounded-full font-bold text-xl hover:bg-indigo-700 shadow-lg transition-all active:scale-95">
+                ¡Genial!
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentSlide = 1;
+    const totalSlides = 6;
+
+    function changeSlide(direction) {
+        const current = document.getElementById(`slide-${currentSlide}`);
+        const nextSlideNum = currentSlide + direction;
+        
+        if (nextSlideNum >= 1 && nextSlideNum <= totalSlides) {
+            current.classList.remove('active');
+            currentSlide = nextSlideNum;
+            const nextSlide = document.getElementById(`slide-${currentSlide}`);
+            nextSlide.classList.add('active');
+            
+            // Scroll suave arriba si el contenido es largo
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    // Funciones con nombres únicos para evitar conflictos en WordPress
+    function allowDropStory(ev) {
+        ev.preventDefault();
+    }
+
+    function dragStory(ev) {
+        ev.dataTransfer.setData("textID", ev.target.id);
+    }
+
+    function dropStory(ev, category) {
+        ev.preventDefault();
+        const dataID = ev.dataTransfer.getData("textID");
+        const element = document.getElementById(dataID);
+        const targetType = element.getAttribute("data-type");
+
+        if (targetType === category) {
+            const targetContainer = document.getElementById(`target-${category}`);
+            targetContainer.appendChild(element);
+            
+            // Estilo visual de acierto
+            element.setAttribute("draggable", "false");
+            element.classList.remove("cursor-grab", "hover:scale-105");
+            element.classList.add("opacity-100", "cursor-default", "w-full", "text-center", "shadow-none", "border-b-0");
+            
+            checkStoryCompletion();
+        }
+    }
+
+    function checkStoryCompletion() {
+        const correctPieces = document.getElementById('slide-6').querySelectorAll('[draggable="false"]').length;
+        if (correctPieces === 3) {
+            setTimeout(() => {
+                const modal = document.getElementById('storyModalOverlay');
+                modal.style.display = 'flex';
+            }, 600);
+        }
+    }
+
+    function closeStoryModal() {
+        document.getElementById('storyModalOverlay').style.display = 'none';
+        // Opcional: reiniciar juego o volver a portada
+        // changeSlide(-(totalSlides-1));
+    }
+</script>
+</body>
+</html>

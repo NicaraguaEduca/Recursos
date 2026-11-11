@@ -1,0 +1,656 @@
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Presentación - Puente de Sílabas</title>
+        
+        <!-- Fuentes Google: Fredoka One (Títulos) y Quicksand (Lectura clara) -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@600;800;900&display=swap" rel="stylesheet">
+        
+        <!-- Tailwind CSS -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+        
+        <!-- CONFIGURACIÓN DE TAILWIND -->
+        <script>
+            window.tailwind = {
+                config: {
+                    important: '#presentacion-wp',
+                    corePlugins: { preflight: false },
+                    theme: {
+                        extend: {
+                            fontFamily: {
+                                toon: ['"Fredoka One"', 'cursive'],
+                                body: ['Quicksand', 'sans-serif'],
+                            },
+                            colors: {
+                                bridge: {
+                                    sky: '#e0f2fe',       /* Fondo cielo */
+                                    dark: '#082f49',      /* Texto azul oscuro */
+                                    wood: '#b45309',      /* Madera puente */
+                                    rope: '#78350f',      /* Cuerda oscura */
+                                    water: '#38bdf8',     /* Río */
+                                    success: '#22c55e',   /* Verde acierto */
+                                    error: '#ef4444',     /* Rojo error */
+                                    yellow: '#facc15'     /* Amarillo destaque */
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        </script>
+
+        <style>
+            /* =========================================================
+            MICRO-RESET
+            ========================================================= */
+            #presentacion-wp * { box-sizing: border-box; border-width: 0; border-style: solid; border-color: currentColor; line-height: normal; }
+            #presentacion-wp h1, #presentacion-wp h2, #presentacion-wp h3, #presentacion-wp p, #presentacion-wp span, #presentacion-wp div { margin: 0; padding: 0; }
+            #presentacion-wp button { background-color: transparent; cursor: pointer; padding: 0; font-family: inherit; }
+
+            /* =========================================================
+            CONTENEDOR DE LA PRESENTACIÓN
+            ========================================================= */
+            #presentacion-wp {
+                font-family: 'Quicksand', sans-serif;
+                background-color: #e0f2fe;
+                background-image: radial-gradient(#bae6fd 3px, transparent 3px);
+                background-size: 40px 40px;
+                color: #082f49;
+                display: flex;
+                flex-direction: column;
+                width: 100vw;
+                max-width: 100vw;
+                height: 100vh;
+                max-height: 100vh;
+                position: relative;
+                left: 50%;
+                transform: translateX(-50%);
+                overflow: hidden; 
+                z-index: 50;
+            }
+
+            /* Diapositivas (Screens) */
+            #presentacion-wp .slide {
+                display: none;
+                width: 100%;
+                height: 100%;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 1rem;
+                position: absolute;
+                top: 0; left: 0;
+                overflow-y: auto;
+                overflow-x: hidden;
+                z-index: 10;
+            }
+            #presentacion-wp .slide::-webkit-scrollbar { display: none; }
+            #presentacion-wp .slide.active {
+                display: flex;
+                animation: slideFadeIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+            }
+            @keyframes slideFadeIn {
+                from { opacity: 0; transform: translateY(30px) scale(0.98); }
+                to { opacity: 1; transform: translateY(0) scale(1); }
+            }
+
+            /* Tarjetas y Botones */
+            .card-panel {
+                background-color: #ffffff;
+                border: 6px solid #082f49;
+                border-radius: 2rem;
+                box-shadow: 8px 8px 0px rgba(8, 47, 73, 0.2);
+                text-align: center;
+                position: relative;
+            }
+
+            .btn-action {
+                border: 4px solid #082f49;
+                border-radius: 1rem;
+                box-shadow: 4px 4px 0px #082f49;
+                transition: all 0.15s ease-out;
+                font-family: 'Fredoka One', cursive;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .btn-action:hover:not(:disabled) {
+                transform: translate(-2px, -2px);
+                box-shadow: 6px 6px 0px #082f49;
+            }
+            .btn-action:active:not(:disabled) {
+                transform: translate(4px, 4px);
+                box-shadow: 0px 0px 0px #082f49;
+            }
+            .btn-action:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                box-shadow: 2px 2px 0px #082f49 !important;
+                transform: translate(2px, 2px) !important;
+            }
+
+            /* Elementos del Puente */
+            .plank-slot {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: clamp(60px, 15vw, 100px);
+                height: clamp(50px, 10vw, 80px);
+                background-color: #fef3c7; /* Madera clara */
+                border: 4px dashed #b45309; /* Madera oscura */
+                border-radius: 12px;
+                margin: 0 8px;
+                vertical-align: middle;
+                font-family: 'Fredoka One', cursive;
+                color: #b45309;
+                transition: all 0.3s;
+            }
+            
+            .plank-slot.filled {
+                background-color: #22c55e;
+                border-style: solid;
+                border-color: #14532d;
+                color: white;
+                box-shadow: inset 0 -5px 0 rgba(0,0,0,0.2), 0 5px 0 rgba(0,0,0,0.1);
+                animation: popPlank 0.4s ease-out;
+            }
+
+            @keyframes popPlank {
+                0% { transform: scale(0.8); }
+                50% { transform: scale(1.1); }
+                100% { transform: scale(1); }
+            }
+
+            /* Animación del zorro cruzando */
+            .character-fox {
+                transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+                display: inline-block;
+            }
+
+            /* Río Animado */
+            .river-bg {
+                background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+                border-top: 6px solid #082f49;
+                position: absolute;
+                bottom: 0;
+                width: 100%;
+                height: 20%;
+                z-index: 1;
+            }
+            .river-waves {
+                position: absolute;
+                top: 10px;
+                width: 200%;
+                height: 10px;
+                background-image: radial-gradient(circle at 10px 5px, transparent 12px, #bae6fd 13px, #bae6fd 15px, transparent 16px);
+                background-size: 40px 20px;
+                animation: waveMove 4s linear infinite;
+            }
+            @keyframes waveMove {
+                0% { transform: translateX(0); }
+                100% { transform: translateX(-40px); }
+            }
+
+            .shake-error { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+            @keyframes shake {
+                10%, 90% { transform: translate3d(-3px, 0, 0); }
+                20%, 80% { transform: translate3d(5px, 0, 0); }
+                30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+                40%, 60% { transform: translate3d(8px, 0, 0); }
+            }
+
+        </style>
+    </head>
+    <body style="margin: 0; padding: 0;">
+
+        <div id="presentacion-wp">
+
+            <!-- ==============================================
+                DIAPOSITIVA 1: PORTADA
+                ============================================== -->
+            <div id="slide-1" class="slide active">
+                <div class="card-panel p-8 md:p-14 max-w-3xl w-full mx-4 transform -rotate-1">
+                    <div class="flex justify-center gap-4 mb-4">
+                        <span class="text-[5rem] md:text-[8rem] animate-bounce">🦊</span>
+                        <span class="text-[5rem] md:text-[8rem] animate-bounce" style="animation-delay: 0.2s">🌉</span>
+                    </div>
+                    
+                    <h2 class="text-xs md:text-sm text-white font-body font-black mb-4 uppercase bg-bridge-dark inline-block px-6 py-2 border-4 border-bridge-dark rounded-full rotate-2">
+                        Ortografía - 2do Grado
+                    </h2>
+                    
+                    <h1 class="text-5xl md:text-7xl font-toon text-bridge-wood leading-none uppercase drop-shadow-sm mb-6">
+                        Puente de <br><span class="text-bridge-water drop-shadow-[2px_2px_0_#082f49]">Sílabas</span>
+                    </h1>
+                    
+                    <p class="text-xl md:text-2xl text-gray-700 font-bold mb-10 px-2 leading-snug">
+                        ¡El zorro necesita cruzar el río! Completa las palabras con <strong>CA, CO, CU</strong> o <strong>QUE, QUI</strong> para arreglar las tablas del puente.
+                    </p>
+                    
+                    <button onclick="nextSlide(2)" class="btn-action bg-bridge-yellow text-bridge-dark text-2xl md:text-3xl px-12 py-5 w-full md:w-auto">
+                        INICIAR CLASE ▶
+                    </button>
+                </div>
+            </div>
+
+            <!-- ==============================================
+                DIAPOSITIVA 2: EXPLICACIÓN (TEORÍA VISUAL)
+                ============================================== -->
+            <div id="slide-2" class="slide">
+                <div class="card-panel p-6 md:p-12 max-w-4xl w-full my-auto">
+                    <h2 class="text-4xl md:text-5xl font-toon text-bridge-dark mb-6 uppercase">
+                        La Regla de Oro
+                    </h2>
+                    <p class="text-xl md:text-2xl text-gray-700 font-bold mb-8 leading-snug">
+                        Todas suenan igual de fuerte (como una K), pero se escriben con letras diferentes dependiendo de la vocal que las acompaña.
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                        <!-- Regla C -->
+                        <div class="bg-orange-50 p-6 rounded-2xl border-4 border-bridge-wood flex flex-col items-center shadow-md">
+                            <span class="text-6xl font-toon text-bridge-wood mb-2 border-b-4 border-bridge-wood pb-2">C</span>
+                            <p class="font-bold text-xl text-gray-600 mb-4">Se usa con las vocales abiertas y la U:</p>
+                            <div class="flex gap-4 font-toon text-3xl text-orange-600">
+                                <span class="bg-white px-4 py-2 border-2 border-bridge-wood rounded-lg shadow-sm">CA</span>
+                                <span class="bg-white px-4 py-2 border-2 border-bridge-wood rounded-lg shadow-sm">CO</span>
+                                <span class="bg-white px-4 py-2 border-2 border-bridge-wood rounded-lg shadow-sm">CU</span>
+                            </div>
+                        </div>
+
+                        <!-- Regla Q -->
+                        <div class="bg-blue-50 p-6 rounded-2xl border-4 border-bridge-water flex flex-col items-center shadow-md">
+                            <span class="text-6xl font-toon text-bridge-water mb-2 border-b-4 border-bridge-water pb-2">QU</span>
+                            <p class="font-bold text-xl text-gray-600 mb-4">Se usa solo con la E y la I:</p>
+                            <div class="flex gap-4 font-toon text-3xl text-blue-600">
+                                <span class="bg-white px-4 py-2 border-2 border-bridge-water rounded-lg shadow-sm">QUE</span>
+                                <span class="bg-white px-4 py-2 border-2 border-bridge-water rounded-lg shadow-sm">QUI</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 justify-center">
+                        <button onclick="prevSlide(1)" class="btn-action bg-gray-200 text-bridge-dark text-xl px-8 py-4">⬅ VOLVER</button>
+                        <button onclick="nextSlide(3)" class="btn-action bg-bridge-success text-white text-2xl px-10 py-4">¡A CONSTRUIR! 🌉</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==============================================
+                DIAPOSITIVAS INTERACTIVAS (3 a 7)
+                ============================================== -->
+
+            <!-- EJERCICIO 1 (CAMA) -->
+            <div id="slide-3" class="slide">
+                <div class="w-full h-full flex flex-col justify-start items-center pb-20 relative pt-6">
+                    
+                    <!-- Encabezado con Botón Reiniciar para simular un F5 de forma controlada -->
+                    <div class="w-full max-w-4xl flex justify-between items-center z-30 px-6 shrink-0 mb-4">
+                        <div class="bg-white border-4 border-bridge-dark rounded-full px-6 py-1 shadow-md">
+                            <h2 class="font-toon text-lg md:text-xl text-bridge-dark uppercase">Palabra 1 de 5</h2>
+                        </div>
+                        <button onclick="resetPresentation()" class="btn-action bg-bridge-yellow text-bridge-dark px-4 py-2 text-sm font-show flex items-center gap-1">
+                            🔄 REINICIAR
+                        </button>
+                    </div>
+
+                    <!-- Tarjeta de Contenido / Palabra (Ubicación estática central para evitar solapamientos) -->
+                    <div class="card-panel p-6 w-full max-w-3xl flex flex-col items-center z-20 shadow-xl mb-4">
+                        <div class="text-[4rem] mb-2 drop-shadow-md">🛏️</div>
+                        
+                        <!-- Palabra con hueco -->
+                        <div class="text-3xl md:text-5xl font-toon text-bridge-dark mb-4 flex items-center justify-center">
+                            <span id="plank-3" class="plank-slot text-xl md:text-3xl">?</span> MA
+                        </div>
+
+                        <!-- Opciones -->
+                        <div class="flex gap-4 w-full justify-center">
+                            <button class="opt-3 btn-action bg-white text-bridge-wood text-2xl md:text-3xl px-6 py-3 w-28 hover:bg-orange-50" onclick="checkAnswer(3, true, 'CA', '¡Correcto! Antes de la A usamos la letra C.')">CA</button>
+                            <button class="opt-3 btn-action bg-white text-bridge-wood text-2xl md:text-3xl px-6 py-3 w-28 hover:bg-orange-50" onclick="checkAnswer(3, false, 'QUE', '¡Cuidado! Recuerda que QUE solo se usa con la E.')">QUE</button>
+                        </div>
+
+                        <!-- Feedback (Separado de la línea del zorro para evitar colisiones) -->
+                        <div id="feedback-3" class="mt-4 min-h-[40px] hidden text-center animate__animated animate__fadeIn"></div>
+                    </div>
+
+                    <!-- Camino del Zorro hacia la Madriguera (Espacio físico aislado en la mitad inferior) -->
+                    <div class="w-full max-w-4xl mx-auto absolute bottom-28 flex justify-between items-center px-12 z-30 pointer-events-none">
+                        <!-- El Zorro en Movimiento -->
+                        <div id="char-3" class="character-fox text-5xl md:text-7xl drop-shadow-lg transform translate-x-0">🦊</div>
+                        <!-- La Madriguera (Meta fija en el extremo opuesto del puente) -->
+                        <div class="text-5xl md:text-7xl drop-shadow-lg">🏡</div>
+                    </div>
+
+                    <!-- El Río de fondo -->
+                    <div class="river-bg">
+                        <div class="river-waves"></div>
+                    </div>
+
+                    <div id="next-btn-3" class="absolute bottom-6 right-6 hidden z-40">
+                        <button onclick="nextSlide(4)" class="btn-action bg-bridge-yellow text-bridge-dark text-xl px-8 py-3 animate__animated animate__bounceIn">
+                            Siguiente ➡
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EJERCICIO 2 (QUESO) -->
+            <div id="slide-4" class="slide">
+                <div class="w-full h-full flex flex-col justify-start items-center pb-20 relative pt-6">
+                    
+                    <div class="w-full max-w-4xl flex justify-between items-center z-30 px-6 shrink-0 mb-4">
+                        <div class="bg-white border-4 border-bridge-dark rounded-full px-6 py-1 shadow-md">
+                            <h2 class="font-toon text-lg md:text-xl text-bridge-dark uppercase">Palabra 2 de 5</h2>
+                        </div>
+                        <button onclick="resetPresentation()" class="btn-action bg-bridge-yellow text-bridge-dark px-4 py-2 text-sm font-show flex items-center gap-1">
+                            🔄 REINICIAR
+                        </button>
+                    </div>
+
+                    <div class="card-panel p-6 w-full max-w-3xl flex flex-col items-center z-20 shadow-xl mb-4">
+                        <div class="text-[4rem] mb-2 drop-shadow-md">🧀</div>
+                        
+                        <div class="text-3xl md:text-5xl font-toon text-bridge-dark mb-4 flex items-center justify-center">
+                            <span id="plank-4" class="plank-slot text-xl md:text-3xl">?</span> SO
+                        </div>
+
+                        <div class="flex gap-4 w-full justify-center">
+                            <button class="opt-4 btn-action bg-white text-bridge-water text-2xl md:text-3xl px-6 py-3 w-32 hover:bg-blue-50" onclick="checkAnswer(4, false, 'CE', '¡Ojo! La C suena suave (como S) si la pones con la E.')">CE</button>
+                            <button class="opt-4 btn-action bg-white text-bridge-water text-2xl md:text-3xl px-6 py-3 w-32 hover:bg-blue-50" onclick="checkAnswer(4, true, 'QUE', '¡Excelente! Para sonar fuerte con la E usamos QUE.')">QUE</button>
+                        </div>
+
+                        <div id="feedback-4" class="mt-4 min-h-[40px] hidden text-center animate__animated animate__fadeIn"></div>
+                    </div>
+
+                    <div class="w-full max-w-4xl mx-auto absolute bottom-28 flex justify-between items-center px-12 z-30 pointer-events-none">
+                        <div id="char-4" class="character-fox text-5xl md:text-7xl drop-shadow-lg transform translate-x-12">🦊</div>
+                        <div class="text-5xl md:text-7xl drop-shadow-lg">🏡</div>
+                    </div>
+
+                    <div class="river-bg"><div class="river-waves"></div></div>
+
+                    <div id="next-btn-4" class="absolute bottom-6 right-6 hidden z-40">
+                        <button onclick="nextSlide(5)" class="btn-action bg-bridge-yellow text-bridge-dark text-xl px-8 py-3 animate__animated animate__bounceIn">
+                            Siguiente ➡
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EJERCICIO 3 (MOSQUITO) -->
+            <div id="slide-5" class="slide">
+                <div class="w-full h-full flex flex-col justify-start items-center pb-20 relative pt-6">
+                    
+                    <div class="w-full max-w-4xl flex justify-between items-center z-30 px-6 shrink-0 mb-4">
+                        <div class="bg-white border-4 border-bridge-dark rounded-full px-6 py-1 shadow-md">
+                            <h2 class="font-toon text-lg md:text-xl text-bridge-dark uppercase">Palabra 3 de 5</h2>
+                        </div>
+                        <button onclick="resetPresentation()" class="btn-action bg-bridge-yellow text-bridge-dark px-4 py-2 text-sm font-show flex items-center gap-1">
+                            🔄 REINICIAR
+                        </button>
+                    </div>
+
+                    <div class="card-panel p-8 w-full max-w-3xl flex flex-col items-center z-20 shadow-xl mb-4">
+                        <div class="text-[4rem] mb-2 drop-shadow-md">🦟</div>
+                        
+                        <div class="text-3xl md:text-5xl font-toon text-bridge-dark mb-4 flex items-center justify-center">
+                            MOS <span id="plank-5" class="plank-slot text-xl md:text-3xl">?</span> TO
+                        </div>
+
+                        <div class="flex gap-4 w-full justify-center">
+                            <button class="opt-5 btn-action bg-white text-bridge-water text-2xl md:text-3xl px-6 py-3 w-32 hover:bg-blue-50" onclick="checkAnswer(5, true, 'QUI', '¡Muy bien! Fuerte con la I se escribe con QUI.')">QUI</button>
+                            <button class="opt-5 btn-action bg-white text-bridge-water text-2xl md:text-3xl px-6 py-3 w-32 hover:bg-blue-50" onclick="checkAnswer(5, false, 'CI', '¡Cuidado! CI suena suave como una S.')">CI</button>
+                        </div>
+
+                        <div id="feedback-5" class="mt-4 min-h-[40px] hidden text-center animate__animated animate__fadeIn"></div>
+                    </div>
+
+                    <div class="w-full max-w-4xl mx-auto absolute bottom-28 flex justify-between items-center px-12 z-30 pointer-events-none">
+                        <div id="char-5" class="character-fox text-5xl md:text-7xl drop-shadow-lg transform translate-x-24">🦊</div>
+                        <div class="text-5xl md:text-7xl drop-shadow-lg">🏡</div>
+                    </div>
+
+                    <div class="river-bg"><div class="river-waves"></div></div>
+
+                    <div id="next-btn-5" class="absolute bottom-6 right-6 hidden z-40">
+                        <button onclick="nextSlide(6)" class="btn-action bg-bridge-yellow text-bridge-dark text-xl px-8 py-3 animate__animated animate__bounceIn">
+                            Siguiente ➡
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EJERCICIO 4 (CUNA) -->
+            <div id="slide-6" class="slide">
+                <div class="w-full h-full flex flex-col justify-start items-center pb-20 relative pt-6">
+                    
+                    <div class="w-full max-w-4xl flex justify-between items-center z-30 px-6 shrink-0 mb-4">
+                        <div class="bg-white border-4 border-bridge-dark rounded-full px-6 py-1 shadow-md">
+                            <h2 class="font-toon text-lg md:text-xl text-bridge-dark uppercase">Palabra 4 de 5</h2>
+                        </div>
+                        <button onclick="resetPresentation()" class="btn-action bg-bridge-yellow text-bridge-dark px-4 py-2 text-sm font-show flex items-center gap-1">
+                            🔄 REINICIAR
+                        </button>
+                    </div>
+
+                    <div class="card-panel p-6 w-full max-w-3xl flex flex-col items-center z-20 shadow-xl mb-4">
+                        <div class="text-[4rem] mb-2 drop-shadow-md">🧸</div>
+                        
+                        <div class="text-3xl md:text-5xl font-toon text-bridge-dark mb-4 flex items-center justify-center">
+                            <span id="plank-6" class="plank-slot text-xl md:text-3xl">?</span> NA
+                        </div>
+
+                        <div class="flex gap-4 w-full justify-center">
+                            <button class="opt-6 btn-action bg-white text-bridge-wood text-2xl md:text-3xl px-6 py-3 w-28 hover:bg-orange-50" onclick="checkAnswer(6, false, 'QUU', '¡Ups! La Q nunca se junta con la U de esa manera.')">QUU</button>
+                            <button class="opt-6 btn-action bg-white text-bridge-wood text-2xl md:text-3xl px-6 py-3 w-28 hover:bg-orange-50" onclick="checkAnswer(6, true, 'CU', '¡Perfecto! Con la U siempre usamos la C.')">CU</button>
+                        </div>
+
+                        <div id="feedback-6" class="mt-4 min-h-[40px] hidden text-center animate__animated animate__fadeIn"></div>
+                    </div>
+
+                    <div class="w-full max-w-4xl mx-auto absolute bottom-28 flex justify-between items-center px-12 z-30 pointer-events-none">
+                        <div id="char-6" class="character-fox text-5xl md:text-7xl drop-shadow-lg transform translate-x-36">🦊</div>
+                        <div class="text-5xl md:text-7xl drop-shadow-lg">🏡</div>
+                    </div>
+
+                    <div class="river-bg"><div class="river-waves"></div></div>
+
+                    <div id="next-btn-6" class="absolute bottom-6 right-6 hidden z-40">
+                        <button onclick="nextSlide(7)" class="btn-action bg-bridge-yellow text-bridge-dark text-xl px-8 py-3 animate__animated animate__bounceIn">
+                            Siguiente ➡
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EJERCICIO 5 (COLOR) -->
+            <div id="slide-7" class="slide">
+                <div class="w-full h-full flex flex-col justify-start items-center pb-20 relative pt-6">
+                    
+                    <div class="w-full max-w-4xl flex justify-between items-center z-30 px-6 shrink-0 mb-4">
+                        <div class="bg-white border-4 border-bridge-dark rounded-full px-6 py-1 shadow-md">
+                            <h2 class="font-toon text-lg md:text-xl text-bridge-dark uppercase">Palabra 5 de 5</h2>
+                        </div>
+                        <button onclick="resetPresentation()" class="btn-action bg-bridge-yellow text-bridge-dark px-4 py-2 text-sm font-show flex items-center gap-1">
+                            🔄 REINICIAR
+                        </button>
+                    </div>
+
+                    <div class="card-panel p-6 w-full max-w-3xl flex flex-col items-center z-20 shadow-xl mb-4">
+                        <div class="text-[4rem] mb-2 drop-shadow-md">🎨</div>
+                        
+                        <div class="text-3xl md:text-5xl font-toon text-bridge-dark mb-4 flex items-center justify-center">
+                            <span id="plank-7" class="plank-slot text-xl md:text-3xl">?</span> LOR
+                        </div>
+
+                        <div class="flex gap-4 w-full justify-center">
+                            <button class="opt-7 btn-action bg-white text-bridge-wood text-2xl md:text-3xl px-6 py-3 w-32 hover:bg-orange-50" onclick="checkAnswer(7, true, 'CO', '¡Genial! Con la O usamos la C.')">CO</button>
+                            <button class="opt-7 btn-action bg-white text-bridge-wood text-2xl md:text-3xl px-6 py-3 w-32 hover:bg-orange-50" onclick="checkAnswer(7, false, 'QUO', '¡Falso! La sílaba QUO no existe en español para esto.')">QUO</button>
+                        </div>
+
+                        <div id="feedback-7" class="mt-4 min-h-[40px] hidden text-center animate__animated animate__fadeIn"></div>
+                    </div>
+
+                    <div class="w-full max-w-4xl mx-auto absolute bottom-28 flex justify-between items-center px-12 z-30 pointer-events-none">
+                        <div id="char-7" class="character-fox text-5xl md:text-7xl drop-shadow-lg transform translate-x-48">🦊</div>
+                        <div class="text-5xl md:text-7xl drop-shadow-lg">🏡</div>
+                    </div>
+
+                    <div class="river-bg"><div class="river-waves"></div></div>
+
+                    <div id="next-btn-7" class="absolute bottom-6 right-6 hidden z-40">
+                        <button onclick="nextSlide(8)" class="btn-action bg-bridge-success text-white text-xl px-8 py-3 animate__animated animate__bounceIn">
+                            CRUZAR EL RÍO 🏁
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==============================================
+                DIAPOSITIVA 8: VICTORIA Y DESPEDIDA
+                ============================================== -->
+            <div id="slide-8" class="slide text-center">
+                <div class="card-panel p-10 md:p-16 max-w-3xl w-full mx-4 animate__animated animate__zoomIn border-t-[12px] border-bridge-success shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+                    
+                    <div class="flex justify-center gap-4 mb-6">
+                        <span class="text-[5rem] md:text-[7rem] drop-shadow-md">🦊</span>
+                        <span class="text-[5rem] md:text-[7rem] drop-shadow-md">🏡</span>
+                    </div>
+                    
+                    <h2 class="font-toon text-5xl md:text-7xl text-bridge-dark mb-4 uppercase">
+                        ¡Llegamos a Casa!
+                    </h2>
+                    
+                    <p class="text-2xl md:text-3xl text-gray-700 font-bold mb-10 leading-relaxed border-t-2 border-gray-200 pt-6">
+                        El zorrito logró entrar a su acogedora madriguera gracias a tu excelente ortografía. ¡Dominas perfectamente el sonido de la C y la Q!
+                    </p>
+                    
+                    <div class="flex justify-center">
+                        <button onclick="resetPresentation()" class="btn-action bg-bridge-yellow text-bridge-dark text-2xl md:text-3xl px-12 py-5 uppercase">
+                            VOLVER A EMPEZAR 🔄
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="river-bg"><div class="river-waves"></div></div>
+            </div>
+
+        </div>
+
+        <!-- ==============================================
+            LÓGICA DE LA PRESENTACIÓN (SIN AUDIO)
+            ============================================== -->
+        <script>
+            // Sistema de navegación
+            function showSlide(id) {
+                document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+                document.getElementById(`slide-${id}`).classList.add('active');
+            }
+
+            function nextSlide(id) {
+                showSlide(id);
+            }
+
+            function prevSlide(id) {
+                showSlide(id);
+            }
+
+            // Lógica de respuesta del puente
+            window.checkAnswer = function(slideNum, isCorrect, syllable, explanation) {
+                const plank = document.getElementById(`plank-${slideNum}`);
+                const feedback = document.getElementById(`feedback-${slideNum}`);
+                const nextBtn = document.getElementById(`next-btn-${slideNum}`);
+                const character = document.getElementById(`char-${slideNum}`);
+
+                // Resetea animaciones de error previas
+                plank.classList.remove('shake-error');
+                void plank.offsetWidth; // trigger reflow
+
+                if(isCorrect) {
+                    // ACIERTO
+                    plank.innerText = syllable;
+                    plank.classList.add('filled');
+
+                    feedback.innerHTML = `<span class="text-bridge-success font-black text-xl md:text-2xl">${explanation}</span>`;
+                    feedback.classList.remove('hidden');
+
+                    // Mover zorro hacia adelante (La madriguera está fija al final en el flex)
+                    // Usamos transformaciones proporcionales en PX según la slide para avanzar de forma limpia
+                    const stepsTranslate = {
+                        3: "translateX(90px)",
+                        4: "translateX(160px)",
+                        5: "translateX(240px)",
+                        6: "translateX(310px)",
+                        7: "translateX(400px)"
+                    };
+                    character.style.transform = stepsTranslate[slideNum] || "translateX(100px)";
+
+                    // Mostrar botón siguiente
+                    nextBtn.classList.remove('hidden');
+
+                    // Deshabilitar botones de opciones para evitar recambios
+                    document.querySelectorAll(`.opt-${slideNum}`).forEach(btn => btn.disabled = true);
+                    
+                } else {
+                    // ERROR
+                    plank.classList.add('shake-error');
+                    
+                    // Color rojo temporal a la madera rota
+                    plank.style.backgroundColor = '#fecaca';
+                    plank.style.borderColor = '#ef4444';
+                    
+                    feedback.innerHTML = `<span class="text-bridge-error font-black text-xl md:text-2xl">${explanation}</span>`;
+                    feedback.classList.remove('hidden');
+
+                    setTimeout(() => {
+                        plank.classList.remove('shake-error');
+                        plank.style.backgroundColor = '#fef3c7';
+                        plank.style.borderColor = '#b45309';
+                        feedback.classList.add('hidden');
+                    }, 2500);
+                }
+            };
+
+            // Reset completo (Estilo F5 real en todas las variables y UI)
+            window.resetPresentation = function() {
+                // Reiniciar estado de todas las slides de ejercicio (3 al 7)
+                for(let i=3; i<=7; i++) {
+                    const plank = document.getElementById(`plank-${i}`);
+                    if (plank) {
+                        plank.innerText = '?';
+                        plank.className = 'plank-slot text-xl md:text-3xl';
+                        plank.style.backgroundColor = '#fef3c7';
+                        plank.style.borderColor = '#b45309';
+                    }
+
+                    const feedback = document.getElementById(`feedback-${i}`);
+                    if (feedback) feedback.classList.add('hidden');
+
+                    const nextBtn = document.getElementById(`next-btn-${i}`);
+                    if (nextBtn) nextBtn.classList.add('hidden');
+
+                    const character = document.getElementById(`char-${i}`);
+                    if (character) {
+                        // Restaurar posición base original según la slide
+                        const originalTranslate = {
+                            3: "translateX(0px)",
+                            4: "translateX(48px)",
+                            5: "translateX(96px)",
+                            6: "translateX(144px)",
+                            7: "translateX(192px)"
+                        };
+                        character.style.transform = originalTranslate[i] || "";
+                    }
+
+                    document.querySelectorAll(`.opt-${i}`).forEach(btn => btn.disabled = false);
+                }
+
+                // Redirigir al inicio absoluto (Slide 1)
+                showSlide(1);
+            };
+        </script>
+    </body>
+    </html>

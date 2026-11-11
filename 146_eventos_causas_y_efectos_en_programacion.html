@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Causa y Efecto - Eventos en Programación</title>
+    
+    <!-- Fuentes Google: Fredoka One (Títulos), Fira Code (Código) y Nunito (Lectura) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA DE TAILWIND -->
+    <script>
+        window.tailwind = {
+            config: {
+                important: '#recurso-wp-eventos',
+                corePlugins: { preflight: false },
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            toon: ['"Fredoka One"', 'cursive'],
+                            code: ['"Fira Code"', 'monospace'],
+                            body: ['Nunito', 'sans-serif'],
+                        },
+                        colors: {
+                            dev: {
+                                dark: '#111827',      
+                                panel: '#1f2937',     
+                                yellow: '#f59e0b',    /* Bloque Evento */
+                                blue: '#3b82f6',      /* Bloque Acción */
+                                green: '#10b981',     /* Éxito */
+                                red: '#ef4444',       /* Error */
+                                pink: '#ec4899',      /* Destacado */
+                                text: '#f8fafc'
+                            }
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* MICRO-RESET LOCAL */
+        #recurso-wp-eventos * { box-sizing: border-box; border-width: 0; border-style: solid; border-color: currentColor; line-height: normal; }
+        #recurso-wp-eventos h1, #recurso-wp-eventos h2, #recurso-wp-eventos h3, #recurso-wp-eventos p, #recurso-wp-eventos span, #recurso-wp-eventos div { margin: 0; padding: 0; }
+        #recurso-wp-eventos button { background-color: transparent; cursor: pointer; padding: 0; font-family: inherit; }
+
+        /* ESTILOS PANTALLA COMPLETA */
+        #recurso-wp-eventos {
+            font-family: 'Nunito', sans-serif;
+            background-color: #111827; 
+            background-image: radial-gradient(#1f2937 2px, transparent 2px);
+            background-size: 30px 30px;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Paneles */
+        #recurso-wp-eventos .dev-panel {
+            background-color: #1f2937;
+            border: 4px solid #374151;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 0 15px rgba(255,255,255,0.05);
+        }
+
+        #recurso-wp-eventos .dev-btn {
+            border: 4px solid #000;
+            border-radius: 1rem;
+            box-shadow: 4px 4px 0px #000;
+            transition: all 0.15s ease-out;
+            font-family: 'Fredoka One', cursive;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        #recurso-wp-eventos .dev-btn:hover:not(:disabled) {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #000;
+        }
+        #recurso-wp-eventos .dev-btn:active:not(:disabled) {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px #000;
+        }
+        #recurso-wp-eventos .dev-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: 4px 4px 0px #000 !important;
+        }
+
+        /* Bloques de Código Estilo Scratch */
+        .code-block {
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            border: 3px solid #000;
+            box-shadow: 4px 4px 0px #000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .code-block:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #000;
+        }
+        .code-block:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px #000;
+        }
+        
+        .block-selected {
+            border-color: #fff;
+            box-shadow: 0 0 15px rgba(255,255,255,0.6), 4px 4px 0px #000;
+            transform: scale(1.05);
+        }
+
+        /* Slots para armar el código */
+        .slot-container {
+            background-color: #111827;
+            border: 3px dashed #475569;
+            border-radius: 12px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            padding: 8px;
+            cursor: pointer;
+        }
+        .slot-filled {
+            border-style: solid;
+            background-color: rgba(255,255,255,0.05);
+            border-color: #000;
+        }
+
+        /* Animaciones de la Mascota */
+        .pet-container {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: bottom center;
+        }
+
+        /* Animación Idle (Respirar) */
+        .pet-idle { animation: breath 2s ease-in-out infinite; }
+        @keyframes breath {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(0.95) scaleX(1.02); }
+        }
+
+        /* ACCIÓN: Saltar */
+        .pet-jump { animation: jumpAnim 0.6s cubic-bezier(0.25, 1, 0.5, 1); }
+        @keyframes jumpAnim {
+            0%, 100% { transform: translateY(0) scaleY(1); }
+            40% { transform: translateY(-80px) scaleY(1.1); }
+            50% { transform: translateY(-90px) scaleY(1); }
+            90% { transform: translateY(0) scaleY(0.9); }
+        }
+
+        /* ACCIÓN: Girar */
+        .pet-spin { animation: spinAnim 0.8s ease-in-out; }
+        @keyframes spinAnim {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ACCIÓN: Ladrar (Aparece bocadillo) */
+        .bark-bubble {
+            position: absolute;
+            top: -40px;
+            right: -60px;
+            background: white;
+            color: black;
+            font-family: 'Fredoka One', cursive;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 4px solid black;
+            box-shadow: 4px 4px 0 black;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.5);
+            z-index: 20;
+        }
+        .bark-bubble::after {
+            content: ''; position: absolute; bottom: -10px; left: 10px;
+            border-width: 10px 10px 0; border-style: solid; border-color: black transparent; display: block; width: 0;
+        }
+        .pet-bark .bark-bubble {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .pet-bark { animation: barkShake 0.4s ease-in-out; }
+        @keyframes barkShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px) rotate(-5deg); }
+            75% { transform: translateX(5px) rotate(5deg); }
+        }
+
+        /* Pantallas SPA */
+        #recurso-wp-eventos .screen {
+            display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; position: absolute; top: 0; left: 0; overflow-y: auto; overflow-x: hidden; z-index: 10;
+        }
+        #recurso-wp-eventos .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-eventos .screen.active {
+            display: flex;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .shake-error { animation: shakeError 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shakeError {
+            10%, 90% { transform: translate3d(-4px, 0, 0); }
+            20%, 80% { transform: translate3d(8px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-12px, 0, 0); }
+            40%, 60% { transform: translate3d(12px, 0, 0); }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-eventos">
+
+        <!-- ==============================================
+             PANTALLA 1: INICIO
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="dev-panel p-8 md:p-12 max-w-3xl w-full mx-4 flex flex-col items-center">
+                <div class="text-[5rem] md:text-[8rem] mb-4 animate__animated animate__bounce drop-shadow-[0_0_15px_rgba(236,72,153,0.5)]">💻🐶</div>
+                
+                <h2 class="text-xs md:text-sm text-dev-pink font-code font-bold mb-4 uppercase bg-dev-pink/10 inline-block px-4 py-2 border border-dev-pink rounded-lg tracking-widest">
+                    Tecnología - 5/6to Grado
+                </h2>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-toon text-white leading-none uppercase drop-shadow-md mb-6">
+                    Mascota <br><span class="text-dev-blue">Virtual</span>
+                </h1>
+                <p class="text-lg md:text-2xl text-gray-300 font-bold mb-8 px-2 leading-relaxed max-w-xl">
+                    Las computadoras no hacen nada hasta que tú se lo ordenas. Aprende el concepto de <strong class="text-dev-yellow">CAUSA</strong> y <strong class="text-dev-blue">EFECTO</strong> programando a tu perro robot.
+                </p>
+                <button id="btn-theory" class="dev-btn bg-dev-pink text-white text-xl md:text-3xl px-12 py-5 w-full md:w-auto">
+                    INICIAR SISTEMA ▶
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: TEORÍA Y REGLAS
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center">
+            <div class="dev-panel p-6 md:p-12 max-w-5xl w-full text-center my-auto">
+                <h2 class="text-3xl md:text-5xl font-toon text-white mb-6 uppercase border-b-2 border-gray-600 pb-4">
+                    Eventos en Programación
+                </h2>
+                
+                <div class="bg-black/40 border border-gray-600 p-6 md:p-8 rounded-xl mb-8">
+                    <p class="text-lg md:text-2xl text-gray-200 font-bold leading-relaxed">
+                        En programación, un <strong class="text-dev-yellow">EVENTO</strong> es algo que el usuario hace (como dar un clic). La <strong class="text-dev-blue">ACCIÓN</strong> es lo que la computadora hace en respuesta.
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 mb-10 text-left">
+                    <div class="bg-gray-800 p-6 rounded-2xl border-4 border-dev-yellow shadow-lg transform md:-rotate-1">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="text-4xl">⚡</span>
+                            <h3 class="font-toon text-2xl text-dev-yellow uppercase">El Evento (Causa)</h3>
+                        </div>
+                        <p class="text-sm md:text-base text-gray-300 font-bold">
+                            Es el disparador. Son acciones físicas que tú realizas en tu teclado o ratón.<br><br>
+                            Ejemplos: <strong>"Hacer un Clic"</strong>, <strong>"Hacer Doble Clic"</strong>, <strong>"Pasar el Ratón"</strong>.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-gray-800 p-6 rounded-2xl border-4 border-dev-blue shadow-lg transform md:rotate-1">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="text-4xl">🚀</span>
+                            <h3 class="font-toon text-2xl text-dev-blue uppercase">La Acción (Efecto)</h3>
+                        </div>
+                        <p class="text-sm md:text-base text-gray-300 font-bold">
+                            Es la respuesta del programa o del objeto al sentir el evento.<br><br>
+                            Ejemplos: <strong>"Saltar"</strong>, <strong>"Girar"</strong>, <strong>"Ladrar"</strong>.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-6 justify-center">
+                    <button id="btn-back-start" class="dev-btn bg-gray-300 text-gray-800 px-8 py-4 text-xl font-bold">
+                        ⬅ VOLVER
+                    </button>
+                    <button id="btn-play" class="dev-btn bg-dev-green text-white text-2xl px-12 py-4">
+                        ¡A PROGRAMAR! 💻
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: EL JUEGO (Programador)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start p-0 bg-transparent">
+            
+            <!-- Barra Superior (Misiones) -->
+            <div class="w-full bg-dev-panel border-b-4 border-dev-pink p-3 md:p-4 flex justify-between items-center z-30 shrink-0 shadow-lg">
+                <div class="flex items-center gap-4 px-2 md:px-4 w-full md:w-3/4">
+                    <span class="text-3xl md:text-5xl">🎯</span>
+                    <div class="flex flex-col w-full">
+                        <span class="text-[10px] md:text-sm text-gray-400 font-code uppercase leading-none mb-1">Misión Activa (<span id="mission-indicator">1/3</span>)</span>
+                        <span id="mission-desc" class="font-bold text-sm md:text-xl text-dev-pink leading-tight">Cargando misión...</span>
+                    </div>
+                </div>
+
+                <button id="btn-exit" class="dev-btn bg-red-500 text-white p-2 md:p-3 rounded-xl ml-2 shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Área Principal Dividida -->
+            <div class="w-full flex-grow flex flex-col md:flex-row gap-4 p-4 md:p-6 overflow-hidden relative">
+                
+                <!-- PANEL IZQUIERDO: Constructor de Código -->
+                <div class="w-full md:w-6/12 bg-gray-800 border-4 border-gray-700 rounded-3xl p-4 md:p-6 flex flex-col h-1/2 md:h-full shrink-0 shadow-inner overflow-y-auto">
+                    
+                    <!-- GUÍA/TUTORIAL INTERACTIVO PASO A PASO (Esencial para que el niño no se pierda) -->
+                    <div id="tutorial-banner" class="bg-indigo-950 border-2 border-dev-pink text-white p-3 rounded-xl mb-4 text-center font-bold text-sm md:text-base animate__animated animate__pulse animate__infinite">
+                        💡 <strong>Paso 1:</strong> Selecciona un bloque de <strong>CAUSA (amarillo)</strong> abajo.
+                    </div>
+
+                    <h3 class="font-toon text-white text-lg md:text-2xl uppercase mb-3 text-center tracking-wide">Bloques Lógicos</h3>
+                    
+                    <!-- Zona de Construcción (Slots) -->
+                    <div class="bg-black/30 p-4 rounded-xl border-2 border-dashed border-gray-600 mb-6 flex flex-col gap-3">
+                        <span class="text-xs text-gray-400 font-code uppercase text-center mb-1">Crea tu regla aquí:</span>
+                        
+                        <!-- Slot de Evento -->
+                        <div id="slot-event" class="slot-container" onclick="window.clearSlot('event')">
+                            <span class="text-gray-500 font-bold">1. Selecciona un EVENTO</span>
+                        </div>
+                        
+                        <!-- Slot de Acción -->
+                        <div id="slot-action" class="slot-container" onclick="window.clearSlot('action')">
+                            <span class="text-gray-500 font-bold">2. Selecciona una ACCIÓN</span>
+                        </div>
+                        
+                        <button id="btn-compile" disabled class="dev-btn bg-gray-400 text-gray-700 mt-2 py-3 text-lg transition-colors">
+                            INYECTAR CÓDIGO ⚡
+                        </button>
+                    </div>
+
+                    <!-- Inventario de Bloques Coloreados y Llamativos -->
+                    <div class="flex-grow flex flex-col gap-4">
+                        <!-- Bloques Amarillos/Naranjas (Eventos) -->
+                        <div>
+                            <span class="text-xs text-dev-yellow font-code uppercase block mb-2 font-black">Bloques de Eventos (Causas):</span>
+                            <div class="flex flex-wrap gap-2">
+                                <button class="code-block bg-amber-400 hover:bg-amber-500 border-amber-600 text-black shadow-[4px_4px_0_#d97706] block-event" onclick="window.selectBlock('event', 'click', 'Al hacer CLIC')">
+                                    👉 Al hacer CLIC
+                                </button>
+                                <button class="code-block bg-orange-500 hover:bg-orange-600 border-orange-700 text-white shadow-[4px_4px_0_#c2410c] block-event" onclick="window.selectBlock('event', 'dblclick', 'Al hacer DOBLE CLIC')">
+                                    ✌️ Al hacer DOBLE CLIC
+                                </button>
+                                <button class="code-block bg-yellow-400 hover:bg-yellow-500 border-yellow-600 text-black shadow-[4px_4px_0_#ca8a04] block-event" onclick="window.selectBlock('event', 'mouseenter', 'Al PASAR EL RATÓN')">
+                                    👋 Al PASAR EL RATÓN
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Bloques Azules/Rosas (Acciones) -->
+                        <div>
+                            <span class="text-xs text-dev-blue font-code uppercase block mb-2 font-black">Bloques de Acciones (Efectos):</span>
+                            <div class="flex flex-wrap gap-2">
+                                <button class="code-block bg-sky-500 hover:bg-sky-600 border-sky-700 text-white shadow-[4px_4px_0_#0369a1] block-action" onclick="window.selectBlock('action', 'jump', 'Ejecutar SALTO')">
+                                    🦘 Ejecutar SALTO
+                                </button>
+                                <button class="code-block bg-purple-500 hover:bg-purple-600 border-purple-700 text-white shadow-[4px_4px_0_#6b21a8] block-action" onclick="window.selectBlock('action', 'spin', 'Ejecutar GIRO')">
+                                    🔄 Ejecutar GIRO
+                                </button>
+                                <button class="code-block bg-pink-500 hover:bg-pink-600 border-pink-700 text-white shadow-[4px_4px_0_#be185d] block-action" onclick="window.selectBlock('action', 'bark', 'Ejecutar LADRIDO')">
+                                    📢 Ejecutar LADRIDO
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL DERECHO: Simulador de Mascota -->
+                <div class="w-full md:w-6/12 flex flex-col items-center justify-center relative h-1/2 md:h-full bg-slate-900 border-4 border-slate-700 rounded-3xl overflow-hidden shadow-inner shrink-0 p-4">
+                    
+                    <div class="absolute top-4 bg-black/50 text-white font-code text-xs md:text-sm px-4 py-2 rounded-lg border border-gray-600">
+                        ESTADO: <span id="pet-status" class="text-yellow-400">Esperando Código...</span>
+                    </div>
+
+                    <!-- Perro Interactivo SVG -->
+                    <div id="pet-object" class="pet-container pet-idle w-32 h-32 md:w-48 md:h-48 relative cursor-pointer mt-10">
+                        <div class="bark-bubble">¡Guau!</div>
+                        
+                        <!-- SVG Dog Vector -->
+                        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-xl">
+                            <!-- Orejas -->
+                            <path d="M 40,80 Q 20,40 50,40 Q 60,60 60,80 Z" fill="#d97706" />
+                            <path d="M 160,80 Q 180,40 150,40 Q 140,60 140,80 Z" fill="#d97706" />
+                            <!-- Cuerpo -->
+                            <rect x="60" y="100" width="80" height="80" rx="40" fill="#f59e0b" />
+                            <!-- Pata izq -->
+                            <rect x="70" y="170" width="20" height="20" rx="10" fill="#b45309" />
+                            <!-- Pata der -->
+                            <rect x="110" y="170" width="20" height="20" rx="10" fill="#b45309" />
+                            <!-- Cola -->
+                            <path d="M 140,140 Q 170,120 160,100" fill="none" stroke="#d97706" stroke-width="15" stroke-linecap="round" />
+                            <!-- Cabeza -->
+                            <circle cx="100" cy="85" r="45" fill="#f59e0b" />
+                            <!-- Ojo izq -->
+                            <circle cx="85" cy="75" r="8" fill="#1e293b" />
+                            <circle cx="87" cy="73" r="3" fill="#fff" />
+                            <!-- Ojo der -->
+                            <circle cx="115" cy="75" r="8" fill="#1e293b" />
+                            <circle cx="117" cy="73" r="3" fill="#fff" />
+                            <!-- Hocico -->
+                            <circle cx="100" cy="95" r="18" fill="#fef3c7" />
+                            <circle cx="100" cy="90" r="6" fill="#1e293b" />
+                            <!-- Boca -->
+                            <path d="M 90,100 Q 100,110 110,100" fill="none" stroke="#1e293b" stroke-width="3" stroke-linecap="round" />
+                        </svg>
+                    </div>
+
+                    <!-- Piso de Prueba -->
+                    <div class="w-[150%] h-8 bg-slate-700 absolute bottom-10 rounded-[100%] shadow-[0_10px_10px_rgba(0,0,0,0.5)] z-0"></div>
+
+                    <!-- Mensaje de Feedback de Acción -->
+                    <div id="action-feedback" class="absolute bottom-16 bg-blue-500 text-white font-bold px-6 py-2 rounded-full shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-30">
+                        ¡Evento Detectado!
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ==============================================
+             MODAL DE FEEDBACK (Misión Lograda o Error de Lógica)
+             ============================================== -->
+        <div id="feedback-modal" class="hidden absolute inset-0 z-[60] flex-col items-center justify-center bg-black/90 p-4 text-center backdrop-blur-sm">
+            <div id="feedback-card" class="dev-panel p-8 md:p-12 max-w-2xl w-full text-center border-t-[8px]">
+                <div id="feedback-icon" class="text-[5rem] md:text-[7rem] mb-4 drop-shadow-md">✨</div>
+                <h3 id="feedback-title" class="font-toon text-3xl md:text-5xl mb-4 uppercase tracking-widest text-white">Título</h3>
+                <div class="bg-black/50 p-6 rounded-xl border border-gray-600 mb-8">
+                    <p id="feedback-reason" class="text-lg md:text-xl font-bold text-gray-200 leading-relaxed font-body"></p>
+                </div>
+                <button id="btn-continue-feedback" class="dev-btn font-toon text-xl md:text-2xl px-10 py-4 w-full uppercase text-white shadow-md">
+                    BOTON
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (Victoria)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex flex-col items-center justify-center p-6 text-center bg-dev-dark">
+            <div class="dev-panel p-10 md:p-16 max-w-4xl w-full text-center z-10 border-t-[12px] border-t-dev-green shadow-[0_0_50px_rgba(16,185,129,0.3)]">
+                <div class="text-[6rem] md:text-[9rem] mb-6 animate-bounce">🎓🚀</div>
+                <h2 class="font-toon text-4xl md:text-6xl text-dev-green mb-6 uppercase">¡Programador Experto!</h2>
+                <p class="text-xl md:text-2xl text-gray-300 mb-10 font-bold leading-relaxed max-w-2xl mx-auto">
+                    Has dominado los eventos. Ahora sabes que las computadoras responden exactamente a lo que programas. Tú decides la causa, y la máquina ejecuta el efecto.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-6 justify-center">
+                    <button id="btn-end-home" class="dev-btn bg-gray-700 text-white font-toon px-8 py-4 text-xl border-gray-500">
+                        APAGAR LABORATORIO
+                    </button>
+                    <button id="btn-end-retry" class="dev-btn bg-dev-blue text-white font-toon text-2xl md:text-3xl px-12 py-4 border-dev-blue">
+                        PROGRAMAR DE NUEVO 🔄
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO (EVENT LISTENERS)
+         ============================================== -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- AUDIO SINTETIZADO SEGURO ---
+            let audioCtx = null;
+            function initAudio() {
+                try {
+                    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                } catch (e) {}
+            }
+            document.body.addEventListener('click', initAudio, { once: true });
+
+            function playBeep(freq = 600, duration = 0.1, type = "sine") {
+                try {
+                    if (audioCtx && audioCtx.state !== 'suspended') {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = type;
+                        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + duration);
+                    }
+                } catch (e) {}
+            }
+
+            function playBlip() { playBeep(800, 0.05, "square"); }
+            function playJump() { playBeep(400, 0.1, "sine"); setTimeout(() => playBeep(800, 0.2, "sine"), 100); }
+            function playBark() { playBeep(300, 0.1, "sawtooth"); setTimeout(() => playBeep(250, 0.15, "sawtooth"), 120); }
+            function playSpin() { playBeep(500, 0.3, "triangle"); }
+            
+            function playSuccess() { playBeep(523.25, 0.1); setTimeout(() => playBeep(659.25, 0.1), 100); setTimeout(() => playBeep(783.99, 0.3), 200); }
+            function playError() { playBeep(200, 0.3, "sawtooth"); }
+
+            // --- MISIONES DEL JUEGO ---
+            const missions = [
+                {
+                    id: 1,
+                    desc: "Programa al perro para que SALTE cuando le hagas un CLIC.",
+                    targetEvent: 'click',
+                    targetAction: 'jump'
+                },
+                {
+                    id: 2,
+                    desc: "Programa al perro para que LADRE cuando le hagas DOBLE CLIC.",
+                    targetEvent: 'dblclick',
+                    targetAction: 'bark'
+                },
+                {
+                    id: 3,
+                    desc: "Programa al perro para que GIRE cuando PASES EL RATÓN (Hover) por encima.",
+                    targetEvent: 'mouseenter',
+                    targetAction: 'spin'
+                }
+            ];
+
+            let currentLevel = 0;
+            let mission = null;
+
+            // Estado de Programación
+            let selectedEvent = null;   // id del evento
+            let selectedAction = null;  // id de la acción
+            let isCodeCompiled = false; // ¿Se presionó Inyectar?
+            let isAnimating = false;    // Bloquea interacciones mientra hace animación
+
+            // DOM Elements
+            const slotEvent = document.getElementById('slot-event');
+            const slotAction = document.getElementById('slot-action');
+            const btnCompile = document.getElementById('btn-compile');
+            const petObj = document.getElementById('pet-object');
+            const petStatus = document.getElementById('pet-status');
+            const tutorialBanner = document.getElementById('tutorial-banner');
+
+            // --- NAVEGACIÓN ---
+            function showScreen(id) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+            }
+
+            function startGame() {
+                currentLevel = 0;
+                document.getElementById('screen-result').classList.add('hidden');
+                document.getElementById('screen-result').classList.remove('flex');
+                
+                showScreen('screen-game');
+                loadLevel();
+            }
+
+            function loadLevel() {
+                if (currentLevel >= missions.length) {
+                    endGame();
+                    return;
+                }
+
+                mission = missions[currentLevel];
+                document.getElementById('mission-indicator').innerText = `${currentLevel + 1}/${missions.length}`;
+                document.getElementById('mission-desc').innerText = mission.desc;
+
+                resetWorkspace();
+            }
+
+            function resetWorkspace() {
+                selectedEvent = null;
+                selectedAction = null;
+                isCodeCompiled = false;
+                isAnimating = false;
+
+                // Reset UI Slots
+                slotEvent.innerHTML = '<span class="text-gray-500 font-bold">1. Selecciona un EVENTO</span>';
+                slotEvent.className = "slot-container";
+                
+                slotAction.innerHTML = '<span class="text-gray-500 font-bold">2. Selecciona una ACCIÓN</span>';
+                slotAction.className = "slot-container";
+
+                // EL BUG SOLUCIONADO: Desmarcar botones de bloques Y QUITAR EL BLOQUEO (pointer-events-none)
+                document.querySelectorAll('.code-block').forEach(b => {
+                    b.classList.remove('block-selected', 'opacity-50', 'pointer-events-none');
+                });
+
+                // Resetear botón inyectar
+                btnCompile.disabled = true;
+                btnCompile.className = "dev-btn bg-gray-400 text-gray-700 mt-2 py-3 text-lg transition-colors";
+                btnCompile.innerText = "INYECTAR CÓDIGO ⚡";
+
+                // Resetear Mascota
+                petStatus.innerText = "Esperando Código...";
+                petStatus.className = "text-yellow-400";
+
+                // Actualizar Banner Tutorial Inicial
+                updateTutorialStep();
+            }
+
+            // --- ACTUALIZADOR DE PASO A PASO (TUTORIAL BANNER) ---
+            function updateTutorialStep() {
+                if (isCodeCompiled) {
+                    const eventName = getEventName(selectedEvent);
+                    tutorialBanner.className = "bg-dev-green border-2 border-white text-white p-3 rounded-xl mb-4 text-center font-bold text-sm md:text-base animate__animated animate__pulse animate__infinite";
+                    tutorialBanner.innerHTML = `💡 <strong>Paso 4:</strong> ¡Código inyectado! Ahora realiza la causa (haz <strong>${eventName}</strong>) sobre el perrito 🐶 para ver el efecto.`;
+                } else if (selectedEvent && selectedAction) {
+                    tutorialBanner.className = "bg-dev-green border-2 border-dev-yellow text-white p-3 rounded-xl mb-4 text-center font-bold text-sm md:text-base animate__animated animate__bounce animate__infinite";
+                    tutorialBanner.innerHTML = `💡 <strong>Paso 3:</strong> ¡Perfecto! Presiona el botón verde de abajo para <strong>INYECTAR CÓDIGO ⚡</strong>.`;
+                } else if (selectedEvent) {
+                    tutorialBanner.className = "bg-dev-blue border-2 border-white text-white p-3 rounded-xl mb-4 text-center font-bold text-sm md:text-base animate__animated animate__pulse animate__infinite";
+                    tutorialBanner.innerHTML = `💡 <strong>Paso 2:</strong> ¡Excelente causa! Ahora selecciona un bloque de <strong>EFECTO (azul)</strong> abajo.`;
+                } else if (selectedAction) {
+                    tutorialBanner.className = "bg-dev-yellow border-2 border-white text-white p-3 rounded-xl mb-4 text-center font-bold text-sm md:text-base animate__animated animate__pulse animate__infinite";
+                    tutorialBanner.innerHTML = `💡 <strong>Paso 2:</strong> ¡Excelente efecto! Ahora selecciona un bloque de <strong>CAUSA (amarillo)</strong> abajo.`;
+                } else {
+                    tutorialBanner.className = "bg-indigo-950 border-2 border-dev-pink text-white p-3 rounded-xl mb-4 text-center font-bold text-sm md:text-base animate__animated animate__pulse animate__infinite";
+                    tutorialBanner.innerHTML = `💡 <strong>Paso 1:</strong> Selecciona un bloque de <strong>CAUSA (amarillo)</strong> abajo.`;
+                }
+            }
+
+            // Exponer funciones al scope para HTML onclick
+            window.selectBlock = function(type, id, name) {
+                if (isCodeCompiled) return; 
+                playBlip();
+
+                if (type === 'event') {
+                    selectedEvent = id;
+                    
+                    // Clonar color del bloque seleccionado en el slot
+                    const originalBtn = event.currentTarget;
+                    const bgClass = Array.from(originalBtn.classList).find(cls => cls.startsWith('bg-')) || 'bg-dev-yellow';
+                    const borderClass = Array.from(originalBtn.classList).find(cls => cls.startsWith('border-')) || 'border-black';
+                    const shadowClass = Array.from(originalBtn.classList).find(cls => cls.startsWith('shadow-')) || '';
+
+                    slotEvent.innerHTML = `<div class="code-block ${bgClass} ${borderClass} ${shadowClass} w-full justify-center shadow-none border-white border-2 pointer-events-none text-white">${name}</div>`;
+                    slotEvent.classList.add('slot-filled');
+                    
+                    // Resaltar en la lista
+                    document.querySelectorAll('.block-event').forEach(b => b.classList.remove('block-selected'));
+                    originalBtn.classList.add('block-selected');
+                } 
+                else if (type === 'action') {
+                    selectedAction = id;
+                    
+                    // Clonar color del bloque seleccionado en el slot
+                    const originalBtn = event.currentTarget;
+                    const bgClass = Array.from(originalBtn.classList).find(cls => cls.startsWith('bg-')) || 'bg-dev-blue';
+                    const borderClass = Array.from(originalBtn.classList).find(cls => cls.startsWith('border-')) || 'border-black';
+                    const shadowClass = Array.from(originalBtn.classList).find(cls => cls.startsWith('shadow-')) || '';
+
+                    slotAction.innerHTML = `<div class="code-block ${bgClass} ${borderClass} ${shadowClass} w-full justify-center shadow-none border-white border-2 pointer-events-none text-white">${name}</div>`;
+                    slotAction.classList.add('slot-filled');
+                    
+                    // Resaltar en la lista
+                    document.querySelectorAll('.block-action').forEach(b => b.classList.remove('block-selected'));
+                    originalBtn.classList.add('block-selected');
+                }
+
+                checkCompileReady();
+                updateTutorialStep();
+            };
+
+            window.clearSlot = function(type) {
+                if (isCodeCompiled) return;
+                playBlip();
+
+                if (type === 'event' && selectedEvent) {
+                    selectedEvent = null;
+                    slotEvent.innerHTML = '<span class="text-gray-500 font-bold">1. Selecciona un EVENTO</span>';
+                    slotEvent.classList.remove('slot-filled');
+                    document.querySelectorAll('.block-event').forEach(b => b.classList.remove('block-selected'));
+                }
+                else if (type === 'action' && selectedAction) {
+                    selectedAction = null;
+                    slotAction.innerHTML = '<span class="text-gray-500 font-bold">2. Selecciona una ACCIÓN</span>';
+                    slotAction.classList.remove('slot-filled');
+                    document.querySelectorAll('.block-action').forEach(b => b.classList.remove('block-selected'));
+                }
+
+                checkCompileReady();
+                updateTutorialStep();
+            };
+
+            function checkCompileReady() {
+                if (selectedEvent && selectedAction) {
+                    btnCompile.disabled = false;
+                    btnCompile.className = "dev-btn bg-dev-green text-white mt-2 py-3 text-lg font-bold transition-all shadow-[4px_4px_0_#000] hover:shadow-[6px_6px_0_#000]";
+                } else {
+                    btnCompile.disabled = true;
+                    btnCompile.className = "dev-btn bg-gray-400 text-gray-700 mt-2 py-3 text-lg transition-colors";
+                }
+            }
+
+            // Inyectar el código al perrito (El Event Listener central)
+            btnCompile.addEventListener('click', () => {
+                playSuccess();
+                isCodeCompiled = true;
+                
+                // Deshabilitar UI de edición
+                btnCompile.disabled = true;
+                btnCompile.innerText = "¡CÓDIGO INYECTADO! ✅";
+                btnCompile.className = "dev-btn bg-gray-700 text-dev-green border-gray-600 mt-2 py-3 text-lg font-bold transition-all cursor-default shadow-none";
+                
+                document.querySelectorAll('.code-block').forEach(b => b.classList.add('opacity-50', 'pointer-events-none'));
+
+                petStatus.innerText = "¡Código Activo! Prueba interactuar.";
+                petStatus.className = "text-dev-green animate-pulse";
+
+                updateTutorialStep();
+            });
+
+            // --- EL MOTOR CENTRAL DE EVENTOS SOBRE LA MASCOTA ---
+            function handlePetInteraction(e) {
+                if (!isCodeCompiled || isAnimating) return;
+
+                const eventTypeFired = e.type;
+
+                // Solo actuamos si el evento disparado por el niño COINCIDE EXACTAMENTE con el evento que programó en la consola
+                if (eventTypeFired === selectedEvent) {
+                    executeProgrammedAction();
+                }
+            }
+
+            // Registrar los 3 tipos de eventos que usamos en el juego al objeto del perrito
+            petObj.addEventListener('click', handlePetInteraction);
+            petObj.addEventListener('dblclick', handlePetInteraction);
+            petObj.addEventListener('mouseenter', handlePetInteraction);
+
+            // Evitar que el doble click haga zoom en móviles y rompa la UI
+            petObj.addEventListener('mousedown', (e) => { if (e.detail > 1) { e.preventDefault(); } });
+
+            function executeProgrammedAction() {
+                isAnimating = true;
+
+                // 1. Ejecutar la acción visual y sonora que programó
+                petObj.classList.remove('pet-idle');
+                void petObj.offsetWidth; // Reflow
+
+                if (selectedAction === 'jump') {
+                    playJump();
+                    petObj.classList.add('pet-jump');
+                } else if (selectedAction === 'spin') {
+                    playSpin();
+                    petObj.classList.add('pet-spin');
+                } else if (selectedAction === 'bark') {
+                    playBark();
+                    petObj.classList.add('pet-bark');
+                }
+
+                // Feedback visual rápido
+                const actionFb = document.getElementById('action-feedback');
+                actionFb.classList.remove('translate-y-20', 'opacity-0');
+                actionFb.classList.add('translate-y-0', 'opacity-100');
+
+                // 2. Esperar que termine la animación
+                setTimeout(() => {
+                    petObj.classList.remove('pet-jump', 'pet-spin', 'pet-bark');
+                    petObj.classList.add('pet-idle');
+                    
+                    actionFb.classList.add('translate-y-20', 'opacity-0');
+                    actionFb.classList.remove('translate-y-0', 'opacity-100');
+                    
+                    // 3. Evaluar Lógica vs Misión
+                    evaluateMission();
+
+                }, 1000);
+            }
+
+            function evaluateMission() {
+                if (selectedEvent === mission.targetEvent && selectedAction === mission.targetAction) {
+                    // ¡ÉXITO! Cumplió la misión
+                    playSuccess();
+                    showModal(true, "¡Código Exitoso! 🌟", "El evento y la acción que programaste eran exactamente los que pedía la misión.");
+                } else {
+                    // ERROR DE LÓGICA (El código funcionó, pero no era lo que pedía la misión)
+                    playError();
+                    
+                    let reason = "";
+                    if (selectedEvent !== mission.targetEvent) {
+                        reason = `Tu código funciona, pero usaste el Evento incorrecto. La misión pedía un <strong>${getEventName(mission.targetEvent)}</strong>.`;
+                    } else if (selectedAction !== mission.targetAction) {
+                        reason = `El Evento es correcto, pero programaste la Acción equivocada. La misión pedía que el perro <strong>${getActionName(mission.targetAction)}</strong>.`;
+                    }
+
+                    showModal(false, "¡Bug en la Lógica! 🐛", reason);
+                }
+            }
+
+            function getEventName(evt) {
+                if(evt === 'click') return 'CLIC';
+                if(evt === 'dblclick') return 'DOBLE CLIC';
+                if(evt === 'mouseenter') return 'PASAR EL RATÓN';
+                return evt;
+            }
+            function getActionName(act) {
+                if(act === 'jump') return 'SALTE';
+                if(act === 'spin') return 'GIRE';
+                if(act === 'bark') return 'LADRE';
+                return act;
+            }
+
+            // --- FEEDBACK & MODALES ---
+            function showModal(isSuccess, titleText, reasonText) {
+                const modal = document.getElementById('feedback-modal');
+                const card = document.getElementById('feedback-card');
+                const icon = document.getElementById('feedback-icon');
+                const title = document.getElementById('feedback-title');
+                const btn = document.getElementById('btn-continue-feedback');
+                
+                card.classList.remove('animate__fadeInDown');
+                card.classList.remove('border-t-dev-red', 'border-t-dev-green');
+                void card.offsetWidth;
+
+                icon.innerText = isSuccess ? "✅" : "⚠️";
+                title.innerText = titleText;
+                title.className = isSuccess 
+                    ? "font-toon text-3xl md:text-5xl mb-4 uppercase tracking-widest text-dev-green drop-shadow-sm" 
+                    : "font-toon text-3xl md:text-5xl mb-4 uppercase tracking-widest text-dev-red drop-shadow-sm";
+                
+                document.getElementById('feedback-reason').innerHTML = reasonText;
+                
+                if (isSuccess) {
+                    card.classList.add('border-t-dev-green');
+                    btn.className = "dev-btn bg-dev-green border-dev-green font-toon text-xl md:text-3xl px-10 py-5 w-full uppercase text-white shadow-[6px_6px_0_#0f172a] hover:shadow-[4px_4px_0_#0f172a]";
+                    btn.innerText = "SIGUIENTE MISIÓN ➡";
+                    btn.onclick = () => { closeModal(); currentLevel++; loadLevel(); };
+                } else {
+                    card.classList.add('border-t-dev-red');
+                    btn.className = "dev-btn bg-dev-panel border-dev-red font-toon text-xl md:text-3xl px-10 py-5 w-full uppercase text-white shadow-[6px_6px_0_#ef4444] hover:shadow-[4px_4px_0_#ef4444]";
+                    btn.innerText = "DEPURAR CÓDIGO 🔧";
+                    btn.onclick = () => { closeModal(); resetWorkspace(); }; 
+                }
+
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                card.classList.add('animate__fadeInDown');
+            }
+
+            function closeModal() {
+                document.getElementById('feedback-modal').classList.add('hidden');
+                document.getElementById('feedback-modal').classList.remove('flex');
+            }
+
+            function endGame() {
+                document.getElementById('screen-result').classList.remove('hidden');
+                document.getElementById('screen-result').classList.add('flex');
+            }
+
+            // --- ASIGNACIÓN DE EVENTOS NAVEGACIÓN ---
+            document.getElementById('btn-theory').addEventListener('click', () => { playBlip(); showScreen('screen-theory'); });
+            document.getElementById('btn-back-start').addEventListener('click', () => { playBlip(); showScreen('screen-start'); });
+            document.getElementById('btn-play').addEventListener('click', () => { playBlip(); startGame(); });
+            document.getElementById('btn-exit').addEventListener('click', () => { playBlip(); showScreen('screen-start'); });
+            
+            document.getElementById('btn-end-home').addEventListener('click', () => { playBlip(); showScreen('screen-start'); });
+            document.getElementById('btn-end-retry').addEventListener('click', () => { playBlip(); startGame(); });
+
+        });
+    </script>
+</body>
+</html>

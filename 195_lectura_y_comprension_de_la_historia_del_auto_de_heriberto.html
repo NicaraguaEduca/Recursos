@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actividad: El auto de Heriberto</title>
+    <style>
+        /* ESTILOS BASE Y DESKTOP (Sin Scroll) */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 2vh 2vw;
+            background-color: #f4f1ea; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+            height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden; /* Evita el scroll en PC */
+        }
+
+        .header-title {
+            text-align: center;
+            margin-bottom: 2vh;
+            flex-shrink: 0;
+        }
+
+        h1 { margin: 0; color: #2c3e50; font-size: 2.2em; }
+
+        #app-container {
+            display: flex;
+            gap: 2vw;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex: 1;
+            min-height: 0; 
+        }
+
+        #left-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 0;
+        }
+
+        #canvas-container {
+            flex: 1;
+            position: relative;
+            background-color: #f4f1ea; 
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+            overflow: hidden;
+            transition: all 0.4s ease; /* Transición suave para pantalla completa */
+        }
+
+        canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+        }
+
+        /* EFECTO PANTALLA COMPLETA AL INICIAR ANIMACIÓN */
+        body.fullscreen-active #canvas-container {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100vw; height: 100vh;
+            max-height: none;
+            z-index: 9999;
+            margin: 0;
+            border-radius: 0;
+            border: none;
+            background-color: #e5e2db; /* Fondo un poco más oscuro para contrastar */
+        }
+
+        body.fullscreen-active canvas {
+            max-height: 95vh; /* Un margen para que no toque los bordes al 100% */
+            max-width: 95vw;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-radius: 8px;
+            background-color: #f4f1ea;
+        }
+
+        /* OVERLAY ESTILO VIDEOJUEGO */
+        #game-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        #game-overlay.visible { opacity: 1; pointer-events: auto; }
+
+        .overlay-box {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            transform: scale(0.5);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            max-width: 80%;
+        }
+
+        #game-overlay.visible .overlay-box { transform: scale(1); }
+        .overlay-icon { font-size: 4em; margin-bottom: 5px; }
+        .overlay-title { font-size: 2em; font-weight: bold; margin-bottom: 10px; }
+        .overlay-msg { font-size: 1.1em; color: #555; margin-bottom: 20px; line-height: 1.4; }
+        
+        #overlay-btn {
+            padding: 12px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: white;
+            background-color: #3498db;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #2980b9;
+        }
+        #overlay-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #2980b9; }
+
+        .success-theme .overlay-title { color: #27ae60; }
+        .error-theme .overlay-title { color: #c0392b; }
+        .success-theme #overlay-btn { background-color: #27ae60; box-shadow: 0 4px 0 #219150; }
+        .error-theme #overlay-btn { background-color: #e74c3c; box-shadow: 0 4px 0 #c0392b; }
+
+        /* Barra de programación */
+        #programming-bar {
+            background-color: white;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
+        .prog-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        #sequence-display {
+            min-height: 50px;
+            background-color: #f8f9fa;
+            border: 2px dashed #bbb;
+            border-radius: 6px;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: flex-start;
+        }
+
+        .token {
+            padding: 8px 12px;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1em;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.15);
+            animation: popIn 0.2s ease-out;
+            transition: opacity 0.2s;
+        }
+        .token.active-step {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            z-index: 10;
+            outline: 3px solid #f1c40f;
+        }
+        .token-A { background-color: #27ae60; }
+        .token-I { background-color: #2980b9; }
+        .token-D { background-color: #c0392b; }
+
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        .prog-actions { display: flex; gap: 10px; }
+        .btn-action {
+            flex: 1;
+            padding: 12px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .btn-action:active:not(:disabled) { transform: translateY(2px); }
+        .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        #btn-start { background-color: #f39c12; color: white; box-shadow: 0 3px 0 #d68910; }
+        #btn-start:hover:not(:disabled) { background-color: #f1c40f; }
+        #btn-del { background-color: #95a5a6; color: white; box-shadow: 0 3px 0 #7f8c8d; }
+        #btn-del:hover:not(:disabled) { background-color: #bdc3c7; }
+
+        /* Panel derecho */
+        #panel {
+            width: 340px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto; 
+            padding-right: 5px;
+        }
+
+        .card {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            border: 1px solid #e0e0e0;
+        }
+        .card h4 { margin-top: 0; margin-bottom: 12px; color: #2c3e50; font-size: 1.1em; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        
+        .start-points-container { display: flex; gap: 10px; justify-content: space-between; }
+        .btn-start-point {
+            flex: 1; padding: 10px; font-weight: bold; font-size: 1.1em;
+            background-color: #ecf0f1; border: 2px solid #bdc3c7; border-radius: 6px;
+            cursor: pointer; color: #2c3e50; transition: all 0.2s;
+        }
+        .btn-start-point.active {
+            background-color: #f1c40f; border-color: #f39c12; color: #fff; text-shadow: 1px 1px 0px rgba(0,0,0,0.2);
+        }
+
+        .instruction-list { list-style: none; padding: 0; margin: 0; font-size: 0.95em; line-height: 1.4; }
+        .instruction-list li { margin-bottom: 8px; }
+        .instruction-list strong { color: #d35400; font-size: 1.2em; display: inline-block; width: 25px;}
+
+        .remote-control { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        button.cmd-btn {
+            padding: 15px 0; font-size: 1.5em; font-weight: bold; color: white;
+            border: none; border-radius: 8px; cursor: pointer;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2); transition: all 0.1s;
+        }
+        button.cmd-btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 0 0 rgba(0,0,0,0.2); }
+        button.cmd-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+        #btn-i { background-color: #2980b9; } #btn-a { background-color: #27ae60; } #btn-d { background-color: #c0392b; } 
+
+        #btn-full-reset {
+            width: 100%; background-color: #e74c3c; color: white; box-shadow: 0 3px 0 #c0392b; margin-top: 5px;
+        }
+        #btn-full-reset:hover:not(:disabled) { background-color: #c0392b; }
+
+        /* =========================================
+           MEDIA QUERIES PARA CELULARES (MÓVILES) 
+           ========================================= */
+        @media (max-width: 850px) {
+            body {
+                height: auto;
+                overflow-y: auto; /* En celular sí se permite hacer scroll */
+                padding: 0;       /* Quitamos padding para que el sticky sea al ras */
+                display: block;
+            }
+            .header-title { padding: 15px; margin-bottom: 0; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+            
+            #app-container {
+                display: flex; flex-direction: column; gap: 15px; padding: 15px;
+            }
+            #left-column {
+                display: contents; /* Hace que el canvas y los controles se apilen directamente */
+            }
+            
+            /* DIBUJO BLOQUEADO EN LA PARTE SUPERIOR (STICKY) */
+            #canvas-container {
+                position: sticky;
+                top: 0;
+                z-index: 90; /* Alta prioridad para sobreponerse al contenido al hacer scroll */
+                margin: -15px -15px 0 -15px; /* Se estira a los bordes de la pantalla */
+                border-radius: 0 0 15px 15px;
+                border-top: none; border-left: none; border-right: none;
+                box-shadow: 0 8px 20px rgba(0,0,0,0.15); /* Sombra para resaltar que está flotando */
+            }
+            
+            /* Limita la altura del canvas en móvil para dejar espacio a los botones */
+            #canvas-container canvas {
+                width: 100%;
+                height: auto;
+                max-height: 45vh; 
+                object-fit: contain;
+            }
+            
+            #panel { width: 100%; overflow: visible; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-title">
+        <h1>Actividad: El auto de Heriberto</h1>
+    </div>
+
+    <div id="app-container">
+        <!-- Columna Izquierda: Mapa y Cinta de Programación -->
+        <div id="left-column">
+            <!-- Contenedor del Dibujo (Se vuelve Sticky en Móviles) -->
+            <div id="canvas-container">
+                <canvas id="gameCanvas" width="700" height="560"></canvas>
+                
+                <!-- Pop-up Overlay Estilo Videojuego -->
+                <div id="game-overlay">
+                    <div class="overlay-box" id="overlay-box">
+                        <div class="overlay-icon" id="overlay-icon">🏆</div>
+                        <div class="overlay-title" id="overlay-title">¡Misión Cumplida!</div>
+                        <div class="overlay-msg" id="overlay-msg">El auto de Heriberto llegó a su casa exitosamente.</div>
+                        <button id="overlay-btn">Continuar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cuadro de programación -->
+            <div id="programming-bar">
+                <div class="prog-header">
+                    <span>Tu Algoritmo (Secuencia de pasos)</span>
+                </div>
+                <div id="sequence-display"></div>
+                <div class="prog-actions">
+                    <button id="btn-start" class="btn-action">▶ Comenzar Algoritmo</button>
+                    <button id="btn-del" class="btn-action">⌫ Borrar Último</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Controles -->
+        <div id="panel">
+            <div class="card">
+                <h4>1. Elige el Punto de Inicio</h4>
+                <div class="start-points-container">
+                    <button class="btn-start-point active" data-point="1">Inicio 1</button>
+                    <button class="btn-start-point" data-point="2">Inicio 2</button>
+                    <button class="btn-start-point" data-point="3">Inicio 3</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h4>2. Reglas del Auto</h4>
+                <ul class="instruction-list">
+                    <li><strong>A</strong> Avanzar (hasta el próximo cruce de frente)</li>
+                    <li><strong>I</strong> Girar 90° a la izquierda (en su lugar)</li>
+                    <li><strong>D</strong> Girar 90° a la derecha (en su lugar)</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h4>3. Escribir Código</h4>
+                <div class="remote-control">
+                    <button id="btn-i" class="cmd-btn" title="Agregar Girar Izquierda">I</button>
+                    <button id="btn-a" class="cmd-btn" title="Agregar Avanzar">A</button>
+                    <button id="btn-d" class="cmd-btn" title="Agregar Girar Derecha">D</button>
+                </div>
+                <!-- BOTÓN DE REINICIO TOTAL -->
+                <button id="btn-full-reset" class="btn-action">🔄 Reiniciar Posición y Código</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const sequenceDisplay = document.getElementById('sequence-display');
+        
+        const btnA = document.getElementById('btn-a');
+        const btnI = document.getElementById('btn-i');
+        const btnD = document.getElementById('btn-d');
+        const btnStart = document.getElementById('btn-start');
+        const btnDel = document.getElementById('btn-del');
+        const btnFullReset = document.getElementById('btn-full-reset');
+        const startPointBtns = document.querySelectorAll('.btn-start-point');
+
+        const overlay = document.getElementById('game-overlay');
+        const overlayBox = document.getElementById('overlay-box');
+        const overlayIcon = document.getElementById('overlay-icon');
+        const overlayTitle = document.getElementById('overlay-title');
+        const overlayMsg = document.getElementById('overlay-msg');
+        const overlayBtn = document.getElementById('overlay-btn');
+
+        // --- TOPOLOGÍA DEL MAPA EXACTA ---
+        const mapNodes = {
+            'START_1': { x: 100, y: 120, S: 'N1_2' }, 
+            
+            // Columna 1
+            'N1_2': { x: 100, y: 260, N: 'START_1', S: 'N1_3', E: 'N2_2' },
+            'N1_3': { x: 100, y: 380, N: 'N1_2', S: 'N1_4', E: 'N2_3' }, 
+            'N1_4': { x: 100, y: 500, N: 'N1_3', E: 'N2_4' },             
+
+            // Columna 2
+            'N2_2': { x: 200, y: 260, W: 'N1_2', S: 'N2_3', E: 'N3_2' },  
+            'N2_3': { x: 200, y: 380, W: 'N1_3', N: 'N2_2', S: 'N2_4' },  
+            'N2_4': { x: 200, y: 500, W: 'N1_4', N: 'N2_3', E: 'N3_4' }, 
+
+            // Columna 3
+            'N3_1': { x: 380, y: 180, E: 'N4_1', S: 'N3_2' },             
+            'N3_2': { x: 380, y: 260, N: 'N3_1', S: 'N3_3', W: 'N2_2', E: 'N4_2' }, 
+            'N3_3': { x: 380, y: 380, N: 'N3_2', S: 'N3_4', E: 'N4_3' },  
+            'N3_4': { x: 380, y: 500, N: 'N3_3', W: 'N2_4', E: 'N4_4' },  
+
+            // Columna 4 
+            'HOUSE': { x: 500, y: 100, S: 'N4_1' },                        
+            'N4_1': { x: 500, y: 180, N: 'HOUSE', S: 'N4_2', W: 'N3_1' }, 
+            'N4_2': { x: 500, y: 260, N: 'N4_1', S: 'N4_3', W: 'N3_2' },  
+            'N4_3': { x: 500, y: 380, N: 'N4_2', S: 'N4_4', W: 'N3_3', E: 'N5_3' }, 
+            'N4_4': { x: 500, y: 500, N: 'N4_3', W: 'N3_4', E: 'N5_4' },  
+
+            // Columna 5 
+            'N5_3': { x: 620, y: 380, S: 'N5_4', W: 'N4_3' },             
+            'N5_4': { x: 620, y: 500, N: 'N5_3', W: 'N4_4' }              
+        };
+
+        // --- CONFIGURACIÓN DE LOS PUNTOS DE INICIO ---
+        const startPoints = {
+            '1': { node: 'START_1', dir: 'S', x: 100, y: 120, mx: 0, my: -35 },
+            '2': { node: 'N2_2', dir: 'E', x: 200, y: 260, mx: 0, my: -35 },    
+            '3': { node: 'N5_4', dir: 'N', x: 620, y: 500, mx: 35, my: 0 }      
+        };
+
+        let currentStart = '1';
+        let algorithm = []; 
+        let isExecuting = false;
+        let currentStepIndex = -1;
+
+        let logicalState = { node: startPoints['1'].node, direction: startPoints['1'].dir, isAnimating: false };
+        let visualState = { x: startPoints['1'].x, y: startPoints['1'].y, angle: Math.PI / 2 };
+        const dirToAngle = { 'E': 0, 'S': Math.PI / 2, 'W': Math.PI, 'N': -Math.PI / 2 };
+
+        // --- FUNCIONES DE DIBUJO ---
+        function drawGrassBlob() {
+            ctx.fillStyle = '#497e2f'; 
+            ctx.beginPath();
+            ctx.moveTo(70, 280);
+            ctx.bezierCurveTo(40, 200, 150, 190, 200, 170);
+            ctx.bezierCurveTo(280, 140, 400, 140, 430, 180);
+            ctx.bezierCurveTo(460, 190, 480, 160, 550, 180);
+            ctx.bezierCurveTo(650, 220, 680, 340, 660, 440);
+            ctx.bezierCurveTo(650, 540, 450, 540, 300, 530);
+            ctx.bezierCurveTo(150, 520, 50, 540, 60, 390);
+            ctx.bezierCurveTo(65, 340, 50, 320, 70, 280);
+            ctx.fill();
+        }
+
+        function drawRoads() {
+            const connections = [];
+            let drawnLines = new Set();
+            for (let id in mapNodes) {
+                let n1 = mapNodes[id];
+                ['N', 'S', 'E', 'W'].forEach(dir => {
+                    let nextId = n1[dir];
+                    if (nextId) {
+                        let lineId = [id, nextId].sort().join('-'); 
+                        if (!drawnLines.has(lineId)) {
+                            connections.push([n1, mapNodes[nextId]]);
+                            drawnLines.add(lineId);
+                        }
+                    }
+                });
+            }
+
+            ctx.strokeStyle = '#a8a8a8'; 
+            ctx.lineWidth = 28;
+            ctx.lineCap = 'square'; ctx.lineJoin = 'miter';
+            ctx.beginPath();
+            connections.forEach(conn => { ctx.moveTo(conn[0].x, conn[0].y); ctx.lineTo(conn[1].x, conn[1].y); });
+            ctx.stroke();
+
+            ctx.strokeStyle = '#e0e0e0'; 
+            ctx.lineWidth = 22;
+            ctx.beginPath();
+            connections.forEach(conn => { ctx.moveTo(conn[0].x, conn[0].y); ctx.lineTo(conn[1].x, conn[1].y); });
+            ctx.stroke();
+        }
+
+        function drawDecorations() {
+            ctx.fillStyle = '#81d4fa'; 
+            ctx.beginPath(); ctx.ellipse(290, 380, 45, 20, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#4fc3f7'; 
+            ctx.beginPath(); ctx.ellipse(290, 380, 38, 15, 0, 0, Math.PI * 2); ctx.fill();
+
+            const drawTree = (tx, ty, size, type) => {
+                ctx.fillStyle = '#5d4037'; 
+                ctx.fillRect(tx - 3, ty, 6, size);
+                if (type === 1) { 
+                    ctx.fillStyle = '#8bc34a'; ctx.beginPath(); ctx.arc(tx, ty - size*0.5, size*0.8, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = '#689f38'; ctx.beginPath(); ctx.arc(tx + size*0.2, ty - size*0.4, size*0.5, 0, Math.PI*2); ctx.fill();
+                } else { 
+                    ctx.fillStyle = '#7cb342'; ctx.beginPath(); ctx.arc(tx - 10, ty - size*0.3, size*0.6, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(tx + 10, ty - size*0.3, size*0.6, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(tx, ty - size*0.7, size*0.7, 0, Math.PI*2); ctx.fill();
+                }
+            };
+
+            drawTree(290, 210, 25, 1); 
+            drawTree(350, 360, 20, 1); 
+            drawTree(240, 440, 35, 2); 
+            drawTree(440, 430, 30, 1); 
+            drawTree(560, 300, 45, 2); 
+
+            drawTree(560, 445, 35, 2); 
+            ctx.strokeStyle = '#c0392b'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(560, 435, 30, 40, 0, 0, Math.PI * 2); ctx.stroke();
+
+            ctx.strokeStyle = '#333'; ctx.lineWidth = 1; ctx.beginPath();
+            ctx.moveTo(650, 40); ctx.lineTo(650, 80); ctx.moveTo(630, 60); ctx.lineTo(670, 60); ctx.stroke();
+            ctx.fillStyle = '#333'; ctx.beginPath(); ctx.moveTo(650, 40); ctx.lineTo(645, 55); ctx.lineTo(655, 55); ctx.fill(); 
+            ctx.font = "12px Arial"; ctx.fillText("N", 655, 38);
+
+            ctx.fillStyle = '#333'; ctx.font = 'bold 22px Arial';
+            ctx.fillText("A", 70, 210);   
+            ctx.fillText("A", 310, 210);  
+            ctx.fillText("A", 520, 230);  
+            ctx.fillText("A", 640, 440);  
+            
+            ctx.fillText("I", 70, 510);
+            ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.beginPath();
+            ctx.moveTo(85, 485); ctx.lineTo(85, 500); ctx.lineTo(105, 500); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(105, 500); ctx.lineTo(100, 495); ctx.lineTo(100, 505); ctx.fill();
+
+            ctx.font = '14px Arial'; ctx.fillText("Árbol", 585, 525); ctx.fillText("Solitario", 585, 540);
+            ctx.beginPath(); ctx.moveTo(570, 480); ctx.lineTo(590, 520); ctx.lineWidth = 1; ctx.stroke();
+
+            const hx = mapNodes['HOUSE'].x, hy = mapNodes['HOUSE'].y;
+            ctx.fillStyle = '#eaf2f8'; ctx.fillRect(hx - 35, hy - 50, 70, 50);
+            ctx.fillStyle = '#7f8c8d'; ctx.beginPath(); ctx.moveTo(hx - 45, hy - 50); ctx.lineTo(hx + 45, hy - 50); ctx.lineTo(hx, hy - 85); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = '#a9cce3'; ctx.beginPath(); ctx.arc(hx, hy - 65, 8, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = '#333'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(hx, hy - 65, 8, 0, Math.PI*2); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(hx-8, hy-65); ctx.lineTo(hx+8, hy-65); ctx.stroke(); ctx.beginPath(); ctx.moveTo(hx, hy-73); ctx.lineTo(hx, hy-57); ctx.stroke();
+            ctx.fillStyle = '#a1887f'; ctx.fillRect(hx + 5, hy - 30, 20, 30);
+            ctx.fillStyle = '#a9cce3'; ctx.fillRect(hx - 25, hy - 30, 20, 15); ctx.strokeRect(hx - 25, hy - 30, 20, 15);
+            ctx.beginPath(); ctx.moveTo(hx-15, hy-30); ctx.lineTo(hx-15, hy-15); ctx.stroke(); 
+            ctx.fillStyle = '#5d4037'; ctx.fillRect(hx - 28, hy - 15, 26, 6);
+            ctx.fillStyle = '#f48fb1'; ctx.beginPath(); ctx.arc(hx-20, hy-18, 3, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#ce93d8'; ctx.beginPath(); ctx.arc(hx-10, hy-18, 3, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#d35400'; ctx.fillRect(hx + 20, hy - 80, 12, 25);
+        }
+
+        function drawStartIndicators() {
+            Object.keys(startPoints).forEach(key => {
+                const p = startPoints[key];
+                const isActive = (currentStart === key);
+                
+                ctx.fillStyle = isActive ? '#f1c40f' : '#ecf0f1';
+                ctx.beginPath();
+                ctx.arc(p.x + p.mx, p.y + p.my, 14, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = isActive ? '#d35400' : '#7f8c8d';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.fillStyle = '#2c3e50';
+                ctx.font = 'bold 16px Arial';
+                ctx.textBaseline = 'middle';
+                ctx.textAlign = 'center';
+                ctx.fillText(key, p.x + p.mx, p.y + p.my);
+            });
+        }
+
+        function drawCar() {
+            ctx.save();
+            ctx.translate(visualState.x, visualState.y);
+            ctx.rotate(visualState.angle);
+
+            ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(-14, -10, 30, 22);
+            ctx.fillStyle = '#d32f2f'; ctx.fillRect(-15, -12, 30, 24);
+            ctx.fillStyle = '#424242'; ctx.fillRect(-8, -10, 14, 20);
+            ctx.fillStyle = '#b3e5fc'; ctx.fillRect(2, -9, 5, 18);
+            ctx.fillStyle = '#ffee58'; ctx.fillRect(13, -11, 4, 6); ctx.fillRect(13, 5, 4, 6);
+            ctx.fillStyle = '#880e4f'; ctx.fillRect(-16, -11, 3, 5); ctx.fillRect(-16, 6, 3, 5);
+            ctx.restore();
+        }
+
+        // --- UI Y PROGRAMACIÓN ---
+        function updateSequenceUI() {
+            sequenceDisplay.innerHTML = '';
+            if (algorithm.length === 0) {
+                sequenceDisplay.innerHTML = '<span style="color:#aaa; font-style:italic; padding:10px;">Vacío. Agrega instrucciones (I, A, D)</span>';
+            } else {
+                algorithm.forEach((cmd, index) => {
+                    const span = document.createElement('span');
+                    span.className = `token token-${cmd}`;
+                    span.textContent = cmd;
+                    span.id = `token-${index}`;
+                    sequenceDisplay.appendChild(span);
+                });
+            }
+        }
+
+        function toggleUI(disabled) {
+            btnA.disabled = disabled; btnI.disabled = disabled; btnD.disabled = disabled;
+            btnStart.disabled = disabled; btnDel.disabled = disabled; btnFullReset.disabled = disabled;
+            startPointBtns.forEach(btn => btn.disabled = disabled);
+        }
+
+        // --- SISTEMA OVERLAY (VIDEOJUEGO) ---
+        function showOverlay(title, msg, type) {
+            overlayBox.className = `overlay-box ${type}-theme`;
+            overlayIcon.textContent = type === 'success' ? '🏆' : '💥';
+            overlayTitle.textContent = title;
+            overlayMsg.innerHTML = msg;
+            overlay.classList.add('visible');
+        }
+
+        overlayBtn.addEventListener('click', () => {
+            overlay.classList.remove('visible');
+            document.body.classList.remove('fullscreen-active'); // Quitar fullscreen al cerrar overlay
+            resetCarPosition();
+            toggleUI(false);
+        });
+
+        // --- LÓGICA DE EJECUCIÓN ---
+        function addCommand(cmd) { if (!isExecuting) { algorithm.push(cmd); updateSequenceUI(); } }
+        function deleteLastCommand() { if (!isExecuting) { algorithm.pop(); updateSequenceUI(); } }
+
+        function startExecution() {
+            if (isExecuting || algorithm.length === 0) return;
+            
+            // Activar modo pantalla completa (solo se nota visualmente en PC/Desktop)
+            document.body.classList.add('fullscreen-active');
+            
+            const startNode = startPoints[currentStart].node;
+            if (logicalState.node !== startNode) resetCarPosition();
+            
+            isExecuting = true; currentStepIndex = 0; toggleUI(true);
+            
+            // Pausa ligeramente más larga para que termine el efecto de pantalla completa
+            setTimeout(executeNextStep, 800); 
+        }
+
+        function executeNextStep() {
+            if (!isExecuting) return;
+            document.querySelectorAll('.token').forEach(el => el.classList.remove('active-step'));
+
+            if (currentStepIndex >= algorithm.length) {
+                isExecuting = false;
+                if (logicalState.node === 'HOUSE') {
+                    showOverlay("¡Misión Cumplida!", "Tu algoritmo guió correctamente el auto hasta la casa de Heriberto.", "success");
+                } else {
+                    showOverlay("¡Algoritmo Incompleto!", "La secuencia terminó, pero el auto se quedó a medio camino.", "error");
+                }
+                return;
+            }
+
+            const currentToken = document.getElementById(`token-${currentStepIndex}`);
+            if(currentToken) currentToken.classList.add('active-step');
+
+            const cmd = algorithm[currentStepIndex];
+            if (cmd === 'A') {
+                let nextNodeKey = mapNodes[logicalState.node][logicalState.direction];
+                if (nextNodeKey) {
+                    logicalState.node = nextNodeKey;
+                    logicalState.isAnimating = true;
+                } else {
+                    isExecuting = false;
+                    showOverlay("¡Choque!", `<b>Error en el paso ${currentStepIndex + 1}</b>:<br>Intentaste avanzar donde no hay camino.`, "error");
+                    return; 
+                }
+            } else if (cmd === 'I') {
+                const leftTurns = { 'N': 'W', 'W': 'S', 'S': 'E', 'E': 'N' };
+                logicalState.direction = leftTurns[logicalState.direction];
+                logicalState.isAnimating = true;
+            } else if (cmd === 'D') {
+                const rightTurns = { 'N': 'E', 'E': 'S', 'S': 'W', 'W': 'N' };
+                logicalState.direction = rightTurns[logicalState.direction];
+                logicalState.isAnimating = true;
+            }
+        }
+
+        // Bucle Animación Principal
+        function animate() {
+            let targetNode = mapNodes[logicalState.node];
+            let targetAngle = dirToAngle[logicalState.direction];
+
+            const speed = 0.12; 
+            visualState.x += (targetNode.x - visualState.x) * speed;
+            visualState.y += (targetNode.y - visualState.y) * speed;
+
+            let dAngle = targetAngle - visualState.angle;
+            while (dAngle > Math.PI) dAngle -= Math.PI * 2;
+            while (dAngle < -Math.PI) dAngle += Math.PI * 2;
+            visualState.angle += dAngle * speed;
+
+            if (logicalState.isAnimating && Math.hypot(targetNode.x - visualState.x, targetNode.y - visualState.y) < 1 && Math.abs(dAngle) < 0.01) {
+                logicalState.isAnimating = false;
+                visualState.x = targetNode.x; visualState.y = targetNode.y; visualState.angle = targetAngle;
+                
+                if (isExecuting) {
+                    currentStepIndex++;
+                    setTimeout(executeNextStep, 400); 
+                }
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawGrassBlob(); drawRoads(); drawDecorations(); drawStartIndicators(); drawCar();          
+            requestAnimationFrame(animate);
+        }
+
+        // Manejo Puntos Inicio y Reinicio Total
+        function setStartPoint(pointId) {
+            currentStart = pointId;
+            startPointBtns.forEach(btn => {
+                if(btn.dataset.point === pointId) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            algorithm = []; 
+            updateSequenceUI();
+            resetCarPosition();
+        }
+
+        function resetCarPosition() {
+            const startInfo = startPoints[currentStart];
+            logicalState.node = startInfo.node;
+            logicalState.direction = startInfo.dir;
+            logicalState.isAnimating = false;
+            visualState.x = mapNodes[startInfo.node].x;
+            visualState.y = mapNodes[startInfo.node].y;
+            visualState.angle = dirToAngle[startInfo.dir];
+            document.querySelectorAll('.token').forEach(el => el.classList.remove('active-step'));
+        }
+        
+        function fullReset() {
+            isExecuting = false;
+            overlay.classList.remove('visible');
+            document.body.classList.remove('fullscreen-active');
+            algorithm = [];
+            updateSequenceUI();
+            resetCarPosition();
+            toggleUI(false);
+        }
+
+        // Asignar Eventos
+        btnA.addEventListener('click', () => addCommand('A'));
+        btnI.addEventListener('click', () => addCommand('I'));
+        btnD.addEventListener('click', () => addCommand('D'));
+        btnDel.addEventListener('click', deleteLastCommand);
+        btnStart.addEventListener('click', startExecution);
+        btnFullReset.addEventListener('click', fullReset);
+        startPointBtns.forEach(btn => btn.addEventListener('click', (e) => setStartPoint(e.target.dataset.point)));
+
+        // Iniciar
+        updateSequenceUI();
+        animate();
+
+    </script>
+</body>
+</html>

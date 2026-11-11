@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mi Barrio: Vecino Solidario - 2º Grado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #dcfce7; /* Verde suave como césped */
+            background-image: 
+                radial-gradient(#86efac 2px, transparent 2px),
+                radial-gradient(#86efac 2px, transparent 2px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        /* Animaciones */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .floating {
+            animation: float 2.5s ease-in-out infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+        .shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); opacity: 1; }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .bounce-in {
+            animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7); }
+            50% { box-shadow: 0 0 20px 10px rgba(250, 204, 21, 0.4); transform: scale(1.02); }
+        }
+        .edificio-hover {
+            animation: pulseGlow 1s infinite;
+            border-color: #facc15 !important;
+        }
+
+        /* Calles del barrio (líneas punteadas) */
+        .calle {
+            background-image: linear-gradient(90deg, #9ca3af 50%, transparent 50%);
+            background-size: 20px 100%;
+            height: 8px;
+            width: 100%;
+            opacity: 0.3;
+        }
+
+        /* Estilos del personaje arrastrable */
+        .personaje-drag {
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            transition: transform 0.1s;
+        }
+        .personaje-drag:active {
+            cursor: grabbing;
+        }
+
+        /* Globos de diálogo */
+        .globo-dialogo {
+            position: absolute;
+            background: white;
+            border-radius: 1rem;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #374151;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: max-content;
+            max-width: 200px;
+            text-align: center;
+            border: 2px solid #e5e7eb;
+            z-index: 40;
+        }
+        .globo-dialogo::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 8px 8px 0;
+            border-style: solid;
+            border-color: white transparent transparent transparent;
+        }
+        .globo-dialogo::before {
+            content: '';
+            position: absolute;
+            bottom: -11px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: #e5e7eb transparent transparent transparent;
+        }
+
+        /* Confeti */
+        .confetti {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            pointer-events: none;
+            animation: fall linear forwards;
+            z-index: 100;
+        }
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="w-screen h-screen flex flex-col relative text-gray-800">
+
+    <!-- ================= PANTALLA DE INICIO ================= -->
+    <div id="pantalla-inicio" class="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-white/95 backdrop-blur-md transition-opacity duration-500">
+        
+        <div class="bg-orange-100 rounded-full px-6 py-2 mb-4 font-bold text-orange-600 tracking-wider shadow-sm border border-orange-200">
+            CIENCIAS SOCIALES • 2º GRADO
+        </div>
+        
+        <h1 class="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500 mb-6 drop-shadow-sm leading-tight">
+            Mi Barrio:<br>Vecino Solidario
+        </h1>
+        
+        <div class="max-w-2xl bg-white p-8 rounded-3xl shadow-2xl border-4 border-green-400 mb-8 transform hover:scale-105 transition-transform duration-300 relative overflow-hidden">
+            <!-- Nubes decorativas -->
+            <div class="absolute top-2 left-2 text-4xl opacity-20">☁️</div>
+            <div class="absolute top-10 right-4 text-5xl opacity-20">☁️</div>
+
+            <h2 class="text-3xl font-bold text-green-700 mb-4 flex items-center justify-center gap-3">
+                <span>🎯</span> Nuestra Misión
+            </h2>
+            <p class="text-xl text-gray-600 leading-relaxed font-semibold">
+                ¡Los trabajadores de nuestra comunidad necesitan ayuda!<br>
+                Aprende sobre sus importantes oficios guiándolos hasta su lugar de trabajo en el mapa.<br><br>
+                <span class="text-orange-500 font-black">¡Conviértete en el mejor vecino!</span>
+            </p>
+            <div class="flex justify-center gap-6 mt-6 text-5xl">
+                <span class="floating" style="animation-delay: 0s;">👮‍♂️</span>
+                <span class="floating" style="animation-delay: 0.3s;">👩‍⚕️</span>
+                <span class="floating" style="animation-delay: 0.6s;">👨‍🍳</span>
+            </div>
+        </div>
+
+        <button onclick="iniciarJuego()" class="group relative inline-flex items-center justify-center px-10 py-5 text-2xl font-bold text-white bg-orange-500 rounded-full overflow-hidden shadow-[0_8px_0_#c2410c] active:shadow-[0_0px_0_#c2410c] active:translate-y-2 transition-all">
+            <span class="relative flex items-center gap-2">Explorar el Barrio <span class="text-3xl group-hover:animate-bounce">🗺️</span></span>
+        </button>
+    </div>
+
+    <!-- ================= PANTALLA DEL JUEGO ================= -->
+    <div id="pantalla-juego" class="hidden absolute inset-0 z-10 flex flex-col h-full w-full bg-[#dcfce7]">
+        
+        <!-- Cabecera -->
+        <div class="w-full flex justify-between items-center bg-white/90 p-3 md:p-5 shadow-sm border-b-4 border-green-200 z-20 shrink-0">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl md:text-4xl bg-green-100 p-2 rounded-full">🏘️</span>
+                <h2 class="text-xl md:text-3xl font-black text-green-700">Mapa de la Comunidad</h2>
+            </div>
+            <div class="flex flex-col items-end">
+                <span class="text-sm font-bold text-gray-400 uppercase tracking-wider">Progreso</span>
+                <span id="contador-progreso" class="bg-orange-100 px-4 py-1 rounded-full text-orange-700 font-black border-2 border-orange-200 text-lg md:text-xl">0 / 6</span>
+            </div>
+        </div>
+
+        <!-- Feedback Central (Oculto por defecto) -->
+        <div id="mensaje-feedback" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-8 py-6 rounded-3xl shadow-2xl border-4 opacity-0 transition-all duration-300 z-50 text-center flex flex-col justify-center items-center w-11/12 max-w-md pointer-events-none scale-90">
+            <!-- Contenido dinámico -->
+        </div>
+
+        <!-- Área del Mapa (Edificios) -->
+        <div class="flex-1 w-full p-4 md:p-8 flex items-center justify-center relative overflow-hidden">
+            <!-- Calles decorativas de fondo -->
+            <div class="absolute inset-0 flex flex-col justify-evenly pointer-events-none z-0">
+                <div class="calle"></div>
+                <div class="calle"></div>
+            </div>
+
+            <!-- Grid de Edificios -->
+            <div id="contenedor-edificios" class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-10 w-full max-w-5xl z-10">
+                <!-- Se inyectan por JS -->
+            </div>
+        </div>
+
+        <!-- Área Inferior (Acera y Personaje) -->
+        <div class="h-40 md:h-56 w-full bg-gray-300 border-t-8 border-gray-400 shrink-0 relative flex justify-center items-end pb-4 md:pb-8 shadow-[inset_0_10px_20px_rgba(0,0,0,0.1)] z-30">
+            
+            <!-- Instrucción -->
+            <div class="absolute top-2 left-1/2 transform -translate-x-1/2 bg-white/80 px-6 py-2 rounded-full text-sm md:text-base font-bold text-gray-600 shadow-sm border border-gray-200 animate-pulse whitespace-nowrap">
+                ⬆️ Arrastra al trabajador a su edificio ⬆️
+            </div>
+
+            <!-- Contenedor del Personaje -->
+            <div id="contenedor-personaje" class="relative w-full flex justify-center h-full items-end">
+                <!-- El personaje se inyecta aquí por JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PANTALLA FINAL ================= -->
+    <div id="pantalla-final" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-white/95 backdrop-blur-md transition-opacity duration-500">
+        <div class="text-8xl mb-6 floating">🌟</div>
+        <h1 class="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-blue-500 mb-6 drop-shadow-sm">
+            ¡Barrio Feliz!
+        </h1>
+        <p class="text-2xl text-gray-700 max-w-xl mb-10 font-bold">
+            Gracias a ti, todos los trabajadores llegaron a su destino. <br>
+            ¡Eres un vecino muy solidario y colaborador!
+        </p>
+        <button onclick="reiniciarJuego()" class="group relative inline-flex items-center justify-center px-10 py-5 text-2xl font-bold text-white bg-green-500 rounded-full overflow-hidden shadow-[0_8px_0_#16a34a] active:shadow-[0_0px_0_#16a34a] active:translate-y-2 transition-all">
+            <span class="relative flex items-center gap-2">Jugar otra vez <span class="text-3xl">🔄</span></span>
+        </button>
+    </div>
+
+    <!-- ================= LÓGICA DEL JUEGO ================= -->
+    <script>
+        // Base de datos de Edificios
+        const edificios = [
+            { id: "panaderia", nombre: "Panadería", emoji: "🥖", color: "bg-orange-100", border: "border-orange-400" },
+            { id: "escuela", nombre: "Escuela", emoji: "🏫", color: "bg-blue-100", border: "border-blue-400" },
+            { id: "hospital", nombre: "Hospital", emoji: "🏥", color: "bg-red-50", border: "border-red-400" },
+            { id: "bomberos", nombre: "Est. Bomberos", emoji: "🚒", color: "bg-red-100", border: "border-red-600" },
+            { id: "policia", nombre: "Comisaría", emoji: "🚓", color: "bg-indigo-100", border: "border-indigo-400" },
+            { id: "parque", nombre: "El Parque", emoji: "🌳", color: "bg-green-100", border: "border-green-500" }
+        ];
+
+        // Base de datos de Personajes (Misiones)
+        const trabajadoresTodos = [
+            { idLugar: "panaderia", nombre: "Panadero", emoji: "👨‍🍳", peticion: "¡Necesito hacer pan caliente! ¿Dónde trabajo?", feedbackCorrecto: "¡Huele delicioso! Ya puedo hornear en la Panadería.", feedbackError: "Mmm... aquí no hay hornos para hacer pan." },
+            { idLugar: "escuela", nombre: "Maestra", emoji: "👩‍🏫", peticion: "¡Los niños me esperan para aprender! ¿Me ayudas?", feedbackCorrecto: "¡Genial! A dar clases en la Escuela.", feedbackError: "Los niños no están aquí, debo ir a enseñar." },
+            { idLugar: "hospital", nombre: "Doctora", emoji: "👩‍⚕️", peticion: "¡Tengo pacientes que curar! ¿A dónde voy?", feedbackCorrecto: "¡Perfecto! El Hospital es donde atiendo a los enfermos.", feedbackError: "Aquí no tengo mis medicinas, necesito mi consultorio." },
+            { idLugar: "bomberos", nombre: "Bombero", emoji: "👨‍🚒", peticion: "¡Hay una emergencia! ¿Dónde está mi camión?", feedbackCorrecto: "¡Al rescate! Listo en la Estación de Bomberos.", feedbackError: "¡Uy! Aquí no tengo mangueras de agua." },
+            { idLugar: "policia", nombre: "Mujer Policía", emoji: "👮‍♀️", peticion: "¡Debo cuidar la seguridad del barrio!", feedbackCorrecto: "¡Muy bien! Desde la Comisaría protejo a todos.", feedbackError: "Este no es mi puesto de vigilancia." },
+            { idLugar: "parque", nombre: "Jardinero", emoji: "👨‍🌾", peticion: "¡Tengo que regar las flores y cuidar los árboles!", feedbackCorrecto: "¡Qué hermoso! El Parque es mi lugar favorito.", feedbackError: "Aquí no hay flores que pueda cuidar." }
+        ];
+
+        let nivelActual = [];
+        let indiceActual = 0;
+
+        // Referencias DOM
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const pantallaJuego = document.getElementById('pantalla-juego');
+        const pantallaFinal = document.getElementById('pantalla-final');
+        const contenedorEdificios = document.getElementById('contenedor-edificios');
+        const contenedorPersonaje = document.getElementById('contenedor-personaje');
+        const contadorProgreso = document.getElementById('contador-progreso');
+        const mensajeFeedback = document.getElementById('mensaje-feedback');
+
+        // Variables Drag & Drop
+        let isDragging = false;
+        let personajeActivo = null;
+        let startX, startY, currentX, currentY;
+        let zonasCaida = []; // Array de elementos DOM de edificios
+
+        function mezclarArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function iniciarJuego() {
+            pantallaInicio.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaInicio.classList.add('hidden');
+                pantallaInicio.classList.remove('opacity-0');
+                pantallaJuego.classList.remove('hidden');
+                
+                prepararMapa();
+                nivelActual = mezclarArray([...trabajadoresTodos]);
+                indiceActual = 0;
+                
+                actualizarProgreso();
+                mostrarSiguientePersonaje();
+            }, 500);
+        }
+
+        function reiniciarJuego() {
+            pantallaFinal.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaFinal.classList.add('hidden');
+                pantallaFinal.classList.remove('opacity-0');
+                iniciarJuego();
+            }, 500);
+        }
+
+        function actualizarProgreso() {
+            contadorProgreso.innerText = `${indiceActual} / ${nivelActual.length}`;
+        }
+
+        function prepararMapa() {
+            contenedorEdificios.innerHTML = '';
+            zonasCaida = [];
+            
+            edificios.forEach((edificio) => {
+                const el = document.createElement('div');
+                el.className = `${edificio.color} ${edificio.border} border-4 rounded-3xl p-2 md:p-4 flex flex-col items-center justify-center shadow-lg transition-all duration-300 relative bg-opacity-90 backdrop-blur-sm bounce-in`;
+                el.dataset.id = edificio.id;
+                
+                el.innerHTML = `
+                    <div class="text-4xl md:text-6xl drop-shadow-md mb-2 bg-white/50 w-16 h-16 md:w-24 md:h-24 rounded-full flex items-center justify-center">${edificio.emoji}</div>
+                    <div class="text-sm md:text-lg font-black text-center text-gray-800 leading-tight uppercase tracking-wide bg-white/80 px-2 py-1 rounded-lg w-full">${edificio.nombre}</div>
+                `;
+                
+                contenedorEdificios.appendChild(el);
+                zonasCaida.push(el);
+            });
+        }
+
+        function mostrarSiguientePersonaje() {
+            contenedorPersonaje.innerHTML = '';
+
+            if (indiceActual >= nivelActual.length) {
+                finalizarJuego();
+                return;
+            }
+
+            const personaje = nivelActual[indiceActual];
+            
+            const div = document.createElement('div');
+            // La clase z-50 es crucial para que pase por encima del mapa
+            div.className = 'personaje-drag absolute bottom-0 flex flex-col items-center justify-end z-50 floating';
+            div.dataset.lugar = personaje.idLugar;
+            
+            div.innerHTML = `
+                <div class="globo-dialogo animate-bounce text-sm md:text-base">${personaje.peticion}</div>
+                <div class="text-7xl md:text-8xl drop-shadow-xl filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)]">${personaje.emoji}</div>
+            `;
+
+            div.addEventListener('pointerdown', iniciarArrastre);
+            contenedorPersonaje.appendChild(div);
+        }
+
+        function iniciarArrastre(e) {
+            isDragging = true;
+            personajeActivo = e.currentTarget;
+            personajeActivo.setPointerCapture(e.pointerId);
+
+            startX = e.clientX;
+            startY = e.clientY;
+            currentX = 0;
+            currentY = 0;
+
+            // Al agarrar: detener flotación, ocultar globo de diálogo y dar escala
+            personajeActivo.classList.remove('floating');
+            personajeActivo.querySelector('.globo-dialogo').style.opacity = '0';
+            personajeActivo.style.transition = 'none';
+            personajeActivo.style.transform = `scale(1.1)`;
+
+            personajeActivo.addEventListener('pointermove', arrastrar);
+            personajeActivo.addEventListener('pointerup', soltarArrastre);
+            personajeActivo.addEventListener('pointercancel', soltarArrastre);
+        }
+
+        function arrastrar(e) {
+            if (!isDragging || !personajeActivo) return;
+            e.preventDefault();
+
+            currentX = e.clientX - startX;
+            currentY = e.clientY - startY;
+
+            personajeActivo.style.transform = `translate(${currentX}px, ${currentY}px) scale(1.1)`;
+
+            comprobarHover(e.clientX, e.clientY);
+        }
+
+        function comprobarHover(x, y) {
+            limpiarHover();
+            const edificio = obtenerEdificioBajoCursor(x, y);
+            if (edificio) {
+                edificio.classList.add('edificio-hover');
+            }
+        }
+
+        function limpiarHover() {
+            zonasCaida.forEach(z => z.classList.remove('edificio-hover'));
+        }
+
+        function obtenerEdificioBajoCursor(x, y) {
+            const padding = 10; // Hitbox ligeramente más grande
+            for (let i = 0; i < zonasCaida.length; i++) {
+                const rect = zonasCaida[i].getBoundingClientRect();
+                if (x > rect.left - padding && x < rect.right + padding && 
+                    y > rect.top - padding && y < rect.bottom + padding) {
+                    return zonasCaida[i];
+                }
+            }
+            return null;
+        }
+
+        function soltarArrastre(e) {
+            if (!isDragging || !personajeActivo) return;
+            
+            isDragging = false;
+            personajeActivo.releasePointerCapture(e.pointerId);
+            
+            personajeActivo.removeEventListener('pointermove', arrastrar);
+            personajeActivo.removeEventListener('pointerup', soltarArrastre);
+            personajeActivo.removeEventListener('pointercancel', soltarArrastre);
+
+            personajeActivo.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            limpiarHover();
+
+            const edificioDestino = obtenerEdificioBajoCursor(e.clientX, e.clientY);
+
+            if (edificioDestino) {
+                const lugarEsperado = personajeActivo.dataset.lugar;
+                const lugarSeleccionado = edificioDestino.dataset.id;
+                const datosPersonaje = nivelActual[indiceActual];
+
+                if (lugarEsperado === lugarSeleccionado) {
+                    accionCorrecta(edificioDestino, datosPersonaje);
+                } else {
+                    accionIncorrecta(datosPersonaje);
+                }
+            } else {
+                // Volver a posición inicial si se suelta en la calle
+                regresarAlInicio();
+            }
+            
+            personajeActivo = null;
+        }
+
+        function regresarAlInicio() {
+            personajeActivo.style.transform = `translate(0px, 0px) scale(1)`;
+            personajeActivo.querySelector('.globo-dialogo').style.opacity = '1';
+            setTimeout(() => { if(personajeActivo) personajeActivo.classList.add('floating'); }, 400);
+        }
+
+        function accionCorrecta(edificio, datos) {
+            // El personaje entra al edificio
+            const rectEdificio = edificio.getBoundingClientRect();
+            const rectContenedor = contenedorPersonaje.getBoundingClientRect();
+            
+            const destX = rectEdificio.left + (rectEdificio.width / 2) - (rectContenedor.left + (rectContenedor.width / 2));
+            const destY = rectEdificio.top + (rectEdificio.height / 2) - (rectContenedor.bottom); // bottom porque el personaje está en absolute bottom-0
+
+            personajeActivo.style.transform = `translate(${destX}px, ${destY}px) scale(0.3)`;
+            personajeActivo.style.opacity = '0';
+
+            mostrarFeedbackModal("¡Llegó a su destino! 👏", datos.feedbackCorrecto, "text-green-600", "border-green-400");
+            crearConfeti();
+
+            setTimeout(() => {
+                indiceActual++;
+                actualizarProgreso();
+                mostrarSiguientePersonaje();
+            }, 3000);
+        }
+
+        function accionIncorrecta(datos) {
+            regresarAlInicio();
+            personajeActivo.classList.add('shake');
+            
+            mostrarFeedbackModal("¡Uy, creo que me perdí! 🧭", datos.feedbackError, "text-orange-600", "border-orange-400");
+
+            setTimeout(() => {
+                if(personajeActivo) personajeActivo.classList.remove('shake');
+            }, 500);
+        }
+
+        function mostrarFeedbackModal(titulo, texto, colorClase, bordeClase) {
+            mensajeFeedback.className = `absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-8 py-6 rounded-3xl shadow-2xl border-4 ${bordeClase} transition-all duration-300 z-[60] text-center flex flex-col justify-center items-center w-11/12 max-w-md`;
+            
+            mensajeFeedback.innerHTML = `
+                <div class="text-2xl md:text-3xl font-black ${colorClase} mb-2">${titulo}</div>
+                <div class="text-base md:text-xl font-bold text-gray-700 leading-snug">${texto}</div>
+            `;
+            
+            mensajeFeedback.style.opacity = '1';
+            mensajeFeedback.style.transform = 'translate(-50%, -50%) scale(1)';
+
+            setTimeout(() => {
+                mensajeFeedback.style.opacity = '0';
+                mensajeFeedback.style.transform = 'translate(-50%, -50%) scale(0.9)';
+            }, 2800);
+        }
+
+        function crearConfeti() {
+            const colores = ['#facc15', '#4ade80', '#60a5fa', '#f87171', '#c084fc'];
+            for (let i = 0; i < 40; i++) {
+                const confeti = document.createElement('div');
+                confeti.classList.add('confetti');
+                
+                confeti.style.backgroundColor = colores[Math.floor(Math.random() * colores.length)];
+                confeti.style.left = (Math.random() * 100) + 'vw';
+                confeti.style.top = '-20px';
+                
+                const animDuration = Math.random() * 2 + 1;
+                const animDelay = Math.random() * 0.2;
+                
+                confeti.style.animationDuration = animDuration + 's';
+                confeti.style.animationDelay = animDelay + 's';
+                
+                document.body.appendChild(confeti);
+                setTimeout(() => confeti.remove(), (animDuration + animDelay) * 1000);
+            }
+        }
+
+        function finalizarJuego() {
+            pantallaJuego.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaJuego.classList.add('hidden');
+                pantallaFinal.classList.remove('hidden');
+                setTimeout(() => pantallaFinal.classList.remove('opacity-0'), 50);
+                crearConfeti();
+                setTimeout(crearConfeti, 500);
+            }, 500);
+        }
+
+        // Auto-iniciar la pantalla de bienvenida
+        document.addEventListener('DOMContentLoaded', () => {
+            pantallaInicio.classList.remove('hidden');
+            setTimeout(() => pantallaInicio.classList.remove('opacity-0'), 50);
+        });
+    </script>
+</body>
+</html>

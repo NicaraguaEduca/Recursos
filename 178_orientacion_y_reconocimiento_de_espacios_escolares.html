@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>🎒 Mapa Mágico de mi Escuela | 1º Primaria</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(145deg, #1a5f7a 0%, #0d3b4f 100%);
+            font-family: 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', 'Patrick Hand', 'Segoe UI Emoji', cursive, sans-serif;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Contenedor principal con efecto libro */
+        .app-wrapper {
+            width: 100%;
+            height: 100vh;
+            background: radial-gradient(ellipse at top, #ffefb9, #ffe0a3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Pantallas */
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            animation: flyIn 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes flyIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.95) translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        /* ===== INTRO ESPECTACULAR ===== */
+        .intro-screen {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Elementos decorativos flotantes */
+        .floating-icon {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.3;
+            animation: float 8s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        .intro-content {
+            position: relative;
+            z-index: 2;
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 250, 240, 0.92);
+            backdrop-filter: blur(8px);
+            border-radius: 80px;
+            padding: 2rem 2rem 2.5rem;
+            box-shadow: 0 30px 40px rgba(0, 0, 0, 0.2), inset 0 1px 4px rgba(255,255,200,0.8);
+            border: 3px solid #ffdd99;
+        }
+
+        .title-badge {
+            background: #ff6b6b;
+            display: inline-block;
+            padding: 8px 28px;
+            border-radius: 60px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 5px 0 #c23b3b;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 3px 3px 0 #fff0b5;
+            margin: 0.3rem 0;
+            letter-spacing: 2px;
+        }
+
+        .grade {
+            background: #2ecc71;
+            display: inline-block;
+            padding: 6px 28px;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            color: white;
+            margin: 0.8rem 0;
+            box-shadow: 0 4px 0 #1f8f4b;
+        }
+
+        .objective-card {
+            background: rgba(255, 255, 245, 0.95);
+            border-radius: 60px;
+            padding: 1.5rem;
+            margin: 1.2rem 0;
+            border-left: 12px solid #ff6b6b;
+            text-align: left;
+        }
+
+        .objective-card p {
+            font-size: 1.2rem;
+            line-height: 1.5;
+            color: #4a3b2c;
+        }
+
+        .school-emojis {
+            font-size: 2.5rem;
+            margin: 1rem 0;
+            letter-spacing: 10px;
+        }
+
+        .btn-glow {
+            background: linear-gradient(90deg, #ff9a3c, #ff6b6b);
+            color: white;
+            font-size: 1.6rem;
+            font-weight: bold;
+            padding: 14px 40px;
+            border: none;
+            border-radius: 80px;
+            font-family: inherit;
+            box-shadow: 0 10px 0 #b83b3b;
+            cursor: pointer;
+            transition: 0.07s linear;
+            margin: 20px 0 10px;
+            animation: pulse-glow 1.5s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 10px 0 #b83b3b, 0 0 0 0 rgba(255,107,107,0.4); }
+            50% { box-shadow: 0 10px 0 #b83b3b, 0 0 20px 10px rgba(255,107,107,0.3); }
+        }
+
+        .btn-glow:active {
+            transform: translateY(5px);
+            box-shadow: 0 5px 0 #b83b3b;
+        }
+
+        /* ===== MAPA MÁGICO ===== */
+        .map-screen {
+            background: linear-gradient(145deg, #2d6a4f, #1b4d3e);
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .map-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fef0d0;
+            border-radius: 70px;
+            padding: 1.2rem;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.3), inset 0 2px 5px rgba(255,255,200,0.6);
+        }
+
+        .map-header {
+            background: #ffd966;
+            border-radius: 60px;
+            padding: 0.8rem;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #5c3e1f;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        /* Grid de pines mágicos */
+        .pins-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1.2rem;
+            background: #cfe3c0;
+            border-radius: 55px;
+            padding: 1.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .magic-pin {
+            background: linear-gradient(145deg, #fff9f0, #ffefd0);
+            border-radius: 65px;
+            padding: 1.2rem 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.2);
+            border: 3px solid #ffcd94;
+            box-shadow: 0 15px 20px -10px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .magic-pin::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,215,0,0.2), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .magic-pin:hover::before {
+            opacity: 1;
+        }
+
+        .magic-pin:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: #ffaa44;
+            background: #fffffa;
+        }
+
+        .pin-emoji-big {
+            font-size: 3.8rem;
+            display: block;
+            margin-bottom: 8px;
+            filter: drop-shadow(2px 4px 8px rgba(0,0,0,0.15));
+            animation: gentleWobble 2s infinite ease;
+        }
+
+        @keyframes gentleWobble {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(3deg); }
+            75% { transform: rotate(-3deg); }
+        }
+
+        .pin-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            background: #ffefcf;
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 40px;
+            color: #b45f2b;
+        }
+
+        /* Popup espectacular */
+        .magic-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+
+        .magic-popup.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .popup-card-fun {
+            background: linear-gradient(145deg, #fff9e8, #ffefd0);
+            max-width: 400px;
+            width: 85%;
+            border-radius: 80px;
+            padding: 2rem 1.8rem;
+            text-align: center;
+            border: 5px solid #ffcc66;
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.3);
+            transform: scale(0.7);
+            transition: transform 0.3s cubic-bezier(0.34, 1.3, 0.64, 1);
+        }
+
+        .magic-popup.active .popup-card-fun {
+            transform: scale(1);
+        }
+
+        .popup-emoji-large {
+            font-size: 5rem;
+            margin-bottom: 10px;
+            animation: popSpin 0.4s ease;
+        }
+
+        @keyframes popSpin {
+            0% { transform: scale(0) rotate(0deg); }
+            70% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .popup-title-fun {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #d46b1a;
+            margin: 10px 0;
+        }
+
+        .popup-description {
+            font-size: 1.1rem;
+            line-height: 1.45;
+            background: #fff3df;
+            padding: 1rem;
+            border-radius: 50px;
+            margin: 1rem 0;
+            color: #4a3622;
+        }
+
+        .close-fun-btn {
+            background: #ff9a3c;
+            color: white;
+            border: none;
+            font-size: 1.2rem;
+            padding: 10px 25px;
+            border-radius: 60px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .explore-footer {
+            text-align: center;
+            font-size: 0.9rem;
+            background: #ffefcf;
+            padding: 5px 12px;
+            border-radius: 30px;
+            display: inline-block;
+            width: auto;
+            margin: 0 auto;
+            color: #aa6f3a;
+        }
+
+        @media (max-width: 650px) {
+            h1 { font-size: 2rem; }
+            .pins-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
+            .pin-emoji-big { font-size: 2.8rem; }
+            .pin-name { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-wrapper">
+    <!-- INTRO ESPECTACULAR -->
+    <div id="introScreen" class="screen intro-screen active">
+        <div class="floating-icon" style="top: 10%; left: 5%; animation-duration: 7s;">📚</div>
+        <div class="floating-icon" style="top: 70%; left: 85%; animation-duration: 9s;">✏️</div>
+        <div class="floating-icon" style="top: 80%; left: 15%; animation-duration: 6s;">🎒</div>
+        <div class="floating-icon" style="top: 15%; right: 8%; animation-duration: 8s;">🌟</div>
+        
+        <div class="intro-content">
+            <div class="title-badge">🎓 CIENCIAS SOCIALES 🎓</div>
+            <h1>🗺️ MAPA MÁGICO<br>DE MI ESCUELA 🗺️</h1>
+            <div class="grade">📖 1º GRADO - PRIMARIA 📖</div>
+            <div class="school-emojis">
+                🏫 📚 ✏️ 🎨 ⚽ 💻
+            </div>
+            <div class="objective-card">
+                <p>🎯 <strong>¡EXPLORACIÓN NO LINEAL!</strong><br>
+                🌟 Toca los PINES MÁGICOS y descubre qué pasa en cada lugar.<br>
+                🚪 Aula | Biblioteca | Patio | Dirección | Laboratorio | Cancha<br>
+                🎉 ¡Cada rincón tiene una sorpresa divertida!</p>
+            </div>
+            <button class="btn-glow" id="startGlowBtn">✨ ¡ABRIR EL MAPA ESCOLAR! ✨</button>
+            <footer style="margin-top: 0.5rem; font-size:0.8rem;">💡 Toca los emojis brillantes y aprende jugando 💡</footer>
+        </div>
+    </div>
+
+    <!-- MAPA LLENO DE VIDA -->
+    <div id="mapScreen" class="screen map-screen">
+        <div class="map-container">
+            <div class="map-header">
+                <span>🏫🏆</span> ESCUELA "Los Niños Felices"<span>🗺️✨</span>
+            </div>
+            <div class="pins-grid" id="magicPinsGrid"></div>
+            <div style="display: flex; justify-content: center; margin-top: 0.5rem;">
+                <div class="explore-footer">
+                    🌟 ¡CADA PIN TIENE UN EMOJI! HAZ CLIC Y APRENDE 🌟
+                </div>
+            </div>
+            <footer style="color:#ad7a4a; margin-top: 0.6rem;">🎒 Conoce tu escuela de forma divertida 🎒</footer>
+        </div>
+    </div>
+</div>
+
+<!-- POPUP INFORMATIVO DIVERTIDO -->
+<div id="funPopup" class="magic-popup">
+    <div class="popup-card-fun">
+        <div class="popup-emoji-large" id="popupEmojiFun">📚</div>
+        <div class="popup-title-fun" id="popupTitleFun">Biblioteca</div>
+        <div class="popup-description" id="popupDescFun">
+            📖 Un lugar lleno de cuentos y aventuras.
+        </div>
+        <button class="close-fun-btn" id="closeFunPopupBtn">🎈 ¡Seguir explorando! 🎈</button>
+    </div>
+</div>
+
+<script>
+    // DATOS DE LOS LUGARES (con emojis llamativos)
+    const lugaresMagicos = [
+        { id: "aula", emoji: "✏️📖", nombre: "El Aula 🎨", descripcion: "¡El aula es nuestro segundo hogar! Aquí aprendemos a leer, escribir, sumar y pintar. La maestra nos enseña con canciones y juegos. ¡Siempre hay nuevas aventuras! 🧸📚" },
+        { id: "biblioteca", emoji: "📚🦉", nombre: "La Biblioteca 📖", descripcion: "📚✨ La biblioteca es mágica: tiene cuentos de dinosaurios, princesas y exploradores. Podemos viajar sin movernos del sillón. La bibliotecaria nos recomienda libros geniales. 🦉🌟" },
+        { id: "patio", emoji: "🤸⚽", nombre: "El Patio 🌞", descripcion: "🌞 ¡El patio es para correr, saltar y jugar! Hay columpios, tobogán y mucha tierra. En el recreo compartimos la merienda y reímos sin parar. ¡Moverse es divertido! 🎈🤸‍♂️" },
+        { id: "direccion", emoji: "🏢📋", nombre: "Dirección 🎓", descripcion: "🎓 Aquí trabaja la directora o director. Nos ayuda a organizar la escuela, nos da consejos y siempre nos recibe con una sonrisa. ¡Es como el capitán del barco escuela! ⭐" },
+        { id: "laboratorio", emoji: "💻🖥️", nombre: "Laboratorio 💻", descripcion: "🖥️✨ En el laboratorio usamos computadoras para dibujar, escribir cuentos digitales y jugar juegos educativos. ¡La tecnología nos ayuda a crear cosas increíbles! 🎮" },
+        { id: "cancha", emoji: "⚽🏀", nombre: "La Cancha 🏆", descripcion: "🏆 ¡La cancha es para hacer deporte! Jugamos fútbol, básquet y voleibol. Aprendemos a trabajar en equipo y a celebrar los goles. ¡El ejercicio es salud y diversión! 🎉⚽" }
+    ];
+
+    // DOM elements
+    const introScreen = document.getElementById('introScreen');
+    const mapScreen = document.getElementById('mapScreen');
+    const startBtn = document.getElementById('startGlowBtn');
+    const pinsGrid = document.getElementById('magicPinsGrid');
+    const popup = document.getElementById('funPopup');
+    const popupEmojiSpan = document.getElementById('popupEmojiFun');
+    const popupTitleSpan = document.getElementById('popupTitleFun');
+    const popupDescSpan = document.getElementById('popupDescFun');
+    const closePopupBtn = document.getElementById('closeFunPopupBtn');
+
+    // Sonidos mágicos (sin bloqueo)
+    let audioCtx = null;
+    let soundEnabled = false;
+
+    function initAudio() {
+        if (audioCtx) return;
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        } catch(e) { console.log("no audio"); }
+    }
+
+    function playMagicTap() {
+        if (!audioCtx || !soundEnabled) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = 987.77;
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.2);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.2);
+    }
+
+    function enableSound() {
+        if (!audioCtx) initAudio();
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        soundEnabled = true;
+        playMagicTap();
+    }
+
+    // Generar pines dinámicos
+    function generatePins() {
+        pinsGrid.innerHTML = '';
+        lugaresMagicos.forEach(lugar => {
+            const pinDiv = document.createElement('div');
+            pinDiv.className = 'magic-pin';
+            pinDiv.setAttribute('data-id', lugar.id);
+            pinDiv.innerHTML = `
+                <div class="pin-emoji-big">${lugar.emoji}</div>
+                <div class="pin-name">${lugar.nombre}</div>
+            `;
+            pinDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showMagicPopup(lugar);
+                if (soundEnabled) playMagicTap();
+                // Efecto mini
+                pinDiv.style.transform = "scale(0.96)";
+                setTimeout(() => { pinDiv.style.transform = ""; }, 130);
+                markPlaceAsVisited(lugar.id);
+            });
+            pinsGrid.appendChild(pinDiv);
+        });
+    }
+
+    function showMagicPopup(lugar) {
+        popupEmojiSpan.textContent = lugar.emoji;
+        popupTitleSpan.textContent = lugar.nombre;
+        popupDescSpan.textContent = lugar.descripcion;
+        popup.classList.add('active');
+    }
+
+    function closePopupWindow() {
+        popup.classList.remove('active');
+    }
+
+    // Progreso opcional (guardar lugares visitados)
+    let visited = {};
+
+    function markPlaceAsVisited(id) {
+        if (!visited[id]) {
+            visited[id] = true;
+            localStorage.setItem('magicSchoolVisits', JSON.stringify(visited));
+        }
+        const total = lugaresMagicos.length;
+        const count = Object.keys(visited).length;
+        if (count === total && !window._allVisited) {
+            window._allVisited = true;
+            setTimeout(() => {
+                if (!popup.classList.contains('active')) {
+                    const toast = document.createElement('div');
+                    toast.innerText = "🏆✨ ¡GENIAL! Exploraste TODA la escuela ✨🏆";
+                    toast.style.position = "fixed";
+                    toast.style.bottom = "20px";
+                    toast.style.left = "50%";
+                    toast.style.transform = "translateX(-50%)";
+                    toast.style.background = "#f1c40f";
+                    toast.style.color = "#2c3e2f";
+                    toast.style.padding = "12px 24px";
+                    toast.style.borderRadius = "50px";
+                    toast.style.fontWeight = "bold";
+                    toast.style.zIndex = "9999";
+                    toast.style.boxShadow = "0 5px 15px black";
+                    toast.style.fontSize = "1rem";
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 4000);
+                }
+            }, 200);
+        }
+    }
+
+    function loadVisited() {
+        const saved = localStorage.getItem('magicSchoolVisits');
+        if (saved) {
+            try { visited = JSON.parse(saved); } catch(e) {}
+        }
+    }
+
+    // Iniciar mapa
+    function startMagicMap() {
+        enableSound();
+        introScreen.classList.remove('active');
+        mapScreen.classList.add('active');
+        generatePins();
+    }
+
+    // Eventos
+    startBtn.addEventListener('click', startMagicMap);
+    closePopupBtn.addEventListener('click', closePopupWindow);
+    popup.addEventListener('click', (e) => {
+        if (e.target === popup) closePopupWindow();
+    });
+
+    initAudio();
+    loadVisited();
+
+    document.body.addEventListener('click', function firstClick() {
+        if (!soundEnabled) enableSound();
+    }, { once: true });
+</script>
+</body>
+</html>

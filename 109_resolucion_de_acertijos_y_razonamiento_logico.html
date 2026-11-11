@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Escape Room: Laboratorio de Mentes 🧪</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Public+Sans:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --lab-green: #22c55e;
+            --lab-cyan: #06b6d4;
+            --lab-error: #ef4444;
+            --bg-dark: #020617;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Public Sans', sans-serif; }
+        h2, h3, .btn-action { font-family: 'Unbounded', sans-serif; text-transform: uppercase; }
+
+        body { background: var(--bg-dark); color: white; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+        .overlay {
+            position: fixed; inset: 0; background: rgba(2, 6, 23, 0.98); z-index: 200;
+            display: flex; align-items: center; justify-content: center; padding: 20px;
+            backdrop-filter: blur(15px);
+        }
+
+        .card-lab {
+            background: #1e293b; padding: 30px; border-radius: 24px;
+            text-align: center; max-width: 480px; width: 100%;
+            border: 2px solid #334155;
+        }
+
+        .escenario { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
+
+        .puzzle-card {
+            background: #0f172a; padding: 25px; border-radius: 20px;
+            width: 100%; max-width: 420px; border: 1px solid #1e293b;
+            text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .elements-grid { display: flex; justify-content: center; gap: 8px; margin: 20px 0; flex-wrap: wrap; }
+        
+        .element-btn {
+            width: 55px; height: 55px; background: #1e293b; border: 2px solid #334155;
+            border-radius: 12px; font-size: 1.3rem; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center; color: white;
+        }
+        .element-btn:hover { border-color: var(--lab-cyan); background: #2d3748; }
+
+        .feedback-pop {
+            position: absolute; inset: 0; background: #0f172a;
+            z-index: 50; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; padding: 30px; text-align: center;
+            border-radius: 20px; border: 2px solid var(--lab-cyan);
+        }
+
+        .progress-bar { height: 6px; border-radius: 10px; flex: 1; transition: 0.5s; }
+    </style>
+</head>
+<body x-data="escapeRoom()">
+
+    <template x-if="fase === 'inicio'">
+        <div class="overlay">
+            <div class="card-lab">
+                <div style="font-size: 3.5rem; margin-bottom: 10px;">🧪🔓</div>
+                <h2>Laboratorio Lógico</h2>
+                <div style="text-align: left; background: rgba(15, 23, 42, 0.5); padding: 15px; border-radius: 15px; margin: 15px 0; font-size: 0.8rem; color: #cbd5e1; border: 1px solid #334155;">
+                    <p><b>📍 Nivel:</b> 4to a 6to Primaria</p>
+                    <p><b>🧠 Habilidad:</b> Pensamiento Secuencial y Deductivo.</p>
+                    <p><b>🎯 Reto:</b> Superar 5 protocolos de seguridad analizando patrones y reglas ocultas.</p>
+                </div>
+                <button @click="fase = 'jugando'" class="btn-action" 
+                        style="background: var(--lab-green); color: #052e16; padding: 18px; border-radius: 50px; border: none; width: 100%; cursor: pointer; font-weight: 900;">
+                    ACTIVAR PROTOCOLO
+                </button>
+            </div>
+        </div>
+    </template>
+
+    <template x-if="fase === 'victoria'">
+        <div class="overlay">
+            <div class="card-lab" style="border-color: var(--lab-green);">
+                <div style="font-size: 4rem;">🏆✨</div>
+                <h2 style="color: var(--lab-green);">¡MISIÓN LOGRADA!</h2>
+                <p style="margin: 20px 0; color: #cbd5e1;">Has demostrado que tu lógica es superior. Todas las puertas están abiertas.</p>
+                <button @click="reiniciar()" class="btn-action" 
+                        style="background: white; color: black; padding: 15px; border-radius: 50px; border: none; width: 100%; cursor: pointer;">
+                    REINICIAR EXPERIMENTO
+                </button>
+            </div>
+        </div>
+    </template>
+
+    <header style="padding: 20px;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.6rem; font-weight: 900; color: #64748b; margin-bottom: 8px;">
+            <span>ESTADO DEL ESCAPE: <span x-text="nivelActual + '/5'"></span></span>
+            <span x-text="puzzles[nivelActual-1].tipo"></span>
+        </div>
+        <div style="display: flex; gap: 6px;">
+            <template x-for="n in 5">
+                <div class="progress-bar" :style="{ background: nivelActual >= n ? '#22c55e' : '#334155' }"></div>
+            </template>
+        </div>
+    </header>
+
+    <main class="escenario">
+        <div class="puzzle-card" id="puzzle-box">
+            <h3 style="font-size: 0.9rem; color: var(--lab-cyan); margin-bottom: 10px;" x-text="puzzles[nivelActual-1].titulo"></h3>
+            <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.4; margin-bottom: 20px;" x-text="puzzles[nivelActual-1].pista"></p>
+
+            <div class="elements-grid">
+                <template x-for="item in puzzles[nivelActual-1].secuencia">
+                    <div class="element-btn" style="cursor: default; opacity: 0.8; font-family: monospace;" x-text="item"></div>
+                </template>
+                <div class="element-btn" style="border: 2px dashed var(--lab-cyan); background: transparent; color: var(--lab-cyan);">?</div>
+            </div>
+
+            <p style="font-size: 0.65rem; font-weight: 900; color: #64748b; margin: 15px 0 10px;">ELIGE TU RESPUESTA LÓGICA:</p>
+            <div class="elements-grid">
+                <template x-for="opcion in puzzles[nivelActual-1].opciones">
+                    <button class="element-btn" @click="validar(opcion)" x-text="opcion"></button>
+                </template>
+            </div>
+        </div>
+
+        <template x-if="mostrandoFeedback">
+            <div class="feedback-pop" x-transition>
+                <div style="font-size: 3rem; margin-bottom: 10px;" x-text="feedbackData.icono"></div>
+                <h3 :style="{color: feedbackData.color}" x-text="feedbackData.titulo"></h3>
+                <p style="margin: 15px 0; font-size: 0.95rem; color: #cbd5e1; line-height: 1.5;" x-text="feedbackData.msg"></p>
+                
+                <button @click="continuar()" class="btn-action" 
+                        style="background: white; color: black; padding: 15px 40px; border-radius: 50px; border: none; cursor: pointer; font-weight: 900;">
+                    <span x-text="feedbackData.exito ? 'SIGUIENTE NIVEL' : 'VOLVER A INTENTAR'"></span>
+                </button>
+            </div>
+        </template>
+    </main>
+
+    <script>
+        function escapeRoom() {
+            return {
+                fase: 'inicio',
+                nivelActual: 1,
+                mostrandoFeedback: false,
+                feedbackData: {},
+
+                puzzles: [
+                    {
+                        tipo: "PATRONES VISUALES",
+                        titulo: "PROTOCOLO DE REACCIÓN",
+                        pista: "Observa los reactivos. Se repiten en grupos de tres. ¿Qué sigue?",
+                        secuencia: ["🟢", "🟡", "🔴", "🟢", "🟡"],
+                        opciones: ["🟢", "🟡", "🔴", "🔵"],
+                        correcta: "🔴",
+                        errorPista: "Mira bien el orden: Verde, Amarillo, Rojo... ¡y vuelve a empezar!",
+                        explicacion: "La lógica de repetición nos dice que tras el Amarillo siempre viene el Rojo en esta serie."
+                    },
+                    {
+                        tipo: "ORDENAMIENTO",
+                        titulo: "JERARQUÍA TÉRMICA",
+                        pista: "Ordenamos por temperatura: ❄️ es menos que 🌊, y 🌊 es menos que 🔥. ¿Qué es más que 🔥?",
+                        secuencia: ["❄️", "🌊", "🔥"],
+                        opciones: ["🧊", "💧", "☀️", "☁️"],
+                        correcta: "☀️",
+                        errorPista: "Busca el elemento que genere más calor de todos los botones.",
+                        explicacion: "El Sol representa el nivel máximo de energía calórica en esta secuencia ascendente."
+                    },
+                    {
+                        tipo: "DEDUCCIÓN",
+                        titulo: "CLASIFICACIÓN DE MUESTRAS",
+                        pista: "Tres son herramientas de laboratorio y una NO pertenece. ¿Cuál sobra?",
+                        secuencia: ["🔬", "🧪", "🥽"],
+                        opciones: ["🧬", "🍔", "🌡️", "📡"],
+                        correcta: "🍔",
+                        errorPista: "Piensa: ¿Cuál de estos objetos no podrías usar para hacer un experimento?",
+                        explicacion: "Lógica de exclusión: La hamburguesa es alimento, no una herramienta científica."
+                    },
+                    {
+                        tipo: "NUMÉRICA",
+                        titulo: "CÓDIGO BINARIO +1",
+                        pista: "Cada número es el doble del anterior. 2, 4, 8, 16...",
+                        secuencia: ["2", "4", "8", "16"],
+                        opciones: ["20", "30", "32", "64"],
+                        correcta: "32",
+                        errorPista: "Prueba multiplicando 16 por 2. ¡Esa es la regla!",
+                        explicacion: "Usaste una progresión geométrica: multiplicar la base por 2 en cada paso."
+                    },
+                    {
+                        tipo: "ALGORITMO",
+                        titulo: "RUTA DE ESCAPE",
+                        pista: "Sigue la dirección: Arriba, Derecha, Arriba, Derecha... ¿Cuál es el último movimiento?",
+                        secuencia: ["⬆️", "➡️", "⬆️", "➡️", "⬆️"],
+                        opciones: ["⬆️", "➡️", "⬇️", "⬅️"],
+                        correcta: "➡️",
+                        errorPista: "Es un patrón alternado de direcciones. ¡No te desvíes!",
+                        explicacion: "¡Felicidades! Completaste el algoritmo de movimiento alternado para abrir la puerta final."
+                    }
+                ],
+
+                validar(opcion) {
+                    const actual = this.puzzles[this.nivelActual - 1];
+                    if (opcion === actual.correcta) {
+                        this.feedbackData = {
+                            exito: true, icono: '✅', titulo: '¡LOGRADO!', color: '#22c55e',
+                            msg: actual.explicacion
+                        };
+                    } else {
+                        this.feedbackData = {
+                            exito: false, icono: '❌', titulo: 'ERROR LÓGICO', color: '#ef4444',
+                            msg: actual.errorPista
+                        };
+                        gsap.to("#puzzle-box", { x: 10, repeat: 5, yoyo: true, duration: 0.05 });
+                    }
+                    this.mostrandoFeedback = true;
+                },
+
+                continuar() {
+                    if (this.feedbackData.exito) {
+                        if (this.nivelActual < 5) {
+                            this.nivelActual++;
+                            this.mostrandoFeedback = false;
+                        } else {
+                            this.fase = 'victoria';
+                            confetti({ particleCount: 200, spread: 80 });
+                        }
+                    } else {
+                        this.mostrandoFeedback = false;
+                    }
+                },
+
+                reiniciar() {
+                    this.nivelActual = 1; this.fase = 'inicio'; this.mostrandoFeedback = false;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

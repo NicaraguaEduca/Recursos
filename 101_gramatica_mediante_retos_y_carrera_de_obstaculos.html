@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Súper Atleta: Edición Oro 🏃‍♂️✨</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Public+Sans:wght@400;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --gold: #fbbf24;
+            --dark: #0f172a;
+            --neon-purple: #a855f7;
+            --neon-blue: #06b6d4;
+            --hot-pink: #f43f5e;
+            --track: #334155;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Public Sans', sans-serif; }
+        h1, h2, h3, .btn-main { font-family: 'Unbounded', sans-serif; text-transform: uppercase; }
+
+        body {
+            background: var(--dark);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            color: white;
+        }
+
+        /* --- NAVBAR ESTILO ARCADE --- */
+        .navbar {
+            height: 65px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            border-bottom: 4px solid var(--neon-blue);
+            flex-shrink: 0;
+            box-shadow: 0 4px 20px rgba(6, 182, 212, 0.3);
+        }
+
+        .pantalla {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+        }
+
+        /* --- PISTA VISTOSA --- */
+        .pista-container {
+            width: 100%;
+            max-width: 1000px;
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .pista {
+            height: 120px;
+            background: var(--track);
+            border-bottom: 10px solid #1e293b;
+            border-top: 2px solid rgba(255,255,255,0.1);
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: inset 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        /* Líneas de velocidad de fondo */
+        .speed-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3));
+            width: 100px;
+            animation: moveLines 0.5s linear infinite;
+        }
+
+        @keyframes moveLines {
+            from { transform: translateX(1000px); }
+            to { transform: translateX(-200px); }
+        }
+
+        .atleta {
+            font-size: 5rem;
+            position: absolute;
+            bottom: 10px;
+            left: 5%;
+            transform: scaleX(-1);
+            transition: left 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            filter: drop-shadow(0 0 15px rgba(255,255,255,0.5));
+            z-index: 10;
+        }
+
+        .meta-flag {
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            font-size: 5rem;
+            filter: drop-shadow(0 0 10px var(--gold));
+        }
+
+        /* --- CAJA DE RETO --- */
+        .reto-box {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 4px solid var(--neon-purple);
+            border-radius: 30px;
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.2);
+        }
+
+        .instruccion {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            color: #f1f5f9;
+        }
+
+        .blank {
+            color: var(--neon-blue);
+            text-decoration: underline;
+            font-weight: 900;
+            text-underline-offset: 8px;
+        }
+
+        .opciones {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .opcion {
+            background: rgba(15, 23, 42, 0.6);
+            border: 3px solid rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 20px;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .opcion:hover { 
+            border-color: var(--neon-blue); 
+            transform: translateY(-5px);
+            background: rgba(6, 182, 212, 0.1);
+        }
+
+        /* --- BOTONES --- */
+        .btn-main {
+            background: linear-gradient(135deg, var(--hot-pink), var(--neon-purple));
+            color: white;
+            padding: 20px 50px;
+            font-size: 1.5rem;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 10px 0 #9d174d;
+            transition: 0.1s;
+        }
+        .btn-main:active { transform: translateY(5px); box-shadow: 0 5px 0 #9d174d; }
+
+        /* --- ANIMACIONES --- */
+        .running { animation: runEffect 0.8s infinite; }
+        @keyframes runEffect {
+            0% { transform: scaleX(-1) translateY(0); }
+            50% { transform: scaleX(-1) translateY(-15px) rotate(5deg); }
+            100% { transform: scaleX(-1) translateY(0); }
+        }
+
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+        .error-anim { animation: shake 0.4s; border-color: var(--hot-pink) !important; background: rgba(244, 63, 94, 0.2) !important; }
+
+        /* --- MÓVIL --- */
+        @media (max-width: 850px) {
+            body { overflow-y: auto; height: auto; }
+            .pantalla { height: auto; min-height: 100vh; padding: 15px; }
+            .opciones { grid-template-columns: 1fr; }
+            .atleta, .meta-flag { font-size: 3.5rem; }
+            .reto-box { padding: 20px; }
+            .instruccion { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body x-data="game()">
+
+    <nav class="navbar">
+        <div style="font-weight: 900; letter-spacing: 2px; color: var(--neon-blue);">🏃‍♂️ SPEED GRAMMAR</div>
+        <div style="background: var(--neon-purple); padding: 8px 20px; border-radius: 15px; font-weight: 900; box-shadow: 0 0 15px var(--neon-purple);">
+            NIVEL: <span x-text="nivel + 1"></span>/5
+        </div>
+    </nav>
+
+    <template x-if="paso === 'inicio'">
+        <main class="pantalla">
+            <div style="font-size: 7rem; margin-bottom: 20px; filter: drop-shadow(0 0 20px white);">🏃‍♂️</div>
+            <h1 style="font-size: 3rem; text-align: center; color: var(--gold); text-shadow: 0 0 20px var(--gold);">¡A Toda Velocidad!</h1>
+            
+            <div style="background: rgba(255,255,255,0.05); padding: 30px; border-radius: 30px; border: 2px solid var(--neon-blue); max-width: 700px; margin: 30px 0; text-align: left;">
+                <p style="margin-bottom: 10px;"><b>📚 MATERIA:</b> Lengua (Gramática Pro).</p>
+                <p style="margin-bottom: 10px;"><b>🎯 OBJETIVO:</b> Dominar adverbios y preposiciones.</p>
+                <p><b>🧒 GRADO:</b> 3º a 6º de Primaria.</p>
+                <hr style="margin: 20px 0; border: none; border-top: 1px solid rgba(255,255,255,0.1);">
+                <p style="font-size: 1.2rem; line-height: 1.4;">Completa las instrucciones para que el atleta obtenga energía. ¡Si eliges mal, perderá el ritmo!</p>
+            </div>
+
+            <button class="btn-main" @click="paso = 'juego'">¡CALENTAR MOTORES!</button>
+        </main>
+    </template>
+
+    <template x-if="paso === 'juego'">
+        <main class="pantalla">
+            <div class="pista-container">
+                <div class="pista">
+                    <div class="speed-line" style="top: 20%; left: 10%; animation-delay: 0.1s;"></div>
+                    <div class="speed-line" style="top: 50%; left: 40%; animation-delay: 0.3s;"></div>
+                    <div class="speed-line" style="top: 80%; left: 70%; animation-delay: 0.2s;"></div>
+                    
+                    <div id="atleta" class="atleta" :class="isMoving && 'running'">🏃‍♂️</div>
+                    <div class="meta-flag">🏁</div>
+                </div>
+            </div>
+
+            <div class="reto-box" x-show="nivel < 5">
+                <div class="instruccion">
+                    <span x-text="preguntas[nivel].pre"></span>
+                    <span class="blank">_______</span>
+                    <span x-text="preguntas[nivel].post"></span>
+                </div>
+                
+                <div class="opciones">
+                    <template x-for="(opt, idx) in preguntas[nivel].opts">
+                        <div class="opcion" :id="'opt-'+idx" @click="validar(opt, idx)" x-text="opt.t"></div>
+                    </template>
+                </div>
+            </div>
+            
+            <div id="feedback" style="display:none; margin-top: 20px; font-weight: 900; font-size: 1.5rem; text-shadow: 0 0 10px white;"></div>
+        </main>
+    </template>
+
+    <template x-if="paso === 'fin'">
+        <main class="pantalla">
+            <div style="font-size: 8rem; animation: runEffect 0.5s infinite;">🥇</div>
+            <h1 style="font-size: 3.5rem; color: var(--gold); text-shadow: 0 0 30px var(--gold); margin-bottom: 20px;">¡RÉCORD MUNDIAL!</h1>
+            <p style="font-size: 1.5rem; margin-bottom: 40px; text-align: center;">Tu gramática es tan rápida como un rayo.<br>¡Has ganado el Oro!</p>
+            <button class="btn-main" @click="location.reload()">NUEVA CARRERA</button>
+        </main>
+    </template>
+
+    <script>
+        function game() {
+            return {
+                paso: 'inicio',
+                nivel: 0,
+                isMoving: false,
+                preguntas: [
+                    { pre: 'El atleta corre muy', post: 'para ganar.', opts: [{t: 'RÁPIDO', ok: true}, {t: 'LENTAMENTE', ok: false}] },
+                    { pre: 'La meta todavía está', post: 'de aquí.', opts: [{t: 'CERCA', ok: false}, {t: 'LEJOS', ok: true}] },
+                    { pre: 'El público anima', post: 'las gradas.', opts: [{t: 'DESDE', ok: true}, {t: 'BAJO', ok: false}] },
+                    { pre: '¡El salto debe ser', post: '!', opts: [{t: 'AYER', ok: false}, {t: 'AHORA', ok: true}] },
+                    { pre: 'El campeón sube con orgullo', post: 'podio.', opts: [{t: 'AL', ok: true}, {t: 'CONTRA', ok: false}] }
+                ],
+                validar(opt, idx) {
+                    const el = document.getElementById('opt-'+idx);
+                    const fb = document.getElementById('feedback');
+                    
+                    if (opt.ok) {
+                        fb.innerText = "¡TURBO ACTIVADO! ⚡";
+                        fb.style.color = "var(--neon-blue)";
+                        fb.style.display = "block";
+                        this.avanzar();
+                    } else {
+                        el.classList.add('error-anim');
+                        fb.innerText = "¡Pérdida de energía! 🚩";
+                        fb.style.color = "var(--hot-pink)";
+                        fb.style.display = "block";
+                        setTimeout(() => {
+                            el.classList.remove('error-anim');
+                            fb.style.display = "none";
+                        }, 800);
+                    }
+                },
+                avanzar() {
+                    const a = document.getElementById('atleta');
+                    this.isMoving = true;
+                    
+                    setTimeout(() => {
+                        this.nivel++;
+                        // Mover atleta
+                        const newPos = 5 + (this.nivel * 18);
+                        a.style.left = newPos + '%';
+                        
+                        setTimeout(() => {
+                            this.isMoving = false;
+                            document.getElementById('feedback').style.display = "none";
+                            if (this.nivel >= 5) {
+                                confetti({
+                                    particleCount: 150,
+                                    spread: 70,
+                                    origin: { y: 0.6 },
+                                    colors: ['#fbbf24', '#a855f7', '#06b6d4']
+                                });
+                                setTimeout(() => this.paso = 'fin', 1000);
+                            }
+                        }, 800);
+                    }, 100);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

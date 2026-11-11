@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Heroínas Cotidianas - Dignidad de la Mujer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #eef2ff; /* Azul/Violeta súper fresco */
+            background-image: 
+                radial-gradient(#e0e7ff 3px, transparent 3px),
+                radial-gradient(#e0e7ff 3px, transparent 3px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        /* Animaciones educativas */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(1deg); }
+        }
+        .floating {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes pulseStar {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.4)); }
+            50% { transform: scale(1.15); filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.8)); }
+        }
+        .pulse-star {
+            animation: pulseStar 1.5s infinite ease-in-out;
+        }
+
+        @keyframes slideIn {
+            0% { transform: translateX(100%); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+        .slide-in {
+            animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Partículas de estrellas y celebración */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            animation: flyAway 1.5s ease-out forwards;
+            z-index: 100;
+        }
+        @keyframes flyAway {
+            0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-120px) scale(1.6) rotate(360deg); opacity: 0; }
+        }
+
+        /* Tarjeta de Personaje Hover */
+        .card-heroina {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .card-heroina:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.2);
+        }
+    </style>
+</head>
+<body class="w-screen h-screen flex flex-col relative text-gray-800">
+
+    <!-- ================= PANTALLA DE INICIO ================= -->
+    <div id="pantalla-inicio" class="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-indigo-50/95 backdrop-blur-md transition-opacity duration-500">
+        
+        <div class="bg-indigo-100 rounded-full px-6 py-2 mb-4 font-bold text-indigo-700 tracking-wider shadow-sm border border-indigo-200">
+            FORMACIÓN CÍVICA Y VALORES • 2º GRADO
+        </div>
+        
+        <h1 class="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-pink-500 mb-6 drop-shadow-sm leading-tight">
+            Heroínas Cotidianas 🦸‍♀️✨
+        </h1>
+        
+        <div class="max-w-2xl bg-white p-8 rounded-[2.5rem] shadow-2xl border-4 border-indigo-400 mb-8 transform hover:scale-105 transition-transform duration-300 relative overflow-hidden">
+            <h2 class="text-3xl font-bold text-indigo-700 mb-4 flex items-center justify-center gap-3">
+                <span>🎯</span> Nuestro Objetivo de Aprendizaje
+            </h2>
+            <p class="text-xl text-gray-600 leading-relaxed font-semibold">
+                ¡Las mujeres transforman nuestra comunidad todos los días con su gran valor, inteligencia y dedicación!<br>
+                Recorre nuestro vecindario, descubre a qué se dedica cada una de estas grandes profesionales y condecóralas con una estrella de agradecimiento.<br><br>
+                <span class="text-pink-500 font-black">¡Conozcamos a nuestras heroínas del barrio!</span>
+            </p>
+            <div class="flex justify-center gap-6 mt-6 text-5xl">
+                <span class="floating" style="animation-delay: 0s;">👩‍⚕️</span>
+                <span class="floating" style="animation-delay: 0.3s;">👩‍🚒</span>
+                <span class="floating" style="animation-delay: 0.6s;">👩‍🔬</span>
+            </div>
+        </div>
+
+        <button onclick="iniciarJuego()" class="group relative inline-flex items-center justify-center px-12 py-5 text-2xl font-bold text-white bg-gradient-to-r from-indigo-500 to-pink-500 rounded-full overflow-hidden shadow-[0_8px_0_#4338ca] active:shadow-[0_0px_0_#4338ca] active:translate-y-2 transition-all">
+            <span class="relative flex items-center gap-2">Explorar el Barrio <span class="text-3xl group-hover:animate-bounce">🗺️</span></span>
+        </button>
+    </div>
+
+    <!-- ================= PANTALLA DEL JUEGO ================= -->
+    <div id="pantalla-juego" class="hidden absolute inset-0 z-10 flex flex-col h-full w-full">
+        
+        <!-- Cabecera -->
+        <div class="w-full flex justify-between items-center bg-white/95 p-4 shadow-md border-b-4 border-indigo-200 z-20 shrink-0">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl md:text-4xl bg-indigo-100 p-2 rounded-full">🏙️</span>
+                <div>
+                    <h2 class="text-xl md:text-3xl font-black text-indigo-700">Las Heroínas de mi Barrio</h2>
+                    <p class="hidden md:block text-xs font-bold text-gray-400">Reconocimiento del Valor Social de la Mujer • 2º Primaria</p>
+                </div>
+            </div>
+            <div class="flex flex-col items-end">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Estrellas Entregadas</span>
+                <span id="contador-progreso" class="bg-pink-100 px-4 py-1 rounded-full text-pink-700 font-black border-2 border-pink-200 text-lg md:text-xl shadow-sm">0 / 5 ⭐</span>
+            </div>
+        </div>
+
+        <!-- Área Principal de Juego (Distribución Horizontal) -->
+        <div class="flex-1 w-full p-4 md:p-8 flex flex-col lg:flex-row items-center justify-between gap-6 overflow-hidden relative">
+
+            <!-- Columna Izquierda: Mapa del Barrio con los Personajes -->
+            <div class="w-full lg:w-3/5 h-full flex flex-col justify-center bg-indigo-50/50 backdrop-blur-sm rounded-[2.5rem] p-4 border-4 border-dashed border-indigo-300">
+                <h3 class="text-lg md:text-2xl font-black text-indigo-900 text-center mb-4 flex items-center justify-center gap-2">
+                    📍 ¡Haz clic sobre cada heroína para visitarla!
+                </h3>
+
+                <!-- Grid de Personajes -->
+                <div id="grid-heroinas" class="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-3 xl:grid-cols-5 gap-3 max-h-[60vh] overflow-y-auto lg:overflow-y-visible p-2">
+                    <!-- Los personajes se inyectan por JS aquí -->
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Tarjeta de Entrevista / Descubrimiento Pedagógico -->
+            <div class="w-full lg:w-2/5 h-64 lg:h-full flex items-center justify-center relative shrink-0">
+                
+                <!-- Estado Vacío (Antes de hacer clic en alguien) -->
+                <div id="bloque-instrucciones" class="w-full h-full bg-white/70 backdrop-blur-sm rounded-[2.5rem] p-6 border-4 border-indigo-100 flex flex-col items-center justify-center text-center floating">
+                    <span class="text-6xl md:text-7xl mb-4">🕵️‍♀️🗺️</span>
+                    <h3 class="text-xl md:text-2xl font-black text-indigo-800 mb-2">¡Comienza la búsqueda!</h3>
+                    <p class="text-sm md:text-base font-bold text-gray-500 max-w-xs leading-relaxed">
+                        Explora el barrio y toca a las vecinas del mapa para descubrir los súper talentos y aportaciones con las que ayudan a todos.
+                    </p>
+                </div>
+
+                <!-- Tarjeta de Detalle del Personaje (Oculta al inicio) -->
+                <div id="bloque-detalle" class="hidden w-full h-full bg-white rounded-[2.5rem] p-6 md:p-8 border-4 border-pink-300 shadow-2xl flex-col justify-between slide-in relative overflow-hidden">
+                    
+                    <!-- Decoración de fondo de la tarjeta -->
+                    <div class="absolute -right-10 -bottom-10 text-9xl text-pink-50 opacity-10 font-bold select-none" id="detalle-bg-emoji">🩺</div>
+                    
+                    <!-- Cabecera de la Entrevista -->
+                    <div class="flex items-center gap-4 z-10 shrink-0">
+                        <div id="detalle-emoji" class="text-6xl md:text-7xl p-3 bg-pink-100 rounded-3xl shadow-inner select-none">👩‍⚕️</div>
+                        <div>
+                            <h3 id="detalle-nombre" class="text-2xl md:text-3xl font-black text-indigo-900 leading-none">Doctora Elena</h3>
+                            <span id="detalle-profesion" class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-extrabold inline-block mt-2 tracking-wide uppercase">Medicina</span>
+                        </div>
+                    </div>
+
+                    <!-- Cuerpo Pedagógico del Aporte Social -->
+                    <div class="my-4 z-10 overflow-y-auto pr-1 flex-1">
+                        <h4 class="text-pink-600 font-extrabold text-lg md:text-xl mb-1 flex items-center gap-2">
+                            <span>Súper Poder Comunitario:</span>
+                        </h4>
+                        <p id="detalle-aporte" class="text-sm md:text-base font-bold text-gray-600 leading-relaxed">
+                            Cura las enfermedades de niños y adultos, y dirige todo el hospital del barrio para que la comunidad siempre esté sana y feliz.
+                        </p>
+                    </div>
+
+                    <!-- Acción Interactiva: Condecorar con Estrella -->
+                    <div class="z-10 shrink-0">
+                        <button id="btn-condecorar" onclick="condecorarHeroina()" class="w-full group relative inline-flex items-center justify-center px-6 py-4 text-xl font-bold text-white bg-amber-500 hover:bg-amber-400 rounded-2xl shadow-[0_5px_0_#d97706] active:translate-y-1 active:shadow-[0_0px_0_#d97706] transition-all">
+                            <span class="relative flex items-center gap-2">
+                                ¡Agradecer con una Estrella! <span class="text-2xl group-hover:animate-spin">⭐</span>
+                            </span>
+                        </button>
+                        <p id="mensaje-agradecida" class="hidden text-center text-green-600 font-black text-lg py-3 flex items-center justify-center gap-2 animate-bounce">
+                            <span>🎉</span> ¡Ya le agradeciste con una estrella! <span>⭐</span>
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= PANTALLA FINAL ================= -->
+    <div id="pantalla-final" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-white/95 backdrop-blur-md transition-opacity duration-500">
+        <!-- Flexbox ordenado para que no se corten los emojis -->
+        <div class="flex gap-4 justify-center text-6xl md:text-8xl mb-6 floating select-none">
+            <span>🦸‍♀️</span>
+            <span>⭐</span>
+            <span>💖</span>
+        </div>
+        <h1 class="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-pink-500 mb-6 drop-shadow-sm leading-tight">
+            ¡Barrio Agradecido! 🏙️
+        </h1>
+        <p class="text-xl md:text-2xl text-gray-700 max-w-2xl mb-10 font-bold leading-relaxed">
+            Condecoraste a todas nuestras heroínas cotidianas con estrellas. <br>
+            ¡Su labor, talento y dedicación hacen de nuestro mundo un lugar mejor! Recuerda valorar siempre el gran aporte de las mujeres de tu comunidad. 🌟🤝
+        </p>
+        <button onclick="reiniciarJuego()" class="group relative inline-flex items-center justify-center px-12 py-5 text-2xl font-bold text-white bg-gradient-to-r from-indigo-500 to-pink-500 rounded-full overflow-hidden shadow-[0_8px_0_#4338ca] active:shadow-[0_0px_0_#4338ca] active:translate-y-2 transition-all">
+            <span class="relative flex items-center gap-2">Visitar otra vez <span class="text-3xl">🔄</span></span>
+        </button>
+    </div>
+
+    <!-- ================= LÓGICA DEL JUEGO ================= -->
+    <script>
+        // --- BASE DE DATOS DE HEROÍNAS COTIDIANAS ---
+        const heroinas = [
+            {
+                id: "doctora",
+                nombre: "Doctora Elena 🩺",
+                profesion: "Líder de la Salud",
+                emoji: "👩‍⚕️",
+                aporte: "Se encarga de curar las enfermedades de todos los vecinos, grandes y chicos. Dirige con gran sabiduría y responsabilidad el Hospital Comunitario para que nadie pierda su valiosa sonrisa.",
+                agradecida: false
+            },
+            {
+                id: "bombera",
+                nombre: "Bombera Teresa 🚒",
+                profesion: "Seguridad y Rescate",
+                emoji: "👩‍🚒",
+                aporte: "Es súper valiente y fuerte. Apaga los incendios peligrosos en el barrio, rescata gatitos atrapados en los árboles más altos y enseña a los niños cómo cuidarse de accidentes.",
+                agradecida: false
+            },
+            {
+                id: "cientifica",
+                nombre: "Científica Gaby 🔬",
+                profesion: "Ciencia e Investigación",
+                emoji: "👩‍🔬",
+                aporte: "Investiga y estudia las plantas locales en su laboratorio escolar para crear nuevas vacunas y medicinas saludables. Demuestra todos los días que las mujeres son científicas geniales.",
+                agradecida: false
+            },
+            {
+                id: "arquitecta",
+                nombre: "Arquitecta Lucía 📐",
+                profesion: "Construcción y Diseño",
+                emoji: "👩‍💼",
+                aporte: "Diseña casas seguras, parques hermosos para jugar y las nuevas aulas de nuestra escuela primaria. Usa las matemáticas y el arte para estructurar una comunidad hermosa y segura.",
+                agradecida: false
+            },
+            {
+                id: "agricultora",
+                nombre: "Agricultora Clara 🚜",
+                profesion: "Alimentación y Tierra",
+                emoji: "👩‍🌾",
+                aporte: "Trabaja la tierra con muchísimo amor y cuidado ecológico. Cultiva los deliciosos tomates, lechugas y manzanas que alimentan a todas las familias de nuestro vecindario.",
+                agradecida: false
+            }
+        ];
+
+        let descubiertas = 0;
+        let heroinaSeleccionada = null;
+
+        // Elementos DOM
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const pantallaJuego = document.getElementById('pantalla-juego');
+        const pantallaFinal = document.getElementById('pantalla-final');
+        const gridHeroinas = document.getElementById('grid-heroinas');
+        const contadorProgreso = document.getElementById('contador-progreso');
+        
+        // Secciones de Detalle
+        const bloqueInstrucciones = document.getElementById('bloque-instrucciones');
+        const bloqueDetalle = document.getElementById('bloque-detalle');
+        const detalleNombre = document.getElementById('detalle-nombre');
+        const detalleProfesion = document.getElementById('detalle-profesion');
+        const detalleAporte = document.getElementById('detalle-aporte');
+        const detalleEmoji = document.getElementById('detalle-emoji');
+        const detalleBgEmoji = document.getElementById('detalle-bg-emoji');
+        const btnCondecorar = document.getElementById('btn-condecorar');
+        const mensajeAgradecida = document.getElementById('mensaje-agradecida');
+
+        // --- FLUJO GENERAL ---
+
+        function iniciarJuego() {
+            pantallaInicio.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaInicio.classList.add('hidden');
+                pantallaInicio.classList.remove('opacity-0');
+                pantallaJuego.classList.remove('hidden');
+                
+                descubiertas = 0;
+                actualizarContador();
+                construirBarrio();
+            }, 500);
+        }
+
+        function reiniciarJuego() {
+            pantallaFinal.classList.add('opacity-0');
+            setTimeout(() => {
+                window.location.reload(); // Recarga F5 limpia de toda la memoria y estados
+            }, 300);
+        }
+
+        function actualizarContador() {
+            contadorProgreso.innerText = `${descubiertas} / ${heroinas.length} ⭐`;
+        }
+
+        // --- CONSTRUIR EL MAPA DEL VECINDARIO ---
+
+        function construirBarrio() {
+            gridHeroinas.innerHTML = '';
+            
+            heroinas.forEach(hero => {
+                const card = document.createElement('div');
+                card.id = `card-${hero.id}`;
+                card.className = "card-heroina bg-white p-4 rounded-[2rem] border-4 border-indigo-200 shadow-md flex flex-col items-center justify-center text-center cursor-pointer select-none relative";
+                
+                // Si ya fue completada, adquiere un borde especial dorado de agradecimiento
+                const claseBorde = hero.agradecida ? "border-amber-400 bg-amber-50/50" : "border-indigo-200";
+                card.className = `card-heroina bg-white p-4 rounded-[2rem] border-4 ${claseBorde} shadow-md flex flex-col items-center justify-center text-center cursor-pointer select-none relative`;
+
+                card.innerHTML = `
+                    <!-- Medalla/Estrella pequeña si ya está completada -->
+                    <div class="absolute -top-3 -right-2 bg-amber-400 text-white font-black rounded-full p-1 w-8 h-8 flex items-center justify-center text-xs shadow-md border-2 border-white ${hero.agradecida ? 'scale-100' : 'scale-0'} transition-transform duration-300">⭐</div>
+                    
+                    <div class="text-5xl md:text-6xl mb-2 drop-shadow-sm select-none">${hero.emoji}</div>
+                    <div class="font-black text-indigo-950 text-sm md:text-base leading-none">${hero.nombre.split(' ')[1]}</div>
+                    <div class="text-[10px] font-extrabold text-gray-400 mt-1 uppercase tracking-wide">${hero.profesion.split(' ')[0]}</div>
+                `;
+
+                // Agregar evento clic para entrevistar
+                card.addEventListener('pointerdown', () => seleccionarHeroina(hero));
+                gridHeroinas.appendChild(card);
+            });
+        }
+
+        // --- SELECCIONAR / MOSTRAR ENTREVISTA ---
+
+        function seleccionarHeroina(hero) {
+            heroinaSeleccionada = hero;
+
+            // Transición del panel de detalle derecho
+            bloqueInstrucciones.classList.add('hidden');
+            bloqueDetalle.classList.remove('hidden');
+            bloqueDetalle.classList.remove('slide-in');
+            
+            // Forzar reflow para reiniciar animación CSS
+            void bloqueDetalle.offsetWidth;
+            bloqueDetalle.classList.add('slide-in');
+
+            // Cargar datos
+            detalleNombre.innerText = hero.nombre.split(' ')[0] + ' ' + hero.nombre.split(' ')[1];
+            detalleProfesion.innerText = hero.profesion;
+            detalleAporte.innerText = hero.aporte;
+            detalleEmoji.innerText = hero.emoji;
+            detalleBgEmoji.innerText = hero.emoji;
+
+            // Verificar si ya tiene estrella otorgada
+            if (hero.agradecida) {
+                btnCondecorar.classList.add('hidden');
+                mensajeAgradecida.classList.remove('hidden');
+            } else {
+                btnCondecorar.classList.remove('hidden');
+                mensajeAgradecida.classList.add('hidden');
+            }
+
+            // Resaltar visualmente la tarjeta de la heroína seleccionada en el mapa
+            actualizarSeleccionTarjeta(hero.id);
+        }
+
+        function actualizarSeleccionTarjeta(idSeleccionada) {
+            heroinas.forEach(hero => {
+                const card = document.getElementById(`card-${hero.id}`);
+                if (hero.id === idSeleccionada) {
+                    card.classList.add('border-indigo-600', 'scale-105', 'bg-indigo-50/20');
+                } else {
+                    card.classList.remove('border-indigo-600', 'scale-105', 'bg-indigo-50/20');
+                }
+            });
+        }
+
+        // --- ACCIÓN: AGRADECER / CONDECORAR ---
+
+        function condecorarHeroina() {
+            if (!heroinaSeleccionada || heroinaSeleccionada.agradecida) return;
+
+            heroinaSeleccionada.agradecida = true;
+            descubiertas++;
+            actualizarContador();
+
+            // Lanzar animación de partículas de agradecimiento desde la heroína seleccionada
+            const rectTarjeta = document.getElementById(`card-${heroinaSeleccionada.id}`).getBoundingClientRect();
+            crearParticulasEstrellas(rectTarjeta);
+
+            // Cambiar vista en el panel de detalle
+            btnCondecorar.classList.add('hidden');
+            mensajeAgradecida.classList.remove('hidden');
+
+            // Volver a dibujar el mapa para aplicar el borde dorado y estrella
+            construirBarrio();
+
+            // Resaltar la actual
+            actualizarSeleccionTarjeta(heroinaSeleccionada.id);
+
+            // Comprobar si se descubrieron todas
+            if (descubiertas >= heroinas.length) {
+                setTimeout(finalizarJuego, 2500);
+            }
+        }
+
+        // --- EFECTOS VISUALES ---
+
+        function crearParticulasEstrellas(rect) {
+            const emojis = ['⭐', '✨', '💖', '🌈', '👏'];
+            const container = document.body;
+
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                // Coordenadas en el centro de la tarjeta del mapa
+                const posX = rect.left + (rect.width / 2) + (Math.random() * 80 - 40);
+                const posY = rect.top + (rect.height / 2);
+                
+                p.style.left = `${posX}px`;
+                p.style.top = `${posY}px`;
+                p.style.fontSize = `${Math.random() * 15 + 20}px`;
+                p.style.animationDelay = `${Math.random() * 0.2}s`;
+                
+                container.appendChild(p);
+                
+                setTimeout(() => p.remove(), 1500);
+            }
+        }
+
+        function finalizarJuego() {
+            pantallaJuego.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaJuego.classList.add('hidden');
+                pantallaFinal.classList.remove('hidden');
+                setTimeout(() => pantallaFinal.classList.remove('opacity-0'), 50);
+                
+                // Megacelebración
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        const fakeRect = {
+                            left: Math.random() * window.innerWidth - 50,
+                            width: 100,
+                            top: window.innerHeight - 100,
+                            height: 100
+                        };
+                        crearParticulasEstrellas(fakeRect);
+                    }, i * 250);
+                }
+            }, 500);
+        }
+
+        // --- CARGA INICIAL ---
+        document.addEventListener('DOMContentLoaded', () => {
+            pantallaInicio.classList.remove('hidden');
+            setTimeout(() => pantallaInicio.classList.remove('opacity-0'), 50);
+        });
+
+    </script>
+</body>
+</html>

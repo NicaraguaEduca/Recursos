@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorio de Historias - Reescritura</title>
+    
+    <!-- Fuentes Google: Henny Penny (Mágica) y Poppins (Lectura) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Henny+Penny&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- CONFIGURACIÓN BLINDADA PARA WORDPRESS -->
+    <script>
+        tailwind.config = {
+            important: '#recurso-wp-laboratorio',
+            corePlugins: {
+                preflight: false,
+            },
+            theme: {
+                extend: {
+                    fontFamily: {
+                        magic: ['"Henny Penny"', 'cursive'],
+                        body: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        lab: {
+                            dark: '#1a0b2e',      /* Morado noche oscuro */
+                            purple: '#6b21a8',    /* Morado mágico */
+                            pink: '#d946ef',      /* Rosa poción */
+                            green: '#22c55e',     /* Verde tóxico/caldero */
+                            gold: '#fbbf24',      /* Dorado estrellas */
+                            blue: '#0ea5e9'       /* Azul místico */
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* =========================================================
+           MICRO-RESET LOCAL: Protege el recurso del tema de WP
+           ========================================================= */
+        #recurso-wp-laboratorio * {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: currentColor;
+            line-height: normal;
+        }
+        #recurso-wp-laboratorio h1, #recurso-wp-laboratorio h2, #recurso-wp-laboratorio h3, #recurso-wp-laboratorio p, #recurso-wp-laboratorio span, #recurso-wp-laboratorio div {
+            margin: 0; padding: 0;
+        }
+        #recurso-wp-laboratorio button {
+            background-color: transparent; background-image: none; cursor: pointer; padding: 0; font-family: inherit;
+        }
+
+        /* =========================================================
+           ESTILOS PANTALLA COMPLETA & ESCALADOS (DATASHOW)
+           ========================================================= */
+        #recurso-wp-laboratorio {
+            font-family: 'Poppins', sans-serif;
+            background-color: #1a0b2e; 
+            /* Fondo de cielo estrellado místico */
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(107, 33, 168, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(217, 70, 239, 0.2) 0%, transparent 50%);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden; 
+            z-index: 50;
+        }
+
+        /* Botones Mágicos */
+        #recurso-wp-laboratorio .magic-btn {
+            background: linear-gradient(135deg, #6b21a8, #d946ef);
+            border: 3px solid #fbbf24;
+            color: #fff;
+            border-radius: 9999px;
+            box-shadow: 0 8px 15px rgba(217, 70, 239, 0.4), inset 0 -4px 8px rgba(0,0,0,0.4);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        #recurso-wp-laboratorio .magic-btn:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 12px 20px rgba(217, 70, 239, 0.6), inset 0 -4px 8px rgba(0,0,0,0.4);
+            border-color: #fff;
+        }
+        #recurso-wp-laboratorio .magic-btn:active {
+            transform: translateY(2px) scale(0.95);
+            box-shadow: 0 2px 5px rgba(217, 70, 239, 0.4);
+        }
+
+        /* Paneles de Libro de Hechizos */
+        #recurso-wp-laboratorio .spell-book {
+            background: #fdf6e3; /* Color papiro */
+            color: #451a03;
+            border: 8px solid #78350f; /* Borde cuero */
+            border-radius: 12px;
+            box-shadow: inset 0 0 40px rgba(120, 53, 15, 0.2), 0 20px 40px rgba(0,0,0,0.6);
+            position: relative;
+        }
+        #recurso-wp-laboratorio .spell-book::before {
+            content: '';
+            position: absolute;
+            left: 20px; top: 0; bottom: 0;
+            width: 2px;
+            background: rgba(120, 53, 15, 0.2);
+            box-shadow: 4px 0 0 rgba(120, 53, 15, 0.1);
+        }
+
+        /* Ingredientes (Tarjetas de opciones) */
+        #recurso-wp-laboratorio .ingredient-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        #recurso-wp-laboratorio .ingredient-card:hover {
+            background: rgba(217, 70, 239, 0.3);
+            border-color: #fbbf24;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(251, 191, 36, 0.4);
+        }
+
+        /* Animaciones Mágicas */
+        .float-slow { animation: float 6s ease-in-out infinite; }
+        .float-fast { animation: float 4s ease-in-out infinite reverse; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .bubble {
+            position: absolute;
+            background: #22c55e;
+            border-radius: 50%;
+            opacity: 0;
+            animation: rise 2s ease-in infinite;
+        }
+        @keyframes rise {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
+        }
+
+        /* Pantallas SPA */
+        #recurso-wp-laboratorio .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            position: absolute;
+            top: 0; left: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 10;
+        }
+        #recurso-wp-laboratorio .screen::-webkit-scrollbar { display: none; }
+        #recurso-wp-laboratorio .screen.active {
+            display: flex;
+            animation: magicFadeIn 0.6s ease-out forwards;
+        }
+        @keyframes magicFadeIn {
+            from { opacity: 0; transform: scale(0.95) translateY(20px); filter: blur(5px); }
+            to { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        }
+
+        /* Partículas del resultado */
+        .story-element {
+            position: absolute;
+            font-size: 3rem;
+            pointer-events: none;
+            animation: fallRotate 4s linear forwards;
+            z-index: 100;
+        }
+        @keyframes fallRotate {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+    <div id="recurso-wp-laboratorio">
+
+        <!-- Estrellas de fondo -->
+        <div class="absolute top-10 left-10 text-4xl opacity-50 float-slow">✨</div>
+        <div class="absolute top-20 right-20 text-5xl opacity-30 float-fast">⭐</div>
+        <div class="absolute bottom-20 left-32 text-3xl opacity-40 float-slow">✨</div>
+
+        <!-- ==============================================
+             PANTALLA 1: INICIO
+             ============================================== -->
+        <div id="screen-start" class="screen active text-center">
+            <div class="max-w-3xl w-full mx-4 flex flex-col items-center">
+                <div class="text-[5rem] md:text-[8rem] mb-2 animate__animated animate__pulse animate__infinite drop-shadow-[0_0_20px_rgba(34,197,94,0.6)]">🧪</div>
+                <h2 class="text-xs md:text-sm text-lab-gold font-bold mb-3 uppercase tracking-[0.2em] bg-black/40 px-4 py-1 rounded-full border border-lab-gold">
+                    Escritura - 5to Grado
+                </h2>
+                <h1 class="text-5xl md:text-7xl lg:text-[6rem] font-magic text-white mt-2 mb-4 leading-tight drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">
+                    Laboratorio de <br><span class="text-lab-pink drop-shadow-[0_0_15px_rgba(217,70,239,0.6)]">Historias</span>
+                </h1>
+                <p class="text-base md:text-xl text-gray-300 mb-8 font-bold px-4 leading-relaxed max-w-2xl bg-black/30 p-4 rounded-xl backdrop-blur-sm">
+                    ¿Aburrido de los cuentos donde el lobo siempre se come a todos? ¡Es hora de usar la alquimia literaria para inventar finales inesperados!
+                </p>
+                <button onclick="showScreen('screen-theory')" class="magic-btn font-magic text-2xl md:text-4xl px-10 py-4 w-full md:w-auto tracking-wider">
+                    ENTRAR AL LABORATORIO ✨
+                </button>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 2: TEORÍA Y REGLAS
+             ============================================== -->
+        <div id="screen-theory" class="screen justify-start md:justify-center">
+            <div class="spell-book p-6 md:p-10 max-w-4xl w-full text-center my-auto transform rotate-1">
+                <h2 class="text-3xl md:text-5xl font-magic text-amber-900 mb-4 tracking-widest border-b-2 border-amber-900/20 pb-3">
+                    El Arte de Reescribir
+                </h2>
+                <p class="text-sm md:text-lg text-amber-800 font-bold mb-6 px-4">
+                    Reescribir un cuento no es copiarlo; es darle tu propio toque mágico. Si cambias el final, ¡cambias el mensaje de la historia!
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 text-left pl-6 md:pl-10">
+                    
+                    <div class="bg-amber-100/50 p-4 rounded-xl border border-amber-900/20">
+                        <div class="text-3xl mb-2">🐉</div>
+                        <h3 class="font-magic text-xl text-amber-900 mb-1">Nuevos Personajes</h3>
+                        <p class="text-xs md:text-sm text-amber-800 font-bold">Cambiar a los buenos o a los malos altera todo el conflicto.</p>
+                    </div>
+
+                    <div class="bg-amber-100/50 p-4 rounded-xl border border-amber-900/20">
+                        <div class="text-3xl mb-2">🪄</div>
+                        <h3 class="font-magic text-xl text-amber-900 mb-1">Objetos Mágicos</h3>
+                        <p class="text-xs md:text-sm text-amber-800 font-bold">Añadir una herramienta inesperada puede resolver el problema de formas divertidas.</p>
+                    </div>
+
+                    <div class="bg-amber-100/50 p-4 rounded-xl border border-amber-900/20">
+                        <div class="text-3xl mb-2">🎭</div>
+                        <h3 class="font-magic text-xl text-amber-900 mb-1">El Giro Sorpresa</h3>
+                        <p class="text-xs md:text-sm text-amber-800 font-bold">Un final donde los enemigos se hacen amigos o viajan al espacio.</p>
+                    </div>
+
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="showScreen('screen-start')" class="bg-amber-900 text-amber-100 font-bold px-6 py-3 rounded-full text-sm uppercase hover:bg-amber-800 transition">
+                        ⬅ Cerrar Libro
+                    </button>
+                    <button onclick="startGame()" class="magic-btn font-magic text-xl md:text-2xl px-8 py-3 uppercase">
+                        ¡PREPARAR CALDERO! ⚗️
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA 3: EL JUEGO (Crear Historia)
+             ============================================== -->
+        <div id="screen-game" class="screen justify-start p-4 relative overflow-hidden">
+            
+            <div class="w-full max-w-5xl mx-auto flex-grow flex flex-col md:flex-row gap-6 items-stretch justify-center relative z-20 h-full py-4">
+                
+                <!-- Columna Izquierda: El Cuento Original (Libro) -->
+                <div class="w-full md:w-5/12 spell-book p-6 md:p-8 flex flex-col h-[40vh] md:h-full overflow-y-auto shrink-0 shadow-2xl">
+                    <h3 class="font-magic text-2xl md:text-3xl text-amber-900 mb-4 border-b-2 border-amber-900/30 pb-2 text-center">
+                        Los Tres Cerditos
+                    </h3>
+                    <p class="text-base md:text-lg text-amber-900 font-medium leading-relaxed text-justify">
+                        Había una vez tres cerditos que construyeron sus casas para protegerse del Lobo Feroz. El lobo sopló y derribó la casa de paja. Luego sopló y derribó la casa de madera. 
+                        <br><br>
+                        Finalmente, llegó a la fuerte casa de ladrillo. El lobo tomó mucho aire, infló sus pulmones y estaba a punto de soplar con todas sus fuerzas cuando, de repente...
+                    </p>
+                    <div class="mt-4 p-3 bg-amber-900 text-amber-100 rounded-lg text-center font-bold text-sm animate-pulse mt-auto">
+                        ...¡AQUÍ ENTRA TU MAGIA!
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Caldero y Selección -->
+                <div class="w-full md:w-7/12 bg-black/40 border-2 border-lab-purple/50 rounded-[2rem] p-4 md:p-6 flex flex-col relative h-[50vh] md:h-full shrink-0">
+                    
+                    <!-- HUD Superior Pestañas -->
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-lab-gold font-bold uppercase tracking-widest text-xs md:text-sm">Fase: <span id="phase-title" class="text-white">Personaje Sorpresa</span></span>
+                        <span id="progress-dots" class="flex gap-2">
+                            <div class="w-3 h-3 rounded-full bg-lab-pink shadow-[0_0_5px_#d946ef]"></div>
+                            <div class="w-3 h-3 rounded-full bg-gray-600"></div>
+                            <div class="w-3 h-3 rounded-full bg-gray-600"></div>
+                        </span>
+                    </div>
+
+                    <!-- Área de Selección -->
+                    <div id="selection-area" class="flex-grow flex flex-col gap-3 md:gap-4 overflow-y-auto pr-2 pb-4">
+                        <!-- Las opciones se inyectan por JS -->
+                    </div>
+
+                    <!-- El Caldero Abajo -->
+                    <div class="h-24 md:h-32 mt-auto relative flex justify-center items-end shrink-0 border-t border-lab-purple/30 pt-4">
+                        <div class="text-[4rem] md:text-[5rem] relative z-10 drop-shadow-[0_10px_10px_rgba(0,0,0,0.8)]">
+                            🍲
+                            <div id="cauldron-bubbles" class="absolute inset-0 top-0 left-0 w-full h-full pointer-events-none">
+                                <!-- Burbujas JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="exitGame()" class="absolute top-4 right-4 bg-red-900/50 border-2 border-red-500 text-red-300 hover:bg-red-600 hover:text-white transition-colors p-2 rounded-full z-50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- ==============================================
+             PANTALLA FINAL (El Nuevo Cuento Animado)
+             ============================================== -->
+        <div id="screen-result" class="hidden absolute inset-0 z-[70] flex flex-col items-center justify-center p-4 md:p-6 text-center bg-lab-dark bg-[radial-gradient(circle_at_center,rgba(107,33,168,0.5)_0%,rgba(0,0,0,0.9)_100%)]">
+            
+            <!-- Contenedor de emojis cayendo -->
+            <div id="magic-rain" class="absolute inset-0 pointer-events-none overflow-hidden z-0"></div>
+            
+            <div class="spell-book p-8 md:p-12 max-w-4xl w-full animate__animated animate__zoomIn text-center z-10 shadow-[0_0_50px_rgba(217,70,239,0.4)] flex flex-col max-h-[90vh]">
+                
+                <h2 class="font-magic text-3xl md:text-5xl text-amber-900 mb-6 border-b-4 border-amber-900/20 pb-4">
+                    ¡Tu Nueva Historia!
+                </h2>
+                
+                <div class="text-left font-body text-base md:text-xl text-amber-900 font-medium leading-relaxed overflow-y-auto pr-2 mb-8">
+                    Había una vez tres cerditos que construyeron sus casas para protegerse del Lobo Feroz. El lobo sopló y derribó la casa de paja. Luego sopló y derribó la casa de madera. Finalmente, llegó a la fuerte casa de ladrillo. El lobo tomó mucho aire, infló sus pulmones y estaba a punto de soplar con todas sus fuerzas cuando, de repente...
+                    <br><br>
+                    <span id="final-story-result" class="text-lab-purple font-bold text-lg md:text-2xl bg-amber-200/50 p-2 rounded leading-relaxed">
+                        <!-- Historia generada -->
+                    </span>
+                </div>
+                
+                <div class="mt-auto pt-4 flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="exitGame()" class="bg-amber-900/20 border-2 border-amber-900 text-amber-900 font-bold hover:bg-amber-900 hover:text-white px-6 py-3 rounded-full text-sm md:text-base uppercase transition-colors">
+                        SALIR DEL LABORATORIO
+                    </button>
+                    <button onclick="startGame()" class="magic-btn font-magic text-xl md:text-2xl px-10 py-3 uppercase tracking-widest">
+                        VOLVER A INVENTAR ⚗️
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==============================================
+         LÓGICA DEL JUEGO
+         ============================================== -->
+    <script>
+        // Fases y opciones de reescritura
+        const storyPhases = [
+            {
+                title: "1. ¿Quién interrumpe al Lobo?",
+                options: [
+                    { text: "Un Alienígena turista que buscaba direcciones.", emoji: "👽", value: "aterrizó un Alienígena turista que andaba buscando direcciones para llegar a la Luna" },
+                    { text: "Un Dragón chef que quería compartir su receta.", emoji: "🐲", value: "apareció un Dragón chef que traía una olla gigante buscando a alguien con quien compartir su nueva receta" },
+                    { text: "Un Tiranosaurio Rex en patineta.", emoji: "🦖", value: "pasó a toda velocidad un Tiranosaurio Rex haciendo trucos en su patineta" }
+                ]
+            },
+            {
+                title: "2. ¿Qué objeto mágico usan para calmarse?",
+                options: [
+                    { text: "Una guitarra eléctrica que lanza confeti.", emoji: "🎸", value: "El lobo se asustó tanto que dejó de soplar. Entonces, uno de los cerditos sacó una guitarra eléctrica que lanzaba confeti de colores al tocarla" },
+                    { text: "Un reloj que congela el tiempo.", emoji: "⏱️", value: "Para calmar la situación, el cerdito mayor presionó un reloj mágico que congeló el tiempo por un minuto para que todos respiraran" },
+                    { text: "Una máquina infinita de hacer helados.", emoji: "🍦", value: "Al ver la confusión, el cerdito menor encendió su invento secreto: una máquina infinita de hacer helados de chocolate" }
+                ]
+            },
+            {
+                title: "3. ¿Cómo termina todo?",
+                options: [
+                    { text: "Abrieron una pizzería intergaláctica.", emoji: "🍕", value: "Al final, olvidaron sus peleas y juntos abrieron la mejor pizzería intergaláctica del bosque, donde el lobo era el soplador oficial del horno de leña." },
+                    { text: "Formaron una banda de rock famosa.", emoji: "🤘", value: "Descubrieron que tenían un gran talento musical y formaron la banda de rock más famosa del reino, y vivieron felices haciendo conciertos." },
+                    { text: "Se fueron de vacaciones a Marte.", emoji: "🚀", value: "Decidieron que el bosque era muy aburrido, así que construyeron una nave y se fueron todos de vacaciones a Marte para siempre." }
+                ]
+            }
+        ];
+
+        let currentPhaseIndex = 0;
+        let selectedIngredients = [];
+        let selectedEmojis = [];
+        let isProcessing = false;
+
+        function showScreen(screenId) {
+            const container = document.getElementById('recurso-wp-laboratorio');
+            container.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startGame() {
+            currentPhaseIndex = 0;
+            selectedIngredients = [];
+            selectedEmojis = [];
+            isProcessing = false;
+            
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('flex');
+            
+            showScreen('screen-game');
+            loadPhase();
+            animateCauldron();
+        }
+
+        function loadPhase() {
+            if (currentPhaseIndex >= storyPhases.length) {
+                generateFinalStory();
+                return;
+            }
+
+            const phaseData = storyPhases[currentPhaseIndex];
+            document.getElementById('phase-title').innerText = phaseData.title;
+            
+            // Actualizar puntitos de progreso
+            const dots = document.getElementById('progress-dots').children;
+            for(let i = 0; i < dots.length; i++) {
+                if(i === currentPhaseIndex) {
+                    dots[i].className = "w-3 h-3 rounded-full bg-lab-pink shadow-[0_0_5px_#d946ef]";
+                } else if (i < currentPhaseIndex) {
+                    dots[i].className = "w-3 h-3 rounded-full bg-lab-green shadow-[0_0_5px_#22c55e]";
+                } else {
+                    dots[i].className = "w-3 h-3 rounded-full bg-gray-600";
+                }
+            }
+
+            // Generar Opciones
+            const selectionArea = document.getElementById('selection-area');
+            selectionArea.innerHTML = '';
+
+            phaseData.options.forEach((opt, idx) => {
+                const card = document.createElement('div');
+                card.className = 'ingredient-card p-3 md:p-4 flex items-center gap-4 animate__animated animate__fadeInRight';
+                card.style.animationDelay = `${idx * 0.15}s`;
+                
+                card.innerHTML = `
+                    <div class="text-3xl md:text-4xl bg-black/40 w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center shrink-0 border-2 border-lab-gold/50 shadow-inner">
+                        ${opt.emoji}
+                    </div>
+                    <span class="text-sm md:text-lg font-bold text-white leading-tight">${opt.text}</span>
+                `;
+                
+                card.onclick = () => handleSelection(opt, card);
+                selectionArea.appendChild(card);
+            });
+        }
+
+        function handleSelection(option, cardElement) {
+            if (isProcessing) return;
+            isProcessing = true;
+
+            // Animación visual de echar al caldero
+            cardElement.classList.remove('animate__fadeInRight');
+            cardElement.classList.add('animate__zoomOutDown', 'border-lab-green', 'bg-lab-green/20');
+
+            // Guardar selecciones
+            selectedIngredients.push(option.value);
+            selectedEmojis.push(option.emoji);
+
+            // Explosión de burbujas en el caldero
+            burstBubbles();
+
+            setTimeout(() => {
+                currentPhaseIndex++;
+                isProcessing = false;
+                loadPhase();
+            }, 600);
+        }
+
+        function animateCauldron() {
+            const container = document.getElementById('cauldron-bubbles');
+            container.innerHTML = '';
+            
+            setInterval(() => {
+                if(document.getElementById('screen-game').classList.contains('hidden')) return;
+                
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                const size = Math.random() * 15 + 5;
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                bubble.style.left = `${Math.random() * 60 + 20}%`;
+                bubble.style.animationDuration = `${Math.random() * 1 + 1.5}s`;
+                
+                container.appendChild(bubble);
+                setTimeout(() => bubble.remove(), 2500);
+            }, 400);
+        }
+
+        function burstBubbles() {
+            const container = document.getElementById('cauldron-bubbles');
+            for(let i=0; i<8; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble bg-lab-pink shadow-[0_0_10px_#d946ef]';
+                bubble.style.width = '20px';
+                bubble.style.height = '20px';
+                bubble.style.left = '50%';
+                bubble.style.animation = `rise 0.8s ease-out forwards`;
+                
+                // Dispersión
+                bubble.style.transform = `translateX(${(Math.random() - 0.5) * 100}px)`;
+                
+                container.appendChild(bubble);
+                setTimeout(() => bubble.remove(), 800);
+            }
+        }
+
+        function generateFinalStory() {
+            const resultScreen = document.getElementById('screen-result');
+            const storyContainer = document.getElementById('final-story-result');
+            const rainContainer = document.getElementById('magic-rain');
+            
+            // Construir texto final
+            const finalStoryText = `...${selectedIngredients[0]}. <br><br> ${selectedIngredients[1]}. <br><br> ${selectedIngredients[2]}`;
+            storyContainer.innerHTML = finalStoryText;
+
+            // Generar lluvia de los emojis seleccionados
+            rainContainer.innerHTML = '';
+            for(let i=0; i<30; i++) {
+                const el = document.createElement('div');
+                el.className = 'story-element';
+                el.innerText = selectedEmojis[Math.floor(Math.random() * selectedEmojis.length)];
+                el.style.left = `${Math.random() * 100}%`;
+                el.style.animationDelay = `${Math.random() * 2}s`;
+                el.style.animationDuration = `${Math.random() * 2 + 3}s`;
+                rainContainer.appendChild(el);
+            }
+
+            resultScreen.classList.remove('hidden');
+            resultScreen.classList.add('flex');
+        }
+
+        function exitGame() {
+            currentPhaseIndex = 0;
+            isProcessing = false;
+            selectedIngredients = [];
+            showScreen('screen-start');
+        }
+    </script>
+</body>
+</html>

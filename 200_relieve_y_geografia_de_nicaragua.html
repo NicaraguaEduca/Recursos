@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Exploradores de Nicaragua - Relieve y Geografía</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Ajuste de escala global para pantallas */
+        html {
+            font-size: 90%;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #ecfccb; /* Verde lima muy suave (naturaleza) */
+            background-image: 
+                radial-gradient(#d9f99d 3px, transparent 3px),
+                radial-gradient(#d9f99d 3px, transparent 3px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            overflow-y: auto;
+            margin: 0;
+            padding: 0;
+            touch-action: pan-y;
+        }
+
+        /* --- Animaciones de Explorador --- */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(2deg); }
+        }
+        .floating { animation: float 3.5s ease-in-out infinite; }
+
+        @keyframes pulsePin {
+            0%, 100% { transform: scale(1) translateY(0); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
+            50% { transform: scale(1.15) translateY(-5px); filter: drop-shadow(0 10px 15px rgba(220, 38, 38, 0.5)); }
+        }
+        .pin-activo { animation: pulsePin 1.5s infinite ease-in-out; z-index: 40;}
+        .pin-inactivo { transform: scale(0.9); filter: grayscale(40%); opacity: 0.8; transition: all 0.3s;}
+        .pin-inactivo:hover { transform: scale(1.05); filter: grayscale(0%); opacity: 1; cursor: pointer; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+        .shake { animation: shake 0.4s ease-in-out; }
+
+        @keyframes popIn {
+            0% { transform: scale(0.6); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop-in { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        /* Partículas de celebración */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            animation: flyUp 1.5s ease-out forwards;
+            z-index: 100;
+        }
+        @keyframes flyUp {
+            0% { transform: translateY(0) scale(0.5); opacity: 1; }
+            100% { transform: translateY(-120px) scale(1.5); opacity: 0; }
+        }
+
+        /* Ocultar barra scroll */
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Fondo del Diario de Explorador */
+        .diario-bg {
+            background-color: #fefce8; /* Tono pergamino claro */
+            background-image: repeating-linear-gradient(transparent, transparent 31px, #fef08a 31px, #fef08a 32px);
+            background-attachment: local;
+        }
+
+        /* SVG Map interactivo 3D */
+        .region-mapa {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .region-mapa:hover {
+            filter: brightness(1.15) drop-shadow(0 0 10px rgba(255,255,255,0.5));
+            transform: translateY(-2px);
+        }
+
+        /* Emojis fijos en el mapa (Decoración) */
+        .map-decor {
+            position: absolute;
+            font-size: 1.5rem;
+            pointer-events: none;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.4));
+            z-index: 10;
+        }
+        @media (min-width: 768px) {
+            .map-decor { font-size: 2.5rem; filter: drop-shadow(0 6px 6px rgba(0,0,0,0.4)); }
+        }
+    </style>
+</head>
+<body class="flex flex-col relative text-slate-800 select-none min-h-screen">
+
+    <!-- ================= PANTALLA DE INICIO ================= -->
+    <div id="pantalla-inicio" class="absolute inset-0 z-50 flex flex-col items-center justify-start lg:justify-center p-4 text-center bg-lime-50/95 backdrop-blur-md transition-opacity duration-500 overflow-y-auto">
+        
+        <div class="bg-lime-200 text-lime-800 rounded-full px-5 py-2 mb-4 font-bold tracking-widest border-2 border-lime-300 text-xs md:text-sm uppercase shrink-0 mt-8 lg:mt-0 shadow-sm">
+            🌍 CIENCIAS SOCIALES • II UP (3º/4º GRADO)
+        </div>
+        
+        <!-- Emojis protegidos fuera del gradiente -->
+        <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight flex flex-col items-center justify-center shrink-0">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-lime-600 to-emerald-600 py-1">Exploradores de</span>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-lime-600 to-emerald-600 py-1 flex items-center justify-center gap-3">Nicaragua <span class="pop-in inline-block floating drop-shadow-md">🗺️</span></span>
+        </h1>
+        
+        <div class="w-full max-w-2xl bg-white p-6 sm:p-8 rounded-[2.5rem] border-4 border-lime-300 mb-8 transform hover:scale-[1.01] transition-all relative overflow-hidden shadow-xl">
+            <h2 class="text-xl md:text-2xl font-black text-lime-700 mb-3 flex items-center justify-center gap-2">
+                <span>🦉🎒</span> ¡Hola, Joven Geógrafo!
+            </h2>
+            <p class="text-sm sm:text-base md:text-lg text-slate-600 leading-relaxed font-bold">
+                Soy el Búho Explorador y he perdido las notas de mi diario de viajes.<br><br>
+                Necesito tu ayuda para ubicar en el mapa las diferentes regiones de nuestro hermoso país. Lee las pistas en mi diario y haz **clic en la región correcta o en su PIN rojo 📍**.<br><br>
+                <span class="text-emerald-600 font-black">¡Descubramos volcanes, montañas y llanuras! 🧭</span>
+            </p>
+        </div>
+
+        <button onclick="iniciarJuego()" class="relative inline-flex items-center justify-center px-10 py-5 text-xl font-black text-white bg-lime-600 hover:bg-lime-500 rounded-full shadow-[0_6px_0_#4d7c0f] active:translate-y-1 active:shadow-[0_2px_0_#4d7c0f] transition-all shrink-0 mb-8">
+            ¡Abrir el Mapa! 🚀
+        </button>
+    </div>
+
+    <!-- ================= PANTALLA PRINCIPAL DEL JUEGO ================= -->
+    <div id="pantalla-juego" class="hidden flex flex-col min-h-screen w-full pb-32 lg:pb-0">
+        
+        <!-- Cabecera de Misiones -->
+        <div class="w-full flex justify-between items-center bg-white p-3 shadow-sm border-b-4 border-lime-300 z-30 shrink-0 sticky top-0">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl md:text-3xl bg-lime-100 p-2 rounded-2xl border border-lime-200 shadow-inner">🧭</span>
+                <div>
+                    <h2 class="text-sm sm:text-lg font-black text-slate-800 leading-tight">Mapa de Relieve</h2>
+                    <p class="hidden sm:block text-[10px] font-bold text-lime-600 uppercase tracking-widest">Geografía de Nicaragua</p>
+                </div>
+            </div>
+            
+            <div class="flex flex-col items-end">
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Misiones</span>
+                <span id="contador-progreso" class="bg-lime-100 px-4 py-1 rounded-full text-lime-800 font-black border-2 border-lime-300 text-sm md:text-lg shadow-sm">0 / 3 📍</span>
+            </div>
+        </div>
+
+        <!-- Layout Adaptativo -->
+        <div class="flex-1 w-full p-2 sm:p-4 md:p-5 overflow-visible flex flex-col lg:flex-row items-stretch gap-4 md:gap-6 relative z-10">
+            
+            <!-- PANEL IZQUIERDO: Diario de Exploración -->
+            <div class="w-full lg:w-2/5 flex flex-col relative shrink-0">
+                <div id="diario-explorador" class="flex-1 bg-[#fefce8] rounded-[2rem] border-4 border-amber-200 p-5 md:p-8 flex flex-col shadow-xl relative diario-bg">
+                    
+                    <!-- Clip de la libreta -->
+                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-slate-300 rounded-full border-2 border-slate-400 shadow-md z-20"></div>
+
+                    <div class="z-10 pt-4 flex flex-col h-full">
+                        <span class="text-xs font-black text-amber-600 uppercase tracking-widest block mb-2 text-center">Diario de Viaje 📖</span>
+                        
+                        <h3 id="texto-mision" class="text-lg md:text-2xl font-black text-slate-800 leading-snug mt-2">
+                            Cargando pista geográfica...
+                        </h3>
+
+                        <div class="mt-auto flex justify-center pt-6">
+                            <div class="bg-amber-100 border-2 border-amber-200 rounded-xl p-3 text-center w-full max-w-[250px] shadow-sm transform rotate-2">
+                                <span class="text-3xl block mb-1">🦉🔍</span>
+                                <span class="text-xs font-bold text-amber-800">¡Lee bien la pista y toca la región en el mapa!</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL DERECHO: El Mapa de Nicaragua Interactivo -->
+            <div class="w-full lg:w-3/5 bg-sky-50 rounded-[2.5rem] border-4 border-sky-200 p-2 md:p-4 flex flex-col justify-center items-center relative overflow-hidden min-h-[400px] shadow-sm">
+                
+                <!-- Mar de fondo decorativo -->
+                <div class="absolute inset-0 opacity-40">
+                    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                        <pattern id="waves" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                            <path d="M 0 20 Q 10 10 20 20 T 40 20" fill="none" stroke="#7dd3fc" stroke-width="2"/>
+                        </pattern>
+                        <rect width="100%" height="100%" fill="url(#waves)"/>
+                    </svg>
+                </div>
+                
+                <div class="absolute top-10 right-4 md:right-10 text-sky-600/60 font-black text-lg md:text-3xl rotate-12 select-none pointer-events-none">Mar Caribe</div>
+                <div class="absolute bottom-10 left-2 md:left-4 text-sky-600/60 font-black text-lg md:text-3xl -rotate-12 select-none pointer-events-none">Océano Pacífico</div>
+
+                <!-- CONTENEDOR DEL MAPA Y PINES -->
+                <div class="relative w-full max-w-[400px] md:max-w-[550px] aspect-[4/3] flex justify-center items-center z-20 mt-4 md:mt-0">
+                    
+                    <!-- MAPA SVG (Nicaragua Realista 3D) -->
+                    <svg viewBox="-20 -20 440 400" class="w-full h-full drop-shadow-2xl overflow-visible">
+                        <!-- Extrusión 3D (Base oscura) -->
+                        <g transform="translate(0, 15)">
+                            <!-- Pacific Base -->
+                            <path d="M 30,120 Q 40,160 70,220 T 130,330 Q 155,315 180,300 Q 160,250 140,210 Q 110,160 80,140 Q 50,130 30,120 Z" fill="#b91c1c"/>
+                            <!-- Centro Base -->
+                            <path d="M 30,120 Q 50,130 80,140 Q 110,160 140,210 Q 160,250 180,300 Q 210,310 240,320 Q 260,250 250,180 Q 230,110 160,90 Q 100,90 30,120 Z" fill="#a16207"/>
+                            <!-- Caribe Base -->
+                            <path d="M 160,90 Q 230,110 250,180 Q 260,250 240,320 Q 285,310 330,300 Q 370,200 340,80 Q 300,60 160,90 Z" fill="#15803d"/>
+                        </g>
+
+                        <!-- Capa de Superficie Interactiva -->
+                        <g id="capa-superficie">
+                            <!-- Región Pacífico (Rojo) -->
+                            <path id="svg-pacifico" class="region-mapa" onclick="evaluarRegion('pacifico', document.getElementById('pin-pacifico'))" d="M 30,120 Q 40,160 70,220 T 130,330 Q 155,315 180,300 Q 160,250 140,210 Q 110,160 80,140 Q 50,130 30,120 Z" fill="#ef4444" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"/>
+                            
+                            <!-- Región Central (Amarillo) -->
+                            <path id="svg-centro" class="region-mapa" onclick="evaluarRegion('centro', document.getElementById('pin-centro'))" d="M 30,120 Q 50,130 80,140 Q 110,160 140,210 Q 160,250 180,300 Q 210,310 240,320 Q 260,250 250,180 Q 230,110 160,90 Q 100,90 30,120 Z" fill="#eab308" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"/>
+                            
+                            <!-- Región Caribe (Verde Selva) -->
+                            <path id="svg-caribe" class="region-mapa" onclick="evaluarRegion('caribe', document.getElementById('pin-caribe'))" d="M 160,90 Q 230,110 250,180 Q 260,250 240,320 Q 285,310 330,300 Q 370,200 340,80 Q 300,60 160,90 Z" fill="#22c55e" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"/>
+                            
+                            <!-- Decoración de los Lagos (Xolotlán y Cocibolca) -->
+                            <ellipse cx="110" cy="180" rx="15" ry="10" fill="#38bdf8" stroke="#0284c7" stroke-width="2" transform="rotate(20 110 180)" pointer-events="none"/>
+                            <ellipse cx="155" cy="260" rx="30" ry="15" fill="#38bdf8" stroke="#0284c7" stroke-width="2" transform="rotate(35 155 260)" pointer-events="none"/>
+
+                            <!-- Etiquetas de Texto en el Mapa -->
+                            <text x="50" y="230" fill="white" font-weight="900" font-size="14" transform="rotate(-50 50 230)" pointer-events="none" filter="drop-shadow(0 2px 2px rgba(0,0,0,0.3))">PACÍFICO</text>
+                            <text x="140" y="170" fill="white" font-weight="900" font-size="18" transform="rotate(-30 140 170)" pointer-events="none" filter="drop-shadow(0 2px 2px rgba(0,0,0,0.3))">CENTRO</text>
+                            <text x="250" y="180" fill="white" font-weight="900" font-size="24" pointer-events="none" filter="drop-shadow(0 2px 2px rgba(0,0,0,0.3))">CARIBE</text>
+                        </g>
+                    </svg>
+
+                    <!-- Emojis Decorativos en el Mapa -->
+                    <!-- Pacífico (Volcanes) -->
+                    <div class="map-decor" style="left: 14%; top: 44%;">🌋</div>
+                    <div class="map-decor" style="left: 20%; top: 68%;">🌋</div>
+                    <!-- Centro (Montañas) -->
+                    <div class="map-decor" style="left: 36%; top: 35%;">⛰️</div>
+                    <div class="map-decor" style="left: 48%; top: 55%;">⛰️</div>
+                    <div class="map-decor" style="left: 36%; top: 68%;">⛰️</div>
+                    <!-- Caribe (Selva y Llanuras) -->
+                    <div class="map-decor" style="left: 68%; top: 32%;">🌴</div>
+                    <div class="map-decor" style="left: 78%; top: 60%;">🦜</div>
+                    <div class="map-decor" style="left: 63%; top: 78%;">🌴</div>
+
+                    <!-- PINES INTERACTIVOS -->
+                    <div id="pin-pacifico" onclick="evaluarRegion('pacifico', this)" class="absolute text-4xl md:text-5xl cursor-pointer pin-inactivo transform -translate-x-1/2 -translate-y-full" style="left: 22%; top: 60%;">📍</div>
+                    
+                    <div id="pin-centro" onclick="evaluarRegion('centro', this)" class="absolute text-4xl md:text-5xl cursor-pointer pin-inactivo transform -translate-x-1/2 -translate-y-full" style="left: 42%; top: 40%;">📍</div>
+                    
+                    <div id="pin-caribe" onclick="evaluarRegion('caribe', this)" class="absolute text-4xl md:text-5xl cursor-pointer pin-inactivo transform -translate-x-1/2 -translate-y-full" style="left: 72%; top: 48%;">📍</div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PANEL DE RETROALIMENTACIÓN (BÚHO-PROFESOR) ================= -->
+    <div id="burbuja-pedagogica" class="fixed bottom-0 left-0 w-full bg-white border-t-[10px] border-lime-400 shadow-[0_-15px_40px_rgba(0,0,0,0.2)] z-[100] transform translate-y-full transition-transform duration-500 flex flex-col md:flex-row items-center justify-between p-5 md:px-8 md:py-6 rounded-t-3xl">
+        <div class="flex items-center gap-4 w-full md:w-3/4 mb-4 md:mb-0">
+            <!-- Búho -->
+            <div class="relative w-16 h-16 md:w-20 md:h-20 bg-lime-50 rounded-full border-4 border-lime-200 flex items-center justify-center shrink-0 shadow-inner">
+                <span id="burbuja-icono" class="text-4xl md:text-5xl select-none font-bold">🦉</span>
+            </div>
+            <div>
+                <h3 id="burbuja-titulo" class="text-xl md:text-3xl font-black text-lime-700 mb-1 select-none leading-none">Búho Explorador</h3>
+                <p id="burbuja-mensaje" class="text-sm md:text-lg font-bold text-slate-600 leading-snug select-none">Explicación...</p>
+            </div>
+        </div>
+        <div id="burbuja-boton-container" class="w-full md:w-auto shrink-0 flex justify-end">
+            <!-- Botón interactivo (Continuar / Entendido) se inyecta aquí -->
+        </div>
+    </div>
+
+    <!-- ================= PANTALLA FINAL ================= -->
+    <div id="pantalla-final" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-white/95 backdrop-blur-md transition-opacity duration-500 overflow-y-auto">
+        <div class="flex gap-4 justify-center text-7xl md:text-9xl mb-8 floating select-none drop-shadow-md">
+            <span>🗺️</span>
+            <span>🏆</span>
+            <span>📍</span>
+        </div>
+
+        <h1 class="text-4xl sm:text-6xl md:text-7xl font-black mb-6 leading-tight text-slate-800 drop-shadow-sm">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-lime-600 to-emerald-600">¡GEÓGRAFO/A</span><br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-lime-600 to-emerald-600">ESTRELLA!</span>
+        </h1>
+        <p class="text-lg sm:text-xl md:text-3xl text-slate-600 max-w-3xl mb-10 font-bold leading-relaxed bg-lime-50 p-6 rounded-3xl border border-lime-200">
+            ¡Has completado el mapa de nuestro hermoso país!<br>
+            Ahora sabes perfectamente dónde se ubican nuestros calientes volcanes del <b>Pacífico</b> 🌋, nuestras frescas montañas del <b>Centro</b> ⛰️ y nuestras verdes selvas del <b>Caribe</b> 🌴.
+        </p>
+        
+        <button onclick="reiniciarJuego()" class="group relative inline-flex items-center justify-center px-10 py-5 text-xl font-black text-white bg-lime-600 hover:bg-lime-500 rounded-full overflow-hidden shadow-[0_8px_0_#4d7c0f] active:shadow-[0_0px_0_#4d7c0f] active:translate-y-2 transition-all shrink-0">
+            <span class="relative flex items-center gap-2">Explorar de nuevo <span class="text-2xl transition-transform duration-500 group-hover:rotate-180">🔄</span></span>
+        </button>
+    </div>
+
+    <!-- ================= LÓGICA DEL JUEGO ================= -->
+    <script>
+        // --- BASE DE DATOS DE MISIONES GEOGRÁFICAS ---
+        const misiones = [
+            {
+                id: "pacifico",
+                pista: "¡Hola explorador! Busco la región de color **ROJO** donde hace calor y hay muchos **Volcanes** y enormes lagos para navegar. ¿Dónde está?",
+                regionCorrecta: "pacifico",
+                feedbackCorrecto: "¡Excelente! La Región del Pacífico (Roja) tiene hermosos volcanes y los dos grandes lagos (Xolotlán y Cocibolca). Sus tierras son súper fértiles. 🌋🌊",
+                feedbackError: "¡Uy! Esa es una zona hermosa, pero no es donde están la mayoría de los volcanes ni los lagos grandes. ¡Busca la franja de color ROJO al lado del océano Pacífico!"
+            },
+            {
+                id: "centro",
+                pista: "¡Brrr, hace fresquito! 🧣 Ahora busco la región de color **AMARILLO**, llena de altas **Montañas**, neblina y hermosos bosques. ¿Me ayudas?",
+                regionCorrecta: "centro",
+                feedbackCorrecto: "¡Súper bien! La Región Central (Amarilla) está llena de cordilleras y su clima es mucho más fresco. ¡Ideal para cultivar un rico café! ⛰️☕",
+                feedbackError: "¡Oh no! Esa zona es muy plana o caliente. Para encontrar montañas altas y un clima más frío debes buscar en la región del medio (AMARILLA)."
+            },
+            {
+                id: "caribe",
+                pista: "¡Qué calor y cuánta selva! 🌴 Quiero visitar la región inmensa de color **VERDE**, que tiene enormes **Llanuras** y ríos que desembocan en el mar. ¿Dónde está?",
+                regionCorrecta: "caribe",
+                feedbackCorrecto: "¡Maravilloso! La Región del Caribe (Verde) es la más grande de Nicaragua. Está llena de extensas llanuras verdes, selvas y ríos larguísimos y caudalosos. 🏞️🦜",
+                feedbackError: "¡Casi! Pero en esa región hay muchos volcanes o montañas. Busca la parte más grande de color VERDE que toca el Mar Caribe."
+            }
+        ];
+
+        // Estado del Juego
+        let misionActualIdx = 0;
+        let bloqueandoAccion = false;
+        let callbackContinuar = null;
+        let regionesResueltas = [];
+
+        // Elementos DOM
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const pantallaJuego = document.getElementById('pantalla-juego');
+        const pantallaFinal = document.getElementById('pantalla-final');
+        const contadorProgreso = document.getElementById('contador-progreso');
+        const textoMision = document.getElementById('texto-mision');
+        const burbujaPedagogica = document.getElementById('burbuja-pedagogica');
+        
+        // --- INICIALIZACIÓN ---
+
+        function iniciarJuego() {
+            pantallaInicio.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaInicio.classList.add('hidden');
+                pantallaJuego.classList.remove('hidden');
+                
+                misionActualIdx = 0;
+                bloqueandoAccion = false;
+                callbackContinuar = null;
+                regionesResueltas = [];
+
+                actualizarProgreso();
+                cargarMision();
+            }, 500);
+        }
+
+        function reiniciarJuego() {
+            pantallaFinal.classList.add('opacity-0');
+            setTimeout(() => window.location.reload(), 300);
+        }
+
+        function actualizarProgreso() {
+            contadorProgreso.innerText = `${misionActualIdx} / ${misiones.length} 📍`;
+        }
+
+        // --- CARGAR MISION ---
+
+        function cargarMision() {
+            if (misionActualIdx >= misiones.length) {
+                finalizarJuego();
+                return;
+            }
+
+            bloqueandoAccion = false;
+            ocultarBurbujaPedagogica();
+            actualizarProgreso();
+
+            const mision = misiones[misionActualIdx];
+            // Convertimos **texto** a negritas
+            let textoConEstilos = mision.pista.replace(/\*\*(.*?)\*\*/g, '<b class="text-amber-600">$1</b>');
+            textoMision.innerHTML = textoConEstilos;
+
+            activarTodosLosPines();
+        }
+
+        function activarTodosLosPines() {
+            ['pacifico', 'centro', 'caribe'].forEach(region => {
+                if (!regionesResueltas.includes(region)) {
+                    const pin = document.getElementById(`pin-${region}`);
+                    if(pin) {
+                        pin.className = "absolute text-4xl md:text-5xl cursor-pointer transform -translate-x-1/2 -translate-y-full pin-activo";
+                        pin.style.pointerEvents = "auto";
+                    }
+                }
+            });
+        }
+
+        function desactivarTodosLosPines() {
+            ['pacifico', 'centro', 'caribe'].forEach(region => {
+                if (!regionesResueltas.includes(region)) {
+                    const pin = document.getElementById(`pin-${region}`);
+                    if(pin) {
+                        pin.className = "absolute text-4xl md:text-5xl cursor-default transform -translate-x-1/2 -translate-y-full pin-inactivo opacity-50";
+                        pin.style.pointerEvents = "none";
+                    }
+                }
+            });
+        }
+
+        // --- EVALUAR RESPUESTA ---
+
+        function evaluarRegion(regionSeleccionada, pinDOM) {
+            if (bloqueandoAccion) return;
+            if (regionesResueltas.includes(regionSeleccionada)) return;
+
+            bloqueandoAccion = true;
+            const mision = misiones[misionActualIdx];
+            desactivarTodosLosPines();
+
+            if (regionSeleccionada === mision.regionCorrecta) {
+                // RESPUESTA CORRECTA
+                regionesResueltas.push(regionSeleccionada);
+                
+                pinDOM.className = "absolute text-5xl md:text-6xl cursor-default transform -translate-x-1/2 -translate-y-full z-50 pop-in filter drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]";
+                pinDOM.innerText = "🌟";
+
+                const rectPin = pinDOM.getBoundingClientRect();
+                crearConfeti(rectPin);
+
+                lanzarBurbujaPedagogica(
+                    true,
+                    "🗺️",
+                    "¡Ubicación Correcta!",
+                    mision.feedbackCorrecto,
+                    "border-green-400 text-green-600",
+                    () => {
+                        misionActualIdx++;
+                        cargarMision();
+                    }
+                );
+            } else {
+                // RESPUESTA INCORRECTA
+                pinDOM.className = "absolute text-4xl md:text-5xl cursor-default transform -translate-x-1/2 -translate-y-full z-50 shake opacity-100";
+                
+                // Muestra la burbuja con el botón "¡Entendido!" para desbloquear al instante
+                lanzarBurbujaPedagogica(
+                    false,
+                    "🧭",
+                    "¡Revisa tu brújula!",
+                    mision.feedbackError,
+                    "border-orange-400 text-orange-600",
+                    null, // No avanza de nivel
+                    pinDOM // Pasamos el DOM para restaurarlo
+                );
+            }
+        }
+
+        // --- BURBUJA DE RETROALIMENTACIÓN ---
+
+        function lanzarBurbujaPedagogica(esExito, icono, titulo, mensaje, clasesColor, callback = null, pinDOMFallido = null) {
+            const colorBorde = clasesColor.split(' ')[0];
+            const colorTexto = clasesColor.split(' ')[1];
+
+            burbujaPedagogica.className = `fixed bottom-0 left-0 w-full bg-white border-t-[10px] ${colorBorde} shadow-[0_-15px_40px_rgba(0,0,0,0.3)] z-[100] transform translate-y-0 transition-transform duration-500 flex flex-col md:flex-row items-center justify-between p-5 md:px-8 md:py-6 rounded-t-3xl`;
+            
+            document.getElementById('burbuja-icono').innerText = icono;
+            document.getElementById('burbuja-titulo').className = `text-xl md:text-3xl font-black ${colorTexto} mb-1 select-none leading-none`;
+            document.getElementById('burbuja-titulo').innerText = titulo;
+            document.getElementById('burbuja-mensaje').innerHTML = mensaje;
+
+            const btnContainer = document.getElementById('burbuja-boton-container');
+
+            if (esExito) {
+                // Acierto -> Muestra botón para Siguiente Misión
+                callbackContinuar = callback;
+                burbujaPedagogica.style.pointerEvents = 'auto';
+                btnContainer.innerHTML = `
+                    <button onclick="ejecutarContinuar()" class="px-8 py-4 bg-lime-500 hover:bg-lime-400 text-white font-black text-lg md:text-2xl rounded-full shadow-[0_6px_0_#4d7c0f] active:translate-y-1 active:shadow-none transition-all animate-bounce select-none w-full md:w-auto mt-4 md:mt-0">
+                        Siguiente Misión ➡️
+                    </button>
+                `;
+            } else {
+                // Fallo -> Muestra botón "¡Entendido!" para desbloquear instantáneamente el juego
+                callbackContinuar = () => {
+                    bloqueandoAccion = false;
+                    // Restauramos la clase del pin fallido a activo
+                    if (pinDOMFallido) {
+                        pinDOMFallido.className = "absolute text-4xl md:text-5xl cursor-pointer transform -translate-x-1/2 -translate-y-full pin-activo";
+                    }
+                    activarTodosLosPines();
+                };
+                burbujaPedagogica.style.pointerEvents = 'auto';
+                btnContainer.innerHTML = `
+                    <button onclick="ejecutarContinuar()" class="px-8 py-3 bg-slate-100 hover:bg-slate-200 border-2 border-orange-200 text-orange-600 font-black text-lg md:text-xl rounded-full shadow-sm active:translate-y-1 transition-all select-none w-full md:w-auto mt-4 md:mt-0">
+                        ¡Entendido! 👍
+                    </button>
+                `;
+            }
+        }
+
+        function ocultarBurbujaPedagogica() {
+            burbujaPedagogica.classList.remove('translate-y-0');
+            burbujaPedagogica.classList.add('translate-y-full');
+        }
+
+        function ejecutarContinuar() {
+            ocultarBurbujaPedagogica();
+            if (callbackContinuar) {
+                const cb = callbackContinuar;
+                callbackContinuar = null; 
+                cb();
+            }
+        }
+
+        // --- EFECTOS VISUALES ---
+
+        function crearConfeti(rect) {
+            const emojis = ['🌟', '✨', '🗺️', '📍', '🎉'];
+            const container = document.body;
+
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                const posX = rect.left + (rect.width / 2) + (Math.random() * 100 - 50);
+                const posY = rect.top + (rect.height / 2);
+                
+                p.style.left = `${posX}px`;
+                p.style.top = `${posY}px`;
+                p.style.fontSize = `${Math.random() * 15 + 25}px`; 
+                p.style.animationDelay = `${Math.random() * 0.2}s`;
+                
+                container.appendChild(p);
+                setTimeout(() => p.remove(), 1500);
+            }
+        }
+
+        function finalizarJuego() {
+            pantallaJuego.classList.add('opacity-0');
+            setTimeout(() => {
+                pantallaJuego.classList.add('hidden');
+                pantallaFinal.classList.remove('hidden');
+                setTimeout(() => pantallaFinal.classList.remove('opacity-0'), 50);
+                
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        const fakeRect = { left: window.innerWidth / 2 - 50, width: 100, top: window.innerHeight / 2 - 100, height: 100 };
+                        crearConfeti(fakeRect);
+                    }, i * 250);
+                }
+            }, 500);
+        }
+
+        // --- CARGA INICIAL ---
+        document.addEventListener('DOMContentLoaded', () => {
+            pantallaInicio.classList.remove('hidden');
+            setTimeout(() => {
+                pantallaInicio.classList.remove('opacity-0');
+            }, 50);
+        });
+
+    </script>
+</body>
+</html>
