@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Simulador de la Luna V2 🌙✨</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+    body {
+        font-family: 'Nunito', sans-serif;
+        background: linear-gradient(180deg, #070b19 0%, #1a2542 60%, #2b3c63 100%);
+        min-height: 100vh;
+        color: #ffffff;
+        touch-action: manipulation;
+    }
+
+    /* Estrellas de fondo animadas */
+    .stars {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none;
+        background-image: 
+            radial-gradient(2px 2px at 10% 20%, #fff, rgba(0,0,0,0)),
+            radial-gradient(2px 2px at 30% 60%, #fff, rgba(0,0,0,0)),
+            radial-gradient(3px 3px at 70% 30%, #ffd, rgba(0,0,0,0)),
+            radial-gradient(2px 2px at 90% 80%, #fff, rgba(0,0,0,0));
+        background-repeat: repeat;
+        background-size: 250px 250px;
+        animation: twinkle 5s infinite alternate;
+        z-index: 0;
+    }
+
+    @keyframes twinkle {
+        0% { opacity: 0.3; transform: scale(1); }
+        100% { opacity: 0.8; transform: scale(1.02); }
+    }
+
+    /* Contenedor principal de la Luna */
+    .moon-container {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background-color: #f8fafc; /* Luna blanca/brillante */
+        position: relative;
+        box-shadow: 0 0 50px rgba(248, 250, 252, 0.4);
+        overflow: hidden;
+    }
+
+    /* Cráteres mejorados (solo visibles en la parte iluminada gracias a la sombra que va por encima) */
+    .crater {
+        position: absolute;
+        background: #cbd5e1;
+        border-radius: 50%;
+        opacity: 0.6;
+        box-shadow: inset 3px 3px 6px rgba(0,0,0,0.2);
+        z-index: 10;
+    }
+
+    /* Animación suave para los botones */
+    .btn-phase {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-phase:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    }
+    .btn-phase.active {
+        border-color: #fcd34d;
+        background-color: #334155;
+        transform: scale(1.05);
+    }
+
+    /* Tarjeta de explicación mágica */
+    .magic-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+        backdrop-filter: blur(10px);
+        border: 3px solid rgba(255, 255, 255, 0.2);
+        animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
+    
+    .pulse-badge {
+        animation: pulse-soft 2s infinite;
+    }
+    
+    @keyframes pulse-soft {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+</style>
+</head>
+<body class="flex flex-col relative overflow-x-hidden select-none pb-10">
+    <div class="stars"></div>
+
+    <!-- Encabezado -->
+<header class="w-full text-center py-4 px-2 z-10 flex flex-col items-center mt-2">
+    <div class="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-5 py-1.5 rounded-full text-xs sm:text-sm font-black shadow-lg mb-3 uppercase tracking-wide">
+        C. Naturales • 1º y 2º Grado
+    </div>
+    <h1 class="text-3xl sm:text-5xl font-black text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] flex items-center gap-2">
+        🚀 Viaje a la <span class="text-amber-300">Luna</span> 🌕
+    </h1>
+    <p class="text-base sm:text-lg text-blue-200 max-w-lg mt-2 font-bold px-4">
+        ¡Toca los botones para ver cómo cambia su forma en el cielo!
+    </p>
+</header>
+
+<!-- Contenedor Principal -->
+<main class="flex-1 flex flex-col items-center justify-start p-2 z-10 w-full max-w-5xl mx-auto gap-6 mt-4">
+
+    <div class="flex flex-col lg:flex-row gap-6 items-center justify-center w-full px-4">
+        
+        <!-- Visor de la Luna (Izquierda) -->
+        <div class="flex flex-col items-center justify-center relative p-8">
+            <!-- Nombre de la fase -->
+            <div id="phase-badge" class="pulse-badge bg-indigo-600 text-white font-black text-2xl sm:text-3xl px-8 py-2 rounded-full mb-8 border-4 border-indigo-300 shadow-[0_0_20px_rgba(99,102,241,0.6)] z-10 transition-colors duration-500">
+                Luna Llena 🌕
+            </div>
+
+            <!-- LA LUNA 3D (Ahora con SVG para igualar a los Emojis perfectamente) -->
+            <div class="relative z-0 flex justify-center items-center">
+                <div id="moon-element" class="moon-container">
+                    <!-- Cráteres -->
+                    <div class="crater" style="top: 15%; left: 25%; width: 35px; height: 35px;"></div>
+                    <div class="crater" style="top: 55%; left: 15%; width: 45px; height: 45px;"></div>
+                    <div class="crater" style="top: 45%; left: 65%; width: 25px; height: 25px;"></div>
+                    <div class="crater" style="top: 75%; left: 55%; width: 20px; height: 20px;"></div>
+                    <div class="crater" style="top: 25%; left: 75%; width: 22px; height: 22px;"></div>
+
+                    <!-- Sombra con forma perfecta (SVG) -->
+                    <svg id="moon-shadow-svg" class="absolute top-0 left-0 w-full h-full text-[#070b19] transition-opacity duration-200 z-20" viewBox="0 0 200 200" fill="currentColor">
+                        <path id="shadow-path" d="" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta Mágica de Explicación (Derecha) -->
+        <div class="magic-card rounded-3xl p-6 sm:p-8 w-full max-w-md shadow-2xl relative">
+            <div class="absolute -top-6 -left-6 text-6xl drop-shadow-lg" id="mascot-icon">🤩</div>
+            <h3 class="text-amber-300 font-black text-xl mb-3 uppercase tracking-wider ml-10">¿Qué está pasando?</h3>
+            <p id="phase-desc" class="text-xl sm:text-2xl text-white font-bold leading-snug">
+                ¡La Luna está brillante, redondita y enorme! Hoy el Sol la ilumina completita para nosotros.
+            </p>
+            <div class="mt-4 inline-block bg-white/20 rounded-lg px-4 py-2 font-bold text-blue-100 border border-white/30">
+                Se parece a: <span id="phase-shape" class="text-amber-300 text-xl">Una pelota brillante ⚽</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Botonera de 8 Fases -->
+    <div class="w-full mt-6 px-2">
+        <h2 class="text-center text-blue-300 font-black mb-4 text-lg uppercase tracking-widest">Las 8 caras de la Luna</h2>
+        <div class="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3 w-full">
+            
+            <button onclick="selectPhase('nueva', this)" class="btn-phase bg-slate-800/80 border-2 border-slate-600 rounded-2xl p-2 flex flex-col items-center text-center">
+                <span class="text-3xl mb-1">🌚</span>
+                <span class="text-xs sm:text-sm font-bold text-white leading-tight">Luna<br>Nueva</span>
+            </button>
+
+            <button onclick="selectPhase('creciente', this)" class="btn-phase bg-slate-800/80 border-2 border-slate-600 rounded-2xl p-2 flex flex-col items-center text-center">
+                <span class="text-3xl mb-1">🌒</span>
+                <span class="text-xs sm:text-sm font-bold text-white leading-tight">Luna<br>Creciente</span>
+            </button>
+
+            <button onclick="selectPhase('cuarto_creciente', this)" class="btn-phase bg-slate-800/80 border-2 border-slate-600 rounded-2xl p-2 flex flex-col items-center text-center">
+                <span class="text-3xl mb-1">🌓</span>
+                <span class="text-xs sm:text-sm font-bold text-white leading-tight">Cuarto<br>Creciente</span>
+            </button>
+
+            <button onclick="selectPhase('casi_llena', this)" class="btn-phase bg-slate-800/80 border-2 border-slate-600 rounded-2xl p-2 flex flex-col items-center text-center">
+                <span class="text-3xl mb-1">🌔</span>
+                <span class="text-xs sm:text-sm font-bold text-white leading-tight">Casi<br>Llena</span>
+            </button>
+
+            <button onclick="selectPhase('llena', this)" class="btn-phase bg-slate-800/80 border-2 border-slate-600 rounded-2xl p-2 flex flex-col items-center text-center active" id="btn-llena">
+                <span class="text-3xl mb-1">🌕</span>
+                <span class="text-xs sm:text-sm font-bold text-white leading-tight">Luna<br>Llena</span>
+            </button>
+
+            <button onclick="selectPhase('casi_menguante', this)" class="btn-phase bg-slate-800/80 border-2 border-slate-600 rounded-2xl p-2 flex flex-col items-center text-center">
+                <span class="text-3xl mb-1">🌖</span>
+                <span class="text-xs sm:text-sm font-bold text-white leading-tight">Casi<br>Menguante</span>
+            </button>
+
+            <button onclick="selectPhase('cuarto_menguante', this)" class="btn-phase bg-slate-800/80 border-2 border-slate-600 rounded-2xl p-2 flex flex-col items-center text-center">
+                <span class="text-3xl mb-1">🌗</span>
+                <span class="text-xs sm:text-sm font-bold text-white leading-tight">Cuarto<br>Menguante</span>
+            </button>
+
+            <button onclick="selectPhase('menguante', this)" class="btn-phase bg-slate-800/80 border-2 border-slate-600 rounded-2xl p-2 flex flex-col items-center text-center">
+                <span class="text-3xl mb-1">🌘</span>
+                <span class="text-xs sm:text-sm font-bold text-white leading-tight">Luna<br>Menguante</span>
+            </button>
+
+        </div>
+    </div>
+
+</main>
+
+<script>
+    // Sistema actualizado con SVG Paths para replicar la forma geométrica de los Emojis
+    const phases = {
+        'nueva': {
+            name: 'Luna Nueva 🌚',
+            desc: '¡La Luna se ha escondido! Hoy el Sol ilumina su espalda, por eso nosotros la vemos toda oscura.',
+            shape: 'El cielo sin Luna 🌌',
+            svgPath: 'M100,0 A100,100 0 0,0 100,200 A100,100 0 0,0 100,0', // Sombra total
+            badgeColor: 'bg-slate-700',
+            icon: '👀'
+        },
+        'creciente': {
+            name: 'Luna Creciente 🌒',
+            desc: '¡Mira, acaba de asomarse! Es apenas un hilito de luz que comienza a crecer en el cielo.',
+            shape: 'Una sonrisa o una uñita 🍌',
+            svgPath: 'M100,0 A100,100 0 0,0 100,200 A50,100 0 0,0 100,0', // Sombra cubre la izquierda y curva hacia la derecha
+            badgeColor: 'bg-indigo-500',
+            icon: '🌱'
+        },
+        'cuarto_creciente': {
+            name: 'Cuarto Creciente 🌓',
+            desc: '¡Ya creció hasta la mitad! La luz va avanzando poco a poco de derecha a izquierda.',
+            shape: 'La letra D (D de Dedo) ☝️',
+            svgPath: 'M100,0 A100,100 0 0,0 100,200 L100,0 Z', // Sombra corta recta por la mitad izquierda
+            badgeColor: 'bg-blue-500',
+            icon: '⚖️'
+        },
+        'casi_llena': {
+            name: 'Casi Llena 🌔',
+            desc: '¡Está gordita! Le falta muy, muy poquito para llenarse de luz por completo.',
+            shape: 'Un huevo de luz 🥚',
+            svgPath: 'M100,0 A100,100 0 0,0 100,200 A50,100 0 0,1 100,0', // Sombra es un hilo en la izquierda
+            badgeColor: 'bg-sky-500',
+            icon: '🔋'
+        },
+        'llena': {
+            name: 'Luna Llena 🌕',
+            desc: '¡Está brillante, redondita y enorme! Hoy el Sol la ilumina completita para nosotros.',
+            shape: 'Una pelota brillante ⚽',
+            svgPath: '', // Sin sombra, vemos el fondo blanco
+            badgeColor: 'bg-amber-500',
+            icon: '🤩'
+        },
+        'casi_menguante': {
+            name: 'Casi Menguante 🌖',
+            desc: 'La luz empieza a irse. Se está achicando, pero todavía está gordita del lado izquierdo.',
+            shape: 'Un óvalo al revés 🥔',
+            svgPath: 'M100,0 A100,100 0 0,1 100,200 A50,100 0 0,0 100,0', // Sombra es un hilo en la derecha
+            badgeColor: 'bg-emerald-500',
+            icon: '📉'
+        },
+        'cuarto_menguante': {
+            name: 'Cuarto Menguante 🌗',
+            desc: '¡Se redujo a la mitad otra vez! Pero ahora la luz está del lado izquierdo, preparándose para dormir.',
+            shape: 'La letra C (C de Cuna) 🛏️',
+            svgPath: 'M100,0 A100,100 0 0,1 100,200 L100,0 Z', // Sombra corta recta por la mitad derecha
+            badgeColor: 'bg-teal-600',
+            icon: '🌗'
+        },
+        'menguante': {
+            name: 'Luna Menguante 🌘',
+            desc: '¡Es casi de noche para la Luna! Solo queda una sonrisita de luz antes de desaparecer por unos días.',
+            shape: 'Una sonrisa al revés 🌙',
+            svgPath: 'M100,0 A100,100 0 0,1 100,200 A50,100 0 0,1 100,0', // Sombra cubre la derecha y curva hacia la izquierda
+            badgeColor: 'bg-purple-600',
+            icon: '😴'
+        }
+    };
+
+    function selectPhase(key, btnElement) {
+        const phase = phases[key];
+        const badge = document.getElementById('phase-badge');
+        const desc = document.getElementById('phase-desc');
+        const shape = document.getElementById('phase-shape');
+        const icon = document.getElementById('mascot-icon');
+        
+        const svgShadow = document.getElementById('moon-shadow-svg');
+        const shadowPath = document.getElementById('shadow-path');
+
+        // Animación suave de transición de sombra (Fade Out / Cambiar / Fade In)
+        svgShadow.style.opacity = '0';
+        
+        setTimeout(() => {
+            shadowPath.setAttribute('d', phase.svgPath);
+            // Volver a mostrar la sombra (excepto si es luna llena)
+            if(phase.svgPath !== '') {
+                svgShadow.style.opacity = '1';
+            }
+        }, 200); // 200ms coincide con la transición CSS
+
+        // Actualizar tarjeta de información
+        badge.innerText = phase.name;
+        desc.innerText = phase.desc;
+        shape.innerText = phase.shape;
+        icon.innerText = phase.icon;
+
+        // Cambiar color de la etiqueta
+        badge.className = `${phase.badgeColor} pulse-badge text-white font-black text-2xl sm:text-3xl px-8 py-2 rounded-full mb-8 border-4 border-white/40 shadow-xl z-10 transition-colors duration-500`;
+
+        // Actualizar botones (estado activo)
+        document.querySelectorAll('.btn-phase').forEach(btn => {
+            btn.classList.remove('active');
+            btn.classList.add('border-slate-600', 'bg-slate-800/80');
+            btn.classList.remove('border-amber-400', 'bg-slate-700');
+        });
+        
+        if(btnElement) {
+            btnElement.classList.add('active', 'border-amber-400', 'bg-slate-700');
+            btnElement.classList.remove('border-slate-600', 'bg-slate-800/80');
+        }
+    }
+
+    // Inicialización al cargar la página
+    window.onload = () => {
+        selectPhase('llena', document.getElementById('btn-llena'));
+    };
+</script>
+</body>
+</html>

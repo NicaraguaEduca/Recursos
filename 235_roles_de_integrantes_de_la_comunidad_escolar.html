@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Familia Escolar - El Árbol de la Comunidad</title>
+    <style>
+        :root {
+            --color-fondo: #E0F2F1;
+            --color-principal: #00897B;
+            --color-secundario: #FFB300;
+            --color-exito: #4CAF50;
+            --color-texto: #263238;
+            --fuente-infantil: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            font-family: var(--fuente-infantil);
+            background-color: var(--color-fondo);
+            color: var(--color-texto);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 25px;
+            box-shadow: 0 6px 0px rgba(0, 0, 0, 0.05);
+            border: 4px solid var(--color-principal);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            color: var(--color-principal);
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        p.instruccion {
+            font-size: 1.1rem;
+            color: #555;
+            font-weight: bold;
+        }
+
+        .juego-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        /* ÁREA DEL ÁRBOL */
+        .zona-arbol {
+            flex: 1.2;
+            background: #E8F5E9;
+            border: 4px dashed #81C784;
+            border-radius: 35px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 480px;
+        }
+
+        .copa-arbol {
+            width: 100%;
+            background: #4CAF50;
+            border-radius: 40px;
+            box-shadow: inset 0 -15px 0 rgba(0,0,0,0.1);
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 25px;
+            z-index: 2;
+        }
+
+        .tronco-arbol {
+            width: 70px;
+            height: 100px;
+            background: #795548;
+            margin-top: -5px;
+            border-radius: 0 0 15px 15px;
+            box-shadow: inset -10px 0 0 rgba(0,0,0,0.1);
+            z-index: 1;
+        }
+
+        /* CASILLEROS DEL ÁRBOL */
+        .espacio-vacio {
+            background: rgba(255, 255, 255, 0.5);
+            border: 3px dashed #FFF;
+            border-radius: 20px;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            text-align: center;
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #1B5E20;
+            transition: all 0.2s ease;
+        }
+
+        .espacio-vacio.drag-over {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: var(--color-secundario);
+            transform: scale(1.02);
+        }
+
+        /* PANEL DE TARJETAS */
+        .zona-tarjetas {
+            flex: 0.8;
+            background: white;
+            border: 4px solid var(--color-secundario);
+            border-radius: 30px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 6px 0px rgba(0,0,0,0.05);
+        }
+
+        .tarjeta-rol {
+            background: #FFF;
+            border: 3px solid #CFD8DC;
+            border-radius: 18px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: grab;
+            box-shadow: 0 4px 0px #CFD8DC;
+            touch-action: none;
+        }
+
+        .avatar {
+            font-size: 2.2rem;
+            background: #F5F5F5;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .info-rol {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .nombre-rol {
+            font-size: 1.05rem;
+            font-weight: bold;
+            color: var(--color-principal);
+        }
+
+        .accion-rol {
+            font-size: 0.8rem;
+            color: #78909C;
+        }
+
+        /* Tarjeta cuando ya está correctamente ubicada */
+        .tarjeta-colocada {
+            background: #E8F5E9;
+            border: 3px solid var(--color-exito);
+            border-radius: 15px;
+            padding: 5px;
+            text-align: center;
+            width: 100%;
+        }
+        .tarjeta-colocada .avatar { margin: 0 auto 5px auto; width: 40px; height: 40px; font-size: 1.8rem; }
+        .tarjeta-colocada .accion-rol { display: none; }
+
+        /* MODAL DE FELICITACIÓN */
+        .modal-felicitacion {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            backdrop-filter: blur(4px);
+        }
+
+        .contenido-modal {
+            background: white;
+            border: 6px solid var(--color-exito);
+            border-radius: 35px;
+            padding: 30px;
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+        }
+
+        .btn-reiniciar {
+            background: var(--color-secundario);
+            color: #FFF;
+            border: none;
+            border-radius: 15px;
+            padding: 12px 30px;
+            font-family: var(--fuente-infantil);
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 0px #D84315;
+            margin-top: 15px;
+        }
+
+        .btn-voz {
+            background: #E0F7FA;
+            border: 2px solid #00ACC1;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            .juego-container { flex-direction: column; }
+            .zona-tarjetas { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🌳 El Árbol de mi Escuela 🏫</h1>
+        <p class="instruccion">
+            ¡Ayuda a la comunidad! Une a cada persona con su labor.
+            <button class="btn-voz" onclick="leerTexto('¡Ayuda a la comunidad escolar! Une a cada persona con su labor.')">🔊</button>
+        </p>
+    </header>
+
+    <main class="juego-container">
+        
+        <section class="zona-arbol">
+            <div class="copa-arbol">
+                <div class="espacio-vacio" data-rol="directora" ondragover="permitirSoltar(event)" ondragleave="quitarOver(event)" ondrop="soltar(event)">
+                    <span>Dirige la escuela 📋</span>
+                </div>
+                <div class="espacio-vacio" data-rol="profesor" ondragover="permitirSoltar(event)" ondragleave="quitarOver(event)" ondrop="soltar(event)">
+                    <span>Nos enseña con amor 📚</span>
+                </div>
+                <div class="espacio-vacio" data-rol="consejero" ondragover="permitirSoltar(event)" ondragleave="quitarOver(event)" ondrop="soltar(event)">
+                    <span>Nos escucha si estamos tristes 💕</span>
+                </div>
+                <div class="espacio-vacio" data-rol="estudiante" ondragover="permitirSoltar(event)" ondragleave="quitarOver(event)" ondrop="soltar(event)">
+                    <span>Viene a aprender y jugar 🎒</span>
+                </div>
+            </div>
+            <div class="tronco-arbol"></div>
+        </section>
+
+        <section class="zona-tarjetas" id="panelTarjetas"></section>
+
+    </main>
+
+    <div class="modal-felicitacion" id="modalFin">
+        <div class="contenido-modal">
+            <div style="font-size: 4rem;">🏆⭐</div>
+            <h2>¡Excelente trabajo!</h2>
+            <p style="margin-top:10px;">Completaste el árbol de la familia escolar. ¡Todos son importantes!</p>
+            <button class="btn-reiniciar" onclick="reiniciar()">¡Jugar otra vez! 🔄</button>
+        </div>
+    </div>
+
+    <script>
+        const datos = [
+            { id: "directora", nombre: "Directora", accion: "Dirige la escuela", emoji: "👩‍💼" },
+            { id: "profesor", nombre: "Profesor", accion: "Nos enseña cosas nuevas", emoji: "👨‍🏫" },
+            { id: "consejero", nombre: "Consejero Escolar", accion: "Nos ayuda con un problema o si estamos tristes", emoji: "🧠" },
+            { id: "estudiante", nombre: "Estudiante", accion: "Aprende y juega", emoji: "👦" }
+        ];
+
+        let aciertos = 0;
+        let idSeleccionado = null;
+
+        function leerTexto(t) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                let u = new SpeechSynthesisUtterance(t);
+                u.lang = 'es-ES';
+                u.rate = 0.9;
+                window.speechSynthesis.speak(u);
+            }
+        }
+
+        function cargarJuego() {
+            aciertos = 0;
+            idSeleccionado = null;
+            const panel = document.getElementById("panelTarjetas");
+            panel.innerHTML = "";
+            
+            const mezclados = [...datos].sort(() => Math.random() - 0.5);
+            
+            mezclados.forEach(item => {
+                const tarjeta = document.createElement("div");
+                tarjeta.className = "tarjeta-rol";
+                tarjeta.id = "card_" + item.id;
+                tarjeta.draggable = true;
+                
+                tarjeta.ondragstart = (e) => {
+                    e.dataTransfer.setData("text", item.id);
+                    leerTexto(item.nombre);
+                };
+
+                tarjeta.onclick = () => {
+                    marcarSeleccionada(tarjeta, item.id);
+                };
+
+                tarjeta.innerHTML = `
+                    <div class="avatar">${item.emoji}</div>
+                    <div class="info-rol">
+                        <span class="nombre-rol">${item.nombre}</span>
+                        <span class="accion-rol">${item.accion}</span>
+                    </div>
+                    <button class="btn-voz" onclick="event.stopPropagation(); leerTexto('${item.nombre}: ${item.accion}')">🔊</button>
+                `;
+                panel.appendChild(tarjeta);
+            });
+
+            document.querySelectorAll('.espacio-vacio').forEach(espacio => {
+                const tipo = espacio.getAttribute("data-rol");
+                const textoOriginal = tipo === 'directora' ? 'Dirige la escuela 📋' :
+                                      tipo === 'profesor' ? 'Nos enseña con amor 📚' :
+                                      tipo === 'consejero' ? 'Nos escucha si estamos tristes 💕' : 'Viene a aprender y jugar 🎒';
+                espacio.innerHTML = `<span>${textoOriginal}</span>`;
+                espacio.className = "espacio-vacio";
+                espacio.onclick = () => verificarClickDestino(espacio);
+            });
+        }
+
+        function marcarSeleccionada(tarjeta, id) {
+            document.querySelectorAll('.tarjeta-rol').forEach(t => t.style.borderColor = '#CFD8DC');
+            idSeleccionado = id;
+            tarjeta.style.borderColor = 'var(--color-secundario)';
+            leerTexto(tarjeta.querySelector('.nombre-rol').innerText);
+        }
+
+        function verificarClickDestino(espacio) {
+            if (!idSeleccionado) return;
+            const rolEsperado = espacio.getAttribute("data-rol");
+            if (idSeleccionado === rolEsperado) {
+                resolverExito(idSeleccionado, espacio);
+            } else {
+                leerTexto("Inténtalo otra vez");
+            }
+        }
+
+        function permitirSoltar(e) { e.preventDefault(); e.currentTarget.classList.add("drag-over"); }
+        function quitarOver(e) { e.currentTarget.classList.remove("drag-over"); }
+        
+        function soltar(e) {
+            e.preventDefault();
+            const espacio = e.currentTarget;
+            espacio.classList.remove("drag-over");
+            const idId = e.dataTransfer.getData("text");
+            if (idId === espacio.getAttribute("data-rol")) {
+                resolverExito(idId, espacio);
+            } else {
+                leerTexto("Inténtalo de nuevo");
+            }
+        }
+
+        function resolverExito(id, espacio) {
+            const item = datos.find(d => d.id === id);
+            espacio.innerHTML = `
+                <div class="tarjeta-colocada">
+                    <div class="avatar">${item.emoji}</div>
+                    <div class="nombre-rol" style="font-size:0.85rem; line-height: 1.1;">${item.nombre}</div>
+                </div>
+            `;
+            espacio.style.background = "#C8E6C9";
+            espacio.style.borderStyle = "solid";
+            espacio.style.borderColor = "var(--color-exito)";
+            
+            const originalCard = document.getElementById("card_" + id);
+            if (originalCard) originalCard.style.display = "none";
+            
+            idSeleccionado = null;
+            aciertos++;
+            leerTexto("¡Correcto!");
+
+            if (aciertos === datos.length) {
+                setTimeout(() => {
+                    document.getElementById("modalFin").style.display = "flex";
+                    leerTexto("¡Excelente trabajo! Completaste el árbol de la familia escolar.");
+                }, 500);
+            }
+        }
+
+        function reiniciar() {
+            document.getElementById("modalFin").style.display = "none";
+            cargarJuego();
+        }
+
+        window.onload = cargarJuego;
+    </script>
+</body>
+</html>

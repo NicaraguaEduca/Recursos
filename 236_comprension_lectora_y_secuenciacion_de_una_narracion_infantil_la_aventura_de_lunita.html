@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>La Gran Aventura de Lunita</title>
+    <style>
+        /* === VARIABLES DE COLOR MINED === */
+        :root {
+            --azul: #0059A6;
+            --celeste: #00A8E8;
+            --verde: #A5C83F;
+            --amarillo: #FFEC01;
+            --fucsia: #E32085;
+            --morado: #833189;
+            --blanco: #ffffff;
+            --negro: #333333;
+            --fuente: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            --sombra: 0 8px 15px rgba(0,0,0,0.2);
+            --borde-radio: 25px;
+        }
+
+        /* === ESTILOS BASE === */
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            font-family: var(--fuente); background-color: var(--celeste); color: var(--negro);
+            width: 100vw; height: 100vh; overflow: hidden; display: flex; flex-direction: column;
+        }
+        
+        /* === FONDO ANIMADO Y CICLO DÍA/NOCHE === */
+        .escenario {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background: linear-gradient(to bottom, var(--celeste) 60%, var(--verde) 60%);
+            transition: background 2s ease; overflow: hidden; pointer-events: none;
+        }
+        .escenario.noche { background: linear-gradient(to bottom, #1a2a6c 60%, #11401f 60%); }
+        
+        .sol-luna { position: absolute; top: 20px; left: 20px; font-size: 80px; transition: all 2s; animation: girar 20s linear infinite; }
+        .noche .sol-luna { filter: brightness(0.8) sepia(1) hue-rotate(180deg) saturate(3); }
+        .nube { position: absolute; font-size: 60px; animation: flotarX linear infinite; opacity: 0.9; }
+        .noche .nube { opacity: 0.3; }
+        .pajaro, .mariposa, .abeja { position: absolute; font-size: 30px; animation: flotarAnimal linear infinite; }
+        .arbol { position: absolute; bottom: 40%; font-size: 80px; }
+        .pasto { position: absolute; bottom: -10px; font-size: 60px; width: 100%; display: flex; justify-content: space-around; }
+
+        @keyframes girar { 100% { transform: rotate(360deg); } }
+        @keyframes flotarX { from { transform: translateX(110vw); } to { transform: translateX(-20vw); } }
+        @keyframes flotarAnimal { 
+            0% { transform: translate(110vw, 0) scaleX(-1); } 
+            50% { transform: translate(40vw, -40px) scaleX(-1); }
+            100% { transform: translate(-20vw, 0) scaleX(-1); }
+        }
+        @keyframes flotarCentro {
+            0% { transform: translateY(-10px); }
+            100% { transform: translateY(10px); }
+        }
+
+        /* === HUD (ENCABEZADO) === */
+        header {
+            display: flex; justify-content: space-between; align-items: center; padding: 10px 20px;
+            background: rgba(255,255,255,0.95); border-bottom-left-radius: var(--borde-radio); border-bottom-right-radius: var(--borde-radio);
+            box-shadow: var(--sombra); z-index: 10;
+        }
+        .hud-stats { display: flex; gap: 15px; font-size: 1.5rem; font-weight: bold; flex-wrap: wrap; }
+        .hud-controles button { background: none; border: none; font-size: 2.2rem; cursor: pointer; transition: transform 0.2s; margin-left: 10px;}
+        .hud-controles button:active { transform: scale(0.9); }
+        .barra-progreso-contenedor { width: 100%; height: 15px; background: #ddd; border-radius: 10px; margin-top: 5px; overflow: hidden; position: relative;}
+        .barra-progreso { width: 0%; height: 100%; background: linear-gradient(90deg, var(--verde), var(--amarillo)); transition: width 0.5s ease; }
+
+        /* === INDICADOR PERMANENTE (MACETA) === */
+        #maceta-indicador {
+            position: fixed; bottom: 20px; right: 20px; width: 120px; height: 120px;
+            background: rgba(255,255,255,0.9); border: 5px solid var(--azul); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 4rem;
+            box-shadow: var(--sombra); z-index: 50; transition: all 0.5s;
+        }
+        .anim-crecer { animation: reboteCrecer 0.8s ease; }
+        @keyframes reboteCrecer { 0% {transform: scale(1);} 50% {transform: scale(1.3);} 100% {transform: scale(1);} }
+
+        /* === CONTENEDOR DE PANTALLAS === */
+        #game-container { flex: 1; position: relative; display: flex; justify-content: center; align-items: center; padding: 15px; z-index: 5; }
+        .pantalla {
+            display: none; flex-direction: column; align-items: center; text-align: center;
+            background: rgba(255,255,255,0.95); padding: 30px; border-radius: var(--borde-radio);
+            box-shadow: var(--sombra); width: 100%; max-width: 900px; max-height: 95%; overflow-y: auto;
+            animation: aparecer 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .pantalla.activa { display: flex; }
+        @keyframes aparecer { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        /* === TIPOGRAFÍA Y BOTONES === */
+        h1 { font-size: 3rem; color: var(--verde); margin-bottom: 15px; text-shadow: 2px 2px 0px var(--azul); line-height: 1.1; }
+        h2 { font-size: 2.2rem; color: var(--morado); margin-bottom: 15px; }
+        p { font-size: 1.6rem; margin-bottom: 15px; }
+        
+        .btn {
+            background: var(--azul); color: white; border: none; border-radius: var(--borde-radio);
+            padding: 15px 30px; font-size: 1.8rem; font-weight: bold; font-family: var(--fuente);
+            cursor: pointer; box-shadow: 0 6px 0px #003d73, var(--sombra); transition: all 0.1s; margin: 10px; display: inline-flex; align-items: center; gap: 10px;
+        }
+        .btn:active { transform: translateY(6px); box-shadow: 0 0px 0px #003d73; }
+        .btn-verde { background: var(--verde); box-shadow: 0 6px 0px #7d9a2b; color: white; }
+        .btn-fucsia { background: var(--fucsia); box-shadow: 0 6px 0px #b01865; }
+        .btn-amarillo { background: var(--amarillo); box-shadow: 0 6px 0px #c9bb00; color: var(--negro); }
+        .btn-chico { padding: 10px 20px; font-size: 1.4rem; box-shadow: 0 4px 0px rgba(0,0,0,0.3); }
+
+        /* === COMPONENTES DE JUEGO === */
+        .grid-opciones { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; width: 100%; margin-bottom: 20px; }
+        .tarjeta {
+            background: var(--blanco); border: 5px solid var(--celeste); border-radius: 20px;
+            padding: 20px; font-size: 4rem; cursor: pointer; transition: transform 0.2s;
+            display: flex; flex-direction: column; align-items: center; min-width: 110px;
+        }
+        .tarjeta span { font-size: 1.2rem; margin-top: 10px; font-weight: bold; color: var(--morado); }
+        .tarjeta:active { transform: scale(0.9); }
+        .tarjeta.seleccionada { border-color: var(--fucsia); background: #ffeeff; transform: scale(1.05); }
+        .zona-drop { border: 5px dashed var(--verde); background: #f0f9e8; border-radius: 20px; padding: 30px; min-height: 150px; display: flex; align-items: center; justify-content: center; font-size: 5rem; width: 100%; cursor: pointer; }
+        
+        /* Efectos visuales */
+        .particula { position: fixed; pointer-events: none; z-index: 100; border-radius: 50%; }
+        .gota-lluvia { position: fixed; width: 4px; height: 15px; background: #00A8E8; z-index: 90; pointer-events: none; animation: caerLluvia 0.5s linear forwards; }
+        @keyframes caerLluvia { to { transform: translateY(100vh); opacity: 0; } }
+        
+        #feedback {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 5rem; font-weight: bold; display: none; z-index: 100; text-align: center;
+            text-shadow: 4px 4px 0 #fff, -4px -4px 0 #fff, 4px -4px 0 #fff, -4px 4px 0 #fff;
+        }
+
+        /* Actividades específicas */
+        #caja-caida { position: relative; width: 100%; height: 350px; background: #e0f7fa; border-radius: 20px; overflow: hidden; border: 4px solid var(--celeste); }
+        .item-caida { position: absolute; font-size: 4rem; cursor: pointer; padding: 10px; }
+        .laberinto-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; width: 100%; max-width: 300px; margin: auto; }
+        .celda { width: 100%; aspect-ratio: 1; background: #eee; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; cursor: pointer; border: 2px solid #ccc;}
+        
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- FONDO ANIMADO -->
+    <div class="escenario" id="escenario">
+        <div class="sol-luna" id="sol-luna">🌞</div>
+        <div class="nube" style="top:5%; animation-duration: 25s;">☁️</div>
+        <div class="nube" style="top:25%; animation-duration: 40s; animation-delay: 5s;">☁️</div>
+        <div class="pajaro" style="top:15%; animation-duration: 18s;">🐦</div>
+        <div class="mariposa" style="top:50%; animation-duration: 22s; display:none;" id="anim-mari">🦋</div>
+        <div class="abeja" style="top:40%; animation-duration: 15s; display:none;" id="anim-abeja">🐝</div>
+        <div class="arbol" style="left:5%;">🌳</div>
+        <div class="arbol" style="right:5%;">🌳</div>
+        <div class="pasto"><span>🌼</span><span>🌱</span><span>🌸</span><span>🍃</span><span>🌼</span></div>
+    </div>
+
+    <!-- HUD SUPERIOR -->
+    <header>
+        <div style="width:100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width:100%;">
+                <div class="hud-stats">
+                    <span id="hud-vidas" title="Vidas">❤️❤️❤️</span>
+                    <span style="color: var(--amarillo);" title="Estrellas">⭐ <span id="val-estrellas">0</span></span>
+                    <span style="color: var(--verde);" title="Hojas">🌿 <span id="val-hojas">0</span></span>
+                    <span style="color: var(--celeste);" title="Gotas">💧 <span id="val-gotas">0</span></span>
+                    <span style="color: var(--morado);" title="Tiempo">⏱️ <span id="val-tiempo">00:00</span></span>
+                </div>
+                <div class="hud-controles">
+                    <button onclick="leerInstruccion()" title="Escuchar instrucción">🗣️</button>
+                    <button id="btn-sonido" onclick="toggleSonido()" title="Sonido">🔊</button>
+                    <button onclick="volverMenu()" title="Menú">🏠</button>
+                </div>
+            </div>
+            <div class="barra-progreso-contenedor">
+                <div class="barra-progreso" id="barra-progreso"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- INDICADOR DE MACETA (CRECIMIENTO PERMANENTE) -->
+    <div id="maceta-indicador" title="Progreso de Lunita">🪴</div>
+
+    <!-- ÁREA DE JUEGO -->
+    <div id="game-container">
+        
+        <!-- INICIO -->
+        <div id="pantalla-inicio" class="pantalla activa">
+            <h1 style="font-size: 3.5rem;">🌱 La Gran Aventura de Lunita</h1>
+            <div style="font-size: 7rem; margin: 10px; animation: flotarCentro 2s infinite alternate ease-in-out;">🌰</div>
+            <p style="font-size: 1.8rem; color: var(--azul); font-weight: bold;">Lunita es una semilla mágica que sueña con ser una flor.</p>
+            <p>Ayúdala a crecer superando misiones y conviértete en el <b>Guardián del Jardín</b>.</p>
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+                <button class="btn btn-fucsia" onclick="iniciarJuego(false)">▶ Comenzar Aventura</button>
+            </div>
+            <button class="btn btn-verde btn-chico" id="btn-continuar" style="display:none;" onclick="iniciarJuego(true)">💾 Continuar Partida</button>
+        </div>
+
+        <!-- EXPLICACIÓN / INFO -->
+        <div id="pantalla-info" class="pantalla">
+            <h2>¿Qué es la Germinación?</h2>
+            <p>Es la magia de la naturaleza: cuando una pequeña semilla despierta y se convierte en una hermosa planta.</p>
+            <div class="grid-opciones" style="font-size: 3rem;">
+                <div class="tarjeta" style="min-width:90px;" title="Agua">💧<br><span style="font-size:1rem;">Agua</span></div>
+                <div class="tarjeta" style="min-width:90px;" title="Sol">☀️<br><span style="font-size:1rem;">Sol</span></div>
+                <div class="tarjeta" style="min-width:90px;" title="Tierra">🟤<br><span style="font-size:1rem;">Tierra</span></div>
+                <div class="tarjeta" style="min-width:90px;" title="Aire">💨<br><span style="font-size:1rem;">Aire</span></div>
+            </div>
+            <p style="color:var(--fucsia); font-weight:bold;">¡Lunita necesita todo esto para crecer!</p>
+            <button class="btn btn-azul" id="btn-entendido-info" onclick="completarInfo()">¡Entendido! Empecemos</button>
+        </div>
+
+        <!-- PANTALLA DINÁMICA DE ACTIVIDADES -->
+        <div id="pantalla-actividad" class="pantalla">
+            <h2 id="act-titulo"></h2>
+            <p id="act-instruccion" style="font-weight:bold; color: var(--azul); font-size: 1.8rem;"></p>
+            <div id="act-contenido" style="width: 100%; display: flex; flex-direction: column; align-items: center; margin-bottom: 20px;"></div>
+            <div style="display:flex; gap:10px; margin-top: 10px;">
+                <button class="btn btn-amarillo btn-chico" onclick="cargarNivel(estado.nivelActual)">🔄 Reiniciar Misión</button>
+            </div>
+        </div>
+
+        <!-- FINAL -->
+        <div id="pantalla-final" class="pantalla">
+            <div style="border: 8px solid var(--verde); padding: 30px; border-radius: 20px; background: #f0f9e8; width: 100%;">
+                <h1 style="font-size: 3.5rem;">🌻 ¡Guardián del Jardín! 🌻</h1>
+                <div style="font-size: 6rem; animation: reboteCrecer 2s infinite;">🌻</div>
+                <p>¡Felicitaciones! Has ayudado a Lunita a convertirse en una hermosa planta.</p>
+                <p>Ahora conoces el proceso de germinación. ¡Sigue cuidando la naturaleza!</p>
+                <div style="font-size: 2rem; margin: 20px 0; color: var(--morado); text-align: left; display: inline-block;">
+                    ⭐ Estrellas: <span id="fin-estrellas"></span><br>
+                    🌿 Hojas: <span id="fin-hojas"></span><br>
+                    💧 Gotas: <span id="fin-gotas"></span><br>
+                    ⏱️ Tiempo: <span id="fin-tiempo"></span>
+                </div>
+                <br>
+                <button class="btn btn-fucsia" onclick="location.reload()">Volver a Jugar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FEEDBACK VISUAL -->
+    <div id="feedback"></div>
+
+<script>
+    /* === ESTADO DEL JUEGO === */
+    let estado = { nivelActual: 0, vidas: 3, estrellas: 0, hojas: 0, gotas: 0, tiempo: 0, jugando: false };
+    let timerInterv;
+    let sonidoActivo = true;
+    let fallbackText = ""; 
+
+    // Etapas de crecimiento de Lunita
+    const etapasPlanta = ['🪴','🌰','🌱','🌿','🍃','🌼','🌻'];
+
+    const niveles = [
+        { tipo: 'info' }, // Nivel 0
+        { tipo: 'act1', titulo: 'Misión 1: Lo que necesita', instr: 'Toca el elemento correcto y luego toca la maceta.' },
+        { tipo: 'act2', titulo: 'Misión 2: Riega a Lunita', instr: 'Toca la regadera muchas veces para llenar la barra de agua.' },
+        { tipo: 'act3', titulo: 'Misión 3: Orden de crecimiento', instr: 'Toca las imágenes en el orden correcto en que crece una planta.' },
+        { tipo: 'act4', titulo: 'Misión 4: Memorama natural', instr: 'Encuentra las parejas de las partes de la planta.' },
+        { tipo: 'act5', titulo: 'Misión 5: Rompecabezas', instr: 'Toca las piezas para girarlas y armar la flor.' },
+        { tipo: 'act6', titulo: 'Misión 6: Lluvia de ayuda', instr: 'Atrapa (toca) el agua y el sol. ¡Evita la comida chatarra!' },
+        { tipo: 'act7', titulo: 'Misión 7: Partes de la planta', instr: 'Toca el nombre y luego toca el cuadro con el dibujo correcto.' },
+        { tipo: 'act8', titulo: 'Misión 8: ¿Verdadero o Falso?', instr: 'Responde si la afirmación es correcta.' },
+        { tipo: 'act9', titulo: 'Misión 9: Carrera verde', instr: 'Responde correctamente para que Lunita crezca rápido.' },
+        { tipo: 'act10', titulo: 'Misión 10: Mini Laboratorio', instr: 'Toca los pasos en orden para hacer el experimento del vaso.' },
+        { tipo: 'act11', titulo: 'Misión 11: Laberinto de agua', instr: 'Guía la gota 💧 hasta la raíz 🌱 tocando el camino.' },
+        { tipo: 'act12', titulo: 'Misión 12: Ruleta del Jardín', instr: 'Gira la ruleta y demuestra lo que aprendiste.' }
+    ];
+
+    /* === MOTOR DE AUDIO (Web Audio API) === */
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playTone(freq, type, dur) {
+        if(!sonidoActivo || audioCtx.state !== 'running') return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start();
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + dur);
+        osc.stop(audioCtx.currentTime + dur);
+    }
+
+    let rainNoise;
+    function toggleLluviaSonido(play) {
+        if(!sonidoActivo) return;
+        if(play) {
+            const bufferSize = audioCtx.sampleRate * 2;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = buffer.getChannelData(0);
+            for(let i=0; i<bufferSize; i++) output[i] = Math.random() * 2 - 1;
+            rainNoise = audioCtx.createBufferSource();
+            rainNoise.buffer = buffer; rainNoise.loop = true;
+            const gain = audioCtx.createGain(); gain.gain.value = 0.05;
+            rainNoise.connect(gain); gain.connect(audioCtx.destination);
+            rainNoise.start();
+        } else if(rainNoise) {
+            rainNoise.stop(); rainNoise = null;
+        }
+    }
+
+    const sfx = {
+        click: () => playTone(600, 'sine', 0.1),
+        bien: () => { playTone(500, 'sine', 0.1); setTimeout(()=>playTone(800, 'sine', 0.2), 100); },
+        mal: () => playTone(200, 'sawtooth', 0.3),
+        ganar: () => { [523, 659, 783, 1046].forEach((f, i) => setTimeout(() => playTone(f, 'square', 0.2), i*150)); }
+    };
+
+    /* === SÍNTESIS DE VOZ === */
+    function leerTexto(texto) {
+        if(!sonidoActivo) return;
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(texto);
+        u.lang = 'es-ES'; u.rate = 0.9; u.pitch = 1.1;
+        window.speechSynthesis.speak(u);
+    }
+    function leerInstruccion() { leerTexto(fallbackText); }
+    function toggleSonido() {
+        sonidoActivo = !sonidoActivo;
+        document.getElementById('btn-sonido').innerText = sonidoActivo ? '🔊' : '🔇';
+    }
+
+    /* === SISTEMA BASE === */
+    function actualizarHUD() {
+        document.getElementById('hud-vidas').innerText = '❤️'.repeat(estado.vidas);
+        document.getElementById('val-estrellas').innerText = estado.estrellas;
+        document.getElementById('val-hojas').innerText = estado.hojas;
+        document.getElementById('val-gotas').innerText = estado.gotas;
+        
+        let porc = (estado.nivelActual / niveles.length) * 100;
+        document.getElementById('barra-progreso').style.width = `${porc}%`;
+
+        // Actualizar planta permanente
+        let indiceEtapa = Math.floor((estado.nivelActual / niveles.length) * etapasPlanta.length);
+        if(indiceEtapa >= etapasPlanta.length) indiceEtapa = etapasPlanta.length - 1;
+        let maceta = document.getElementById('maceta-indicador');
+        if(maceta.innerText !== etapasPlanta[indiceEtapa]) {
+            maceta.innerText = etapasPlanta[indiceEtapa];
+            maceta.classList.remove('anim-crecer');
+            void maceta.offsetWidth; // Trigger reflow
+            maceta.classList.add('anim-crecer');
+        }
+
+        // Fauna dinámica
+        if(estado.nivelActual > 5) document.getElementById('anim-mari').style.display = 'block';
+        if(estado.nivelActual > 8) document.getElementById('anim-abeja').style.display = 'block';
+    }
+
+    function iniciarTimer() {
+        if(timerInterv) clearInterval(timerInterv);
+        timerInterv = setInterval(() => {
+            if(estado.jugando) {
+                estado.tiempo++;
+                let m = String(Math.floor(estado.tiempo/60)).padStart(2,'0');
+                let s = String(estado.tiempo%60).padStart(2,'0');
+                document.getElementById('val-tiempo').innerText = `${m}:${s}`;
+                sessionStorage.setItem('lunitaSave', JSON.stringify(estado));
+            }
+        }, 1000);
+    }
+
+    window.onload = () => {
+        if(sessionStorage.getItem('lunitaSave')) document.getElementById('btn-continuar').style.display = 'inline-block';
+    }
+
+    function mostrarPantalla(id) {
+        document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+        document.getElementById(id).classList.add('activa');
+    }
+
+    function completarInfo() {
+        sfx.click();
+        if (estado.nivelActual === 0 && estado.jugando === true) {
+            nivelCompletado();
+        } else {
+            volverMenu();
+        }
+    }
+
+    function iniciarJuego(cargar) {
+        sfx.click(); if(audioCtx.state === 'suspended') audioCtx.resume();
+        if(cargar && sessionStorage.getItem('lunitaSave')) {
+            estado = JSON.parse(sessionStorage.getItem('lunitaSave'));
+        } else {
+            estado = { nivelActual: 0, vidas: 3, estrellas: 0, hojas: 0, gotas: 0, tiempo: 0, jugando: true };
+        }
+        estado.jugando = true; actualizarHUD(); iniciarTimer();
+        cargarNivel(estado.nivelActual);
+    }
+
+    function volverMenu() { estado.jugando = false; clearInterval(timerInterv); mostrarPantalla('pantalla-inicio'); }
+
+    /* === EFECTOS VISUALES === */
+    function crearLluvia() {
+        toggleLluviaSonido(true);
+        let nGotas = 0;
+        let intv = setInterval(() => {
+            let gota = document.createElement('div');
+            gota.className = 'gota-lluvia';
+            gota.style.left = Math.random() * 100 + 'vw';
+            gota.style.top = '-20px';
+            document.body.appendChild(gota);
+            setTimeout(() => gota.remove(), 600);
+            nGotas++;
+            if(nGotas > 50) { clearInterval(intv); toggleLluviaSonido(false); }
+        }, 50);
+    }
+
+    function lanzarConfeti() {
+        sfx.ganar();
+        const colores = ['#A5C83F', '#FFEC01', '#E32085', '#00A8E8'];
+        for(let i=0; i<40; i++) {
+            let p = document.createElement('div');
+            p.className = 'particula';
+            p.style.backgroundColor = colores[Math.floor(Math.random()*colores.length)];
+            p.style.width = '15px'; p.style.height = '15px';
+            p.style.left = '50%'; p.style.top = '50%';
+            document.body.appendChild(p);
+            let ang = Math.random() * Math.PI * 2; let vel = Math.random() * 15 + 5;
+            let dx = Math.cos(ang) * vel * 10; let dy = Math.sin(ang) * vel * 10 - 50;
+            p.animate([
+                { transform: `translate(0,0) rotate(0)`, opacity: 1 },
+                { transform: `translate(${dx}px, ${dy + 200}px) rotate(720deg)`, opacity: 0 }
+            ], { duration: 1500 + Math.random()*1000, easing: 'ease-out' });
+            setTimeout(() => p.remove(), 2500);
+        }
+    }
+
+    function mostrarFeedback(msg, esCorrecto) {
+        const fb = document.getElementById('feedback');
+        fb.innerText = msg;
+        fb.style.color = esCorrecto ? 'var(--verde)' : 'var(--fucsia)';
+        fb.style.display = 'block';
+        fb.style.animation = 'aparecer 0.3s ease forwards';
+        
+        if(esCorrecto) { sfx.bien(); estado.estrellas++; estado.gotas+=5; estado.hojas+=2; }
+        else { 
+            sfx.mal(); estado.vidas--; 
+            if(estado.vidas <= 0) {
+                setTimeout(()=> { alert("¡La naturaleza siempre da otra oportunidad! (+1 Vida)"); estado.vidas = 1; actualizarHUD(); }, 500);
+            }
+        }
+        actualizarHUD();
+        setTimeout(() => { fb.style.display = 'none'; }, 1500);
+    }
+
+    function nivelCompletado() {
+        actualizarHUD(); lanzarConfeti(); estado.nivelActual++; 
+        sessionStorage.setItem('lunitaSave', JSON.stringify(estado));
+        setTimeout(() => {
+            if(estado.nivelActual < niveles.length) cargarNivel(estado.nivelActual);
+            else finalizarJuego();
+        }, 2500);
+    }
+
+    function finalizarJuego() {
+        estado.jugando = false; clearInterval(timerInterv);
+        mostrarPantalla('pantalla-final');
+        let m = String(Math.floor(estado.tiempo/60)).padStart(2,'0'); let s = String(estado.tiempo%60).padStart(2,'0');
+        document.getElementById('fin-estrellas').innerText = estado.estrellas;
+        document.getElementById('fin-hojas').innerText = estado.hojas;
+        document.getElementById('fin-gotas').innerText = estado.gotas;
+        document.getElementById('fin-tiempo').innerText = `${m}:${s}`;
+        leerTexto("¡Felicitaciones! Has ayudado a Lunita. Ahora eres un Guardián del Jardín.");
+        sessionStorage.removeItem('lunitaSave');
+        lanzarConfeti(); setTimeout(lanzarConfeti, 1000); setTimeout(lanzarConfeti, 2000);
+    }
+
+    /* === GESTOR DE NIVELES === */
+    function cargarNivel(idx) {
+        const nivel = niveles[idx];
+        
+        // Ciclo Día/Noche visual (Noche en niveles intermedios para variar)
+        const esc = document.getElementById('escenario');
+        if(idx >= 5 && idx <= 7) esc.classList.add('noche'); else esc.classList.remove('noche');
+
+        if(nivel.tipo === 'info') {
+            mostrarPantalla('pantalla-info');
+            fallbackText = "La germinación es cuando una semilla despierta. Necesita agua, sol, tierra y aire.";
+            setTimeout(() => leerInstruccion(), 500);
+            return;
+        }
+
+        mostrarPantalla('pantalla-actividad');
+        document.getElementById('act-titulo').innerText = nivel.titulo;
+        document.getElementById('act-instruccion').innerText = nivel.instr;
+        fallbackText = nivel.titulo + ". " + nivel.instr;
+        setTimeout(() => leerInstruccion(), 500);
+        
+        const cont = document.getElementById('act-contenido');
+        cont.innerHTML = ''; 
+        
+        // Router de actividades
+        switch(nivel.tipo) {
+            case 'act1': act1_necesidades(cont); break;
+            case 'act2': act2_regar(cont); break;
+            case 'act3': act3_ordenar(cont); break;
+            case 'act4': act4_memoria(cont); break;
+            case 'act5': act5_puzzle(cont); break;
+            case 'act6': act6_atrapar(cont); break;
+            case 'act7': act7_partes(cont); break;
+            case 'act8': act8_tf(cont); break;
+            case 'act9': act9_carrera(cont); break;
+            case 'act10': act10_lab(cont); break;
+            case 'act11': act11_laberinto(cont); break;
+            case 'act12': act12_ruleta(cont); break;
+        }
+    }
+
+    /* === ACTIVIDADES LÓGICA === */
+    
+    // Act 1: Seleccionar lo que necesita y echar a maceta
+    function act1_necesidades(cont) {
+        let items = [
+            { id: 'agua', em: '💧', ok: true }, { id: 'sol', em: '☀️', ok: true },
+            { id: 'tierra', em: '🟤', ok: true }, { id: 'dulce', em: '🍬', ok: false },
+            { id: 'cel', em: '📱', ok: false }
+        ].sort(()=>Math.random()-0.5);
+
+        let html = `<div class="grid-opciones" id="act1-items">`;
+        items.forEach(i => html += `<div class="tarjeta item" data-ok="${i.ok}">${i.em}</div>`);
+        html += `</div><div class="zona-drop" id="act1-maceta">🪴</div>`;
+        cont.innerHTML = html;
+
+        let seleccionado = null;
+        let aciertos = 0;
+
+        cont.querySelectorAll('.item').forEach(el => {
+            el.onclick = () => {
+                sfx.click();
+                cont.querySelectorAll('.item').forEach(x => x.classList.remove('seleccionada'));
+                el.classList.add('seleccionada'); seleccionado = el;
+            };
+        });
+
+        document.getElementById('act1-maceta').onclick = () => {
+            if(!seleccionado) return;
+            if(seleccionado.dataset.ok === 'true') {
+                mostrarFeedback("¡Correcto! ✔️", true);
+                seleccionado.style.visibility = 'hidden'; seleccionado = null; aciertos++;
+                if(aciertos === 3) setTimeout(nivelCompletado, 1000);
+            } else {
+                mostrarFeedback("¡Las plantas no necesitan eso! ❌", false);
+                seleccionado.classList.remove('seleccionada'); seleccionado = null;
+            }
+        };
+    }
+
+    // Act 2: Regar (Mejorado)
+    function act2_regar(cont) {
+        cont.innerHTML = `
+            <div style="font-size: 8rem; cursor: pointer; animation: flotarCentro 3s infinite alternate ease-in-out;" id="regadera" title="¡Toca rápido para regar!">🚿</div>
+            <div style="font-size: 5rem; margin: 20px;" id="planta-sedienta">🥀</div>
+            <div class="barra-progreso-contenedor" style="width: 80%; height: 30px;">
+                <div class="barra-progreso" id="barra-agua" style="width: 0%; background: var(--celeste);"></div>
+            </div>
+        `;
+        let clicks = 0; let maxClicks = 15;
+        let regadera = document.getElementById('regadera');
+        
+        regadera.onclick = () => {
+            sfx.click(); clicks++;
+            
+            // Efecto de inclinación al hacer clic
+            regadera.style.animation = 'none';
+            regadera.style.transform = 'rotate(-30deg) translateY(10px)';
+            setTimeout(() => {
+                regadera.style.transform = 'rotate(0deg) translateY(0px)';
+                regadera.style.animation = 'flotarCentro 3s infinite alternate ease-in-out';
+            }, 150);
+
+            document.getElementById('barra-agua').style.width = (clicks/maxClicks)*100 + '%';
+            if(clicks % 3 === 0) crearLluvia();
+            if(clicks >= maxClicks) {
+                regadera.style.pointerEvents = 'none';
+                document.getElementById('planta-sedienta').innerText = '🌷';
+                mostrarFeedback("¡Planta hidratada! 💧", true);
+                setTimeout(nivelCompletado, 1500);
+            }
+        };
+    }
+
+    // Act 3: Orden de crecimiento
+    function act3_ordenar(cont) {
+        let secuencia = ['🌰', '🌱', '🌿', '🌼'];
+        let mezcla = [...secuencia].sort(()=>Math.random()-0.5);
+        
+        let html = `<div style="display:flex; gap:10px; margin-bottom: 20px;" id="slots">`;
+        for(let i=0; i<4; i++) html += `<div class="tarjeta" style="min-width: 80px; padding: 10px; background:#eee;">?</div>`;
+        html += `</div><div class="grid-opciones">`;
+        mezcla.forEach(em => html += `<div class="tarjeta item-ord">${em}</div>`);
+        html += `</div>`;
+        cont.innerHTML = html;
+
+        let actualIdx = 0;
+        cont.querySelectorAll('.item-ord').forEach(el => {
+            el.onclick = () => {
+                if(el.style.visibility === 'hidden') return;
+                if(el.innerText === secuencia[actualIdx]) {
+                    sfx.click(); el.style.visibility = 'hidden';
+                    cont.querySelectorAll('#slots .tarjeta')[actualIdx].innerText = el.innerText;
+                    cont.querySelectorAll('#slots .tarjeta')[actualIdx].style.background = 'var(--verde)';
+                    actualIdx++;
+                    if(actualIdx === 4) { mostrarFeedback("¡Orden perfecto! ⭐", true); setTimeout(nivelCompletado, 1000); }
+                } else { mostrarFeedback("Ese no es el siguiente paso ❌", false); }
+            };
+        });
+    }
+
+    // Act 4: Memorama
+    function act4_memoria(cont) {
+        let items = ['🌰', '🌱', '🌿', '🌼'];
+        let cartas = [...items, ...items].sort(()=>Math.random()-0.5);
+        
+        let grid = `<div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; margin:auto;">`;
+        cartas.forEach(c => grid += `<div class="tarjeta carta-mem" style="padding:15px; min-width:70px;" data-val="${c}">❓</div>`);
+        grid += `</div>`;
+        cont.innerHTML = grid;
+
+        let volteadas = [], aciertos = 0;
+        cont.querySelectorAll('.carta-mem').forEach(el => {
+            el.onclick = () => {
+                if(volteadas.length < 2 && el.innerText === '❓' && !volteadas.includes(el)) {
+                    sfx.click(); el.innerText = el.dataset.val; el.style.background = 'white';
+                    volteadas.push(el);
+                    if(volteadas.length === 2) {
+                        setTimeout(() => {
+                            if(volteadas[0].dataset.val === volteadas[1].dataset.val) {
+                                mostrarFeedback("¡Pareja! ✨", true); aciertos++;
+                                volteadas.forEach(v => { v.style.background = 'var(--verde)'; v.style.pointerEvents = 'none'; });
+                                if(aciertos === 4) setTimeout(nivelCompletado, 1000);
+                            } else {
+                                sfx.mal();
+                                volteadas.forEach(v => { v.innerText = '❓'; v.style.background = 'var(--blanco)'; });
+                            }
+                            volteadas = [];
+                        }, 800);
+                    }
+                }
+            };
+        });
+    }
+
+    // Act 5: Puzzle rotatorio (CSS Grid sin canvas)
+    function act5_puzzle(cont) {
+        let rots = [90, 180, 270, 0].sort(()=>Math.random()-0.5);
+        let html = `<div style="display: grid; grid-template-columns: 100px 100px; gap: 4px; background: var(--amarillo); padding: 5px; border-radius: 10px;">`;
+        
+        const offsets = [{x:0,y:0}, {x:-100,y:0}, {x:0,y:-100}, {x:-100,y:-100}];
+        offsets.forEach((off, i) => {
+            html += `
+            <div class="pz-pieza" data-rot="${rots[i]}" style="
+                width: 100px; height: 100px; overflow: hidden; position: relative; background: white; 
+                transform: rotate(${rots[i]}deg); transition: transform 0.3s; cursor: pointer; border-radius:5px;">
+                <div style="position: absolute; width: 200px; height: 200px; left: ${off.x}px; top: ${off.y}px; font-size: 150px; line-height: 200px; text-align: center;">🌻</div>
+            </div>`;
+        });
+        cont.innerHTML = html + `</div>`;
+
+        let resueltos = rots.filter(r => r % 360 === 0).length;
+        if(resueltos === 4) { rots[0]+=90; resueltos--; document.querySelector('.pz-pieza').dataset.rot = rots[0]; document.querySelector('.pz-pieza').style.transform = `rotate(${rots[0]}deg)`; }
+
+        cont.querySelectorAll('.pz-pieza').forEach(el => {
+            el.onclick = () => {
+                sfx.click(); let actual = parseInt(el.dataset.rot);
+                if(actual % 360 === 0 && resueltos > 0) resueltos--; 
+                actual += 90; el.dataset.rot = actual; el.style.transform = `rotate(${actual}deg)`;
+                if(actual % 360 === 0) resueltos++;
+                if(resueltos === 4) { mostrarFeedback("¡Flor armada! ⭐", true); setTimeout(nivelCompletado, 1500); }
+            };
+        });
+    }
+
+    // Act 6: Atrapa lo que ayuda (DOM Animation)
+    function act6_atrapar(cont) {
+        cont.innerHTML = `<div id="caja-caida"></div>`;
+        let caja = document.getElementById('caja-caida');
+        let atrapados = 0, max = 5, generados = 0;
+        
+        let intv = setInterval(() => {
+            if(!document.getElementById('caja-caida')) { clearInterval(intv); return; }
+            generados++;
+            let esBueno = Math.random() > 0.4;
+            let icono = esBueno ? ['💧','☀️','🟤'][Math.floor(Math.random()*3)] : ['🍔','📱','🍬'][Math.floor(Math.random()*3)];
+            
+            let el = document.createElement('div');
+            el.className = 'item-caida'; el.innerText = icono;
+            el.style.left = Math.random() * 80 + '%'; el.style.top = '-50px';
+            el.style.transition = 'top 3s linear';
+            
+            el.onclick = () => {
+                if(esBueno) {
+                    mostrarFeedback("¡Bien! +1", true); el.style.display = 'none'; atrapados++;
+                    if(atrapados >= max) { clearInterval(intv); setTimeout(nivelCompletado, 500); }
+                } else { mostrarFeedback("¡Eso no! ❌", false); el.style.display = 'none'; }
+            };
+            caja.appendChild(el);
+            setTimeout(() => { if(el) el.style.top = '350px'; }, 50); 
+            setTimeout(() => { if(el.parentNode) el.remove(); }, 3000);
+            
+            if(generados > 25 && atrapados < max) { clearInterval(intv); setTimeout(nivelCompletado, 1000); }
+        }, 1000);
+    }
+
+    // Act 7: Partes de la planta (Asociación Click-Click)
+    function act7_partes(cont) {
+        let partes = [{id:'raiz', n:'Raíz'}, {id:'tallo', n:'Tallo'}, {id:'hoja', n:'Hojas'}, {id:'flor', n:'Flor'}];
+        
+        let html = `<div style="display:flex; width:100%; gap:20px; align-items:center;">
+            <div style="flex:1; display:flex; flex-direction:column; gap:10px;">`;
+        partes.forEach(p => html += `<button class="btn btn-azul btn-parte" data-id="${p.id}">${p.n}</button>`);
+        html += `</div><div style="flex:1; display:flex; flex-direction:column; gap:10px; align-items:center;">
+            <div class="zona-drop part-drop" data-id="flor" style="min-height:60px; font-size:2rem; padding:10px;">🌺</div>
+            <div class="zona-drop part-drop" data-id="hoja" style="min-height:60px; font-size:2rem; padding:10px;">🍃</div>
+            <div class="zona-drop part-drop" data-id="tallo" style="min-height:60px; font-size:2rem; padding:10px;">🪵</div>
+            <div class="zona-drop part-drop" data-id="raiz" style="min-height:60px; font-size:2rem; padding:10px;">🪢</div>
+        </div></div>`;
+        cont.innerHTML = html;
+
+        let selId = null, btnSel = null, aciertos = 0;
+        cont.querySelectorAll('.btn-parte').forEach(btn => {
+            btn.onclick = () => {
+                sfx.click(); cont.querySelectorAll('.btn-parte').forEach(b => b.style.transform = 'scale(1)');
+                btn.style.transform = 'scale(1.1)'; selId = btn.dataset.id; btnSel = btn;
+            };
+        });
+
+        cont.querySelectorAll('.part-drop').forEach(drop => {
+            drop.onclick = () => {
+                if(!selId) return;
+                if(drop.dataset.id === selId) {
+                    mostrarFeedback("¡Correcto! ✔️", true);
+                    drop.innerText += ' ' + btnSel.innerText; drop.style.background = 'var(--verde)';
+                    btnSel.style.visibility = 'hidden'; selId = null; aciertos++;
+                    if(aciertos === 4) setTimeout(nivelCompletado, 1000);
+                } else {
+                    mostrarFeedback("Piénsalo bien ❌", false);
+                    btnSel.style.transform = 'scale(1)'; selId = null;
+                }
+            };
+        });
+    }
+
+    // Act 8: Verdadero o Falso
+    function act8_tf(cont) {
+        let pregs = [
+            {q: "La semilla necesita agua para crecer.", a: true},
+            {q: "Las plantas comen pizza y hamburguesas.", a: false},
+            {q: "La raíz absorbe el agua de la tierra.", a: true}
+        ];
+        let actual = pregs[Math.floor(Math.random()*pregs.length)];
+        fallbackText = actual.q; leerInstruccion();
+
+        cont.innerHTML = `
+            <h2 style="font-size: 2.5rem; margin: 30px 0;">"${actual.q}"</h2>
+            <div style="display:flex; gap: 20px;">
+                <button class="btn btn-verde" style="font-size:2rem; padding: 20px 40px;" id="btn-v">✔️ Verdadero</button>
+                <button class="btn btn-fucsia" style="font-size:2rem; padding: 20px 40px;" id="btn-f">❌ Falso</button>
+            </div>
+        `;
+        document.getElementById('btn-v').onclick = () => evalTF(true);
+        document.getElementById('btn-f').onclick = () => evalTF(false);
+
+        function evalTF(resp) {
+            if(resp === actual.a) { mostrarFeedback("¡Excelente! ⭐", true); setTimeout(nivelCompletado, 1000); }
+            else { mostrarFeedback("Oops, no es así ❌", false); }
+        }
+    }
+
+    // Act 9: Carrera Verde
+    function act9_carrera(cont) {
+        cont.innerHTML = `
+            <div style="font-size: 6rem; margin: 20px;" id="carrera-planta">🌰</div>
+            <h2 id="q-text">¿Qué sale primero de la semilla?</h2>
+            <div class="grid-opciones">
+                <button class="btn btn-azul" onclick="evalCarrera('Raíz', true)">Raíz</button>
+                <button class="btn btn-azul" onclick="evalCarrera('Flor', false)">Flor</button>
+            </div>
+        `;
+        let paso = 0;
+        window.evalCarrera = (txt, isCorrect) => {
+            if(isCorrect) {
+                mostrarFeedback("¡Crece! ⭐", true); paso++;
+                const arr = ['🌱','🌿','🌼'];
+                document.getElementById('carrera-planta').innerText = arr[paso-1] || '🌻';
+                if(paso >= 3) setTimeout(nivelCompletado, 1000);
+                else {
+                    if(paso===1) {
+                        document.getElementById('q-text').innerText = "¿Qué sostiene a la planta?";
+                        document.querySelector('.grid-opciones').innerHTML = `<button class="btn btn-azul" onclick="evalCarrera('Tallo', true)">Tallo</button> <button class="btn btn-azul" onclick="evalCarrera('Fruto', false)">Fruto</button>`;
+                    } else if(paso===2) {
+                        document.getElementById('q-text').innerText = "¿De dónde salen las semillas?";
+                        document.querySelector('.grid-opciones').innerHTML = `<button class="btn btn-azul" onclick="evalCarrera('Hojas', false)">Hojas</button> <button class="btn btn-azul" onclick="evalCarrera('Fruto/Flor', true)">Fruto/Flor</button>`;
+                    }
+                }
+            } else { mostrarFeedback("Intenta de nuevo ❌", false); }
+        };
+    }
+
+    // Act 10: Mini Laboratorio
+    function act10_lab(cont) {
+        cont.innerHTML = `
+            <div style="display:flex; justify-content:space-around; width:100%; align-items:flex-end;">
+                <div style="width:120px; height:150px; border: 4px solid #aaa; border-top:none; border-radius:0 0 20px 20px; position:relative; background:rgba(255,255,255,0.5); display:flex; flex-direction:column; justify-content:flex-end; align-items:center; padding-bottom:10px;">
+                    <div id="lab-planta" style="font-size:3rem; position:absolute; bottom:30px; display:none;">🌱</div>
+                    <div id="lab-algodon" style="width:90%; height:40px; background:#fff; border-radius:20px; display:none;"></div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <button class="btn btn-azul btn-chico" id="btn-alg">1. Algodón</button>
+                    <button class="btn btn-azul btn-chico" id="btn-sem">2. Semilla</button>
+                    <button class="btn btn-azul btn-chico" id="btn-agu">3. Agua</button>
+                    <button class="btn btn-fucsia btn-chico" id="btn-ver" style="display:none;">▶ Ver Crecer</button>
+                </div>
+            </div>
+            <h2 id="lab-dias" style="margin-top:20px;">Día 0</h2>
+        `;
+        let paso = 0;
+        document.getElementById('btn-alg').onclick = () => { if(paso===0) { sfx.click(); document.getElementById('lab-algodon').style.display='block'; paso++; } };
+        document.getElementById('btn-sem').onclick = () => { if(paso===1) { sfx.click(); document.getElementById('lab-planta').innerText='🌰'; document.getElementById('lab-planta').style.display='block'; paso++; } };
+        document.getElementById('btn-agu').onclick = () => { if(paso===2) { crearLluvia(); paso++; document.getElementById('btn-ver').style.display='block'; } };
+        document.getElementById('btn-ver').onclick = () => {
+            if(paso===3) {
+                sfx.click(); document.getElementById('btn-ver').style.display='none';
+                let d = 0;
+                let intv = setInterval(()=> {
+                    d++; document.getElementById('lab-dias').innerText = `Día ${d}`;
+                    if(d===3) document.getElementById('lab-planta').innerText='🌱';
+                    if(d===5) document.getElementById('lab-planta').innerText='🌿';
+                    if(d===7) { clearInterval(intv); mostrarFeedback("¡Experimento exitoso! ⭐", true); setTimeout(nivelCompletado, 1500); }
+                }, 500);
+            }
+        };
+    }
+
+    // Act 11: Laberinto (Grid 4x4)
+    function act11_laberinto(cont) {
+        let mapa = [
+            0, 1, 0, 0,
+            0, 0, 0, 1,
+            1, 1, 0, 0,
+            0, 0, 0, 2
+        ];
+        let pos = 0;
+        
+        let html = `<div class="laberinto-grid" id="grid-lab">`;
+        mapa.forEach((m, i) => { html += `<div class="celda" data-idx="${i}">${m===1 ? '🪨' : (m===2 ? '🌱' : '')}</div>`; });
+        html += `</div>`;
+        cont.innerHTML = html;
+        
+        let celdas = document.querySelectorAll('.celda');
+        celdas[pos].innerText = '💧';
+
+        celdas.forEach(c => {
+            c.onclick = () => {
+                let idx = parseInt(c.dataset.idx);
+                if(idx === pos-1 || idx === pos+1 || idx === pos-4 || idx === pos+4) {
+                    if((pos%4===3 && idx===pos+1) || (pos%4===0 && idx===pos-1)) return; // Evitar saltos laterales
+                    if(mapa[idx] === 1) { mostrarFeedback("¡Roca! ❌", false); return; }
+                    sfx.click();
+                    celdas[pos].innerText = ''; pos = idx;
+                    if(mapa[idx] === 2) { celdas[pos].innerText = '🌻'; mostrarFeedback("¡Llegaste! ⭐", true); setTimeout(nivelCompletado, 1000); }
+                    else { celdas[pos].innerText = '💧'; }
+                }
+            };
+        });
+    }
+
+    // Act 12: Ruleta
+    function act12_ruleta(cont) {
+        cont.innerHTML = `
+            <div style="position:relative; width:200px; height:200px; margin:20px auto;">
+                <div style="position:absolute; top:-15px; left:50%; transform:translateX(-50%); width:0; height:0; border-left:15px solid transparent; border-right:15px solid transparent; border-top:30px solid var(--fucsia); z-index:5;"></div>
+                <div id="ruleta" style="width:100%; height:100%; border-radius:50%; background: conic-gradient(var(--celeste) 25%, var(--verde) 25% 50%, var(--amarillo) 50% 75%, var(--morado) 75%); border: 8px solid white; transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1); display:flex; align-items:center; justify-content:center;">
+                    <span style="position:absolute; top:10px; font-size:2rem;">🌱</span>
+                    <span style="position:absolute; bottom:10px; font-size:2rem;">🌼</span>
+                    <span style="position:absolute; left:10px; font-size:2rem;">💧</span>
+                    <span style="position:absolute; right:10px; font-size:2rem;">☀️</span>
+                </div>
+            </div>
+            <button class="btn btn-amarillo" id="btn-girar">🎰 Girar Ruleta</button>
+            <div id="ruleta-q" style="display:none; margin-top:15px;">
+                <h3 style="font-size: 2rem;">¿Qué parte sostiene a la flor?</h3>
+                <div class="grid-opciones">
+                    <button class="btn btn-azul" onclick="evalRul(false)">La Raíz</button>
+                    <button class="btn btn-azul" onclick="evalRul(true)">El Tallo</button>
+                </div>
+            </div>
+        `;
+        document.getElementById('btn-girar').onclick = () => {
+            sfx.click(); document.getElementById('btn-girar').style.display='none';
+            document.getElementById('ruleta').style.transform = `rotate(${360*3 + Math.floor(Math.random()*360)}deg)`;
+            setTimeout(() => { document.getElementById('ruleta-q').style.display='block'; }, 3200);
+        };
+        window.evalRul = (isCor) => {
+            if(isCor) { mostrarFeedback("¡Correcto! ⭐", true); setTimeout(nivelCompletado, 1500); }
+            else { mostrarFeedback("No, es el tallo ❌", false); }
+        }
+    }
+</script>
+</body>
+</html>

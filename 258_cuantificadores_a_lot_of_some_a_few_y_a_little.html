@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantifiers Master - Edición Vibrante</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Paleta Vibrante y Luminosa */
+            --bg-gradient: linear-gradient(135deg, #FACC15 0%, #F43F5E 100%);
+            --card-bg: #FFFFFF;
+            --text-main: #1E293B;
+            --text-muted: #64748B;
+            --primary: #F43F5E; /* Fucsia vibrante */
+            --primary-hover: #E11D48;
+            --secondary: #3B82F6; /* Azul eléctrico */
+            --secondary-hover: #2563EB;
+            --success: #10B981; /* Verde brillante */
+            --error: #EF4444; /* Rojo brillante */
+            --warning: #F59E0B; /* Naranja/Amarillo */
+            --radius: 24px;
+            --shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden; /* EVITAR SCROLL EN LA PÁGINA */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        header { text-align: center; margin-bottom: 20px; flex-shrink: 0; }
+        header h1 { font-size: 2.2rem; color: #FFFFFF; font-weight: 800; text-shadow: 0 4px 10px rgba(0,0,0,0.2); margin-bottom: 5px; }
+        header p { color: #FFE4E6; font-size: 1.1rem; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+        /* Pestañas de Navegación */
+        .tabs {
+            display: flex; gap: 10px; margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.2); 
+            backdrop-filter: blur(10px);
+            padding: 8px; border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .tab-btn {
+            background: transparent; border: none; color: #FFFFFF;
+            padding: 10px 20px; border-radius: 50px; cursor: pointer;
+            font-weight: 700; font-size: 1rem; transition: all 0.3s;
+        }
+        .tab-btn.active { background: #FFFFFF; color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .tab-btn:hover:not(.active) { background: rgba(255,255,255,0.3); transform: translateY(-2px); }
+
+        /* Contenedor Principal */
+        .app-container {
+            flex-grow: 1; width: 100%; max-width: 900px;
+            background: var(--card-bg); border-radius: var(--radius);
+            box-shadow: var(--shadow); padding: 30px;
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+
+        .panel { display: none; height: 100%; animation: fadeIn 0.4s ease; flex-direction: column; }
+        .panel.active { display: flex; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- PANTALLA 1: GUÍA INTERACTIVA --- */
+        .guide-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;
+        }
+        .guide-btn {
+            background: #F8FAFC; border: 3px solid #E2E8F0;
+            color: var(--text-muted); padding: 15px; border-radius: 16px; cursor: pointer;
+            font-size: 1.1rem; font-weight: 800; transition: all 0.2s; text-align: center;
+        }
+        .guide-btn:hover { border-color: var(--secondary); color: var(--secondary); transform: translateY(-3px); }
+        .guide-btn.active {
+            border-color: var(--secondary); background: var(--secondary); color: #FFFFFF;
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .guide-content {
+            flex-grow: 1; background: #EFF6FF; border-radius: 16px; padding: 25px;
+            border-left: 6px solid var(--secondary); display: none; flex-direction: column; justify-content: center;
+        }
+        .guide-content.active { display: flex; animation: fadeIn 0.3s ease; }
+        .guide-content h2 { color: var(--secondary); margin-bottom: 10px; font-size: 1.8rem; font-weight: 800; }
+        .guide-content p { font-size: 1.1rem; line-height: 1.6; margin-bottom: 15px; color: var(--text-main); }
+        .guide-content .ejemplo { background: #DBEAFE; padding: 15px; border-radius: 12px; font-style: italic; color: #1E3A8A; font-weight: 600; }
+
+        /* --- PANTALLA 2: CUESTIONARIO PAGINADO --- */
+        .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 3px dashed #E2E8F0; padding-bottom: 10px; }
+        .question-box { font-size: 1.5rem; font-weight: 700; margin-bottom: 30px; text-align: center; line-height: 1.5; color: var(--text-main); }
+        .options { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .opt-btn {
+            background: #F1F5F9; border: 3px solid transparent; color: var(--text-main);
+            padding: 15px 30px; border-radius: 50px; font-size: 1.2rem; cursor: pointer;
+            transition: all 0.2s; font-weight: 700;
+        }
+        .opt-btn:hover:not(:disabled) { background: #E0E7FF; border-color: var(--secondary); color: var(--secondary); transform: scale(1.05); }
+        .opt-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .opt-btn.correct { background: var(--success) !important; color: white !important; border-color: var(--success) !important; opacity: 1 !important; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); }
+        .opt-btn.wrong { background: var(--error) !important; color: white !important; border-color: var(--error) !important; opacity: 1 !important; }
+
+        .feedback-box {
+            margin-top: 25px; padding: 20px; border-radius: 16px; display: none;
+            font-size: 1.1rem; line-height: 1.5; animation: fadeIn 0.3s ease; font-weight: 600;
+        }
+        .feedback-box.correct { background: #D1FAE5; border: 2px solid var(--success); color: #065F46; }
+        .feedback-box.wrong { background: #FEE2E2; border: 2px solid var(--error); color: #991B1B; }
+        
+        .next-btn {
+            margin-top: 20px; padding: 15px 30px; background: var(--secondary); border: none;
+            color: white; border-radius: 50px; font-weight: 800; font-size: 1.1rem; cursor: pointer; float: right; display: none;
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3); transition: all 0.2s;
+        }
+        .next-btn:hover { background: var(--secondary-hover); transform: translateY(-3px); }
+
+        /* --- PANTALLA 3: CLASIFICACIÓN (DRAG & DROP) --- */
+        .dd-header { text-align: center; margin-bottom: 15px; color: var(--text-muted); font-weight: 600; font-size: 1.1rem; }
+        .noun-bank {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px;
+            background: #F8FAFC; border: 3px solid #E2E8F0; padding: 15px; border-radius: 16px; min-height: 70px;
+        }
+        .draggable {
+            background: var(--primary); color: white; padding: 10px 20px; border-radius: 50px;
+            font-weight: 700; cursor: grab; user-select: none; box-shadow: 0 4px 10px rgba(244, 63, 94, 0.3);
+            transition: transform 0.1s;
+        }
+        .draggable:active { cursor: grabbing; transform: scale(0.95); }
+        
+        .zones-container { display: flex; gap: 20px; flex-grow: 1; min-height: 200px; }
+        .drop-zone {
+            flex: 1; background: #F8FAFC; border: 3px dashed #CBD5E1;
+            border-radius: 16px; padding: 15px; display: flex; flex-direction: column; align-items: center;
+            transition: all 0.3s;
+        }
+        .drop-zone.drag-over { border-color: var(--warning); background: #FEF3C7; }
+        .drop-zone h3 { color: var(--text-main); margin-bottom: 15px; font-size: 1.2rem; font-weight: 800; }
+        .drop-items { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; width: 100%; }
+        
+        .check-sort-btn {
+            width: 100%; margin-top: 20px; padding: 15px; background: var(--warning); border: none;
+            color: #FFFFFF; border-radius: 16px; font-weight: 800; font-size: 1.2rem; cursor: pointer;
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3); transition: all 0.2s;
+        }
+        .check-sort-btn:hover { transform: translateY(-3px); filter: brightness(1.05); }
+        #sort-feedback { text-align: center; margin-top: 15px; font-weight: 700; font-size: 1.1rem; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Quantifiers Master</h1>
+        <p>¡Domina el uso de A lot of, Some, A little y A few!</p>
+    </header>
+
+    <nav class="tabs">
+        <button class="tab-btn active" onclick="switchTab('tab-guia', this)">📖 Guía Rápida</button>
+        <button class="tab-btn" onclick="switchTab('tab-quiz', this)">📝 Cuestionario</button>
+        <button class="tab-btn" onclick="switchTab('tab-sort', this)">🗂️ Clasificación</button>
+    </nav>
+
+    <div class="app-container">
+        
+        <!-- PANEL 1: GUÍA INTERACTIVA -->
+        <div id="tab-guia" class="panel active">
+            <p style="text-align: center; color: var(--text-muted); margin-bottom: 15px; font-weight: 600;">Toca cada cuantificador para aprender su súper poder.</p>
+            <div class="guide-grid">
+                <button class="guide-btn active" onclick="showGuide('guide-alot', this)">A lot of</button>
+                <button class="guide-btn" onclick="showGuide('guide-some', this)">Some</button>
+                <button class="guide-btn" onclick="showGuide('guide-afew', this)">A few</button>
+                <button class="guide-btn" onclick="showGuide('guide-alittle', this)">A little</button>
+            </div>
+
+            <div id="guide-alot" class="guide-content active">
+                <h2>A lot of (Mucho / Muchos)</h2>
+                <p>Significa "gran cantidad". Es el cuantificador más amigable porque se puede usar con <strong>ambos</strong>: sustantivos contables (plurales) e incontables.</p>
+                <div class="ejemplo">
+                    ✅ <em>I have <strong>a lot of</strong> friends.</em> (Amigos = Contable)<br>
+                    ✅ <em>We need <strong>a lot of</strong> water.</em> (Agua = Incontable)
+                </div>
+            </div>
+            <div id="guide-some" class="guide-content">
+                <h2>Some (Algunos / Algo de)</h2>
+                <p>Se usa para expresar una cantidad no específica pero positiva. Al igual que "a lot of", funciona perfectamente con <strong>ambos</strong>: contables (plurales) e incontables.</p>
+                <div class="ejemplo">
+                    ✅ <em>I bought <strong>some</strong> apples.</em> (Manzanas = Contable)<br>
+                    ✅ <em>She needs <strong>some</strong> sugar.</em> (Azúcar = Incontable)
+                </div>
+            </div>
+            <div id="guide-afew" class="guide-content">
+                <h2>A few (Unos pocos)</h2>
+                <p>Significa "una pequeña cantidad". Es muy importante recordar que <strong>SOLO</strong> se utiliza con sustantivos que puedes contar (Contables plurales).</p>
+                <div class="ejemplo">
+                    ✅ <em>I have <strong>a few</strong> minutes.</em> (Minutos = Se pueden contar: 1, 2, 3...)<br>
+                    ❌ <em><span style="color:red; text-decoration:line-through;">a few water</span></em> (Incorrecto)
+                </div>
+            </div>
+            <div id="guide-alittle" class="guide-content">
+                <h2>A little (Un poco)</h2>
+                <p>Significa "una pequeña cantidad", pero a diferencia de "A few", este <strong>SOLO</strong> se usa con cosas que NO puedes contar por unidad (Incontables).</p>
+                <div class="ejemplo">
+                    ✅ <em>I need <strong>a little</strong> time.</em> (Tiempo = Incontable, no dices "1 tiempo")<br>
+                    ❌ <em><span style="color:red; text-decoration:line-through;">a little friends</span></em> (Incorrecto)
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL 2: QUIZ PAGINADO -->
+        <div id="tab-quiz" class="panel">
+            <div class="quiz-header">
+                <span style="color: var(--text-muted); font-weight: 700;">Pregunta <span id="q-current" style="color:var(--secondary)">1</span> de <span id="q-total">5</span></span>
+                <span id="score" style="color: var(--success); font-weight: 800; font-size: 1.1rem;">Aciertos: 0</span>
+            </div>
+            <div class="question-box" id="quiz-question">Cargando...</div>
+            <div class="options" id="quiz-options"></div>
+            
+            <div id="quiz-feedback" class="feedback-box"></div>
+            <button id="btn-next" class="next-btn" onclick="nextQuestion()">Siguiente ➡️</button>
+        </div>
+
+        <!-- PANEL 3: DRAG AND DROP -->
+        <div id="tab-sort" class="panel">
+            <div class="dd-header">Arrastra las palabras a su zona correcta. ¡Que no quede ninguna arriba!</div>
+            
+            <div class="noun-bank" id="noun-bank"></div>
+            
+            <div class="zones-container">
+                <div class="drop-zone" id="zone-countable" data-type="countable">
+                    <h3 style="color: var(--success);">🟢 Contables</h3>
+                    <div class="drop-items"></div>
+                </div>
+                <div class="drop-zone" id="zone-uncountable" data-type="uncountable">
+                    <h3 style="color: var(--secondary);">🔵 Incontables</h3>
+                    <div class="drop-items"></div>
+                </div>
+            </div>
+            
+            <button class="check-sort-btn" onclick="checkSort()">¡Revisar mi Clasificación!</button>
+            <div id="sort-feedback"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- NAVEGACIÓN ---
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
+        // --- LÓGICA DE LA GUÍA ---
+        function showGuide(guideId, btnElement) {
+            document.querySelectorAll('.guide-content').forEach(g => g.classList.remove('active'));
+            document.querySelectorAll('.guide-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(guideId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
+        // --- LÓGICA DEL CUESTIONARIO ---
+        const quizData = [
+            {
+                q: "I need ______ information about the project before I start.",
+                options: ["a few", "a lot of", "many"],
+                ans: "a lot of",
+                nounWord: "information",
+                nounType: "incontable",
+                explanationCorrect: "la palabra 'information' es incontable, y 'a lot of' funciona perfectamente para expresar una gran cantidad de algo que no se puede contar."
+            },
+            {
+                q: "She only has ______ minutes for lunch today.",
+                options: ["a little", "some", "a few"],
+                ans: "a few",
+                nounWord: "minutes",
+                nounType: "contable",
+                explanationCorrect: "los 'minutes' se pueden contar (1 minuto, 2 minutos). Para indicar una pequeña cantidad de contables, se usa estrictamente 'a few'."
+            },
+            {
+                q: "We should buy ______ rice for dinner tonight.",
+                options: ["a few", "a lot of", "some"],
+                ans: "some",
+                nounWord: "rice",
+                nounType: "incontable",
+                explanationCorrect: "'rice' (arroz) es incontable. Usamos 'some' para referirnos a una cantidad positiva pero no específica."
+            },
+            {
+                q: "There is only ______ coffee left in the pot.",
+                options: ["a little", "many", "a few"],
+                ans: "a little",
+                nounWord: "coffee",
+                nounType: "incontable",
+                explanationCorrect: "el 'coffee' líquido es incontable. Para indicar una 'pequeña cantidad' de algo incontable, usamos la regla de 'a little'."
+            },
+            {
+                q: "Do you have ______ extra pens I could borrow?",
+                options: ["a little", "a few", "much"],
+                ans: "a few",
+                nounWord: "pens",
+                nounType: "contable",
+                explanationCorrect: "los 'pens' (bolígrafos) son objetos contables. Para pedir una pequeña cantidad de elementos contables, debes usar 'a few'."
+            }
+        ];
+
+        let currentQ = 0;
+        let score = 0;
+
+        function loadQuestion() {
+            const data = quizData[currentQ];
+            document.getElementById('q-current').innerText = currentQ + 1;
+            document.getElementById('q-total').innerText = quizData.length;
+            document.getElementById('quiz-question').innerHTML = data.q.replace('______', '<strong style="color:var(--secondary);">______</strong>');
+            
+            const optsContainer = document.getElementById('quiz-options');
+            optsContainer.innerHTML = '';
+            document.getElementById('quiz-feedback').style.display = 'none';
+            document.getElementById('btn-next').style.display = 'none';
+
+            data.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'opt-btn';
+                btn.innerText = opt;
+                btn.onclick = () => selectAnswer(btn, opt, data);
+                optsContainer.appendChild(btn);
+            });
+        }
+
+        function selectAnswer(btn, selected, data) {
+            document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
+            const feedbackBox = document.getElementById('quiz-feedback');
+            feedbackBox.style.display = 'block';
+
+            if (selected === data.ans) {
+                btn.classList.add('correct');
+                score++;
+                document.getElementById('score').innerText = `Aciertos: ${score}`;
+                feedbackBox.className = 'feedback-box correct';
+                feedbackBox.innerHTML = `<strong>✅ ¡Excelente!</strong><br><br>Elegiste "${selected}". Es correcto porque ${data.explanationCorrect}`;
+            } else {
+                btn.classList.add('wrong');
+                Array.from(document.querySelectorAll('.opt-btn')).find(b => b.innerText === data.ans).classList.add('correct');
+                
+                feedbackBox.className = 'feedback-box wrong';
+                feedbackBox.innerHTML = `<strong>❌ Incorrecto.</strong><br><br>
+                El error ocurrió porque la palabra clave aquí es <strong>'${data.nounWord}'</strong>, la cual es <strong>${data.nounType}</strong>.<br><br>
+                <strong>✅ La respuesta correcta es "${data.ans}"</strong> porque ${data.explanationCorrect}`;
+            }
+
+            document.getElementById('btn-next').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQ++;
+            if (currentQ < quizData.length) {
+                loadQuestion();
+            } else {
+                document.getElementById('quiz-question').innerHTML = `¡Cuestionario Completado! 🎉<br><span style="color:var(--success);">Tu puntuación final: ${score}/${quizData.length}</span>`;
+                document.getElementById('quiz-options').innerHTML = '';
+                document.getElementById('quiz-feedback').style.display = 'none';
+                document.getElementById('btn-next').style.display = 'none';
+                document.getElementById('btn-next').outerHTML = `<button class="next-btn" style="display:block" onclick="resetQuiz()">Reintentar Cuestionario 🔄</button>`;
+            }
+        }
+
+        function resetQuiz() {
+            currentQ = 0; score = 0;
+            document.getElementById('score').innerText = `Aciertos: 0`;
+            const btnNext = document.querySelector('.next-btn');
+            btnNext.outerHTML = `<button id="btn-next" class="next-btn" onclick="nextQuestion()">Siguiente ➡️</button>`;
+            loadQuestion();
+        }
+
+        // --- LÓGICA DE CLASIFICACIÓN (DRAG & DROP) ---
+        const nouns = [
+            { word: "Sugar", type: "uncountable" }, { word: "Students", type: "countable" },
+            { word: "Rice", type: "uncountable" }, { word: "Books", type: "countable" },
+            { word: "Water", type: "uncountable" }, { word: "Laptops", type: "countable" },
+            { word: "Happiness", type: "uncountable" }, { word: "Chairs", type: "countable" }
+        ];
+
+        let draggedItem = null;
+
+        function initDragDrop() {
+            const bank = document.getElementById('noun-bank');
+            nouns.sort(() => Math.random() - 0.5).forEach(n => {
+                const el = document.createElement('div');
+                el.className = 'draggable'; el.innerText = n.word; el.draggable = true;
+                el.dataset.type = n.type;
+                el.addEventListener('dragstart', (e) => { draggedItem = el; setTimeout(() => el.style.opacity = '0.5', 0); });
+                el.addEventListener('dragend', () => { draggedItem = null; el.style.opacity = '1'; });
+                bank.appendChild(el);
+            });
+
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+                zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+                zone.addEventListener('drop', e => {
+                    e.preventDefault(); zone.classList.remove('drag-over');
+                    if (draggedItem) zone.querySelector('.drop-items').appendChild(draggedItem);
+                });
+            });
+            
+            bank.addEventListener('dragover', e => e.preventDefault());
+            bank.addEventListener('drop', e => { e.preventDefault(); if (draggedItem) bank.appendChild(draggedItem); });
+        }
+
+        function checkSort() {
+            let correct = 0;
+            document.querySelectorAll('.drop-items .draggable').forEach(item => {
+                const parentType = item.closest('.drop-zone').dataset.type;
+                if (item.dataset.type === parentType) {
+                    item.style.background = 'var(--success)'; correct++;
+                } else {
+                    item.style.background = 'var(--error)';
+                }
+            });
+            
+            const feedback = document.getElementById('sort-feedback');
+            if (document.getElementById('noun-bank').children.length > 0) {
+                feedback.innerHTML = `<span style="color:var(--warning)">⚠️ Aún quedan palabras en la zona de arriba.</span>`;
+            } else if (correct === nouns.length) {
+                feedback.innerHTML = `<span style="color:var(--success)">🎉 ¡Excelente trabajo! Todas están correctas.</span>`;
+            } else {
+                feedback.innerHTML = `<span style="color:var(--error)">❌ Hay algunos errores. Las rojas están en la zona equivocada.</span>`;
+            }
+        }
+
+        // Inicializar
+        loadQuestion();
+        initDragDrop();
+
+    </script>
+</body>
+</html>

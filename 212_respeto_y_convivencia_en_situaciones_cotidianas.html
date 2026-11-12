@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover" />
+    <title>🌡️ Termómetro del Respeto | 3º/4º Grado</title>
+    <style>
+        /* ===== RESET Y BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', 'Patrick Hand', 'Segoe UI Emoji', cursive, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #1a3a4a, #0f2a38);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.5rem;
+        }
+
+        .app-container {
+            max-width: 1100px;
+            width: 100%;
+            max-height: 98vh;
+            background: #fdf8f0;
+            border-radius: 70px;
+            box-shadow: 0 30px 40px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== PANTALLAS ===== */
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            padding: 1.2rem;
+            animation: fadeSlide 0.4s ease;
+            flex-direction: column;
+        }
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeSlide {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== INTRO ===== */
+        .intro-screen {
+            background: linear-gradient(135deg, #fff5e6, #f5d6b3);
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 1.5rem;
+        }
+        .intro-content {
+            max-width: 720px;
+            margin: 0 auto;
+            background: rgba(255, 250, 240, 0.92);
+            border-radius: 70px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 3px solid #ffd699;
+        }
+        .title-badge {
+            background: #2c7a7a;
+            display: inline-block;
+            padding: 8px 28px;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 5px 0 #1a4f4f;
+            margin-bottom: 0.8rem;
+        }
+        h1 {
+            font-size: 3.2rem;
+            color: #2c7a7a;
+            text-shadow: 3px 3px 0 #b2d8d8;
+            margin: 0.5rem 0;
+        }
+        .grade-box {
+            background: #2c3e50;
+            display: inline-block;
+            padding: 6px 28px;
+            border-radius: 40px;
+            color: white;
+            font-size: 1.2rem;
+            margin: 0.4rem 0;
+            box-shadow: 0 4px 0 #1a252f;
+        }
+        .subject-box {
+            background: #8e44ad;
+            display: inline-block;
+            padding: 6px 28px;
+            border-radius: 40px;
+            color: white;
+            font-size: 1.2rem;
+            margin: 0.3rem 0;
+            box-shadow: 0 4px 0 #6c3483;
+        }
+        .content-box {
+            background: #e67e22;
+            display: inline-block;
+            padding: 6px 28px;
+            border-radius: 40px;
+            color: white;
+            font-size: 1.1rem;
+            margin: 0.3rem 0;
+            box-shadow: 0 4px 0 #b85f1a;
+        }
+        .objective-card {
+            background: rgba(255, 255, 245, 0.95);
+            border-radius: 50px;
+            padding: 1.2rem 1.5rem;
+            margin: 1rem 0;
+            border-left: 10px solid #2c7a7a;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        .objective-card p {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            color: #2c3e50;
+        }
+        .btn-start {
+            background: linear-gradient(90deg, #2c7a7a, #38a3a5);
+            color: white;
+            font-size: 1.8rem;
+            font-weight: bold;
+            padding: 14px 40px;
+            border: none;
+            border-radius: 80px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #1a4f4f;
+            transition: 0.07s linear;
+            margin: 10px 0;
+            letter-spacing: 1px;
+        }
+        .btn-start:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #1a4f4f;
+        }
+        .intro-footer {
+            color: #7f6b5a;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        /* ===== JUEGO ===== */
+        .game-screen {
+            background: #eef3f0;
+            padding: 0.8rem 1rem;
+            flex: 1;
+            color: #1e3a4a;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            background: #d9e4df;
+            border-radius: 60px;
+            padding: 6px 18px;
+            margin-bottom: 0.8rem;
+            flex-shrink: 0;
+            border: 1px solid #b8ccc2;
+        }
+        .level-box {
+            background: #2c7a7a;
+            color: white;
+            border-radius: 50px;
+            padding: 4px 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        .level-box span {
+            background: #f1c40f;
+            color: #1e3a4a;
+            padding: 0 8px;
+            border-radius: 30px;
+        }
+        .message-area {
+            background: #e67e22;
+            border-radius: 50px;
+            padding: 4px 18px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        /* Área del termómetro + situación */
+        .thermometer-area {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            gap: 1.5rem;
+            flex: 1;
+            min-height: 0;
+            margin-bottom: 0.6rem;
+        }
+
+        /* Termómetro estilo "caramelo" */
+        .thermometer {
+            background: #cbd8d0;
+            border-radius: 60px 60px 30px 30px;
+            padding: 0.5rem 0.6rem;
+            width: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            box-shadow: inset 0 0 0 4px #f5efe6, 0 8px 20px rgba(0, 0, 0, 0.15);
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .thermometer-inner {
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50px 50px 25px 25px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .thermometer-fill {
+            width: 100%;
+            background: linear-gradient(to top, #e74c3c, #f39c12, #2ecc71);
+            transition: height 0.6s cubic-bezier(0.34, 1.2, 0.64, 1);
+            border-radius: 50px 50px 25px 25px;
+            min-height: 6px;
+            position: relative;
+        }
+
+        .thermometer-fill::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 10px;
+            width: 30%;
+            height: 20%;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            filter: blur(2px);
+        }
+        .thermometer-fill::after {
+            content: '🌡️';
+            position: absolute;
+            top: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2rem;
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.2));
+            animation: pulseThermo 2s infinite ease-in-out;
+        }
+        @keyframes pulseThermo {
+            0%,
+            100% {
+                transform: translateX(-50%) scale(1);
+            }
+            50% {
+                transform: translateX(-50%) scale(1.05);
+            }
+        }
+
+        /* Escala */
+        .thermometer-scale {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 6px 0;
+            pointer-events: none;
+        }
+        .scale-mark {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 2px;
+            font-size: 0.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+            padding-right: 6px;
+        }
+        .scale-mark .line {
+            width: 12px;
+            height: 2px;
+            background: rgba(44, 62, 80, 0.3);
+            border-radius: 2px;
+        }
+        .scale-mark .line.large {
+            width: 18px;
+            height: 3px;
+            background: rgba(44, 62, 80, 0.5);
+        }
+        .scale-mark .emoji-small {
+            font-size: 0.7rem;
+        }
+
+        /* Modo horizontal para móvil */
+        @media (max-width: 750px) {
+            .thermometer-area {
+                flex-direction: column;
+                align-items: center;
+            }
+            .thermometer {
+                width: 100%;
+                height: 55px;
+                flex-direction: row;
+                padding: 0.3rem 0.5rem;
+                border-radius: 60px;
+                justify-content: flex-start;
+            }
+            .thermometer .thermometer-inner {
+                height: 100%;
+                border-radius: 40px;
+                flex-direction: row;
+                justify-content: flex-start;
+            }
+            .thermometer .thermometer-fill {
+                height: 100% !important;
+                width: 50%;
+                border-radius: 40px;
+                min-height: unset;
+                min-width: 6px;
+                transition: width 0.6s cubic-bezier(0.34, 1.2, 0.64, 1);
+            }
+            .thermometer .thermometer-fill::after {
+                top: 50%;
+                left: -18px;
+                transform: translateY(-50%);
+                font-size: 1.5rem;
+            }
+            .thermometer .thermometer-scale {
+                flex-direction: row;
+                padding: 0 6px;
+                justify-content: space-between;
+            }
+            .thermometer .scale-mark {
+                flex-direction: column;
+                justify-content: center;
+                padding-right: 0;
+                padding-bottom: 4px;
+                font-size: 0.45rem;
+            }
+            .thermometer .scale-mark .line {
+                width: 2px;
+                height: 10px;
+            }
+            .thermometer .scale-mark .line.large {
+                width: 3px;
+                height: 14px;
+            }
+            .situation-box {
+                padding: 0.8rem;
+            }
+            .situation-text {
+                font-size: 1.1rem;
+            }
+            .option-btn {
+                min-width: 110px;
+                font-size: 0.85rem;
+                padding: 0.5rem 0.8rem;
+            }
+            h1 {
+                font-size: 2.2rem;
+            }
+            .intro-content {
+                padding: 1.2rem;
+            }
+        }
+
+        /* Situación */
+        .situation-box {
+            flex: 1;
+            background: #fcf9f2;
+            border-radius: 50px;
+            padding: 1rem 1.2rem;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 0.8rem;
+            min-height: 0;
+            border: 2px solid #d9e4df;
+        }
+
+        .situation-text {
+            font-size: 1.3rem;
+            font-weight: bold;
+            text-align: center;
+            color: #1e3a4a;
+            line-height: 1.4;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .option-btn {
+            background: white;
+            border: 3px solid #b8ccc2;
+            border-radius: 60px;
+            padding: 0.7rem 1.2rem;
+            font-size: 1rem;
+            font-weight: bold;
+            font-family: inherit;
+            cursor: pointer;
+            transition: 0.08s linear;
+            box-shadow: 0 4px 0 #9aaf9f;
+            color: #1e3a4a;
+            flex: 1;
+            min-width: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .option-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #9aaf9f;
+        }
+        .option-btn:hover {
+            background: #f0f7f0;
+            border-color: #2c7a7a;
+        }
+        .option-btn .emoji {
+            font-size: 1.8rem;
+        }
+        .option-btn:disabled {
+            opacity: 0.5;
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #9aaf9f;
+            pointer-events: none;
+        }
+
+        /* Feedback */
+        .feedback-panel {
+            background: #d9e4df;
+            border-radius: 40px;
+            padding: 6px 16px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            min-height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 1px solid #b8ccc2;
+            margin-top: 4px;
+        }
+
+        .bottom-bar {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+        .btn-action {
+            background: rgba(44, 122, 122, 0.15);
+            color: #1e3a4a;
+            border: 2px solid #2c7a7a;
+            padding: 6px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+        .btn-action:hover {
+            background: rgba(44, 122, 122, 0.3);
+        }
+        .btn-action.reset {
+            background: #e74c3c;
+            border-color: #c0392b;
+            color: white;
+        }
+        .btn-action.reset:hover {
+            background: #c0392b;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.6rem;
+            color: #7f9a8a;
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+
+        /* Partículas */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            font-size: 2rem;
+            z-index: 1000;
+            animation: particleFall 1.2s ease-out forwards;
+        }
+        @keyframes particleFall {
+            0% {
+                transform: translateY(-20px) rotate(0deg) scale(0.5);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(80vh) rotate(720deg) scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        /* Bounce para el termómetro */
+        .thermometer-fill.bounce {
+            animation: bounceFill 0.4s ease;
+        }
+        @keyframes bounceFill {
+            0% {
+                transform: scaleY(1.02);
+            }
+            50% {
+                transform: scaleY(0.98);
+            }
+            100% {
+                transform: scaleY(1);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- ===== INTRO ===== -->
+        <div id="introScreen" class="screen intro-screen active">
+            <div class="intro-content">
+                <div class="title-badge">🌱 Creciendo en Valores 🌱</div>
+                <h1>🌡️ Termómetro del Respeto 🌡️</h1>
+                <div class="grade-box">📖 3º / 4º Grado (II UP)</div>
+                <div class="subject-box">📚 Asignatura: Creciendo en Valores</div>
+                <div class="content-box">📌 Contenido: Respeto y Tolerancia</div>
+                <div class="objective-card">
+                    <p>🎯 <strong>Propósito / Objetivo</strong><br>
+                    Aprender a identificar acciones respetuosas y tolerantes en la vida diaria.<br>
+                    🌡️ Sube el termómetro tomando decisiones que demuestren respeto hacia los demás.</p>
+                </div>
+                <button class="btn-start" id="startBtn">🌡️ ¡Medir mi respeto! 🌡️</button>
+                <div class="intro-footer">❤️ El respeto se demuestra con acciones ❤️</div>
+            </div>
+        </div>
+
+        <!-- ===== JUEGO ===== -->
+        <div id="gameScreen" class="screen game-screen">
+            <div class="header">
+                <div class="level-box">🌡️ Nivel: <span id="levelText">Respetuoso</span></div>
+                <div class="message-area" id="mainMessage">💬 Lee y elige con respeto</div>
+            </div>
+
+            <div class="thermometer-area">
+                <div class="thermometer" id="thermometerContainer">
+                    <div class="thermometer-inner">
+                        <div class="thermometer-fill" id="thermometerFill" style="height:50%; width:50%;"></div>
+                    </div>
+                    <div class="thermometer-scale">
+                        <div class="scale-mark"><span class="emoji-small">🌟</span><span class="line large"></span></div>
+                        <div class="scale-mark"><span>100</span><span class="line"></span></div>
+                        <div class="scale-mark"><span>75</span><span class="line"></span></div>
+                        <div class="scale-mark"><span>50</span><span class="line large"></span></div>
+                        <div class="scale-mark"><span>25</span><span class="line"></span></div>
+                        <div class="scale-mark"><span>0</span><span class="line large"></span></div>
+                        <div class="scale-mark"><span class="emoji-small">💔</span><span class="line"></span></div>
+                    </div>
+                </div>
+
+                <div class="situation-box">
+                    <div class="situation-text" id="situationText">Un compañero se equivoca al leer en voz alta. ¿Qué haces?</div>
+                    <div class="options-grid" id="optionsContainer"></div>
+                </div>
+            </div>
+
+            <div id="feedbackPanel" class="feedback-panel">💡 Elige la opción que demuestre más respeto.</div>
+
+            <div class="bottom-bar">
+                <button class="btn-action reset" id="resetBtn">🔄 Reiniciar</button>
+            </div>
+            <footer>🌱 Cada decisión cuenta para construir un ambiente de respeto</footer>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // DATOS DE SITUACIONES Y OPCIONES
+        // ============================================================
+        const SITUACIONES = [{
+            texto: 'Un compañero se equivoca al leer en voz alta. ¿Qué haces?',
+            opciones: [
+                { texto: 'Le digo que lo está haciendo mal', valor: -15, emoji: '👎' },
+                { texto: 'Le animo y le ayudo a seguir', valor: 20, emoji: '❤️' },
+                { texto: 'Me río y le señalo', valor: -25, emoji: '😅' }
+            ]
+        }, {
+            texto: 'Un amigo tiene una opinión diferente a la tuya sobre un juego. ¿Cómo actúas?',
+            opciones: [
+                { texto: 'Le escucho y respeto su opinión', valor: 20, emoji: '👍' },
+                { texto: 'Me enfado y no quiero jugar con él', valor: -20, emoji: '😠' },
+                { texto: 'Le digo que está equivocado', valor: -10, emoji: '🤨' }
+            ]
+        }, {
+            texto: 'En el recreo, ves que un niño nuevo está solo. ¿Qué haces?',
+            opciones: [
+                { texto: 'Le invito a jugar con mi grupo', valor: 25, emoji: '🤝' },
+                { texto: 'Le ignoro y sigo jugando', valor: -15, emoji: '😐' },
+                { texto: 'Le pregunto si quiere jugar', valor: 20, emoji: '🙂' }
+            ]
+        }, {
+            texto: 'Tu profesor te pide que ayudes a un compañero que no entiende la tarea. ¿Qué haces?',
+            opciones: [
+                { texto: 'Le explico con paciencia y amabilidad', valor: 25, emoji: '🧡' },
+                { texto: 'Le digo que es su problema', valor: -25, emoji: '😤' },
+                { texto: 'Le ayudo rápido para que no me moleste', valor: -5, emoji: '😐' }
+            ]
+        }, {
+            texto: 'Alguien hace un comentario ofensivo sobre tu ropa. ¿Cómo respondes?',
+            opciones: [
+                { texto: 'Le digo que no me gusta y me retiro', valor: 15, emoji: '😌' },
+                { texto: 'Me insulto y me peleo', valor: -30, emoji: '🤬' },
+                { texto: 'Le ignoro y no le doy importancia', valor: 10, emoji: '😶' }
+            ]
+        }, {
+            texto: 'Un compañero tiene una discapacidad y le cuesta subir las escaleras. ¿Qué haces?',
+            opciones: [
+                { texto: 'Le ofrezco mi ayuda y le acompaño', valor: 30, emoji: '🤗' },
+                { texto: 'Le miro y sigo caminando', valor: -20, emoji: '😒' },
+                { texto: 'Le digo que vaya más rápido', valor: -15, emoji: '😑' }
+            ]
+        }];
+
+        // ============================================================
+        // ESTADO DEL JUEGO
+        // ============================================================
+        let indiceActual = 0;
+        let nivelRespeto = 50; // 0-100
+        let juegoTerminado = false;
+        let esperandoRespuesta = false;
+        const MIN = 0,
+            MAX = 100;
+
+        // ============================================================
+        // DOM
+        // ============================================================
+        const introDiv = document.getElementById('introScreen');
+        const gameDiv = document.getElementById('gameScreen');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const situationText = document.getElementById('situationText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const feedbackPanel = document.getElementById('feedbackPanel');
+        const mainMessage = document.getElementById('mainMessage');
+        const levelText = document.getElementById('levelText');
+        const thermometerFill = document.getElementById('thermometerFill');
+
+        // ============================================================
+        // AUDIO (Web Audio API)
+        // ============================================================
+        let audioCtx = null;
+        let soundEnabled = false;
+
+        function initAudio() {
+            if (audioCtx) return;
+            try {
+                audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+            } catch (e) { console.log("Audio no soportado"); }
+        }
+
+        function playSound(type) {
+            if (!audioCtx || !soundEnabled) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'up') {
+                osc.frequency.value = 880;
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+                osc.start();
+                osc.stop(now + 0.15);
+            } else if (type === 'down') {
+                osc.frequency.value = 440;
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+                osc.start();
+                osc.stop(now + 0.25);
+            } else if (type === 'win') {
+                [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+                    const oscN = audioCtx.createOscillator();
+                    const gainN = audioCtx.createGain();
+                    oscN.connect(gainN);
+                    gainN.connect(audioCtx.destination);
+                    oscN.frequency.value = f;
+                    gainN.gain.setValueAtTime(0.2, now + i * 0.1);
+                    gainN.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.1 + 0.25);
+                    oscN.start(now + i * 0.1);
+                    oscN.stop(now + i * 0.1 + 0.25);
+                });
+            }
+        }
+
+        function enableSound() {
+            if (!audioCtx) initAudio();
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            soundEnabled = true;
+        }
+
+        // ============================================================
+        // FUNCIONES PRINCIPALES
+        // ============================================================
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function actualizarTermometro() {
+            const pct = Math.max(MIN, Math.min(MAX, nivelRespeto));
+            thermometerFill.style.height = pct + '%';
+            thermometerFill.style.width = pct + '%';
+
+            // Bounce
+            thermometerFill.classList.remove('bounce');
+            void thermometerFill.offsetWidth;
+            thermometerFill.classList.add('bounce');
+
+            // Etiqueta de nivel
+            if (pct >= 75) levelText.textContent = '🌟 Muy Respetuoso';
+            else if (pct >= 50) levelText.textContent = '👍 Respetuoso';
+            else if (pct >= 25) levelText.textContent = '🤔 Aprendiendo';
+            else levelText.textContent = '😔 Necesita mejorar';
+        }
+
+        function mostrarSituacion() {
+            if (indiceActual >= SITUACIONES.length) {
+                terminarJuego();
+                return;
+            }
+            const sit = SITUACIONES[indiceActual];
+            situationText.textContent = sit.texto;
+            optionsContainer.innerHTML = '';
+
+            const opcionesBarajadas = shuffleArray([...sit.opciones]);
+            opcionesBarajadas.forEach((opt) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerHTML = `<span class="emoji">${opt.emoji}</span> ${opt.texto}`;
+                btn.addEventListener('click', () => manejarRespuesta(opt.valor, opt.texto));
+                optionsContainer.appendChild(btn);
+            });
+            esperandoRespuesta = true;
+            feedbackPanel.innerHTML = '🤔 ¿Cuál es la mejor opción?';
+            mainMessage.innerHTML = '💬 Elige con respeto';
+            document.querySelectorAll('.option-btn').forEach(b => b.disabled = false);
+        }
+
+        function manejarRespuesta(valor, texto) {
+            if (!esperandoRespuesta || juegoTerminado) return;
+            esperandoRespuesta = false;
+
+            document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+
+            let nuevoNivel = nivelRespeto + valor;
+            nuevoNivel = Math.max(MIN, Math.min(MAX, nuevoNivel));
+            nivelRespeto = nuevoNivel;
+            actualizarTermometro();
+
+            let mensaje = '';
+            let sonido = '';
+            if (valor > 0) {
+                mensaje = `✅ ¡Excelente! "${texto}" demuestra respeto. +${valor}`;
+                sonido = 'up';
+                crearParticulas('🌟');
+            } else if (valor < 0) {
+                mensaje = `❌ ¡Ups! "${texto}" no es respetuoso. ${valor}`;
+                sonido = 'down';
+                crearParticulas('😟');
+            } else {
+                mensaje = `🤔 "${texto}" es neutral. ¡Busca siempre el respeto!`;
+                sonido = 'up';
+            }
+            feedbackPanel.innerHTML = mensaje;
+            if (soundEnabled) playSound(sonido);
+
+            indiceActual++;
+            setTimeout(() => {
+                if (indiceActual >= SITUACIONES.length) {
+                    terminarJuego();
+                } else {
+                    mostrarSituacion();
+                }
+            }, 1500);
+        }
+
+        function terminarJuego() {
+            juegoTerminado = true;
+            esperandoRespuesta = false;
+            situationText.textContent = '🏆 ¡Has completado todas las situaciones!';
+            optionsContainer.innerHTML = '';
+            const pct = Math.max(MIN, Math.min(MAX, nivelRespeto));
+            let mensajeFinal = '';
+            if (pct >= 75) mensajeFinal = '🌟 ¡Eres una persona muy respetuosa! Sigue así. 🌟';
+            else if (pct >= 50) mensajeFinal = '👍 Vas por buen camino. ¡Sigue practicando el respeto!';
+            else mensajeFinal = '😔 Recuerda que el respeto es importante. ¡Puedes mejorar! 💪';
+            feedbackPanel.innerHTML = `🏁 ${mensajeFinal}`;
+            mainMessage.innerHTML = '🌡️ Termómetro finalizado';
+            if (pct >= 75 && soundEnabled) playSound('win');
+            if (pct >= 75) {
+                for (let i = 0; i < 30; i++) {
+                    setTimeout(() => crearParticulas('🎉'), i * 80);
+                }
+            }
+        }
+
+        function crearParticulas(emoji) {
+            const el = document.createElement('div');
+            el.className = 'particle';
+            el.textContent = emoji;
+            el.style.left = (Math.random() * 70 + 15) + '%';
+            el.style.top = (Math.random() * 30 + 10) + '%';
+            el.style.fontSize = (Math.random() * 28 + 18) + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1500);
+        }
+
+        function reiniciarJuego() {
+            indiceActual = 0;
+            nivelRespeto = 50;
+            juegoTerminado = false;
+            esperandoRespuesta = false;
+            actualizarTermometro();
+            mostrarSituacion();
+            feedbackPanel.innerHTML = '💡 Elige la opción que demuestre más respeto.';
+            mainMessage.innerHTML = '💬 Lee y elige con respeto';
+            if (soundEnabled) playSound('up');
+        }
+
+        function iniciarJuego() {
+            enableSound();
+            introDiv.classList.remove('active');
+            gameDiv.classList.add('active');
+            reiniciarJuego();
+        }
+
+        // ============================================================
+        // EVENTOS
+        // ============================================================
+        startBtn.addEventListener('click', iniciarJuego);
+        resetBtn.addEventListener('click', reiniciarJuego);
+
+        initAudio();
+        document.body.addEventListener('click', function firstEnable() {
+            if (!soundEnabled) enableSound();
+        }, { once: true });
+    </script>
+</body>
+</html>

@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌍 Ciclo del Agua Realista 3D</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- GSAP para animaciones fluidas del entorno -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <style>
+        :root {
+            --sky-top: #4FACFE;
+            --sky-bottom: #E0F7FA;
+            --btn-color: #0288D1;
+            --btn-hover: #01579B;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #F0F4F8;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+            padding: 10px;
+        }
+
+        h1 {
+            color: var(--btn-hover);
+            margin: 10px 0;
+            font-weight: 900;
+            font-size: 2.2rem;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            font-weight: 700;
+            margin-bottom: 20px;
+            margin-top: -5px;
+        }
+
+        /* --- ESCENARIO --- */
+        #scene {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            height: 550px;
+            border-radius: 30px;
+            overflow: hidden;
+            background: linear-gradient(to top, var(--sky-bottom) 0%, var(--sky-top) 100%);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2), inset 0 0 20px rgba(255,255,255,0.5);
+            border: 8px solid white;
+        }
+
+        /* SOL */
+        #sun {
+            position: absolute;
+            top: 50px; left: 80px;
+            width: 90px; height: 90px;
+            background: radial-gradient(circle, #FFFDE7, #FFEB3B, #FBC02D);
+            border-radius: 50%;
+            box-shadow: 0 0 60px #FFEB3B, 0 0 100px #FFD54F;
+            z-index: 1;
+        }
+
+        /* MONTAÑAS 3D (SVG) */
+        #mountains {
+            position: absolute;
+            bottom: 60px; /* Queda sumergido en el agua */
+            left: -5%;
+            width: 110%;
+            height: 400px;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* NUBES */
+        #clouds-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 200px;
+            z-index: 3;
+        }
+
+        .cloud {
+            position: absolute;
+            background: #FFFFFF;
+            border-radius: 50px;
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.05));
+        }
+        .cloud::before, .cloud::after {
+            content: '';
+            position: absolute;
+            background: inherit;
+            border-radius: 50%;
+        }
+        
+        /* Nube 1 (Principal) */
+        #c1 { width: 180px; height: 60px; top: 60px; right: 150px; }
+        #c1::before { width: 90px; height: 90px; top: -45px; left: 30px; }
+        #c1::after { width: 110px; height: 110px; top: -60px; right: 20px; }
+
+        /* Nube 2 y 3 (Ocultas inicialmente) */
+        #c2 { width: 140px; height: 50px; top: 40px; right: -200px; opacity: 0; }
+        #c2::before { width: 70px; height: 70px; top: -35px; left: 20px; }
+        #c2::after { width: 90px; height: 90px; top: -40px; right: 15px; }
+
+        #c3 { width: 160px; height: 55px; top: 90px; right: -250px; opacity: 0; }
+        #c3::before { width: 80px; height: 80px; top: -40px; left: 25px; }
+        #c3::after { width: 100px; height: 100px; top: -50px; right: 15px; }
+
+        /* CANVAS (Agua, Lluvia, Vapor, Cascada) */
+        canvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 4;
+            pointer-events: none;
+        }
+
+        /* --- POPUPS --- */
+        .popup-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 15, 30, 0.4);
+            backdrop-filter: blur(2px);
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; z-index: 20;
+        }
+
+        .popup-card {
+            background: white; padding: 30px; border-radius: 25px;
+            text-align: center; max-width: 380px; width: 85%;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            border: 6px solid var(--btn-color);
+            transform: scale(0.5);
+        }
+
+        .popup-icon { font-size: 4rem; margin-bottom: 10px; }
+        .popup-title { color: var(--btn-color); font-size: 1.8rem; margin: 0 0 10px 0; font-weight: 900;}
+        .popup-text { font-size: 1.1rem; color: #555; line-height: 1.5; margin-bottom: 20px; font-weight: 700;}
+        
+        .btn-close {
+            background: #FFD166; color: #333; border: none; padding: 12px 25px;
+            font-size: 1.1rem; font-weight: 900; border-radius: 20px; cursor: pointer;
+            box-shadow: 0 5px 0 #D9AE4C; transition: transform 0.1s;
+        }
+        .btn-close:active { transform: translateY(5px); box-shadow: 0 0 0 transparent; }
+
+        /* --- CONTROLES --- */
+        .controls { margin: 20px 0; display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; max-width: 900px; }
+        
+        .btn-action {
+            background: var(--btn-color); color: white; border: none; padding: 15px 25px;
+            font-size: 1.1rem; font-family: 'Nunito', sans-serif; font-weight: 900;
+            border-radius: 30px; cursor: pointer; transition: all 0.2s ease;
+            box-shadow: 0 6px 0 var(--btn-hover); display: flex; align-items: center; gap: 8px;
+        }
+        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 8px 0 var(--btn-hover); }
+        .btn-action:active { transform: translateY(6px); box-shadow: 0 0 0 transparent; }
+        .btn-action.active-btn { background: #FFD166; color: #333; box-shadow: 0 6px 0 #D9AE4C; }
+
+    </style>
+</head>
+<body>
+
+    <h1>💧 La Aventura del Agua</h1>
+    <p class="subtitle">¡Observa cómo cambia el nivel del lago en 3D!</p>
+
+    <div id="scene">
+        <!-- Sol -->
+        <div id="sun"></div>
+        
+        <!-- Montañas 3D Low Poly usando SVG -->
+        <svg id="mountains" viewBox="0 0 800 400" preserveAspectRatio="none">
+            <!-- Montaña Fondo Izquierda -->
+            <polygon points="0,400 150,150 300,400" fill="#5D4037" />
+            <polygon points="150,150 300,400 220,400" fill="#3E2723" />
+            
+            <!-- Montaña Fondo Derecha -->
+            <polygon points="500,400 650,100 800,400" fill="#4E342E" />
+            <polygon points="650,100 800,400 700,400" fill="#3E2723" />
+            <polygon points="650,100 600,180 650,220 710,180" fill="#F5F5F5" /> <!-- Nieve -->
+            
+            <!-- Gran Montaña Central 3D -->
+            <polygon points="100,400 400,50 650,400" fill="#795548" /> <!-- Cara Luz -->
+            <polygon points="400,50 650,400 450,400" fill="#5D4037" /> <!-- Cara Sombra -->
+            
+            <!-- Nieve Montaña Central 3D -->
+            <polygon points="400,50 320,150 400,180 470,140" fill="#FFFFFF" /> <!-- Luz -->
+            <polygon points="400,50 400,180 470,140" fill="#E0E0E0" /> <!-- Sombra -->
+
+            <!-- Grieta central (de donde saldrá la cascada en la recolección) -->
+            <polygon points="390,180 410,170 420,400 380,400" fill="#3E2723" opacity="0.6"/>
+        </svg>
+
+        <!-- Nubes -->
+        <div id="clouds-container">
+            <div class="cloud" id="c1"></div>
+            <div class="cloud" id="c2"></div>
+            <div class="cloud" id="c3"></div>
+        </div>
+
+        <!-- Canvas para físicas (Agua, Vapor, Lluvia) -->
+        <canvas id="simCanvas"></canvas>
+
+        <!-- Popup Educativo -->
+        <div class="popup-overlay" id="popup">
+            <div class="popup-card" id="popupCard">
+                <div class="popup-icon" id="pIcon">☀️</div>
+                <h2 class="popup-title" id="pTitle">Título</h2>
+                <p class="popup-text" id="pText">Texto</p>
+                <button class="btn-close" onclick="closePopup()">¡Qué genial! 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botones de Control -->
+    <div class="controls">
+        <button class="btn-action" id="btn-evap" onclick="setStage('evaporation')">☀️ Evaporación</button>
+        <button class="btn-action" id="btn-cond" onclick="setStage('condensation')">☁️ Condensación</button>
+        <button class="btn-action" id="btn-prec" onclick="setStage('precipitation')">🌧️ Precipitación</button>
+        <button class="btn-action" id="btn-coll" onclick="setStage('collection')">🏞️ Recolección</button>
+    </div>
+
+    <script>
+        // --- MOTOR DE FÍSICAS Y RENDERIZADO (CANVAS) ---
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+        const scene = document.getElementById('scene');
+
+        // Variables del Agua
+        let waterMaxHeight = 150; // Nivel normal
+        let waterMinHeight = 60;  // Nivel evaporado
+        let targetWaterLevel = waterMaxHeight;
+        let currentWaterLevel = waterMaxHeight;
+        let waveTime = 0;
+
+        // Variables de Partículas
+        let particles = [];
+        let stage = 'idle';
+
+        function resize() {
+            canvas.width = scene.offsetWidth;
+            canvas.height = scene.offsetHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor(type, x, y) {
+                this.type = type;
+                this.x = x; this.y = y;
+                this.life = 1;
+
+                if (type === 'vapor') {
+                    this.vx = (Math.random() - 0.5) * 1.5;
+                    this.vy = -(Math.random() * 2 + 1);
+                    this.size = Math.random() * 4 + 2;
+                    this.decay = 0.004;
+                } else if (type === 'rain') {
+                    this.vx = 2 + Math.random(); // Inclinación por viento
+                    this.vy = 12 + Math.random() * 5; // Caída rápida
+                    this.size = 2;
+                    this.length = 15 + Math.random() * 10;
+                } else if (type === 'splash') {
+                    this.vx = (Math.random() - 0.5) * 5;
+                    this.vy = -(Math.random() * 4 + 2);
+                    this.size = Math.random() * 2 + 1;
+                    this.decay = 0.05;
+                } else if (type === 'river') {
+                    // Cascada bajando por la montaña central
+                    this.vx = (Math.random() - 0.5) * 2;
+                    this.vy = 4 + Math.random() * 3;
+                    this.size = Math.random() * 3 + 2;
+                    this.decay = 0.01;
+                }
+            }
+
+            update(waveYFunction) {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.type === 'vapor') {
+                    this.size += 0.05;
+                    this.life -= this.decay;
+                } else if (this.type === 'rain') {
+                    // Colisión exacta con la altura de la ola en este punto X
+                    let waveHeightAtX = waveYFunction(this.x);
+                    if (this.y >= waveHeightAtX) {
+                        this.life = 0; // Muere
+                        for(let i=0; i<3; i++) particles.push(new Particle('splash', this.x, waveHeightAtX));
+                    }
+                } else if (this.type === 'splash' || this.type === 'river') {
+                    this.vy += 0.3; // Gravedad
+                    this.life -= this.decay;
+                    let waveHeightAtX = waveYFunction(this.x);
+                    if (this.y >= waveHeightAtX && this.type === 'river') {
+                        this.life = 0; // Se funde con el lago
+                        for(let i=0; i<2; i++) particles.push(new Particle('splash', this.x, waveHeightAtX));
+                    }
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                if (this.type === 'vapor') {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${this.life * 0.5})`;
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (this.type === 'rain') {
+                    ctx.strokeStyle = `rgba(200, 230, 255, 0.7)`;
+                    ctx.lineWidth = this.size;
+                    ctx.lineCap = 'round';
+                    ctx.moveTo(this.x, this.y);
+                    ctx.lineTo(this.x - this.vx * 2, this.y - this.length);
+                    ctx.stroke();
+                } else if (this.type === 'splash' || this.type === 'river') {
+                    ctx.fillStyle = this.type === 'river' ? `rgba(100, 200, 255, ${this.life})` : `rgba(255, 255, 255, ${this.life})`;
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+
+        // Función matemática para calcular la ola en cualquier punto (para colisiones)
+        function getWaveY(x) {
+            let base = canvas.height - currentWaterLevel;
+            let wave1 = Math.sin(x * 0.015 + waveTime) * 8;
+            let wave2 = Math.sin(x * 0.008 - waveTime * 0.5) * 5;
+            return base + wave1 + wave2;
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            waveTime += 0.05;
+
+            // Interpolación suave del nivel del agua (Fluid dynamics visual)
+            currentWaterLevel += (targetWaterLevel - currentWaterLevel) * 0.02;
+
+            // 1. GENERADORES DE PARTÍCULAS
+            if (stage === 'evaporation' && Math.random() < 0.5) {
+                particles.push(new Particle('vapor', Math.random() * canvas.width, getWaveY(Math.random() * canvas.width)));
+            } 
+            if (stage === 'precipitation' && Math.random() < 0.7) {
+                // Lluvia desde las nubes oscuras
+                let startX = (canvas.width - 400) + Math.random() * 450;
+                particles.push(new Particle('rain', startX, 50));
+            }
+            if (stage === 'collection') {
+                // Cascada saliendo del centro de la montaña (aprox x=400 relativo al SVG)
+                let mountainCenterX = canvas.width * 0.5; 
+                if(Math.random() < 0.8) particles.push(new Particle('river', mountainCenterX + (Math.random()*20-10), 180));
+            }
+
+            // 2. ACTUALIZAR Y DIBUJAR PARTÍCULAS
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.update(getWaveY);
+                p.draw();
+                if (p.life <= 0 || p.y > canvas.height + 50 || p.x > canvas.width + 50) particles.splice(i, 1);
+            }
+
+            // 3. DIBUJAR EL AGUA CON OLEAJE MATEMÁTICO
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height);
+            for (let x = 0; x <= canvas.width; x += 15) {
+                ctx.lineTo(x, getWaveY(x));
+            }
+            ctx.lineTo(canvas.width, canvas.height);
+            ctx.closePath();
+
+            // Gradiente profundo del agua
+            let grad = ctx.createLinearGradient(0, canvas.height - currentWaterLevel, 0, canvas.height);
+            grad.addColorStop(0, 'rgba(79, 195, 247, 0.85)');
+            grad.addColorStop(1, 'rgba(1, 87, 155, 0.95)');
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            requestAnimationFrame(render);
+        }
+        render(); // Iniciar Bucle Visual
+
+        // --- SISTEMA DE ANIMACIÓN GSAP Y POPUPS ---
+        const info = {
+            'evaporation': { 
+                icon: '☀️', title: '¡Evaporación!', 
+                text: 'El Sol calienta muchísimo. Mira cómo el agua se convierte en vapor invisible y sube al cielo. ¡El nivel del lago está bajando!' 
+            },
+            'condensation': { 
+                icon: '☁️', title: '¡Condensación!', 
+                text: 'Allá arriba hace frío. El vapor se abraza y forma nubes. Mira cómo se oscurece el cielo y se juntan las nubes llenas de agua.' 
+            },
+            'precipitation': { 
+                icon: '🌧️', title: '¡Precipitación!', 
+                text: '¡Las nubes están demasiado pesadas! El agua cae en forma de lluvia. ¡Mira cómo chocan las gotas con las olas!' 
+            },
+            'collection': { 
+                icon: '🏞️', title: '¡Recolección!', 
+                text: 'La lluvia cae en las montañas y forma ríos o cascadas que viajan hasta el lago. ¡Mira cómo el agua vuelve a su nivel original!' 
+            }
+        };
+
+        function showPopup(key) {
+            document.getElementById('pIcon').textContent = info[key].icon;
+            document.getElementById('pTitle').textContent = info[key].title;
+            document.getElementById('pText').textContent = info[key].text;
+            
+            const pop = document.getElementById('popup');
+            pop.style.pointerEvents = 'auto';
+            gsap.to(pop, { opacity: 1, duration: 0.3 });
+            gsap.fromTo("#popupCard", { scale: 0.5, y: 50 }, { scale: 1, y: 0, duration: 0.6, ease: "back.out(1.5)" });
+        }
+
+        function closePopup() {
+            const pop = document.getElementById('popup');
+            gsap.to("#popupCard", { scale: 0.5, y: 50, duration: 0.3 });
+            gsap.to(pop, { opacity: 0, duration: 0.3, onComplete: () => pop.style.pointerEvents = 'none' });
+        }
+
+        function highlightBtn(id) {
+            document.querySelectorAll('.btn-action').forEach(b => b.classList.remove('active-btn'));
+            document.getElementById(id).classList.add('active-btn');
+        }
+
+        function setStage(newStage) {
+            stage = newStage;
+
+            if (stage === 'evaporation') {
+                highlightBtn('btn-evap');
+                targetWaterLevel = waterMinHeight; // El agua baja
+                gsap.to(scene, { background: "linear-gradient(to top, #E0F7FA 0%, #4FACFE 100%)", duration: 2 });
+                gsap.to("#sun", { scale: 1.2, opacity: 1, boxShadow: "0 0 100px #FFEB3B, 0 0 150px #FF9800", duration: 2 });
+                gsap.to(".cloud", { background: "#FFFFFF", duration: 2 });
+                // Limpiar nubes extra
+                gsap.to("#c2", { right: -200, opacity: 0, duration: 2 });
+                gsap.to("#c3", { right: -250, opacity: 0, duration: 2 });
+                showPopup('evaporation');
+            } 
+            else if (stage === 'condensation') {
+                highlightBtn('btn-cond');
+                // Cielo oscuro, sol se apaga, nubes grises y aparecen más nubes
+                gsap.to(scene, { background: "linear-gradient(to top, #546E7A 0%, #263238 100%)", duration: 3 });
+                gsap.to("#sun", { scale: 0.7, opacity: 0.2, boxShadow: "0 0 20px #FFEB3B", duration: 2 });
+                gsap.to(".cloud", { background: "#455A64", duration: 3 });
+                gsap.to("#c1", { right: 200, duration: 3, ease: "power1.inOut" });
+                gsap.to("#c2", { right: 350, opacity: 1, duration: 3, ease: "power1.out" });
+                gsap.to("#c3", { right: 80, opacity: 1, duration: 3.5, ease: "power1.out" });
+                showPopup('condensation');
+            } 
+            else if (stage === 'precipitation') {
+                highlightBtn('btn-prec');
+                // Asegurar clima oscuro
+                gsap.to(scene, { background: "linear-gradient(to top, #455A64 0%, #1c252a 100%)", duration: 1 });
+                gsap.to(".cloud", { background: "#37474F", duration: 1 });
+                showPopup('precipitation');
+            }
+            else if (stage === 'collection') {
+                highlightBtn('btn-coll');
+                targetWaterLevel = waterMaxHeight; // El agua sube de regreso a la normalidad
+                // El clima empieza a despejarse
+                gsap.to(scene, { background: "linear-gradient(to top, #B2EBF2 0%, #81D4FA 100%)", duration: 4 });
+                gsap.to("#sun", { scale: 1, opacity: 0.8, boxShadow: "0 0 60px #FFEB3B", duration: 4 });
+                gsap.to(".cloud", { background: "#F5F5F5", duration: 3 });
+                showPopup('collection');
+            }
+        }
+    </script>
+</body>
+</html>

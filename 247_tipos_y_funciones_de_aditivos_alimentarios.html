@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎨 Aditivos: Repaso y Actividad</title>
+    <style>
+        /* Definición de Variables de Color */
+        :root {
+            --color-principal: #3498DB; 
+            --color-secundario: #FFC300; 
+            --color-fondo: #F4F6F6; 
+            --color-texto: #2C3E50; 
+            --color-error: #E74C3C; 
+            --color-acierto: #2ECC71; 
+            --color-boton-hover: #2980B9;
+            --color-start-button: #2ECC71; 
+            --color-repaso-button: #FF7043; 
+        }
+
+        /* Estilos Generales y Estructura */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Verdana', sans-serif;
+            background-color: var(--color-fondo);
+            color: var(--color-texto);
+            margin: 0;
+            padding: clamp(10px, 3vw, 20px);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 900px;
+            background-color: white;
+            padding: clamp(15px, 4vw, 30px);
+            border-radius: 18px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Botón de Navegación Superior */
+        .top-nav {
+            display: none; 
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding: 10px 0 20px 0;
+            border-bottom: 2px dashed #ddd;
+        }
+
+        .nav-button {
+            background-color: var(--color-principal);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            display: flex; 
+            align-items: center;
+            gap: 8px; 
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            min-width: 200px;
+            justify-content: center;
+        }
+
+        .nav-button:hover {
+            background-color: var(--color-boton-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .nav-button.active {
+            background-color: var(--color-secundario); 
+            color: var(--color-texto);
+            border: 2px solid var(--color-principal);
+            box-shadow: 0 0 15px rgba(255, 195, 0, 0.5);
+            pointer-events: none; 
+            transform: none;
+        }
+
+        /* Encabezados */
+        h1, h2 {
+            text-align: center;
+            color: var(--color-principal);
+            line-height: 1.3;
+        }
+
+        h2 {
+            border-bottom: 3px dashed var(--color-secundario);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            font-size: clamp(1.4em, 4vw, 1.8em);
+        }
+
+        /* PANTALLA DE INICIO (SPLASH SCREEN) */
+        #start-screen {
+            text-align: center;
+            padding: clamp(20px, 5vw, 40px) 20px;
+            background: linear-gradient(135deg, #e0f2f7 0%, #d1e9f1 100%); 
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            animation: fadeInScale 0.6s ease-out;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex: 1;
+        }
+
+        #start-screen h1 {
+            font-size: clamp(1.8em, 6vw, 3em);
+            color: var(--color-principal);
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            animation: bounceIn 0.8s ease-out;
+        }
+
+        #start-screen p {
+            font-size: clamp(1em, 3vw, 1.2em);
+            color: var(--color-texto);
+            margin-bottom: 30px;
+            line-height: 1.6;
+            animation: fadeInUp 0.8s ease-out 0.2s forwards;
+            opacity: 0; 
+        }
+
+        .start-buttons-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 400px;
+            width: 100%;
+            margin: 0 auto;
+            animation: fadeInUp 0.8s ease-out 0.4s forwards;
+            opacity: 0;
+        }
+
+        .big-start-button {
+            padding: 18px 25px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .big-start-button:first-child { background-color: var(--color-start-button); }
+        .big-start-button:first-child:hover {
+            background-color: #27ae60; 
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(46, 204, 113, 0.4);
+        }
+
+        .big-start-button:last-child { background-color: var(--color-repaso-button); }
+        .big-start-button:last-child:hover {
+            background-color: #e64a19; 
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 112, 67, 0.4);
+        }
+
+        .splash-image-placeholder {
+            width: clamp(100px, 20vw, 150px);
+            height: clamp(100px, 20vw, 150px);
+            background: linear-gradient(45deg, var(--color-secundario), #FF8C00); 
+            border-radius: 50%;
+            margin: 20px auto 30px auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            animation: rotateIn 0.8s ease-out 0.5s forwards;
+            opacity: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(2.5em, 8vw, 4em);
+            border: 5px solid white;
+        }
+
+        /* Animaciones */
+        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes bounceIn { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes rotateIn { from { opacity: 0; transform: rotate(-90deg) scale(0.5); } to { opacity: 1; transform: rotate(0deg) scale(1); } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* CONTENIDO DE REPASO */
+        #repaso-screen { display: none; animation: fadeInScale 0.4s ease-out; }
+
+        .repaso-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            border-radius: 12px;
+            background-color: #F8F9F9; 
+            border-left: 5px solid var(--color-principal);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .repaso-section:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .repaso-section h3 {
+            color: white;
+            background-color: var(--color-principal);
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 8px;
+            margin-top: 0;
+            font-size: 1.1em;
+        }
+
+        .repaso-section p { line-height: 1.6; }
+
+        .golden-rule {
+            margin-top: 35px;
+            padding: 20px;
+            border: 2px dashed var(--color-secundario);
+            border-radius: 12px;
+            background-color: #FFFDE7;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: inset 0 0 10px rgba(255,195,0,0.1);
+        }
+
+        /* CONTENIDO DE LA ACTIVIDAD (QUIZ) */
+        #activity-screen { display: none; animation: fadeInScale 0.4s ease-out; }
+
+        /* Barra de progreso */
+        .progress-container {
+            width: 100%;
+            height: 12px;
+            background-color: #E0E0E0;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-principal), #5DADE2);
+            width: 0%;
+            transition: width 0.4s ease;
+            border-radius: 10px;
+        }
+
+        .question-card {
+            background-color: white;
+            padding: clamp(15px, 4vw, 25px);
+            margin-bottom: 25px;
+            border-radius: 12px;
+            border: 2px solid #EAEDED;
+            transition: all 0.3s ease;
+        }
+
+        .question-card:hover {
+            border-color: #D6EAF8;
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .question-text {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 18px;
+            color: #17202A;
+            line-height: 1.4;
+        }
+
+        /* Botones de Opción */
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .tf-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        @media (max-width: 500px) {
+            .tf-group { grid-template-columns: 1fr; }
+        }
+
+        .option-button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: #F4F6F7; 
+            color: var(--color-texto);
+            border: 2px solid #D5D8DC;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 0.95em;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        .tf-group .option-button { text-align: center; font-weight: bold; font-size: 1.05em; }
+
+        .option-button:hover:not(.correct):not(.incorrect):not(.selected) {
+            background-color: #EBF5FB;
+            border-color: var(--color-principal);
+            color: var(--color-principal);
+        }
+
+        /* Estado seleccionado antes de enviar */
+        .option-button.selected {
+            background-color: #FEF9E7;
+            border-color: var(--color-secundario);
+            box-shadow: 0 0 0 3px rgba(255, 195, 0, 0.3);
+            font-weight: bold;
+        }
+
+        /* Feedback y Marcado tras revisar */
+        .option-button.correct {
+            background-color: var(--color-acierto) !important;
+            color: white !important;
+            border-color: #27AE60 !important;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
+        }
+
+        .option-button.incorrect {
+            background-color: var(--color-error) !important;
+            color: white !important;
+            border-color: #C0392B !important;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
+            opacity: 0.8;
+        }
+
+        .feedback-message {
+            margin-top: 15px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 0.95em;
+            display: none;
+            background-color: #FDEDEC; 
+            color: #922B21;
+            border-left: 4px solid var(--color-error);
+            animation: slideDown 0.3s ease-out;
+            line-height: 1.4;
+        }
+        
+        .feedback-message.success {
+            background-color: #EAFAF1;
+            color: #186A3B;
+            border-left-color: var(--color-acierto);
+        }
+        
+        /* Botones de acción general */
+        .action-button {
+            background-color: var(--color-acierto);
+            color: white;
+            padding: 16px 25px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            margin-top: 30px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+            font-family: inherit;
+        }
+
+        .action-button:hover:not(:disabled) {
+            background-color: #27AE60;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(46, 204, 113, 0.4);
+        }
+
+        .action-button:disabled {
+            background-color: #BDC3C7;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        #retry-button {
+            background-color: var(--color-principal);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+            margin-top: 15px;
+        }
+        #retry-button:hover { background-color: var(--color-boton-hover); }
+
+        /* Resultados */
+        #result-section {
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: 30px;
+            border-radius: 15px;
+            background-color: #E8F8F5;
+            border: 2px solid var(--color-acierto);
+            display: none;
+            animation: bounceIn 0.6s ease-out;
+        }
+
+        #score {
+            font-size: clamp(2em, 6vw, 3em);
+            font-weight: 900;
+            margin: 10px 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        #message { font-size: 1.1em; line-height: 1.5; color: var(--color-texto); }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        
+        <!-- BARRA DE NAVEGACIÓN SUPERIOR -->
+        <div class="top-nav">
+            <button class="nav-button" id="go-to-activity">Comenzar Actividad <span>▶️</span></button>
+            <button class="nav-button" id="go-to-repaso">Repasar Contenido <span>📚</span></button>
+        </div>
+
+        <!-- PANTALLA DE INICIO (SPLASH SCREEN) -->
+        <div id="start-screen">
+            <h1>🔬 Detectives de Aditivos 🍎</h1>
+            <div class="splash-image-placeholder">🔎</div>
+            <p>Descubre qué son los aditivos, por qué están en nuestros alimentos y conviértete en un experto leyendo etiquetas.</p>
+            <div class="start-buttons-container">
+                <button class="big-start-button" id="splash-repaso-content">Repasar Contenido <span>📚</span></button>
+                <button class="big-start-button" id="splash-start-activity">¡Comenzar Reto! <span>▶️</span></button>
+            </div>
+        </div>
+
+        <!-- PANTALLA DE REPASO DE CONTENIDO -->
+        <div id="repaso-screen">
+            <h2>🎨 Los Ayudantes Escondidos</h2>
+            <p style="font-style: italic; text-align: center; font-size: 1.05em; color: #7F8C8D; margin-bottom: 25px;">Los aditivos son sustancias añadidas a los alimentos para darles alguna propiedad útil. ¡Conoce sus 3 misiones!</p>
+
+            <div class="repaso-section">
+                <h3>🛡️ 1. Misión de Conservación</h3>
+                <p>El trabajo más importante. Los <strong>conservantes</strong> y <strong>antioxidantes</strong> evitan que los alimentos se llenen de bacterias o se pongan rancios por el aire. Así duran más tiempo y son seguros de comer. <em>Ejemplo: La sal o el azúcar que conservan mermeladas y carnes.</em></p>
+            </div>
+
+            <div class="repaso-section">
+                <h3>🍓 2. Misión Sensorial</h3>
+                <p>Aquí están los <strong>colorantes</strong> y <strong>potenciadores de sabor</strong>. Si el color o el sabor se pierden al procesar el alimento, estos ayudantes los devuelven o los hacen más fuertes para que se vean apetitosos.</p>
+            </div>
+
+            <div class="repaso-section">
+                <h3>🍦 3. Misión de Textura y Estabilidad</h3>
+                <p>Estos aditivos, como los <strong>emulsionantes</strong>, son esenciales para que ingredientes que no se mezclan bien (como aceite y agua) se mantengan unidos. Gracias a ellos la mayonesa no se separa y el helado es cremoso.</p>
+            </div>
+
+            <div class="golden-rule">
+                ⭐ Regla de Oro ⭐<br><br>
+                Un alimento con una lista muy corta de ingredientes y aditivos es generalmente más natural que uno con una lista larguísima. ¡Presta atención a las etiquetas!
+            </div>
+        </div>
+
+        <!-- PANTALLA DE ACTIVIDAD (QUIZ) -->
+        <div id="activity-screen">
+            <h2>¿Qué Aprendiste? 🤔</h2>
+            
+            <div class="progress-container">
+                <div class="progress-fill" id="progress-bar"></div>
+            </div>
+
+            <form id="quiz-form">
+                
+                <div class="question-card" data-q="1" data-correct="C">
+                    <div class="question-text">1. ¿Cuál es la misión principal de un **conservante**?</div>
+                    <div class="options-group">
+                        <button type="button" class="option-button" data-val="A">A) Dar un color brillante al alimento.</button>
+                        <button type="button" class="option-button" data-val="B">B) Mezclar el agua y el aceite para que no se separen.</button>
+                        <button type="button" class="option-button" data-val="C">C) Evitar que el alimento se dañe o se llene de bacterias.</button>
+                    </div>
+                    <div class="feedback-message" data-val="A">¡Casi! Eso es trabajo de los colorantes. Los conservantes se encargan de la <strong>seguridad</strong> del alimento.</div>
+                    <div class="feedback-message" data-val="B">¡Esa es la misión de los emulsionantes (textura)! Concéntrate en la palabra 'conservar'.</div>
+                    <div class="feedback-message success" data-val="C">¡Correcto! Protegen el alimento de bacterias.</div>
+                </div>
+
+                <div class="question-card" data-q="2" data-correct="A">
+                    <div class="question-text">2. Si un aditivo se usa para que un caramelo tenga un color rojo intenso, ¿a qué misión pertenece?</div>
+                    <div class="options-group">
+                        <button type="button" class="option-button" data-val="A">A) Misión Sensorial.</button>
+                        <button type="button" class="option-button" data-val="B">B) Misión de Conservación.</button>
+                        <button type="button" class="option-button" data-val="C">C) Misión de Estabilidad.</button>
+                    </div>
+                    <div class="feedback-message success" data-val="A">¡Exacto! Afecta a lo que vemos y saboreamos.</div>
+                    <div class="feedback-message" data-val="B">El color no evita bacterias. Se relaciona con los <strong>sentidos</strong> (la vista).</div>
+                    <div class="feedback-message" data-val="C">La estabilidad tiene que ver con la mezcla y textura, no con el color.</div>
+                </div>
+
+                <div class="question-card" data-q="3" data-correct="A">
+                    <div class="question-text">3. Un **emulsionante** evita que el aceite y el agua de la mayonesa se separen. ¿Cuál es su misión?</div>
+                    <div class="options-group">
+                        <button type="button" class="option-button" data-val="A">A) Misión de Textura y Estabilidad.</button>
+                        <button type="button" class="option-button" data-val="B">B) Misión de Conservación y Alergias.</button>
+                        <button type="button" class="option-button" data-val="C">C) Misión de Color y Aroma.</button>
+                    </div>
+                    <div class="feedback-message success" data-val="A">¡Muy bien! Mantienen la textura perfecta.</div>
+                    <div class="feedback-message" data-val="B">Este aditivo trabaja en cómo se siente la mezcla, no en conservarla.</div>
+                    <div class="feedback-message" data-val="C">Este aditivo tiene que ver con que la mezcla no se arruine (estabilidad), no con el olor.</div>
+                </div>
+
+                <div class="question-card" data-q="4" data-correct="B">
+                    <div class="question-text">4. **Verdadero o Falso:** Un aditivo es el ingrediente principal de un alimento.</div>
+                    <div class="tf-group">
+                        <button type="button" class="option-button" data-val="A">Verdadero</button>
+                        <button type="button" class="option-button" data-val="B">Falso</button>
+                    </div>
+                    <div class="feedback-message" data-val="A">Recuerda: Un aditivo es solo un 'ayudante' que se añade en pequeñas cantidades.</div>
+                    <div class="feedback-message success" data-val="B">¡Exacto! Son ayudantes, no el ingrediente base.</div>
+                </div>
+
+                <div class="question-card" data-q="5" data-correct="A">
+                    <div class="question-text">5. **Verdadero o Falso:** Si un alimento tiene una lista muy larga de ingredientes, suele estar muy procesado.</div>
+                    <div class="tf-group">
+                        <button type="button" class="option-button" data-val="A">Verdadero</button>
+                        <button type="button" class="option-button" data-val="B">Falso</button>
+                    </div>
+                    <div class="feedback-message success" data-val="A">¡Correcto! Es la Regla de Oro.</div>
+                    <div class="feedback-message" data-val="B">¡No olvides la "Regla de Oro"! Mientras más simple, más natural.</div>
+                </div>
+
+                <button type="submit" id="submit-button" class="action-button" disabled>✔️ Revisar mis Respuestas ✔️</button>
+            </form>
+
+            <div id="result-section">
+                <h2>¡Resultados! ⭐️</h2>
+                <div id="score"></div>
+                <div id="message"></div>
+                <button type="button" id="retry-button" class="action-button">🔄 Volver a Intentar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const startScreen = document.getElementById('start-screen');
+            const repasoScreen = document.getElementById('repaso-screen');
+            const activityScreen = document.getElementById('activity-screen');
+            const topNav = document.querySelector('.top-nav'); 
+
+            const splashStartActivityBtn = document.getElementById('splash-start-activity');
+            const splashRepasoContentBtn = document.getElementById('splash-repaso-content');
+            const goToActivityBtn = document.getElementById('go-to-activity');
+            const goToRepasoBtn = document.getElementById('go-to-repaso');
+            
+            const quizForm = document.getElementById('quiz-form');
+            const questionCards = document.querySelectorAll('.question-card');
+            const submitButton = document.getElementById('submit-button');
+            const retryButton = document.getElementById('retry-button');
+            const resultSection = document.getElementById('result-section');
+            const scoreDisplay = document.getElementById('score');
+            const messageDisplay = document.getElementById('message'); 
+            const progressBar = document.getElementById('progress-bar');
+
+            let userAnswers = {};
+            const totalQuestions = questionCards.length;
+
+            const COLOR_ACIERTO = getComputedStyle(document.documentElement).getPropertyValue('--color-acierto').trim();
+            const COLOR_PRINCIPAL = getComputedStyle(document.documentElement).getPropertyValue('--color-principal').trim();
+            const COLOR_ERROR = getComputedStyle(document.documentElement).getPropertyValue('--color-error').trim();
+
+            const updateProgress = () => {
+                const answered = Object.keys(userAnswers).length;
+                const percentage = (answered / totalQuestions) * 100;
+                progressBar.style.width = `${percentage}%`;
+                
+                // Habilitar botón de envío solo si todas están respondidas
+                if(answered === totalQuestions) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = "✔️ Revisar mis Respuestas ✔️";
+                } else {
+                    submitButton.disabled = true;
+                    submitButton.textContent = `Faltan ${totalQuestions - answered} preguntas`;
+                }
+            };
+
+            const resetQuiz = () => {
+                userAnswers = {};
+                submitButton.disabled = true;
+                submitButton.textContent = "Responde para continuar";
+                resultSection.style.display = 'none';
+                progressBar.style.width = '0%';
+                
+                questionCards.forEach(card => {
+                    card.style.pointerEvents = 'auto'; // Reactivar clicks
+                    card.querySelectorAll('.option-button').forEach(btn => {
+                        btn.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    card.querySelectorAll('.feedback-message').forEach(fb => fb.style.display = 'none');
+                });
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            const markActiveScreen = (screenId) => {
+                goToActivityBtn.classList.remove('active');
+                goToRepasoBtn.classList.remove('active');
+                if (screenId === 'activity-screen') goToActivityBtn.classList.add('active');
+                else if (screenId === 'repaso-screen') goToRepasoBtn.classList.add('active');
+            };
+
+            const showScreen = (screenToShow, screenId) => {
+                startScreen.style.display = 'none';
+                repasoScreen.style.display = 'none';
+                activityScreen.style.display = 'none';
+                
+                if (screenToShow === startScreen) {
+                    topNav.style.display = 'none'; 
+                } else {
+                    topNav.style.display = 'flex'; 
+                    markActiveScreen(screenId); 
+                }
+
+                screenToShow.style.display = 'block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                if (screenToShow === activityScreen && Object.keys(userAnswers).length === 0) {
+                    resetQuiz();
+                }
+            };
+
+            // Eventos de Navegación
+            splashStartActivityBtn.addEventListener('click', () => showScreen(activityScreen, 'activity-screen'));
+            splashRepasoContentBtn.addEventListener('click', () => showScreen(repasoScreen, 'repaso-screen'));
+            goToActivityBtn.addEventListener('click', () => showScreen(activityScreen, 'activity-screen'));
+            goToRepasoBtn.addEventListener('click', () => showScreen(repasoScreen, 'repaso-screen'));
+            retryButton.addEventListener('click', resetQuiz);
+
+            // Iniciar aplicación
+            showScreen(startScreen, 'start-screen');
+
+            // Lógica de Selección
+            questionCards.forEach(card => {
+                const buttons = card.querySelectorAll('.option-button');
+                const qId = card.dataset.q;
+
+                buttons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        // Limpiar selección previa en esta tarjeta
+                        buttons.forEach(btn => btn.classList.remove('selected'));
+                        
+                        // Marcar nueva selección
+                        button.classList.add('selected');
+                        userAnswers[qId] = button.dataset.val;
+                        
+                        updateProgress();
+                    });
+                });
+            });
+
+            // Lógica de Revisión
+            quizForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                let score = 0;
+
+                questionCards.forEach(card => {
+                    card.style.pointerEvents = 'none'; // Desactivar cambios
+                    const qId = card.dataset.q;
+                    const correctAnswer = card.dataset.correct;
+                    const userAnswer = userAnswers[qId];
+                    const buttons = card.querySelectorAll('.option-button');
+
+                    // Marcar respuestas
+                    buttons.forEach(button => {
+                        button.classList.remove('selected');
+                        if (button.dataset.val === correctAnswer) {
+                            button.classList.add('correct');
+                        }
+                        if (button.dataset.val === userAnswer && userAnswer !== correctAnswer) {
+                            button.classList.add('incorrect');
+                        }
+                    });
+
+                    // Mostrar feedback específico
+                    const feedbackElement = card.querySelector(`.feedback-message[data-val="${userAnswer}"]`);
+                    if (feedbackElement) {
+                        feedbackElement.style.display = 'block';
+                    } else if (userAnswer === correctAnswer) {
+                        // Fallback por si no hay feedback de éxito específico
+                        const successFb = card.querySelector('.feedback-message.success');
+                        if(successFb) successFb.style.display = 'block';
+                    }
+
+                    if (userAnswer === correctAnswer) score++;
+                });
+
+                // Resultados Generales
+                const percentage = (score / totalQuestions) * 100;
+                scoreDisplay.textContent = `${score} / ${totalQuestions} (${percentage.toFixed(0)}%)`;
+
+                if (percentage === 100) {
+                    messageDisplay.innerHTML = "¡Felicidades! 🎉 <strong>¡Eres un Súper Detective!</strong> ¡Dominas el tema por completo!";
+                    scoreDisplay.style.color = COLOR_ACIERTO;
+                    resultSection.style.borderColor = COLOR_ACIERTO;
+                } else if (percentage >= 60) {
+                    messageDisplay.innerHTML = "¡Muy bien! ✨ <strong>¡Sólido conocimiento!</strong> Revisa tus errores y serás imparable.";
+                    scoreDisplay.style.color = COLOR_PRINCIPAL;
+                    resultSection.style.borderColor = COLOR_PRINCIPAL;
+                } else {
+                    messageDisplay.innerHTML = "¡Ánimo! 💪 <strong>¡Todo es práctica!</strong> Te sugiero repasar el contenido y volver a intentar.";
+                    scoreDisplay.style.color = COLOR_ERROR;
+                    resultSection.style.borderColor = COLOR_ERROR;
+                }
+
+                submitButton.style.display = 'none'; // Ocultar botón de enviar
+                setTimeout(()=> { submitButton.style.display = 'block'; submitButton.disabled = true; }, 100); // Reset visual
+                
+                resultSection.style.display = 'block';
+                setTimeout(() => {
+                    resultSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            });
+        });
+    </script>
+</body>
+</html>

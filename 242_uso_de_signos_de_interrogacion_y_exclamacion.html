@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Los Guardianes de los Signos</title>
+    <style>
+        /* Paleta MINED y Variables Generales */
+        :root {
+            --azul: #0059A6;
+            --celeste: #00A8E8;
+            --verde: #A5C83F;
+            --amarillo: #FFEC01;
+            --fucsia: #E32085;
+            --morado: #833189;
+            --blanco: #ffffff;
+            --sombra: 0 8px 15px rgba(0,0,0,0.2);
+            --borde-radio: 25px;
+            --fuente-principal: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+        }
+
+        /* Resets y Configuración Base */
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            font-family: var(--fuente-principal);
+            background: linear-gradient(135deg, var(--celeste), var(--azul));
+            color: var(--blanco);
+            width: 100vw; height: 100vh;
+            overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+
+        /* Fondo Animado (Nubes y Estrellas) */
+        .fondo { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; pointer-events: none;}
+        .nube {
+            position: absolute; background: rgba(255,255,255,0.4); border-radius: 50px;
+            animation: moverNubes linear infinite;
+        }
+        .nube::before, .nube::after {
+            content: ''; position: absolute; background: rgba(255,255,255,0.4); border-radius: 50%;
+        }
+        @keyframes moverNubes { from { transform: translateX(110vw); } to { transform: translateX(-20vw); } }
+
+        /* HUD - Encabezado Gamificado */
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 30px; background: rgba(255,255,255,0.2);
+            border-bottom-left-radius: var(--borde-radio); border-bottom-right-radius: var(--borde-radio);
+            backdrop-filter: blur(5px); z-index: 10;
+        }
+        .hud-item { font-size: 1.5rem; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .controles button {
+            background: none; border: none; font-size: 2rem; cursor: pointer; transition: transform 0.2s;
+        }
+        .controles button:active { transform: scale(0.9); }
+
+        /* Contenedor Principal de Pantallas */
+        #game-container {
+            flex: 1; position: relative; display: flex; justify-content: center; align-items: center;
+            padding: 20px;
+        }
+        .pantalla {
+            display: none; flex-direction: column; align-items: center; text-align: center;
+            background: rgba(255,255,255,0.95); color: #333; padding: 40px;
+            border-radius: var(--borde-radio); box-shadow: var(--sombra);
+            width: 95%; max-width: 800px; max-height: 90%; overflow-y: auto;
+            animation: saltar 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .pantalla.activa { display: flex; }
+        @keyframes saltar { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        /* Tipografía y Botones */
+        h1 { font-size: 3rem; color: var(--azul); margin-bottom: 20px; line-height: 1.2; }
+        h2 { font-size: 2.2rem; color: var(--morado); margin-bottom: 20px; }
+        p { font-size: 1.8rem; margin-bottom: 20px; }
+        
+        .btn {
+            background: var(--verde); color: white; border: none; border-radius: var(--borde-radio);
+            padding: 15px 40px; font-size: 2rem; font-weight: bold; font-family: var(--fuente-principal);
+            cursor: pointer; box-shadow: 0 6px 0px #7d9a2b, var(--sombra);
+            transition: all 0.1s; margin: 10px;
+        }
+        .btn:active { transform: translateY(6px); box-shadow: 0 0px 0px #7d9a2b; }
+        .btn-azul { background: var(--azul); box-shadow: 0 6px 0px #003d73; }
+        .btn-fucsia { background: var(--fucsia); box-shadow: 0 6px 0px #b01865; }
+        .btn-amarillo { background: var(--amarillo); color: #333; box-shadow: 0 6px 0px #c9bb00; }
+
+        /* Personaje Lupi */
+        .lupi { font-size: 6rem; margin: 10px; animation: flotar 3s ease-in-out infinite; }
+        @keyframes flotar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        /* Actividades */
+        .tarjetas-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-bottom: 20px;}
+        .tarjeta {
+            background: var(--amarillo); border-radius: 15px; padding: 20px; font-size: 1.8rem;
+            cursor: pointer; transition: transform 0.2s; border: 4px solid #fff; font-weight: bold; color: #333;
+        }
+        .tarjeta:active { transform: scale(0.9); }
+        
+        .zonas-container { display: flex; gap: 20px; width: 100%; justify-content: center; }
+        .zona {
+            flex: 1; padding: 30px; border-radius: var(--borde-radio); color: white; font-size: 2rem;
+            border: 5px dashed white; display: flex; flex-direction: column; align-items: center;
+        }
+        .zona-preg { background: var(--celeste); }
+        .zona-excl { background: var(--fucsia); }
+
+        /* Feedback y Confeti */
+        #feedback {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 4rem; font-weight: bold; display: none; z-index: 100;
+            text-shadow: 3px 3px 0 #fff, -3px -3px 0 #fff, 3px -3px 0 #fff, -3px 3px 0 #fff;
+        }
+        .particula { position: absolute; pointer-events: none; z-index: 99; }
+
+        /* Diploma */
+        .diploma { border: 10px solid var(--amarillo); background: #fffdf0; padding: 30px; border-radius: 20px; width: 100%; }
+        .diploma h1 { color: var(--fucsia); font-size: 3.5rem;}
+        
+        /* Ocultar barra de desplazamiento */
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- Animaciones de fondo -->
+    <div class="fondo" id="fondo-animado"></div>
+
+    <header>
+        <div class="hud-item" id="hud-vidas">❤️❤️❤️</div>
+        <div class="hud-item" style="color: var(--amarillo);" id="hud-estrellas">⭐ 0</div>
+        <div class="hud-item" id="hud-puntos">🏅 0</div>
+        <div class="hud-item" id="hud-tiempo">⏱️ 00:00</div>
+        <div class="controles">
+            <button id="btn-leer" onclick="leerTextoPantalla()" title="Leer en voz alta">🗣️</button>
+            <button id="btn-sonido" onclick="toggleSonido()" title="Sonido On/Off">🔊</button>
+        </div>
+    </header>
+
+    <div id="game-container">
+        <!-- Pantalla Inicio -->
+        <div id="pantalla-inicio" class="pantalla activa">
+            <h1>Los Guardianes de los Signos</h1>
+            <div class="lupi">🦊</div>
+            <p>¡Hola! Soy Lupi, el Explorador.</p>
+            <p>He perdido los signos de <b>interrogación (¿ ?)</b> y <b>exclamación (¡ !)</b>. ¿Me ayudas a recuperarlos superando misiones?</p>
+            <button class="btn btn-azul" onclick="iniciarAventura()">▶ Comenzar Aventura</button>
+            <button class="btn btn-amarillo" onclick="cargarPartida()" id="btn-continuar" style="display:none; font-size: 1.5rem;">Continuar partida guardada</button>
+        </div>
+
+        <!-- Pantalla Dinámica para Actividades -->
+        <div id="pantalla-actividad" class="pantalla">
+            <h2 id="act-titulo">Título de la actividad</h2>
+            <div id="act-contenido" style="width: 100%; margin-bottom: 20px;"></div>
+            <div id="act-controles">
+                <button class="btn" style="background:#bbb; box-shadow: 0 6px 0px #999;" onclick="reiniciarActividadActual()">🔄 Reiniciar</button>
+            </div>
+        </div>
+
+        <!-- Pantalla Final Diploma -->
+        <div id="pantalla-final" class="pantalla">
+            <div class="diploma">
+                <div style="font-size: 4rem;">📦 ➡️ ❓❗</div>
+                <h1>¡Excelente trabajo!</h1>
+                <h2>Ahora eres un Guardián de los Signos</h2>
+                <p id="stats-finales">Estrellas: 5 | Puntos: 1000</p>
+                <div class="lupi" style="font-size: 5rem;">🦊 🎖️</div>
+            </div>
+            <button class="btn btn-azul" onclick="reiniciarJuegoTotal()">Volver a Jugar</button>
+        </div>
+    </div>
+
+    <div id="feedback"></div>
+
+<script>
+    /* ======================================================================
+       VARIABLES GLOBALES Y ESTADO DEL JUEGO
+       ====================================================================== */
+    let estado = {
+        nivelActual: 0, vidas: 3, estrellas: 0, puntos: 0, tiempo: 0, jugando: false
+    };
+    let temporizadorInterval;
+    let sonidoActivado = true;
+    let actividadActualInstancia = null;
+
+    // Configuración de niveles (7 actividades solicitadas + Explicación)
+    const niveles = [
+        { tipo: 'explicacion' },
+        { tipo: 'arrastrar', titulo: 'Misión 1: Clasifica las oraciones' },
+        { tipo: 'completar', titulo: 'Misión 2: Completa los signos' },
+        { tipo: 'memoria', titulo: 'Misión 3: Memorama de signos' },
+        { tipo: 'tf', titulo: 'Misión 4: Verdadero o Falso' },
+        { tipo: 'globos', titulo: 'Misión 5: Atrapa la Exclamación' },
+        { tipo: 'ruleta', titulo: 'Misión 6: Ruleta de signos' },
+        { tipo: 'construir', titulo: 'Misión 7: Construye la oración' }
+    ];
+
+    /* ======================================================================
+       MOTOR DE AUDIO (Web Audio API y Speech Synthesis)
+       ====================================================================== */
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function reproducirTono(frecuencia, tipo, duracion) {
+        if (!sonidoActivado) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = tipo; osc.frequency.value = frecuencia;
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start();
+        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duracion);
+        osc.stop(audioCtx.currentTime + duracion);
+    }
+
+    const sfx = {
+        click: () => reproducirTono(600, 'sine', 0.1),
+        correcto: () => { reproducirTono(500, 'sine', 0.1); setTimeout(()=>reproducirTono(800, 'sine', 0.2), 100); },
+        error: () => reproducirTono(200, 'sawtooth', 0.3),
+        ganar: () => { [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => setTimeout(() => reproducirTono(f, 'square', 0.2), i*150)); }
+    };
+
+    function leerTexto(texto) {
+        if (!sonidoActivado) return;
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(texto);
+        utterance.lang = 'es-ES';
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function leerTextoPantalla() {
+        const pantalla = document.querySelector('.pantalla.activa');
+        let texto = pantalla.innerText.replace(/[\n\r]+/g, '. ');
+        leerTexto(texto);
+    }
+
+    function toggleSonido() {
+        sonidoActivado = !sonidoActivado;
+        document.getElementById('btn-sonido').innerText = sonidoActivado ? '🔊' : '🔇';
+    }
+
+    /* ======================================================================
+       EFECTOS VISUALES Y FONDOS
+       ====================================================================== */
+    function iniciarFondo() {
+        const fondo = document.getElementById('fondo-animado');
+        for(let i=0; i<5; i++){
+            let nube = document.createElement('div');
+            nube.className = 'nube';
+            nube.style.width = (Math.random()*100 + 100) + 'px';
+            nube.style.height = '40px';
+            nube.style.top = (Math.random()*80) + '%';
+            nube.style.animationDuration = (Math.random()*15 + 15) + 's';
+            nube.style.animationDelay = (Math.random()*5) + 's';
+            fondo.appendChild(nube);
+        }
+    }
+
+    function mostrarFeedback(mensaje, color, correcto) {
+        const fb = document.getElementById('feedback');
+        fb.innerText = mensaje;
+        fb.style.color = color;
+        fb.style.display = 'block';
+        fb.style.animation = 'saltar 0.5s ease forwards';
+        
+        if(correcto) { sfx.correcto(); sumarPuntos(50); }
+        else { sfx.error(); restarVida(); }
+
+        setTimeout(() => { fb.style.display = 'none'; }, 1500);
+    }
+
+    function lanzarConfeti() {
+        sfx.ganar();
+        const colores = ['#0059A6', '#00A8E8', '#A5C83F', '#FFEC01', '#E32085', '#833189'];
+        for(let i=0; i<50; i++) {
+            let p = document.createElement('div');
+            p.className = 'particula';
+            p.style.backgroundColor = colores[Math.floor(Math.random()*colores.length)];
+            p.style.width = '10px'; p.style.height = '10px';
+            p.style.left = '50%'; p.style.top = '50%';
+            document.body.appendChild(p);
+            
+            let angulo = Math.random() * Math.PI * 2;
+            let velocidad = Math.random() * 15 + 5;
+            let dx = Math.cos(angulo) * velocidad * 10;
+            let dy = Math.sin(angulo) * velocidad * 10 - 50;
+            
+            p.animate([
+                { transform: `translate(0,0) rotate(0)`, opacity: 1 },
+                { transform: `translate(${dx}px, ${dy + 300}px) rotate(720deg)`, opacity: 0 }
+            ], { duration: 1500 + Math.random()*1000, easing: 'cubic-bezier(.37,0,.63,1)' });
+            
+            setTimeout(() => p.remove(), 2500);
+        }
+    }
+
+    /* ======================================================================
+       LÓGICA CORE Y ESTADO
+       ====================================================================== */
+    function actualizarHUD() {
+        document.getElementById('hud-vidas').innerText = '❤️'.repeat(estado.vidas);
+        document.getElementById('hud-estrellas').innerText = '⭐ ' + estado.estrellas;
+        document.getElementById('hud-puntos').innerText = '🏅 ' + estado.puntos;
+    }
+
+    function iniciarTemporizador() {
+        if(temporizadorInterval) clearInterval(temporizadorInterval);
+        temporizadorInterval = setInterval(() => {
+            if(estado.jugando) {
+                estado.tiempo++;
+                let min = String(Math.floor(estado.tiempo / 60)).padStart(2, '0');
+                let seg = String(estado.tiempo % 60).padStart(2, '0');
+                document.getElementById('hud-tiempo').innerText = `⏱️ ${min}:${seg}`;
+                guardarPartida();
+            }
+        }, 1000);
+    }
+
+    function sumarPuntos(pts) { estado.puntos += pts; actualizarHUD(); }
+    function restarVida() {
+        estado.vidas--; actualizarHUD();
+        if(estado.vidas <= 0) {
+            alert("¡Oh no! Te quedaste sin vidas. Lupi te dará una más para continuar.");
+            estado.vidas = 1; actualizarHUD();
+        }
+    }
+
+    function guardarPartida() { sessionStorage.setItem('lupiSave', JSON.stringify(estado)); }
+    function cargarPartida() {
+        let save = sessionStorage.getItem('lupiSave');
+        if(save) {
+            estado = JSON.parse(save);
+            estado.jugando = true;
+            actualizarHUD();
+            iniciarTemporizador();
+            cargarNivel(estado.nivelActual);
+        }
+    }
+
+    function mostrarPantalla(id) {
+        document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+        document.getElementById(id).classList.add('activa');
+        leerTextoPantalla();
+    }
+
+    function iniciarAventura() {
+        sfx.click();
+        estado = { nivelActual: 0, vidas: 3, estrellas: 0, puntos: 0, tiempo: 0, jugando: true };
+        actualizarHUD();
+        iniciarTemporizador();
+        cargarNivel(0);
+    }
+
+    function nivelCompletado() {
+        estado.estrellas++;
+        lanzarConfeti();
+        estado.nivelActual++;
+        guardarPartida();
+        setTimeout(() => {
+            if(estado.nivelActual < niveles.length) cargarNivel(estado.nivelActual);
+            else finalizarJuego();
+        }, 2500);
+    }
+
+    function finalizarJuego() {
+        estado.jugando = false;
+        mostrarPantalla('pantalla-final');
+        let min = String(Math.floor(estado.tiempo / 60)).padStart(2, '0');
+        let seg = String(estado.tiempo % 60).padStart(2, '0');
+        document.getElementById('stats-finales').innerText = 
+            `Tiempo: ${min}:${seg} | Estrellas: ${estado.estrellas} | Puntos: ${estado.puntos}`;
+        sessionStorage.removeItem('lupiSave');
+    }
+
+    function reiniciarJuegoTotal() { location.reload(); }
+    function reiniciarActividadActual() { sfx.click(); cargarNivel(estado.nivelActual); }
+
+    /* ======================================================================
+       GESTOR DE ACTIVIDADES (Vistas y Lógica)
+       ====================================================================== */
+    function cargarNivel(idx) {
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+        const nivel = niveles[idx];
+        mostrarPantalla('pantalla-actividad');
+        document.getElementById('act-titulo').innerText = nivel.titulo || "Los Guardianes de los Signos";
+        const cont = document.getElementById('act-contenido');
+        cont.innerHTML = '';
+        
+        switch(nivel.tipo) {
+            case 'explicacion': renderExplicacion(cont); break;
+            case 'arrastrar': renderArrastrar(cont); break;
+            case 'completar': renderCompletar(cont); break;
+            case 'memoria': renderMemoria(cont); break;
+            case 'tf': renderTF(cont); break;
+            case 'globos': renderGlobos(cont); break;
+            case 'ruleta': renderRuleta(cont); break;
+            case 'construir': renderConstruir(cont); break;
+        }
+    }
+
+    // --- 0. Explicación ---
+    function renderExplicacion(cont) {
+        cont.innerHTML = `
+            <div style="font-size: 1.5rem; text-align: left; background: #eee; padding: 20px; border-radius: 20px; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);">
+                <p>🦊 <b>Misión de Lupi:</b> Ayúdame a recordar los signos.</p>
+                <p style="color: var(--azul);">❓ <b>Preguntas:</b> Usan <b>¿</b> al inicio y <b>?</b> al final.<br><i>Ejemplo: ¿Cómo estás?</i></p>
+                <p style="color: var(--fucsia);">❗ <b>Exclamaciones:</b> Usan <b>¡</b> al inicio y <b>!</b> al final. Demuestran sorpresa o emoción.<br><i>Ejemplo: ¡Qué bonito!</i></p>
+            </div>
+            <br>
+            <button class="btn btn-azul" onclick="sfx.click(); nivelCompletado();">¡Entendido! Vamos a jugar</button>
+        `;
+    }
+
+    // --- 1. Clasificar (Simulación de arrastrar para móviles) ---
+    function renderArrastrar(cont) {
+        const oraciones = [
+            { t: "Cómo te llamas", tipo: "preg" }, { t: "Qué alegría verte", tipo: "excl" },
+            { t: "Cuántos años tienes", tipo: "preg" }, { t: "Qué susto me diste", tipo: "excl" }
+        ];
+        let pendientes = [...oraciones];
+        let seleccionada = null;
+
+        cont.innerHTML = `
+            <p>Toca una oración y luego toca el cofre correcto.</p>
+            <div class="tarjetas-container" id="oraciones-caja"></div>
+            <div class="zonas-container">
+                <div class="zona zona-preg" id="zona-preg" onclick="evaluarZona('preg')"><h3>❓ Preguntas</h3></div>
+                <div class="zona zona-excl" id="zona-excl" onclick="evaluarZona('excl')"><h3>❗ Exclamaciones</h3></div>
+            </div>
+        `;
+        
+        const renderPendientes = () => {
+            const caja = document.getElementById('oraciones-caja');
+            caja.innerHTML = '';
+            pendientes.forEach((o, i) => {
+                let div = document.createElement('div');
+                div.className = 'tarjeta';
+                div.innerText = o.t;
+                div.onclick = () => { sfx.click(); seleccionada = o; document.querySelectorAll('.tarjeta').forEach(t=>t.style.borderColor='#fff'); div.style.borderColor='var(--fucsia)'; };
+                caja.appendChild(div);
+            });
+            if(pendientes.length === 0) setTimeout(nivelCompletado, 500);
+        };
+
+        window.evaluarZona = (tipo) => {
+            if(!seleccionada) return;
+            if(seleccionada.tipo === tipo) {
+                mostrarFeedback("¡Correcto!", "var(--verde)", true);
+                pendientes = pendientes.filter(o => o.t !== seleccionada.t);
+                seleccionada = null;
+                renderPendientes();
+            } else {
+                mostrarFeedback("¡Intenta de nuevo!", "var(--fucsia)", false);
+                seleccionada = null; renderPendientes();
+            }
+        };
+        renderPendientes();
+    }
+
+    // --- 2. Completar los Signos ---
+    function renderCompletar(cont) {
+        const retos = [
+            { t: "___ Cuándo llegaste ___", a: "preg" }, { t: "___ Feliz cumpleaños ___", a: "excl" }
+        ];
+        let actual = 0;
+        
+        window.evaluarCompletar = (tipo) => {
+            if(tipo === retos[actual].a) {
+                mostrarFeedback("¡Excelente!", "var(--verde)", true);
+                actual++;
+                if(actual >= retos.length) setTimeout(nivelCompletado, 500);
+                else renderizar();
+            } else { mostrarFeedback("¡Cuidado!", "var(--fucsia)", false); }
+        };
+
+        const renderizar = () => {
+            cont.innerHTML = `
+                <h1 style="font-size: 3rem; margin: 30px 0;">${retos[actual].t}</h1>
+                <div style="display:flex; gap: 20px; justify-content: center;">
+                    <button class="btn btn-azul" onclick="evaluarCompletar('preg')">¿ ?</button>
+                    <button class="btn btn-fucsia" onclick="evaluarCompletar('excl')">¡ !</button>
+                </div>
+            `;
+        };
+        renderizar();
+    }
+
+    // --- 3. Memorama ---
+    function renderMemoria(cont) {
+        const parejas = [ {id:1, txt:"¿Qué hora es?", emoji:"⌚"}, {id:2, txt:"¡Qué frío!", emoji:"🥶"}, {id:3, txt:"¿Dónde vives?", emoji:"🏠"} ];
+        let cartas = [];
+        parejas.forEach(p => {
+            cartas.push({id: p.id, val: p.txt, tipo: 'texto'});
+            cartas.push({id: p.id, val: p.emoji, tipo: 'emoji'});
+        });
+        cartas.sort(() => Math.random() - 0.5);
+
+        let volteadas = [], aciertos = 0;
+        
+        cont.innerHTML = `<div id="grid-memoria" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 500px; margin: auto;"></div>`;
+        const grid = document.getElementById('grid-memoria');
+        
+        cartas.forEach((c, i) => {
+            let div = document.createElement('div');
+            div.className = 'tarjeta';
+            div.style.height = '100px'; div.style.display = 'flex'; div.style.alignItems='center'; div.style.justifyContent='center'; div.style.background='var(--azul)'; div.style.color='var(--azul)'; // Oculto
+            div.onclick = () => {
+                if(volteadas.length < 2 && !div.classList.contains('resuelta') && !volteadas.includes(div)) {
+                    sfx.click();
+                    div.innerText = c.val; div.style.background='white'; div.style.color='#333';
+                    volteadas.push({el: div, id: c.id});
+                    if(volteadas.length === 2) {
+                        setTimeout(() => {
+                            if(volteadas[0].id === volteadas[1].id) {
+                                mostrarFeedback("¡Pareja!", "var(--verde)", true);
+                                volteadas[0].el.classList.add('resuelta'); volteadas[1].el.classList.add('resuelta');
+                                volteadas[0].el.style.background='var(--verde)'; volteadas[1].el.style.background='var(--verde)';
+                                volteadas[0].el.style.color='white'; volteadas[1].el.style.color='white';
+                                aciertos++;
+                                if(aciertos === parejas.length) setTimeout(nivelCompletado, 1000);
+                            } else {
+                                sfx.error();
+                                volteadas[0].el.innerText=''; volteadas[0].el.style.background='var(--azul)';
+                                volteadas[1].el.innerText=''; volteadas[1].el.style.background='var(--azul)';
+                            }
+                            volteadas = [];
+                        }, 1000);
+                    }
+                }
+            };
+            grid.appendChild(div);
+        });
+    }
+
+    // --- 4. Verdadero o Falso ---
+    function renderTF(cont) {
+        const pregs = [
+            {q: "La oración '¡Buenos días!' es una pregunta.", a: false},
+            {q: "Las preguntas siempre llevan signos al inicio y al final.", a: true}
+        ];
+        let actual = 0;
+
+        window.evaluarTF = (resp) => {
+            if(resp === pregs[actual].a) {
+                mostrarFeedback("¡Correcto!", "var(--verde)", true);
+                actual++;
+                if(actual >= pregs.length) setTimeout(nivelCompletado, 500);
+                else renderizar();
+            } else { mostrarFeedback("Falso", "var(--fucsia)", false); }
+        };
+
+        const renderizar = () => {
+            cont.innerHTML = `
+                <h2 style="margin:40px 0;">${pregs[actual].q}</h2>
+                <button class="btn btn-verde" onclick="evaluarTF(true)">✔️ Verdadero</button>
+                <button class="btn btn-fucsia" onclick="evaluarTF(false)">❌ Falso</button>
+            `;
+        };
+        renderizar();
+    }
+
+    // --- 5. Atrapa la Exclamación (Globos Clicker) ---
+    function renderGlobos(cont) {
+        cont.innerHTML = `
+            <p>Toca <b>SOLO</b> las oraciones que deben llevar signos de EXCLAMACIÓN (¡ !).</p>
+            <div id="caja-globos" style="position: relative; width: 100%; height: 300px; background: #e0f7fa; border-radius: 15px; overflow: hidden; border: 3px solid var(--celeste);"></div>
+        `;
+        let caja = document.getElementById('caja-globos');
+        let frases = [{t:"Qué lindo", e:true}, {t:"Cómo estás", e:false}, {t:"Auxilio", e:true}, {t:"Dónde es", e:false}, {t:"Genial", e:true}];
+        let atrapados = 0;
+
+        frases.forEach((f, i) => {
+            setTimeout(() => {
+                if(!document.getElementById('caja-globos')) return;
+                let g = document.createElement('div');
+                g.innerText = f.t;
+                g.style.position = 'absolute'; g.style.left = (Math.random()*60 + 10) + '%';
+                g.style.top = '-50px'; g.style.background = f.e ? 'var(--fucsia)' : 'var(--azul)';
+                g.style.color = 'white'; g.style.padding = '10px 20px'; g.style.borderRadius = '50px';
+                g.style.cursor = 'pointer'; g.style.transition = 'top 4s linear';
+                
+                g.onclick = () => {
+                    if(f.e) { mostrarFeedback("¡Bien!", "var(--verde)", true); g.style.display='none'; atrapados++; if(atrapados===3) nivelCompletado(); }
+                    else { mostrarFeedback("¡No!", "var(--fucsia)", false); g.style.display='none'; }
+                };
+                
+                caja.appendChild(g);
+                setTimeout(() => { g.style.top = '350px'; }, 50);
+            }, i * 1500);
+        });
+    }
+
+    // --- 6. Ruleta de Signos (Simulación simple) ---
+    function renderRuleta(cont) {
+        cont.innerHTML = `
+            <div id="ruleta" style="width: 200px; height: 200px; border-radius: 50%; background: conic-gradient(var(--celeste) 50%, var(--amarillo) 0); margin: auto; transition: transform 2s ease-out; display:flex; align-items:center; justify-content:center; font-size:3rem;">🎰</div>
+            <button class="btn btn-amarillo" id="btn-girar" onclick="girarRuleta()" style="margin-top:20px;">Girar Ruleta</button>
+            <div id="ruleta-pregunta" style="display:none; margin-top:20px;">
+                <h2 id="ruleta-texto"></h2>
+                <button class="btn btn-azul" onclick="evaluarRuleta('preg')">¿ ?</button>
+                <button class="btn btn-fucsia" onclick="evaluarRuleta('excl')">¡ !</button>
+            </div>
+        `;
+        let oraciones = [{t:"Quién es él", r:"preg"}, {t:"Qué sorpresa", r:"excl"}];
+        let ronda = 0;
+
+        window.girarRuleta = () => {
+            sfx.click();
+            document.getElementById('btn-girar').style.display = 'none';
+            let r = document.getElementById('ruleta');
+            r.style.transform = `rotate(${360*3 + Math.random()*360}deg)`;
+            setTimeout(() => {
+                document.getElementById('ruleta-pregunta').style.display = 'block';
+                document.getElementById('ruleta-texto').innerText = oraciones[ronda].t;
+            }, 2000);
+        };
+
+        window.evaluarRuleta = (tipo) => {
+            if(tipo === oraciones[ronda].r) {
+                mostrarFeedback("¡Genial!", "var(--verde)", true);
+                ronda++;
+                if(ronda >= oraciones.length) setTimeout(nivelCompletado, 500);
+                else {
+                    document.getElementById('ruleta-pregunta').style.display = 'none';
+                    document.getElementById('btn-girar').style.display = 'inline-block';
+                }
+            } else { mostrarFeedback("Incorrecto", "var(--fucsia)", false); }
+        };
+    }
+
+    // --- 7. Construir Oración ---
+    function renderConstruir(cont) {
+        let oracion = ["Cómo", "te", "llamas"];
+        let revuelta = [...oracion].sort(() => Math.random() - 0.5);
+        let construida = [];
+        
+        const renderizar = () => {
+            let html = `<div style="min-height: 60px; border-bottom: 3px solid #333; margin-bottom: 20px; font-size: 2rem; color: var(--azul);">`;
+            html += `<b>¿</b> ` + construida.join(" ") + (construida.length === oracion.length ? ` <b>?</b>` : "") + `</div>`;
+            
+            html += `<div class="tarjetas-container">`;
+            revuelta.forEach((p, i) => {
+                html += `<div class="tarjeta" onclick="agregarPalabra(${i})">${p}</div>`;
+            });
+            html += `</div>`;
+            
+            if(construida.length === oracion.length) {
+                if(construida.join(" ") === oracion.join(" ")) {
+                    mostrarFeedback("¡Perfecto!", "var(--verde)", true);
+                    setTimeout(nivelCompletado, 1500);
+                } else {
+                    mostrarFeedback("Orden incorrecto", "var(--fucsia)", false);
+                    setTimeout(() => { construida = []; revuelta = [...oracion].sort(()=>Math.random()-0.5); renderizar(); }, 1500);
+                }
+            }
+            cont.innerHTML = html;
+        };
+
+        window.agregarPalabra = (idx) => {
+            sfx.click();
+            construida.push(revuelta[idx]);
+            revuelta.splice(idx, 1);
+            renderizar();
+        };
+        
+        renderizar();
+    }
+
+    /* ======================================================================
+       INICIALIZACIÓN
+       ====================================================================== */
+    window.onload = () => {
+        iniciarFondo();
+        if(sessionStorage.getItem('lupiSave')) {
+            document.getElementById('btn-continuar').style.display = 'inline-block';
+        }
+    };
+</script>
+</body>
+</html>

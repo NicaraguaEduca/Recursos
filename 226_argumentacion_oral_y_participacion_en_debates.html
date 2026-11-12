@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover" />
+    <title>🎙️ El Club del Debate - Argumentación Oral</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.5rem;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            max-width: 950px;
+            width: 100%;
+            background: #1e1b4b;
+            border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), inset 0 0 0 8px #f59e0b;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 8px solid #b45309;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            padding: 1.5rem;
+            flex-direction: column;
+            align-items: center;
+        }
+        .screen.active {
+            display: flex;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* ===== INTRO ===== */
+        .intro-screen {
+            text-align: center;
+            background: radial-gradient(circle, #312e81 0%, #0f172a 100%);
+            color: white;
+        }
+        .mascot {
+            font-size: 5.5rem;
+            margin-bottom: 0.5rem;
+            animation: float 2.5s infinite ease-in-out;
+            filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.4));
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+        h1 {
+            font-size: 2.8rem;
+            color: #fbbf24;
+            margin-bottom: 0.8rem;
+            text-shadow: 3px 3px 0px #b45309;
+            text-transform: uppercase;
+        }
+        .instruction-box {
+            background: rgba(0, 0, 0, 0.4);
+            border: 3px dashed #fbbf24;
+            padding: 1.5rem;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            color: #ffffff;
+            margin-bottom: 1.8rem;
+            text-align: center;
+            line-height: 1.6;
+            max-width: 720px;
+        }
+        .highlight { color: #fbbf24; font-weight: bold; }
+
+        .btn-start {
+            background: #f59e0b;
+            color: #451a03;
+            font-size: 1.8rem;
+            font-weight: bold;
+            padding: 15px 45px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #b45309;
+            transition: all 0.1s;
+            text-transform: uppercase;
+        }
+        .btn-start:active {
+            transform: translateY(8px);
+            box-shadow: 0 0 0 #b45309;
+        }
+
+        /* ===== JUEGO ===== */
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0f172a;
+            padding: 12px 20px;
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 1rem;
+            border: 3px solid #fbbf24;
+        }
+        .status-text {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #fbbf24;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .main-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 20px;
+            padding: 18px;
+            min-height: 380px;
+            justify-content: space-between;
+            border: 3px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .podium-box {
+            width: 100%;
+            max-width: 780px;
+            background: #f8fafc;
+            border: 4px solid #f59e0b;
+            padding: 1.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: center;
+            margin-bottom: 1.2rem;
+            position: relative;
+        }
+        .podium-title {
+            color: #b45309;
+            font-size: 1rem;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        .podium-display {
+            font-size: 1.35rem;
+            color: #0f172a;
+            font-weight: 600;
+            min-height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.5;
+        }
+
+        /* Botones de Respuesta u Opciones */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            width: 100%;
+            max-width: 780px;
+        }
+        .option-btn {
+            background: #312e81;
+            color: white;
+            border: 3px solid #fbbf24;
+            padding: 14px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1.05rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 6px 0 #1e1b4b;
+            transition: all 0.1s;
+            text-align: center;
+        }
+        .option-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #1e1b4b;
+        }
+
+        /* Botones del Modo Aprendizaje (Exploración) */
+        .concept-buttons {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 780px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .concept-btn {
+            flex: 1;
+            min-width: 160px;
+            background: #4338ca;
+            color: white;
+            border: 3px solid #fbbf24;
+            padding: 12px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 6px 0 #1e1b4b;
+            transition: all 0.1s;
+        }
+        .concept-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #1e1b4b;
+        }
+        .concept-icon { font-size: 2rem; }
+
+        /* Botones de Selección de Modo */
+        .mode-buttons {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .mode-btn {
+            background: #0f172a;
+            border: 3px solid #fbbf24;
+            padding: 10px 25px;
+            font-size: 1.15rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            color: #fef08a;
+            transition: all 0.2s;
+        }
+        .mode-btn.active {
+            background: #fbbf24;
+            color: #451a03;
+            border-color: #ffffff;
+            box-shadow: 0 5px 0 #b45309;
+        }
+
+        /* ====== MODAL INVASIVO ====== */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active {
+            display: flex;
+            animation: popInModal 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popInModal {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 2.2rem;
+            border-radius: 25px;
+            text-align: center;
+            max-width: 90%;
+            width: 550px;
+            border: 7px solid #333;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        }
+        .modal-content.info { border-color: #f59e0b; }
+        .modal-content.success { border-color: #10b981; }
+        .modal-content.error { border-color: #ef4444; }
+
+        .modal-title { font-size: 2rem; margin-bottom: 1rem; text-transform: uppercase; }
+        .info .modal-title { color: #b45309; }
+        .success .modal-title { color: #047857; }
+        .error .modal-title { color: #b91c1c; }
+
+        .modal-text {
+            font-size: 1.25rem;
+            margin-bottom: 1.8rem;
+            line-height: 1.5;
+            color: #0f172a;
+            white-space: pre-line;
+        }
+
+        .modal-close {
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            font-size: 1.25rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.1s;
+        }
+        .modal-close:active { transform: translateY(5px); box-shadow: none !important; }
+        .info .modal-close { background: #f59e0b; box-shadow: 0 5px 0 #b45309; }
+        .success .modal-close { background: #10b981; box-shadow: 0 5px 0 #047857; }
+        .error .modal-close { background: #ef4444; box-shadow: 0 5px 0 #991b1b; }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .mascot { font-size: 4rem; }
+            .podium-display { font-size: 1.1rem; }
+            .options-grid { grid-template-columns: 1fr; }
+            .concept-buttons { flex-direction: column; }
+            .modal-content { padding: 1.5rem; }
+            .modal-title { font-size: 1.6rem; }
+            .modal-text { font-size: 1.05rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- ===== MODAL INVASIVO ===== -->
+        <div id="feedbackModal" class="modal-overlay">
+            <div id="modalBox" class="modal-content">
+                <h2 id="modalTitle" class="modal-title">Título</h2>
+                <p id="modalText" class="modal-text">Texto de explicación</p>
+                <button id="modalBtn" class="modal-close">¡Entendido!</button>
+            </div>
+        </div>
+
+        <!-- ===== INTRO ===== -->
+        <div id="introScreen" class="screen intro-screen active">
+            <div class="mascot">🎙️⚖️📜</div>
+            <h1>El Club del Debate</h1>
+            <div class="instruction-box">
+                ¡Aprende el arte de convencer con razones sólidas y respeto!<br><br>
+                Descubre cómo construir:<br>
+                🎯 <span class="highlight">La Tesis:</span> La idea o postura principal.<br>
+                💡 <span class="highlight">Los Argumentos:</span> Razones respaldadas en datos y hechos.<br>
+                🔄 <span class="highlight">Contraargumentos:</span> Réplicas con conectores discursivos.<br>
+                🚫 <span class="highlight">Evitar Falacias:</span> No usar ataques personales ni meras opiniones.
+            </div>
+            <button class="btn-start" id="startBtn">▶ ¡Entrar al Club!</button>
+        </div>
+
+        <!-- ===== JUEGO / ESCENARIO ===== -->
+        <div id="gameScreen" class="screen">
+            <div class="header">
+                <div class="status-text" id="statusText">👨‍🏫 Modo Exploración: Selecciona un pilar de la argumentación</div>
+            </div>
+
+            <div class="main-stage">
+                
+                <!-- Podio / Pantalla Central -->
+                <div class="podium-box">
+                    <div class="podium-title" id="podiumTitle">🏛️ TRIBUNAL DE ARGUMENTACIÓN ORAL</div>
+                    <div class="podium-display" id="podiumDisplay">Haz clic en un pilar conceptual para aprender a debatir como un profesional...</div>
+                </div>
+
+                <!-- Botones Modo Aprendizaje -->
+                <div class="concept-buttons" id="conceptContainer">
+                    <button class="concept-btn" data-concept="tesis">
+                        <span class="concept-icon">🎯</span>
+                        <span>La Tesis</span>
+                    </button>
+                    <button class="concept-btn" data-concept="argumento">
+                        <span class="concept-icon">💡</span>
+                        <span>El Argumento</span>
+                    </button>
+                    <button class="concept-btn" data-concept="contra">
+                        <span class="concept-icon">🔄</span>
+                        <span>Contraargumento</span>
+                    </button>
+                    <button class="concept-btn" data-concept="falacia">
+                        <span class="concept-icon">⚠️</span>
+                        <span>Las Falacias</span>
+                    </button>
+                </div>
+
+                <!-- Opciones Modo Desafío (Ocultas por defecto) -->
+                <div class="options-grid" id="optionsContainer" style="display: none;">
+                    <!-- Se generan dinámicamente -->
+                </div>
+
+            </div>
+
+            <!-- Botones de Modo -->
+            <div class="mode-buttons">
+                <button class="mode-btn active" id="btnTeach">👨‍🏫 Aulas del Debate</button>
+                <button class="mode-btn" id="btnPractice">🎙️ Juez del Debate</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==== DATOS MODO APRENDIZAJE ====
+        const conceptsData = {
+            'tesis': {
+                title: '🎯 LA TESIS (La Postura Central)',
+                display: 'La Tesis es la opinión o idea principal que un debatiente defiende.',
+                text: '**¿Qué es la Tesis?**\n\n- Es la idea u opinión principal que se desea defender en un debate.\n- Debe ser clara y expresar una postura (A favor o En contra).\n\n**Ejemplo:** *"El uso de celulares en el aula debe permitirse solo con fines pedagógicos."*'
+            },
+            'argumento': {
+                title: '💡 EL ARGUMENTO (Las Razones)',
+                display: 'Un Argumento es la razón o demostración que sostiene y justifica la Tesis.',
+                text: '**¿Qué es un buen Argumento?**\n\n- Son hechos, datos, evidencias o ejemplos probados que explican el **porqué** de la tesis.\n- No basta con decir "porque me gusta", ¡debes dar fundamentos!\n\n**Ejemplo:** *"Porque el 80% de los estudiantes aprende más rápido usando aplicaciones educativas interactiva."*'
+            },
+            'contra': {
+                title: '🔄 CONTRAARGUMENTO Y CONECTORES',
+                display: 'El Contraargumento cuestiona la postura opuesta usando nexos de oposición.',
+                text: '**¿Cómo responder a la otra parte?**\n\n- Se refuta la idea del oponente de manera respetuosa.\n- Se usan **conectores discursivos** como: *Sin embargo, no obstante, por el contrario, aunque...*\n\n**Ejemplo:** *"Es cierto que distrae; **sin embargo**, con normas claras se convierte en una gran herramienta de investigación."*'
+            },
+            'falacia': {
+                title: '⚠️ LAS FALACIAS Y ATAQUES PERSONALES',
+                display: 'Una Falacia es un argumento falso o engañoso que debemos evitar en el debate.',
+                text: '**¡Cuidado con las trampas en el debate!**\n\n- **Ataque Personal (Ad Hominem):** Insultar al oponente en lugar de discutir la idea.\n- **Mera Opinión:** Decir "eso es feo" o "no me gusta" sin razones.\n\n**Incorrecto:** *"No le crean a Juan sobre el reciclaje porque él es muy desordenado."*'
+            }
+        };
+
+        // ==== PREGUNTAS MODO DESAFÍO (JUEZ DEL DEBATE) ====
+        let challengeCases = [
+            {
+                scenario: '📌 Debate: "Reducción de bolsas de plástico". El orador dice: "Debemos prohibir las bolsas plásticas porque contaminan los océanos y tardan 500 años en degradarse."\n¿Qué elemento del debate es esta frase?',
+                options: [
+                    { text: '💡 Un Argumento sólido con datos', correct: true },
+                    { text: '⚠️ Un Ataque personal al oponente', correct: false },
+                    { text: '🎯 Una Conclusión final', correct: false },
+                    { text: '🔄 Un Conector de oposición', correct: false }
+                ],
+                errorTitle: '⚖️ ¡Revisa la estructura!',
+                hint: 'El orador explica la causa y datos reales (contaminación y años de degradación) para sostener su idea.\n\nEs un **Argumento sólido**.'
+            },
+            {
+                scenario: '📌 Debate: "Uniformes Escolares". Carlos argumenta: "No debemos escuchar la propuesta de Sofia sobre los uniformes porque ella viste muy mal."\n¿Qué error grave cometió Carlos?',
+                options: [
+                    { text: '💡 Dio un argumento de autoridad', correct: false },
+                    { text: '⚠️ Cometió una Falacia de Ataque Personal', correct: true },
+                    { text: '🎯 Expresó una tesis clara', correct: false },
+                    { text: '🔄 Usó un conector correcto', correct: false }
+                ],
+                errorTitle: '⚖️ ¡Falta a la etiqueta del debate!',
+                hint: 'Carlos criticó la vestimenta de Sofía en lugar de debatir sus ideas. Eso es una **Falacia de Ataque Personal (Ad Hominem)**.'
+            },
+            {
+                scenario: '📌 En el debate sobre los videojuegos, la oradora expresa: "Es verdad que el exceso de pantalla cansa la vista; ________, jugados con moderación estimulan el pensamiento lógico."\n¿Qué conector discursivo completa mejor el contraargumento?',
+                options: [
+                    { text: 'Por lo tanto', correct: false },
+                    { text: 'Sin embargo', correct: true },
+                    { text: 'Por ejemplo', correct: false },
+                    { text: 'Adicionalmente', correct: false }
+                ],
+                errorTitle: '⚖️ ¡Revisa los conectores de oposición!',
+                hint: 'Para contrastar una objeción ("cansa la vista") con una ventaja ("estimula el pensamiento") usamos conectores de oposición como **Sin embargo** o **No obstante**.'
+            },
+            {
+                scenario: '📌 En la mesa redonda, el moderador pregunta: "¿Cuál de las siguientes frases representa una TESIS formal?"',
+                options: [
+                    { text: '¡A mí me gusta el helado de chocolate!', correct: false },
+                    { text: 'La lectura diaria de 15 minutos fortalece la comprensión lectora.', correct: true },
+                    { text: 'Según el libro de historia, el sismo fue en 1906.', correct: false },
+                    { text: 'Porque el agua hierva a 100 grados centígrados.', correct: false }
+                ],
+                errorTitle: '⚖️ ¡Recuerda qué es la Tesis!',
+                hint: 'Una Tesis es una postura debatible y clara que requiere ser defendida con argumentos.\n\nLa frase correcta es: *"La lectura diaria de 15 minutos fortalece la comprensión lectora."*'
+            },
+            {
+                scenario: '📌 Un participante en un debate sobre tareas escolares exclama: "¡Las tareas deben eliminarse porque sí y ya!"\n¿Por qué NO es un argumento aceptable?',
+                options: [
+                    { text: 'Porque es una mera opinión sin fundamentos ni razones', correct: true },
+                    { text: 'Porque usó demasiados datos estadísticos', correct: false },
+                    { text: 'Porque es un contraargumento perfecto', correct: false },
+                    { text: 'Porque usó un conector de oposición', correct: false }
+                ],
+                errorTitle: '⚖️ ¡Evalúa el fundamento!',
+                hint: 'Decir "porque sí" no ofrece evidencias, datos ni ejemplos. Es una **mera opinión caprichosa sin fundamentos**.'
+            }
+        ];
+
+        let mode = 'teach';
+        let currentQuestionIndex = 0;
+
+        // Elementos DOM
+        const screens = { intro: document.getElementById('introScreen'), game: document.getElementById('gameScreen') };
+        const statusText = document.getElementById('statusText');
+        const podiumTitle = document.getElementById('podiumTitle');
+        const podiumDisplay = document.getElementById('podiumDisplay');
+        const conceptContainer = document.getElementById('conceptContainer');
+        const optionsContainer = document.getElementById('optionsContainer');
+
+        // Modal Elements
+        const modalOverlay = document.getElementById('feedbackModal');
+        const modalBox = document.getElementById('modalBox');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalText = document.getElementById('modalText');
+        const modalBtn = document.getElementById('modalBtn');
+
+        // ==== AUDIO (Web Audio API) ====
+        let audioCtx;
+        function playSound(type) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'gavel') { 
+                // Sonido de martillo de juez
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.12);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.12);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(90, audioCtx.currentTime + 0.25);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.25);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+            } else if (type === 'win') {
+                [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+                    const oscN = audioCtx.createOscillator();
+                    const gainN = audioCtx.createGain();
+                    oscN.connect(gainN); gainN.connect(audioCtx.destination);
+                    oscN.frequency.value = f;
+                    gainN.gain.setValueAtTime(0.08, audioCtx.currentTime + i * 0.08);
+                    gainN.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.08 + 0.3);
+                    oscN.start(audioCtx.currentTime + i * 0.08);
+                    oscN.stop(audioCtx.currentTime + i * 0.08 + 0.3);
+                });
+            }
+        }
+
+        // ==== MOSTRAR MODAL INVASIVO ====
+        function showModal(title, text, type) {
+            modalBox.className = `modal-content ${type}`;
+            modalTitle.textContent = title;
+            modalText.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            modalOverlay.classList.add('active');
+        }
+
+        modalBtn.addEventListener('click', () => {
+            playSound('gavel');
+            modalOverlay.classList.remove('active');
+        });
+
+        // ==== BOTONES MODO APRENDIZAJE ====
+        document.querySelectorAll('.concept-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const conceptKey = e.currentTarget.dataset.concept;
+                const data = conceptsData[conceptKey];
+
+                if (mode === 'teach') {
+                    playSound('gavel');
+                    podiumTitle.textContent = data.title;
+                    podiumDisplay.textContent = data.display;
+                    showModal(data.title, data.text, 'info');
+                }
+            });
+        });
+
+        // ==== LÓGICA MODO DESAFÍO (JUEZ DEL DEBATE) ====
+        function loadCase() {
+            if (currentQuestionIndex >= challengeCases.length) {
+                statusText.textContent = "🏆 ¡FELICITACIONES! Te has graduado como Gran Juez del Club de Debate.";
+                podiumTitle.textContent = "📜 DIPLOMA DE EXCELENCIA ARGUMENTATIVA";
+                podiumDisplay.innerHTML = "🎖️ ¡Dominas la Tesis, los Argumentos y el Respeto Oral!<br><small>Estás listo para liderar cualquier mesa redonda o debate escolar.</small>";
+                optionsContainer.style.display = 'none';
+                playSound('win');
+                return;
+            }
+
+            const currentCase = challengeCases[currentQuestionIndex];
+            statusText.textContent = `Caso #${currentQuestionIndex + 1}: Evalúa la intervención oral`;
+            podiumTitle.textContent = "🎙️ INTERVENCIÓN EN EL TRIBUNAL";
+            podiumDisplay.textContent = currentCase.scenario;
+
+            // Cargar botones de opciones
+            optionsContainer.innerHTML = '';
+            currentCase.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt.text;
+                btn.addEventListener('click', () => checkAnswer(opt.correct, currentCase));
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(isCorrect, caseData) {
+            if (isCorrect) {
+                playSound('win');
+                showModal('✅ ¡VERDICTO CORRECTO!', '¡Excelente análisis del caso! Has identificado correctamente la estructura argumentativa.', 'success');
+
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    loadCase();
+                }, 1200);
+            } else {
+                playSound('error');
+                showModal(caseData.errorTitle, caseData.hint, 'error');
+            }
+        }
+
+        // ==== CAMBIO DE MODO ====
+        function setMode(newMode) {
+            mode = newMode;
+
+            if (mode === 'teach') {
+                statusText.textContent = "👨‍🏫 Modo Exploración: Selecciona un pilar de la argumentación";
+                document.getElementById('btnTeach').classList.add('active');
+                document.getElementById('btnPractice').classList.remove('active');
+                conceptContainer.style.display = 'flex';
+                optionsContainer.style.display = 'none';
+                podiumTitle.textContent = "🏛️ TRIBUNAL DE ARGUMENTACIÓN ORAL";
+                podiumDisplay.textContent = "Haz clic en un pilar conceptual para aprender a debatir como un profesional...";
+            } else {
+                document.getElementById('btnPractice').classList.add('active');
+                document.getElementById('btnTeach').classList.remove('active');
+                conceptContainer.style.display = 'none';
+                optionsContainer.style.display = 'grid';
+                challengeCases = challengeCases.sort(() => Math.random() - 0.5);
+                currentQuestionIndex = 0;
+                loadCase();
+            }
+        }
+
+        // ==== INICIALIZACIÓN ====
+        document.getElementById('startBtn').addEventListener('click', () => {
+            if (!audioCtx) playSound('gavel');
+            screens.intro.classList.remove('active');
+            screens.game.classList.add('active');
+            setMode('teach');
+        });
+
+        document.getElementById('btnTeach').addEventListener('click', () => setMode('teach'));
+        document.getElementById('btnPractice').addEventListener('click', () => setMode('practice'));
+
+    </script>
+</body>
+</html>

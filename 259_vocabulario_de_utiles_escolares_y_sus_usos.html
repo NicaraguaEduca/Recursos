@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Supplies & Their Uses - Vibrant Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Paleta Súper Vibrante */
+            --bg-gradient: linear-gradient(135deg, #06B6D4 0%, #8B5CF6 100%); /* Cian a Violeta */
+            --card-bg: #FFFFFF;
+            --text-main: #1E293B;
+            --text-muted: #64748B;
+            
+            --primary: #EC4899; /* Fucsia */
+            --primary-hover: #DB2777;
+            --secondary: #0EA5E9; /* Azul cielo */
+            --secondary-hover: #0284C7;
+            --accent: #F59E0B; /* Ámbar/Naranja */
+            --accent-hover: #D97706;
+            
+            --success: #10B981; /* Verde esmeralda */
+            --error: #EF4444; /* Rojo vibrante */
+            --warning: #EAB308; /* Amarillo */
+            
+            --radius: 24px;
+            --shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden; /* SIN SCROLL */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        header { text-align: center; margin-bottom: 15px; flex-shrink: 0; }
+        header h1 { font-size: 2.2rem; color: #FFFFFF; font-weight: 800; text-shadow: 0 4px 10px rgba(0,0,0,0.2); margin-bottom: 5px; }
+        header p { color: #E0E7FF; font-size: 1.1rem; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+        /* Pestañas de Navegación */
+        .tabs {
+            display: flex; gap: 8px; margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.2); 
+            backdrop-filter: blur(10px);
+            padding: 8px; border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .tab-btn {
+            background: transparent; border: none; color: #FFFFFF;
+            padding: 10px 15px; border-radius: 50px; cursor: pointer;
+            font-weight: 700; font-size: 0.95rem; transition: all 0.3s;
+        }
+        .tab-btn.active { background: #FFFFFF; color: var(--secondary); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .tab-btn:hover:not(.active) { background: rgba(255,255,255,0.3); transform: translateY(-2px); }
+
+        /* Contenedor Principal */
+        .app-container {
+            flex-grow: 1; width: 100%; max-width: 950px;
+            background: var(--card-bg); border-radius: var(--radius);
+            box-shadow: var(--shadow); padding: 25px;
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+
+        .panel { display: none; height: 100%; animation: fadeIn 0.4s ease; flex-direction: column; }
+        .panel.active { display: flex; }
+        .panel-title { color: var(--secondary); font-weight: 800; font-size: 1.5rem; text-align: center; margin-bottom: 15px; border-bottom: 3px dashed #E2E8F0; padding-bottom: 10px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- PANTALLA 1: MATCHING GAME --- */
+        .match-container { display: flex; gap: 20px; flex-grow: 1; }
+        .match-col { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        .match-col h3 { text-align: center; color: var(--text-muted); font-size: 1.1rem; }
+        .match-card {
+            background: #F8FAFC; border: 3px solid #E2E8F0; padding: 15px; border-radius: 16px;
+            text-align: center; font-weight: 700; cursor: pointer; font-size: 1.1rem;
+            transition: all 0.2s ease; color: var(--text-main);
+        }
+        .match-card:hover:not(.matched):not(.selected) { transform: translateY(-3px); border-color: var(--secondary); background: #F0F9FF; }
+        .match-card.selected { border-color: var(--warning); background: #FEF08A; transform: scale(1.05); box-shadow: 0 8px 20px rgba(234, 179, 8, 0.3); }
+        .match-card.matched { border-color: var(--success); background: #D1FAE5; color: #065F46; cursor: default; opacity: 0.8; }
+        .match-feedback { text-align: center; padding: 15px; border-radius: 16px; font-weight: 700; margin-top: 15px; min-height: 50px; display: none; }
+
+        /* --- PANTALLA 2: CLICK & LEARN --- */
+        .grid-learn { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+        .learn-btn {
+            background: #F8FAFC; border: 3px solid #E2E8F0; font-size: 3rem; padding: 15px;
+            border-radius: 20px; cursor: pointer; transition: all 0.2s; text-align: center;
+        }
+        .learn-btn:hover { border-color: var(--primary); background: #FDF2F8; transform: translateY(-5px) scale(1.05); box-shadow: 0 10px 25px rgba(236, 72, 153, 0.2); }
+        .learn-details {
+            flex-grow: 1; background: #FFF7ED; border: 3px solid #FFEDD5; border-radius: 20px;
+            padding: 20px; text-align: center; display: flex; flex-direction: column; justify-content: center;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .learn-details.active { opacity: 1; }
+        .learn-details h3 { color: var(--accent); font-size: 2rem; font-weight: 800; margin-bottom: 5px; }
+        .learn-details p { font-size: 1.2rem; color: var(--text-main); font-weight: 600; }
+
+        /* --- ESTILOS COMUNES PARA QUIZZES (PANTALLA 3 Y 4) --- */
+        .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .quiz-status { color: var(--secondary); font-weight: 700; font-size: 1.1rem; }
+        .quiz-question { font-size: 1.4rem; font-weight: 700; text-align: center; margin-bottom: 25px; background: #F1F5F9; padding: 20px; border-radius: 16px; }
+        
+        .tf-options { display: flex; gap: 20px; justify-content: center; margin-bottom: 20px; }
+        .tf-btn {
+            flex: 1; padding: 20px; font-size: 1.5rem; font-weight: 800; border: none; border-radius: 16px;
+            color: white; cursor: pointer; transition: all 0.2s; box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+        .btn-true { background: var(--success); }
+        .btn-true:hover:not(:disabled) { background: #059669; transform: scale(1.05); }
+        .btn-false { background: var(--error); }
+        .btn-false:hover:not(:disabled) { background: #DC2626; transform: scale(1.05); }
+
+        .mc-options { display: flex; flex-direction: column; gap: 12px; }
+        .mc-btn {
+            padding: 15px; font-size: 1.2rem; font-weight: 700; background: #F8FAFC; border: 3px solid #E2E8F0;
+            border-radius: 16px; cursor: pointer; transition: all 0.2s; text-align: left; color: var(--text-main);
+        }
+        .mc-btn:hover:not(:disabled) { background: #F0F9FF; border-color: var(--secondary); color: var(--secondary); transform: translateX(10px); }
+        .mc-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+        
+        .quiz-feedback { padding: 15px; border-radius: 12px; font-weight: 600; font-size: 1.1rem; text-align: center; display: none; margin-top: 15px; }
+        .feedback-correct { background: #D1FAE5; color: #065F46; border: 2px solid var(--success); }
+        .feedback-incorrect { background: #FEE2E2; color: #991B1B; border: 2px solid var(--error); }
+        
+        .correct-ans { background: var(--success) !important; color: white !important; border-color: var(--success) !important; }
+        .wrong-ans { background: var(--error) !important; color: white !important; border-color: var(--error) !important; }
+
+        .next-btn {
+            padding: 15px 30px; background: var(--primary); color: white; border: none; border-radius: 50px;
+            font-weight: 800; font-size: 1.1rem; cursor: pointer; display: none; margin: 20px auto 0 auto;
+            box-shadow: 0 8px 20px rgba(236, 72, 153, 0.3); transition: all 0.2s; width: 100%; max-width: 300px;
+        }
+        .next-btn:hover { background: var(--primary-hover); transform: translateY(-3px); }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>School Supplies Pro</h1>
+        <p>¡Explora, asocia y evalúa tu vocabulario!</p>
+    </header>
+
+    <nav class="tabs">
+        <button class="tab-btn active" onclick="switchTab('tab-match', this)">🎮 Asociación</button>
+        <button class="tab-btn" onclick="switchTab('tab-learn', this)">👆 Vocabulario</button>
+        <button class="tab-btn" onclick="switchTab('tab-tf', this)">✅ Verdadero/Falso</button>
+        <button class="tab-btn" onclick="switchTab('tab-mc', this)">📝 Opción Múltiple</button>
+    </nav>
+
+    <div class="app-container">
+        
+        <!-- PANEL 1: MATCHING GAME -->
+        <div id="tab-match" class="panel active">
+            <div class="panel-title">1. Matching Game</div>
+            <p style="text-align: center; margin-bottom: 15px; font-weight: 600;">Toca un objeto y luego su función correcta.</p>
+            <div class="match-container">
+                <div class="match-col">
+                    <h3>🎒 Objetos (Items)</h3>
+                    <div class="match-card item-card" data-match="backpack">🎒 Backpack</div>
+                    <div class="match-card item-card" data-match="scissors">✂️ Scissors</div>
+                    <div class="match-card item-card" data-match="glue">🧴 Glue</div>
+                    <div class="match-card item-card" data-match="calculator">🧮 Calculator</div>
+                </div>
+                <div class="match-col">
+                    <h3>⚙️ Funciones (Uses)</h3>
+                    <div class="match-card func-card" data-match="calculator">... is for math</div>
+                    <div class="match-card func-card" data-match="backpack">... is for carrying notebooks</div>
+                    <div class="match-card func-card" data-match="glue">... is for sticking papers</div>
+                    <div class="match-card func-card" data-match="scissors">... are for cutting papers</div>
+                </div>
+            </div>
+            <div id="match-feedback" class="match-feedback"></div>
+        </div>
+
+        <!-- PANEL 2: CLICK & LEARN -->
+        <div id="tab-learn" class="panel">
+            <div class="panel-title">2. Click & Learn</div>
+            <p style="text-align: center; margin-bottom: 15px; font-weight: 600;">Haz clic en los íconos para descubrir su significado.</p>
+            
+            <div class="grid-learn">
+                <button class="learn-btn" onclick="showLearn('Pencil', 'Lápiz', 'Se usa para escribir o dibujar a mano, y se puede borrar.')">✏️</button>
+                <button class="learn-btn" onclick="showLearn('Book', 'Libro', 'Contiene información, historias o lecciones para leer.')">📚</button>
+                <button class="learn-btn" onclick="showLearn('Ruler', 'Regla', 'Sirve para medir distancias y trazar líneas rectas con precisión.')">📏</button>
+                <button class="learn-btn" onclick="showLearn('Eraser', 'Borrador', 'Se usa para corregir y eliminar las marcas de lápiz.')">🧼</button>
+                <button class="learn-btn" onclick="showLearn('Crayons', 'Crayones', 'Ideales para colorear y dibujar imágenes con color.')">🖍️</button>
+                <button class="learn-btn" onclick="showLearn('Highlighter', 'Resaltador', 'Se usa para marcar y destacar información importante.')">🖊️</button>
+            </div>
+
+            <div id="learn-details" class="learn-details">
+                <h3 id="learn-title">Toca un ícono 👆</h3>
+                <p id="learn-desc">Aquí aparecerá el significado y uso del útil escolar.</p>
+            </div>
+        </div>
+
+        <!-- PANEL 3: TRUE OR FALSE -->
+        <div id="tab-tf" class="panel">
+            <div class="panel-title">3. True or False?</div>
+            <div class="quiz-header">
+                <span class="quiz-status">Pregunta <span id="tf-current">1</span> de <span id="tf-total">7</span></span>
+            </div>
+            <div id="tf-question-box" class="quiz-question">Cargando...</div>
+            
+            <div id="tf-options" class="tf-options">
+                <button class="tf-btn btn-true" onclick="checkTF(true)">TRUE (Verdad)</button>
+                <button class="tf-btn btn-false" onclick="checkTF(false)">FALSE (Falso)</button>
+            </div>
+
+            <div id="tf-feedback" class="quiz-feedback"></div>
+            <button id="btn-next-tf" class="next-btn" onclick="nextTF()">Siguiente ➡️</button>
+        </div>
+
+        <!-- PANEL 4: MULTIPLE CHOICE -->
+        <div id="tab-mc" class="panel">
+            <div class="panel-title">4. Multiple Choice</div>
+            <div class="quiz-header">
+                <span class="quiz-status" style="color: var(--primary)">Pregunta <span id="mc-current">1</span> de <span id="mc-total">6</span></span>
+            </div>
+            <div id="mc-question-box" class="quiz-question">Cargando...</div>
+            
+            <div id="mc-options" class="mc-options"></div>
+
+            <div id="mc-feedback" class="quiz-feedback"></div>
+            <button id="btn-next-mc" class="next-btn" onclick="nextMC()">Siguiente ➡️</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- NAVEGACIÓN ---
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
+        // --- LÓGICA 1: MATCHING GAME ---
+        let selectedItem = null;
+        let selectedFunc = null;
+        let pairsFound = 0;
+
+        document.querySelectorAll('.match-card').forEach(card => {
+            card.addEventListener('click', function() {
+                if(this.classList.contains('matched')) return;
+
+                if(this.classList.contains('item-card')) {
+                    if(selectedItem) selectedItem.classList.remove('selected');
+                    selectedItem = this;
+                    selectedItem.classList.add('selected');
+                } else {
+                    if(selectedFunc) selectedFunc.classList.remove('selected');
+                    selectedFunc = this;
+                    selectedFunc.classList.add('selected');
+                }
+
+                if(selectedItem && selectedFunc) checkMatch();
+            });
+        });
+
+        function checkMatch() {
+            const fb = document.getElementById('match-feedback');
+            fb.style.display = 'block';
+
+            if(selectedItem.dataset.match === selectedFunc.dataset.match) {
+                selectedItem.classList.add('matched'); selectedItem.classList.remove('selected');
+                selectedFunc.classList.add('matched'); selectedFunc.classList.remove('selected');
+                fb.className = 'match-feedback feedback-correct';
+                fb.innerHTML = `✅ ¡Correcto! Has enlazado la pareja perfectamente.`;
+                pairsFound++;
+                if(pairsFound === 4) fb.innerHTML = `🎉 ¡Juego Completado! Eres un experto en útiles escolares.`;
+            } else {
+                selectedItem.classList.remove('selected');
+                selectedFunc.classList.remove('selected');
+                fb.className = 'match-feedback feedback-incorrect';
+                fb.innerHTML = `❌ Ops, eso no coincide. ¡Inténtalo de nuevo!`;
+                setTimeout(() => fb.style.display = 'none', 2000);
+            }
+            selectedItem = null; selectedFunc = null;
+        }
+
+        // --- LÓGICA 2: CLICK & LEARN ---
+        function showLearn(name, meaning, use) {
+            const box = document.getElementById('learn-details');
+            box.classList.remove('active');
+            setTimeout(() => {
+                document.getElementById('learn-title').innerHTML = `${name} <span style="color:#1E293B; font-size:1.5rem">(${meaning})</span>`;
+                document.getElementById('learn-desc').innerText = use;
+                box.classList.add('active');
+            }, 150);
+        }
+
+        // --- LÓGICA 3: TRUE OR FALSE ---
+        const tfData = [
+            { q: "A <span style='color:var(--secondary)'>whiteboard</span> is for writing with chalk.", ans: false, exp: "A whiteboard is for writing with special markers." },
+            { q: "You use <span style='color:var(--secondary)'>scissors</span> to cut paper.", ans: true, exp: "Scissors are used exactly for cutting." },
+            { q: "A <span style='color:var(--secondary)'>notebook</span> is where you store your pencils.", ans: false, exp: "A pencil case is for pencils, a notebook is for writing." },
+            { q: "The <span style='color:var(--secondary)'>glue</span> is used for sticking papers together.", ans: true, exp: "Glue is used for sticking things." },
+            { q: "You use a <span style='color:var(--secondary)'>ruler</span> to draw straight lines and measure things.", ans: true, exp: "The ruler's purpose is to measure and draw lines." },
+            { q: "A <span style='color:var(--secondary)'>pencil case</span> is used to sharpen pencils.", ans: false, exp: "A pencil sharpener is used to sharpen pencils." },
+            { q: "You need a <span style='color:var(--secondary)'>highlighter</span> to point out important text.", ans: true, exp: "A highlighter's function is to emphasize key information." }
+        ];
+
+        let tfIndex = 0;
+
+        function loadTF() {
+            document.getElementById('tf-current').innerText = tfIndex + 1;
+            document.getElementById('tf-total').innerText = tfData.length;
+            document.getElementById('tf-question-box').innerHTML = tfData[tfIndex].q;
+            
+            document.querySelectorAll('.tf-btn').forEach(b => b.disabled = false);
+            document.getElementById('tf-feedback').style.display = 'none';
+            document.getElementById('btn-next-tf').style.display = 'none';
+        }
+
+        function checkTF(selectedTrue) {
+            document.querySelectorAll('.tf-btn').forEach(b => b.disabled = true);
+            const data = tfData[tfIndex];
+            const fb = document.getElementById('tf-feedback');
+            fb.style.display = 'block';
+
+            if(selectedTrue === data.ans) {
+                fb.className = 'quiz-feedback feedback-correct';
+                fb.innerHTML = `✅ <strong>¡Correcto!</strong><br>${data.exp}`;
+            } else {
+                fb.className = 'quiz-feedback feedback-incorrect';
+                fb.innerHTML = `❌ <strong>¡Incorrecto!</strong><br>${data.exp}`;
+            }
+            document.getElementById('btn-next-tf').style.display = 'block';
+        }
+
+        function nextTF() {
+            tfIndex++;
+            if(tfIndex < tfData.length) {
+                loadTF();
+            } else {
+                document.getElementById('tf-question-box').innerHTML = "🎉 ¡Completaste todas las preguntas de Verdadero o Falso!";
+                document.getElementById('tf-options').style.display = 'none';
+                document.getElementById('tf-feedback').style.display = 'none';
+                document.getElementById('btn-next-tf').style.display = 'none';
+            }
+        }
+
+        // --- LÓGICA 4: MULTIPLE CHOICE ---
+        const mcData = [
+            { q: "I need this to erase mistakes. What is it?", opts: ["Notebook", "Eraser", "Calculator"], ans: "Eraser" },
+            { q: "This item is used for solving math problems.", opts: ["Glue", "Pencil Case", "Calculator"], ans: "Calculator" },
+            { q: "I carry all my books and supplies in this.", opts: ["Backpack", "Crayons", "Whiteboard"], ans: "Backpack" },
+            { q: "I use this to put two pieces of paper together.", opts: ["Highlighter", "Glue", "Ruler"], ans: "Glue" },
+            { q: "I write notes and do homework in this.", opts: ["Book", "Notebook", "Scissors"], ans: "Notebook" },
+            { q: "I need this to make a sharp point on my pencil.", opts: ["Eraser", "Pencil Sharpener", "Crayons"], ans: "Pencil Sharpener" }
+        ];
+
+        let mcIndex = 0;
+
+        function loadMC() {
+            document.getElementById('mc-current').innerText = mcIndex + 1;
+            document.getElementById('mc-total').innerText = mcData.length;
+            document.getElementById('mc-question-box').innerHTML = mcData[mcIndex].q;
+            
+            const optsBox = document.getElementById('mc-options');
+            optsBox.innerHTML = '';
+            
+            mcData[mcIndex].opts.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'mc-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkMC(btn, opt);
+                optsBox.appendChild(btn);
+            });
+
+            document.getElementById('mc-feedback').style.display = 'none';
+            document.getElementById('btn-next-mc').style.display = 'none';
+        }
+
+        function checkMC(btn, selected) {
+            document.querySelectorAll('.mc-btn').forEach(b => b.disabled = true);
+            const ans = mcData[mcIndex].ans;
+            const fb = document.getElementById('mc-feedback');
+            fb.style.display = 'block';
+
+            if(selected === ans) {
+                btn.classList.add('correct-ans');
+                fb.className = 'quiz-feedback feedback-correct';
+                fb.innerHTML = `✅ ¡Respuesta Correcta!`;
+            } else {
+                btn.classList.add('wrong-ans');
+                Array.from(document.querySelectorAll('.mc-btn')).find(b => b.innerText === ans).classList.add('correct-ans');
+                fb.className = 'quiz-feedback feedback-incorrect';
+                fb.innerHTML = `❌ ¡Incorrecto! La respuesta era <strong>${ans}</strong>.`;
+            }
+            document.getElementById('btn-next-mc').style.display = 'block';
+        }
+
+        function nextMC() {
+            mcIndex++;
+            if(mcIndex < mcData.length) {
+                loadMC();
+            } else {
+                document.getElementById('mc-question-box').innerHTML = "🎉 ¡Completaste el test de Opción Múltiple!";
+                document.getElementById('mc-options').style.display = 'none';
+                document.getElementById('mc-feedback').style.display = 'none';
+                document.getElementById('btn-next-mc').style.display = 'none';
+            }
+        }
+
+        // Inicializar Quizzes
+        loadTF();
+        loadMC();
+
+    </script>
+</body>
+</html>

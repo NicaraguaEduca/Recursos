@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Must vs Mustn't - Actividades Interactivas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            height: 100dvh; 
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bg-animation {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0.6rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-bottom: 4px solid #ffcb05;
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            color: #4a5568;
+            text-align: center;
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .header h1 span { color: #5a67d8; }
+
+        #app-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 0.5rem;
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            min-height: 0; 
+            overflow: hidden; 
+        }
+
+        .view {
+            display: none;
+            width: 100%;
+            flex: 1;
+            flex-direction: column;
+            min-height: 0; 
+            animation: fadeIn 0.4s ease;
+        }
+
+        .view.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Menú Dashboard */
+        .dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .menu-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            border-bottom: 6px solid #5a67d8;
+            transition: transform 0.2s;
+        }
+
+        .menu-card:active { transform: scale(0.95); }
+        .menu-card:nth-child(2) { border-bottom-color: #48bb78; }
+
+        .menu-card-icon { font-size: 3rem; margin-bottom: 0.2rem; }
+        .menu-card h3 { color: #2d3748; font-size: 1.3rem; margin-bottom: 0.2rem; }
+        .menu-card p { color: #718096; font-size: 0.9rem; line-height: 1.2; }
+
+        /* Actividades */
+        .activity-header {
+            background: white;
+            border-radius: 12px;
+            padding: 0.6rem 1rem;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #5a67d8;
+            flex-shrink: 0;
+        }
+        
+        .activity-header h2 { font-size: 1.1rem; text-align: center; color: #4a5568;}
+
+        .score-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 0.3rem;
+        }
+
+        .score-text { font-size: 1rem; color: #2d3748; font-weight: bold; }
+
+        .progress-bar {
+            flex: 1;
+            height: 15px;
+            background: #edf2f7;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78, #38a169);
+            transition: width 0.5s ease;
+        }
+
+        .reminder-banner {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.85rem;
+            color: #856404;
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        .activity-content {
+            background: white;
+            border-radius: 15px;
+            padding: 0.8rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            flex: 1; 
+            min-height: 0; 
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; 
+        }
+
+        .activity-content::-webkit-scrollbar { width: 5px; }
+        .activity-content::-webkit-scrollbar-track { background: transparent; }
+        .activity-content::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 10px; }
+
+        .activity-content h3 {
+            color: #4a5568;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .drag-drop-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly; 
+            gap: 0.4rem;
+            margin-bottom: 0.5rem;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .sentence {
+            background: #f8fafc;
+            padding: 0.5rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: #2d3748;
+        }
+
+        .drop-zone {
+            min-width: 80px;
+            min-height: 30px;
+            background: #edf2f7;
+            border: 2px dashed #a0aec0;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: #4a5568;
+        }
+
+        .draggable-container {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            background: #f7fafc;
+            padding: 0.6rem;
+            border-radius: 10px;
+            border: 2px dashed #cbd5e0;
+            margin-bottom: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .draggable {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: #742a2a;
+            padding: 0.5rem 1.2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #d53f8c;
+            touch-action: none;
+            user-select: none;
+            cursor: grab;
+        }
+
+        .draggable:nth-child(1) {
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            color: #2a4365;
+            box-shadow: 0 4px 0 #3182ce;
+        }
+
+        .drag-clone {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.9;
+            transform: scale(1.1);
+        }
+
+        /* Fill Blank */
+        .fill-blank-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            gap: 0.5rem;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .fill-item {
+            background: #f8fafc;
+            padding: 0.6rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            font-size: 0.95rem;
+            text-align: center;
+        }
+
+        .blank-input {
+            border: 2px solid #cbd5e0;
+            border-radius: 15px;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.95rem;
+            font-family: inherit;
+            font-weight: bold;
+            color: #4a5568;
+            outline: none;
+            background: white;
+        }
+
+        .blank-input.correct { border-color: #48bb78; background-color: #f0fff4; color: #2f855a; }
+        .blank-input.incorrect { border-color: #f56565; background-color: #fff5f5; color: #c53030; }
+
+        /* Memory Game - Ajustado para que las letras no se salgan */
+        .memory-game {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.4rem;
+            width: 100%;
+            flex: 1;
+            align-content: center;
+            min-height: 0;
+        }
+
+        @media (max-width: 500px) {
+            .memory-game { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .memory-card { aspect-ratio: 1; perspective: 1000px; cursor: pointer; }
+
+        .memory-card-inner {
+            position: relative; width: 100%; height: 100%;
+            transition: transform 0.4s; transform-style: preserve-3d;
+        }
+
+        .memory-card.flipped .memory-card-inner,
+        .memory-card.matched .memory-card-inner { transform: rotateY(180deg); }
+
+        .card-front, .card-back {
+            position: absolute; width: 100%; height: 100%;
+            backface-visibility: hidden; display: flex; align-items: center; justify-content: center;
+            border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            font-size: 1.5rem; border: 2px solid #ed8936;
+        }
+
+        /* Corrección de tamaño de texto aquí */
+        .card-back {
+            background: white; 
+            border: 2px solid #e2e8f0; 
+            transform: rotateY(180deg);
+            padding: 0.4rem; 
+            text-align: center; 
+            /* clamp(minimo, tamaño fluido, maximo) ayuda a que no se desborde */
+            font-size: clamp(0.7rem, 4vw, 1.1rem); 
+            font-weight: bold; 
+            color: #2d3748;
+            flex-direction: column;
+            word-wrap: break-word; /* Rompe palabras largas si es necesario */
+            line-height: 1.2;
+        }
+        
+        .memory-card.matched .card-back { background: #c6f6d5; border-color: #48bb78; }
+
+        /* Botones y Controles */
+        .activity-controls {
+            display: flex; gap: 0.5rem; justify-content: center;
+            margin-top: 0.5rem; flex-shrink: 0;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem; border: none; border-radius: 15px;
+            font-size: 0.95rem; font-weight: bold; font-family: inherit;
+            cursor: pointer; box-shadow: 0 3px 0 rgba(0,0,0,0.15); transition: transform 0.1s;
+        }
+
+        .btn:active { transform: translateY(3px); box-shadow: none; }
+        .btn-primary { background: #5a67d8; color: white; }
+        .btn-secondary { background: #a0aec0; color: white; }
+        .btn-success { background: #48bb78; color: white; }
+
+        .controls-bottom {
+            display: flex; justify-content: space-between;
+            padding-top: 0.5rem; margin-top: 0.5rem; border-top: 2px dashed #e2e8f0;
+            flex-shrink: 0;
+        }
+
+        .feedback {
+            display: none; text-align: center; font-size: 0.9rem;
+            padding: 0.4rem; border-radius: 8px; margin-top: 0.5rem; font-weight: bold; flex-shrink: 0;
+        }
+        .feedback.correct { background: #f0fff4; color: #22543d; border: 1px solid #48bb78; }
+        .feedback.incorrect { background: #fff5f5; color: #742a2a; border: 1px solid #f56565; }
+
+        /* Modal */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: white; padding: 1.5rem; border-radius: 15px;
+            text-align: center; width: 90%; max-width: 300px; border: 4px solid #5a67d8;
+        }
+        .modal h2 { font-size: 1.5rem; color: #5a67d8; margin-bottom: 0.5rem;}
+        .modal p { font-size: 1rem; color: #4a5568; margin-bottom: 0.5rem;}
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <div class="header">
+        <h1>🎯 <span>Must</span> vs <span>Mustn't</span> 🚀</h1>
+    </div>
+
+    <div id="app-container">
+        
+        <!-- VISTA 0: MENU PRINCIPAL -->
+        <div class="view active" id="view-dashboard">
+            <div class="dashboard">
+                <div class="menu-card" onclick="goToView('view-act1-part1', 1)">
+                    <div class="menu-card-icon">🏫</div>
+                    <h3>School Rules</h3>
+                    <p>Reglas de la escuela</p>
+                </div>
+                <div class="menu-card" onclick="goToView('view-act2-part1', 2)">
+                    <div class="menu-card-icon">🏠</div>
+                    <h3>Home Chores</h3>
+                    <p>Deberes en casa</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISTA 1.1: DRAG AND DROP -->
+        <div class="view" id="view-act1-part1">
+            <div class="activity-header">
+                <h2>🏫 School Responsibilities (1/2)</h2>
+                <div class="score-section">
+                    <span class="score-text">Puntos: <span id="score1_1">0</span>/100</span>
+                    <div class="progress-bar"><div class="progress-fill" id="progress1_1" style="width: 0%"></div></div>
+                </div>
+            </div>
+            <div class="reminder-banner">💡 <strong>MUST (🟢)</strong> = Hacer / <strong>MUSTN'T (🔴)</strong> = NO Hacer</div>
+            
+            <div class="activity-content">
+                <h3>¡Arrastra la ficha al cuadro gris! 👆</h3>
+                
+                <div class="draggable-container">
+                    <div class="draggable" data-value="must">Must</div>
+                    <div class="draggable" data-value="mustn't">Mustn't</div>
+                </div>
+
+                <div class="drag-drop-container">
+                    <div class="sentence">👩‍🏫 You <span class="drop-zone" data-answer="must" data-item="1"></span> listen.</div>
+                    <div class="sentence">🏃‍♂️ You <span class="drop-zone" data-answer="mustn't" data-item="2"></span> run inside.</div>
+                    <div class="sentence">📝 We <span class="drop-zone" data-answer="must" data-item="3"></span> do homework.</div>
+                    <div class="sentence">🍔 You <span class="drop-zone" data-answer="mustn't" data-item="4"></span> eat in class.</div>
+                </div>
+
+                <div class="activity-controls">
+                    <button class="btn btn-primary" onclick="checkDragDrop()">✅ Revisar</button>
+                    <button class="btn btn-secondary" onclick="resetDragDrop()">🔄 Limpiar</button>
+                </div>
+                <div class="feedback" id="feedback-dragdrop"></div>
+
+                <div class="controls-bottom">
+                    <button class="btn btn-secondary" onclick="goToView('view-dashboard', 0)">🏠 Menú</button>
+                    <button class="btn btn-success" onclick="goToView('view-act1-part2', 1)">Siguiente ➡️</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISTA 1.2: FILL BLANK -->
+        <div class="view" id="view-act1-part2">
+            <div class="activity-header">
+                <h2>🏫 School Responsibilities (2/2)</h2>
+                <div class="score-section">
+                    <span class="score-text">Puntos: <span id="score1_2">0</span>/100</span>
+                    <div class="progress-bar"><div class="progress-fill" id="progress1_2" style="width: 0%"></div></div>
+                </div>
+            </div>
+            
+            <div class="activity-content">
+                <h3>Toca y elige la opción correcta 👇</h3>
+                <div class="fill-blank-container">
+                    <div class="fill-item">
+                        ⏰ You <select class="blank-input" data-answer="must" data-item="5">
+                            <option value="">...</option><option value="must">must</option><option value="mustn't">mustn't</option>
+                        </select> arrive on time.
+                    </div>
+                    <div class="fill-item">
+                        🐢 You <select class="blank-input" data-answer="mustn't" data-item="6">
+                            <option value="">...</option><option value="must">must</option><option value="mustn't">mustn't</option>
+                        </select> be late.
+                    </div>
+                    <div class="fill-item">
+                        🤝 We <select class="blank-input" data-answer="must" data-item="7">
+                            <option value="">...</option><option value="must">must</option><option value="mustn't">mustn't</option>
+                        </select> respect others.
+                    </div>
+                    <div class="fill-item">
+                        📱 You <select class="blank-input" data-answer="mustn't" data-item="8">
+                            <option value="">...</option><option value="must">must</option><option value="mustn't">mustn't</option>
+                        </select> use the phone.
+                    </div>
+                </div>
+
+                <div class="activity-controls">
+                    <button class="btn btn-primary" onclick="checkFillBlank1()">✅ Revisar</button>
+                    <button class="btn btn-secondary" onclick="resetFillBlank1()">🔄 Limpiar</button>
+                </div>
+                <div class="feedback" id="feedback-fill1"></div>
+
+                <div class="controls-bottom">
+                    <button class="btn btn-secondary" onclick="goToView('view-act1-part1', 1)">⬅️ Atrás</button>
+                    <button class="btn btn-success" onclick="goToView('view-dashboard', 0)">Finalizar 🏆</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISTA 2.1: MEMORY GAME (ACTUALIZADO A CHORES) -->
+        <div class="view" id="view-act2-part1">
+            <div class="activity-header">
+                <h2>🏠 Home Chores (1/2)</h2>
+                <div class="score-section">
+                    <span class="score-text">Puntos: <span id="score2_1">0</span>/100</span>
+                    <div class="progress-bar"><div class="progress-fill" id="progress2_1" style="width: 0%"></div></div>
+                </div>
+            </div>
+            
+            <div class="activity-content">
+                <h3>Une el verbo con el objeto 🧹</h3>
+                <div class="memory-game" id="memoryGame">
+                    <div class="memory-card" onclick="flipCard(this)" data-pair="1"><div class="memory-card-inner"><div class="card-front">❓</div><div class="card-back">Clean</div></div></div>
+                    <div class="memory-card" onclick="flipCard(this)" data-pair="1"><div class="memory-card-inner"><div class="card-front">❓</div><div class="card-back">the room</div></div></div>
+                    
+                    <div class="memory-card" onclick="flipCard(this)" data-pair="2"><div class="memory-card-inner"><div class="card-front">❓</div><div class="card-back">Water</div></div></div>
+                    <div class="memory-card" onclick="flipCard(this)" data-pair="2"><div class="memory-card-inner"><div class="card-front">❓</div><div class="card-back">the plants</div></div></div>
+                    
+                    <div class="memory-card" onclick="flipCard(this)" data-pair="3"><div class="memory-card-inner"><div class="card-front">❓</div><div class="card-back">Make</div></div></div>
+                    <div class="memory-card" onclick="flipCard(this)" data-pair="3"><div class="memory-card-inner"><div class="card-front">❓</div><div class="card-back">the bed</div></div></div>
+                    
+                    <div class="memory-card" onclick="flipCard(this)" data-pair="4"><div class="memory-card-inner"><div class="card-front">❓</div><div class="card-back">Wash</div></div></div>
+                    <div class="memory-card" onclick="flipCard(this)" data-pair="4"><div class="memory-card-inner"><div class="card-front">❓</div><div class="card-back">the dishes</div></div></div>
+                </div>
+
+                <div class="activity-controls">
+                    <button class="btn btn-primary" onclick="checkMemoryGame()">✅ Revisar</button>
+                    <button class="btn btn-secondary" onclick="resetMemoryGame()">🔄 Limpiar</button>
+                </div>
+                <div class="feedback" id="feedback-memory"></div>
+
+                <div class="controls-bottom">
+                    <button class="btn btn-secondary" onclick="goToView('view-dashboard', 0)">🏠 Menú</button>
+                    <button class="btn btn-success" onclick="goToView('view-act2-part2', 2)">Siguiente ➡️</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISTA 2.2: MULTIPLE CHOICE -->
+        <div class="view" id="view-act2-part2">
+            <div class="activity-header">
+                <h2>🏠 Home Chores (2/2)</h2>
+                <div class="score-section">
+                    <span class="score-text">Puntos: <span id="score2_2">0</span>/100</span>
+                    <div class="progress-bar"><div class="progress-fill" id="progress2_2" style="width: 0%"></div></div>
+                </div>
+            </div>
+            
+            <div class="activity-content">
+                <h3>Elige la respuesta correcta 👇</h3>
+                <div class="fill-blank-container">
+                    <div class="fill-item">🍽️ I _____ help with dinner. <select class="blank-input" data-answer="must" data-item="9"><option value="">...</option><option value="must">must</option><option value="mustn't">mustn't</option></select></div>
+                    <div class="fill-item">🧸 I _____ leave toys around. <select class="blank-input" data-answer="mustn't" data-item="10"><option value="">...</option><option value="must">must</option><option value="mustn't">mustn't</option></select></div>
+                    <div class="fill-item">🧼 I _____ wash the dishes. <select class="blank-input" data-answer="must" data-item="11"><option value="">...</option><option value="must">must</option><option value="mustn't">mustn't</option></select></div>
+                    <div class="fill-item">😴 I _____ sleep late. <select class="blank-input" data-answer="mustn't" data-item="12"><option value="">...</option><option value="must">must</option><option value="mustn't">mustn't</option></select></div>
+                </div>
+
+                <div class="activity-controls">
+                    <button class="btn btn-primary" onclick="checkMultipleChoice()">✅ Revisar</button>
+                    <button class="btn btn-secondary" onclick="resetMultipleChoice()">🔄 Limpiar</button>
+                </div>
+                <div class="feedback" id="feedback-multiple"></div>
+
+                <div class="controls-bottom">
+                    <button class="btn btn-secondary" onclick="goToView('view-act2-part1', 2)">⬅️ Atrás</button>
+                    <button class="btn btn-success" onclick="goToView('view-dashboard', 0)">Finalizar 🏆</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">¡Excelente!</h2>
+            <p id="modalMessage">Actividad completada.</p>
+            <div id="modalEmoji" style="font-size: 3.5rem; margin: 0.5rem 0;">🎉</div>
+            <button class="btn btn-success" onclick="closeModal()">Continuar</button>
+        </div>
+    </div>
+
+    <script>
+        function goToView(viewId, activityNum) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            if(activityNum > 0) updateScoreUI(activityNum);
+            if(viewId === 'view-act2-part1' && matchedPairs === 0) shuffleMemoryCards();
+        }
+
+        let scores = {1: 0, 2: 0};
+        let itemScores = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0};
+        let memoryGameScore = 0;
+
+        function updateScoreUI(activity) {
+            let score = Math.round(scores[activity]);
+            let s1 = document.getElementById(`score${activity}_1`);
+            let s2 = document.getElementById(`score${activity}_2`);
+            if(s1) s1.textContent = score; if(s2) s2.textContent = score;
+            let p1 = document.getElementById(`progress${activity}_1`);
+            let p2 = document.getElementById(`progress${activity}_2`);
+            if(p1) p1.style.width = `${score}%`; if(p2) p2.style.width = `${score}%`;
+        }
+
+        let draggedValue = null;
+        let dragClone = null;
+
+        document.querySelectorAll('.draggable').forEach(item => {
+            item.addEventListener('touchstart', handleDragStart, {passive: false});
+            item.addEventListener('touchmove', handleDragMove, {passive: false});
+            item.addEventListener('touchend', handleDragEnd);
+            item.addEventListener('mousedown', handleMouseStart);
+        });
+
+        function createClone(x, y, text) {
+            dragClone = document.createElement('div');
+            dragClone.className = 'draggable drag-clone';
+            dragClone.textContent = text;
+            if(text.toLowerCase() === 'must') {
+                dragClone.style.background = 'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)';
+                dragClone.style.color = '#2a4365';
+            }
+            document.body.appendChild(dragClone);
+            moveClone(x, y);
+        }
+
+        function moveClone(x, y) {
+            if(dragClone) {
+                dragClone.style.left = (x - dragClone.offsetWidth / 2) + 'px';
+                dragClone.style.top = (y - dragClone.offsetHeight / 2) + 'px';
+            }
+        }
+
+        function handleDragStart(e) {
+            e.preventDefault();
+            let touch = e.touches[0]; draggedValue = e.target.dataset.value;
+            createClone(touch.clientX, touch.clientY, e.target.textContent);
+        }
+
+        function handleDragMove(e) {
+            e.preventDefault();
+            if(!dragClone) return; moveClone(e.touches[0].clientX, e.touches[0].clientY);
+        }
+
+        function handleDragEnd(e) {
+            if(!dragClone) return;
+            let touch = e.changedTouches[0];
+            dragClone.style.display = 'none'; 
+            let elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+            let dropZone = elementBelow ? elementBelow.closest('.drop-zone') : null;
+            if(dropZone) {
+                dropZone.textContent = dragClone.textContent;
+                dropZone.style.background = '#f0fff4'; dropZone.style.borderColor = '#48bb78'; dropZone.style.borderStyle = 'solid';
+            }
+            dragClone.remove(); dragClone = null; draggedValue = null;
+        }
+
+        function handleMouseStart(e) {
+            e.preventDefault(); draggedValue = e.target.dataset.value;
+            createClone(e.clientX, e.clientY, e.target.textContent);
+            document.addEventListener('mousemove', handleMouseMove); document.addEventListener('mouseup', handleMouseEnd);
+        }
+        function handleMouseMove(e) { moveClone(e.clientX, e.clientY); }
+        function handleMouseEnd(e) {
+            document.removeEventListener('mousemove', handleMouseMove); document.removeEventListener('mouseup', handleMouseEnd);
+            if(!dragClone) return;
+            dragClone.style.display = 'none';
+            let elementBelow = document.elementFromPoint(e.clientX, e.clientY);
+            let dropZone = elementBelow ? elementBelow.closest('.drop-zone') : null;
+            if(dropZone) {
+                dropZone.textContent = dragClone.textContent;
+                dropZone.style.background = '#f0fff4'; dropZone.style.borderColor = '#48bb78'; dropZone.style.borderStyle = 'solid';
+            }
+            dragClone.remove(); dragClone = null; draggedValue = null;
+        }
+
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            zone.addEventListener('click', function() {
+                this.textContent = ''; this.style.background = '#edf2f7'; this.style.borderColor = '#a0aec0'; this.style.borderStyle = 'dashed';
+            });
+        });
+
+        function checkDragDrop() {
+            let correctCount = 0;
+            document.querySelectorAll('#view-act1-part1 .drop-zone').forEach(zone => {
+                const itemId = parseInt(zone.dataset.item);
+                const isCorrect = zone.textContent.toLowerCase() === zone.dataset.answer.toLowerCase();
+                
+                if (zone.textContent === "") {
+                    zone.style.background = '#fff3cd'; zone.style.borderColor = '#ffc107'; zone.style.borderStyle = 'solid';
+                } else if (isCorrect) {
+                    correctCount++; zone.style.background = '#f0fff4'; zone.style.borderColor = '#48bb78';
+                    if (itemScores[itemId] === 0) { itemScores[itemId] = 8.33; scores[1] = Math.min(100, scores[1] + 8.33); updateScoreUI(1); }
+                } else {
+                    zone.style.background = '#fff5f5'; zone.style.borderColor = '#f56565';
+                    if (itemScores[itemId] > 0) { scores[1] = Math.max(0, scores[1] - itemScores[itemId]); itemScores[itemId] = 0; updateScoreUI(1); }
+                }
+            });
+            const fb = document.getElementById('feedback-dragdrop');
+            if (correctCount === 4) {
+                fb.className = 'feedback correct'; fb.innerHTML = "🎉 ¡Perfecto!"; showModal('¡Bravo!', 'Completaste la primera parte.', '⭐');
+            } else { fb.className = 'feedback incorrect'; fb.innerHTML = `Tienes ${correctCount} correctas. ¡Sigue intentando!`; }
+            fb.style.display = 'block';
+        }
+
+        function resetDragDrop() {
+            for(let i=1; i<=4; i++) { scores[1] = Math.max(0, scores[1] - itemScores[i]); itemScores[i] = 0; }
+            updateScoreUI(1);
+            document.querySelectorAll('#view-act1-part1 .drop-zone').forEach(z => {
+                z.textContent = ''; z.style.background = '#edf2f7'; z.style.borderColor = '#a0aec0'; z.style.borderStyle = 'dashed';
+            });
+            document.getElementById('feedback-dragdrop').style.display = 'none';
+        }
+
+        function checkFillBlank1() {
+            let correctCount = 0;
+            document.querySelectorAll('#view-act1-part2 select').forEach(select => {
+                const itemId = parseInt(select.dataset.item);
+                if (select.value === select.dataset.answer) {
+                    correctCount++; select.classList.add('correct'); select.classList.remove('incorrect');
+                    if (itemScores[itemId] === 0) { itemScores[itemId] = 8.33; scores[1] = Math.min(100, scores[1] + 8.33); updateScoreUI(1); }
+                } else {
+                    select.classList.add('incorrect'); select.classList.remove('correct');
+                    if (itemScores[itemId] > 0) { scores[1] = Math.max(0, scores[1] - itemScores[itemId]); itemScores[itemId] = 0; updateScoreUI(1); }
+                }
+            });
+            const fb = document.getElementById('feedback-fill1');
+            if (correctCount === 4) {
+                fb.className = 'feedback correct'; fb.innerHTML = "🌟 ¡Súper!"; showModal('¡Nivel Completado!', 'Eres un experto en el colegio.', '🎓');
+            } else { fb.className = 'feedback incorrect'; fb.innerHTML = `Llevas ${correctCount}/4 correctas.`; }
+            fb.style.display = 'block';
+        }
+
+        function resetFillBlank1() {
+            for(let i=5; i<=8; i++) { scores[1] = Math.max(0, scores[1] - itemScores[i]); itemScores[i] = 0; }
+            updateScoreUI(1);
+            document.querySelectorAll('#view-act1-part2 select').forEach(s => { s.value = ''; s.classList.remove('correct','incorrect'); });
+            document.getElementById('feedback-fill1').style.display = 'none';
+        }
+
+        let flippedCards = []; let matchedPairs = 0;
+
+        function shuffleMemoryCards() {
+            const container = document.getElementById('memoryGame');
+            const cards = Array.from(container.children);
+            cards.forEach(c => c.classList.remove('flipped', 'matched'));
+            flippedCards = []; matchedPairs = 0;
+            for (let i = cards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cards[i], cards[j]] = [cards[j], cards[i]];
+            }
+            cards.forEach(card => container.appendChild(card));
+        }
+
+        function flipCard(card) {
+            if (card.classList.contains('matched') || card.classList.contains('flipped') || flippedCards.length >= 2) return;
+            card.classList.add('flipped'); flippedCards.push(card);
+            if (flippedCards.length === 2) setTimeout(checkMatch, 700);
+        }
+
+        function checkMatch() {
+            if (flippedCards[0].dataset.pair === flippedCards[1].dataset.pair) {
+                flippedCards[0].classList.add('matched'); flippedCards[1].classList.add('matched');
+                matchedPairs++;
+                const newScore = matchedPairs * 12.5;
+                if (memoryGameScore < newScore) { scores[2] += (newScore - memoryGameScore); memoryGameScore = newScore; updateScoreUI(2); }
+            } else {
+                flippedCards[0].classList.remove('flipped'); flippedCards[1].classList.remove('flipped');
+            }
+            flippedCards = [];
+        }
+
+        function checkMemoryGame() {
+            const fb = document.getElementById('feedback-memory');
+            if (matchedPairs === 4) {
+                fb.className = 'feedback correct'; fb.innerHTML = "🏆 ¡Memoria perfecta!"; showModal('¡Excelente!', 'Encontraste todos los pares.', '🧩');
+            } else { fb.className = 'feedback incorrect'; fb.innerHTML = `Llevas ${matchedPairs} de 4 parejas.`; }
+            fb.style.display = 'block';
+        }
+
+        function resetMemoryGame() {
+            if (memoryGameScore > 0) { scores[2] = Math.max(0, scores[2] - memoryGameScore); memoryGameScore = 0; updateScoreUI(2); }
+            document.getElementById('feedback-memory').style.display = 'none';
+            shuffleMemoryCards();
+        }
+
+        function checkMultipleChoice() {
+            let correctCount = 0;
+            document.querySelectorAll('#view-act2-part2 select').forEach(select => {
+                const itemId = parseInt(select.dataset.item);
+                if (select.value === select.dataset.answer) {
+                    correctCount++; select.classList.add('correct'); select.classList.remove('incorrect');
+                    if (itemScores[itemId] === 0) { itemScores[itemId] = 12.5; scores[2] = Math.min(100, scores[2] + 12.5); updateScoreUI(2); }
+                } else {
+                    select.classList.add('incorrect'); select.classList.remove('correct');
+                    if (itemScores[itemId] > 0) { scores[2] = Math.max(0, scores[2] - itemScores[itemId]); itemScores[itemId] = 0; updateScoreUI(2); }
+                }
+            });
+            const fb = document.getElementById('feedback-multiple');
+            if (correctCount === 4) {
+                fb.className = 'feedback correct'; fb.innerHTML = "🎊 ¡Perfecto!"; showModal('¡Felicidades!', 'Eres un experto en las tareas del hogar.', '🥇');
+            } else { fb.className = 'feedback incorrect'; fb.innerHTML = `Llevas ${correctCount}/4 correctas.`; }
+            fb.style.display = 'block';
+        }
+
+        function resetMultipleChoice() {
+            for(let i=9; i<=12; i++) { scores[2] = Math.max(0, scores[2] - itemScores[i]); itemScores[i] = 0; }
+            updateScoreUI(2);
+            document.querySelectorAll('#view-act2-part2 select').forEach(s => { s.value = ''; s.classList.remove('correct','incorrect'); });
+            document.getElementById('feedback-multiple').style.display = 'none';
+        }
+
+        function showModal(title, message, emoji) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+            document.getElementById('modalEmoji').textContent = emoji;
+            document.getElementById('modal').style.display = 'flex';
+        }
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+    </script>
+</body>
+</html>

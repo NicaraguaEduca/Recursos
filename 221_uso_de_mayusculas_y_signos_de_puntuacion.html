@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover" />
+    <title>🕵️‍♂️ Detective de Mayúsculas y Puntos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'Segoe UI', Roboto, 'Comic Sans MS', sans-serif;
+            background: linear-gradient(135deg, #1e272e 0%, #0f171e 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.5rem;
+        }
+
+        .app-container {
+            max-width: 950px;
+            width: 100%;
+            background: #2b3a4a;
+            border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), inset 0 0 0 8px #f1c40f;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 8px solid #10171e;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            padding: 2rem;
+            flex-direction: column;
+            align-items: center;
+        }
+        .screen.active {
+            display: flex;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* ===== INTRO ===== */
+        .intro-screen {
+            text-align: center;
+            background: radial-gradient(circle, #2c3e50 0%, #1a252f 100%);
+            color: white;
+        }
+        .mascot {
+            font-size: 6.5rem;
+            margin-bottom: 0.5rem;
+            animation: pulse 2s infinite ease-in-out;
+            filter: drop-shadow(0 10px 15px rgba(241, 196, 15, 0.3));
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+        h1 {
+            font-size: 3.2rem;
+            color: #f1c40f;
+            margin-bottom: 1rem;
+            text-shadow: 3px 3px 0px #000;
+            font-family: 'Georgia', serif;
+        }
+        .instruction-box {
+            background: rgba(255, 255, 255, 0.08);
+            border: 3px dashed #f1c40f;
+            padding: 1.5rem;
+            border-radius: 20px;
+            font-size: 1.3rem;
+            color: #ecf0f1;
+            margin-bottom: 2rem;
+            text-align: center;
+            line-height: 1.6;
+            max-width: 700px;
+        }
+        .highlight { color: #f39c12; font-weight: bold; }
+
+        .btn-start {
+            background: #f1c40f;
+            color: #1e272e;
+            font-size: 1.8rem;
+            font-weight: bold;
+            padding: 15px 45px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #d35400;
+            transition: all 0.1s;
+            text-transform: uppercase;
+        }
+        .btn-start:active {
+            transform: translateY(8px);
+            box-shadow: 0 0 0 #d35400;
+        }
+
+        /* ===== JUEGO ===== */
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #111e2e;
+            padding: 15px 25px;
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 1.2rem;
+            border: 2px solid #f1c40f;
+        }
+        .status-text {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #f1c40f;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .main-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            background: #1a252f;
+            border-radius: 20px;
+            padding: 20px;
+            min-height: 380px;
+            justify-content: space-between;
+            border: 2px solid #34495e;
+        }
+
+        /* Papel de Expediente del Caso */
+        .case-paper {
+            width: 100%;
+            max-width: 700px;
+            background: #fcf8ec;
+            border-radius: 12px;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 0 30px rgba(139, 69, 19, 0.15);
+            border: 2px solid #d4ac0d;
+            position: relative;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .case-paper::before {
+            content: '📂 EXPEDIENTE CONFIDENCIAL';
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #c0392b;
+            color: white;
+            padding: 4px 18px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border-radius: 10px;
+            letter-spacing: 2px;
+        }
+        .sentence-display {
+            font-size: 2rem;
+            color: #2c3e50;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+            line-height: 1.5;
+            margin-top: 10px;
+        }
+
+        /* Botones de Reglas */
+        .rule-buttons {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .rule-btn {
+            flex: 1;
+            min-width: 200px;
+            max-width: 260px;
+            background: #34495e;
+            color: white;
+            border: 3px solid #f1c40f;
+            padding: 15px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 6px 0 #1b2631;
+            transition: all 0.1s;
+        }
+        .rule-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #1b2631;
+        }
+        .rule-icon { font-size: 2.2rem; }
+
+        /* Botones de Modos */
+        .mode-buttons {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .mode-btn {
+            background: #2c3e50;
+            border: 3px solid #7f8c8d;
+            padding: 10px 25px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            color: #bdc3c7;
+            transition: all 0.2s;
+        }
+        .mode-btn.active {
+            background: #f39c12;
+            color: white;
+            border-color: #d35400;
+            box-shadow: 0 5px 0 #962d00;
+        }
+
+        /* ====== MODAL INVASIVO ====== */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active {
+            display: flex;
+            animation: popInModal 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popInModal {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 2.2rem;
+            border-radius: 25px;
+            text-align: center;
+            max-width: 90%;
+            width: 530px;
+            border: 7px solid #333;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        }
+        .modal-content.info { border-color: #f1c40f; }
+        .modal-content.error { border-color: #e74c3c; }
+
+        .modal-title { font-size: 2.2rem; margin-bottom: 1rem; font-family: 'Georgia', serif; }
+        .info .modal-title { color: #d35400; }
+        .error .modal-title { color: #c0392b; }
+
+        .modal-text {
+            font-size: 1.35rem;
+            margin-bottom: 1.8rem;
+            line-height: 1.5;
+            color: #2c3e50;
+            white-space: pre-line;
+        }
+
+        .modal-close {
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            font-size: 1.3rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.1s;
+        }
+        .modal-close:active { transform: translateY(5px); box-shadow: none !important; }
+        .info .modal-close { background: #f39c12; box-shadow: 0 5px 0 #b7950b; }
+        .error .modal-close { background: #e74c3c; box-shadow: 0 5px 0 #922b21; }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; }
+            .mascot { font-size: 4.5rem; }
+            .sentence-display { font-size: 1.4rem; }
+            .rule-buttons { flex-direction: column; align-items: center; }
+            .rule-btn { width: 100%; max-width: 100%; }
+            .modal-content { padding: 1.5rem; }
+            .modal-title { font-size: 1.7rem; }
+            .modal-text { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- ===== MODAL INVASIVO ===== -->
+        <div id="feedbackModal" class="modal-overlay">
+            <div id="modalBox" class="modal-content">
+                <h2 id="modalTitle" class="modal-title">Título</h2>
+                <p id="modalText" class="modal-text">Texto de explicación</p>
+                <button id="modalBtn" class="modal-close">¡Entendido, Inspector!</button>
+            </div>
+        </div>
+
+        <!-- ===== INTRO ===== -->
+        <div id="introScreen" class="screen intro-screen active">
+            <div class="mascot">🕵️‍♂️🔍</div>
+            <h1>Detective de Mayúsculas</h1>
+            <div class="instruction-box">
+                ¡Atención, agente! Hay oraciones con errores sueltas en la ciudad.<br><br>
+                Tu misión es encontrar las fallas en:<br>
+                🔤 <span class="highlight">Mayúscula al inicio</span><br>
+                👤 <span class="highlight">Mayúscula en Nombres Propios</span><br>
+                🔴 <span class="highlight">Punto Final al terminar</span>
+            </div>
+            <button class="btn-start" id="startBtn">▶ ¡Iniciar Investigación!</button>
+        </div>
+
+        <!-- ===== JUEGO ===== -->
+        <div id="gameScreen" class="screen">
+            <div class="header">
+                <div class="status-text" id="statusText">👨‍🏫 Modo Explicación del Inspector</div>
+            </div>
+
+            <div class="main-area">
+                
+                <!-- Expediente del Caso -->
+                <div class="case-paper">
+                    <div class="sentence-display" id="sentenceDisplay">Selecciona una regla para analizar...</div>
+                </div>
+
+                <!-- Botones de Análisis de Reglas -->
+                <div class="rule-buttons">
+                    <button class="rule-btn" data-rule="inicio">
+                        <span class="rule-icon">🔤</span>
+                        <span>Mayúscula al Inicio</span>
+                    </button>
+                    <button class="rule-btn" data-rule="nombre">
+                        <span class="rule-icon">👤</span>
+                        <span>Nombre Propio</span>
+                    </button>
+                    <button class="rule-btn" data-rule="punto">
+                        <span class="rule-icon">🔴</span>
+                        <span>Punto Final</span>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Botones de Modo -->
+            <div class="mode-buttons">
+                <button class="mode-btn active" id="btnTeach">👨‍🏫 Explicar Reglas</button>
+                <button class="mode-btn" id="btnPractice">🕵️‍♂️ Resolver Casos</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==== DATOS MODO EXPLICACIÓN ====
+        const teachData = {
+            'inicio': {
+                sentence: '🔍 <span style="color:#e74c3c; text-decoration:underline;">E</span>l perro corre feliz.',
+                title: '🔤 MAYÚSCULA AL INICIO',
+                text: '**¡La primera letra NUNCA va en minúscula!**\n\nSiempre que empieces a escribir una oración, la primerísima letra debe ser MAYÚSULA y más grande que las demás.'
+            },
+            'nombre': {
+                sentence: '🔍 Mi amigo se llama <span style="color:#e74c3c; text-decoration:underline;">C</span>arlos.',
+                title: '👤 NOMBRES PROPIOS',
+                text: '**¡Los nombres de personas, mascotas y ciudades son especiales!**\n\nSiempre llevan mayúscula inicial, sin importar si están al principio, en el medio o al final de la oración (Ej: Carlos, Toby, Madrid).'
+            },
+            'punto': {
+                sentence: '🔍 El auto es rojo<span style="color:#e74c3c; font-weight:bold; font-size:2.5rem;">.</span>',
+                title: '🔴 EL PUNTO FINAL',
+                text: '**¡Toda oración necesita frenar!**\n\nAl terminar de expresar una idea completa, SIEMPRE debemos colocar un punto final ( . ). Es como una luz roja de alto para la lectura.'
+            }
+        };
+
+        // ==== CASOS MODO PRÁCTICA ====
+        let practiceCases = [
+            {
+                sentence: 'el gato toma leche.',
+                correctRule: 'inicio',
+                errorTitle: '🕵️‍♂️ ¡Falla de Evidencia!',
+                hint: 'Mira el inicio de la oración. Empieza con la letra "e" minúscula.\n\n**Recuerda:** Toda oración debe empezar con una **MAYÚSCULA** grande.'
+            },
+            {
+                sentence: 'Mi perro se llama tobías.',
+                correctRule: 'nombre',
+                errorTitle: '🕵️‍♂️ ¡Sospechoso Incorrecto!',
+                hint: '"tobías" es el nombre propio de una mascota entrañable.\n\n**Recuerda:** Los nombres de personas, mascotas y lugares SIEMPRE llevan **Mayúscula**.'
+            },
+            {
+                sentence: 'La niña come una manzana',
+                correctRule: 'punto',
+                errorTitle: '🕵️‍♂️ ¡La oración no ha terminado!',
+                hint: 'La oración se quedó abierta sin ninguna señal de alto al final.\n\n**Recuerda:** Toda oración debe cerrarse con un **Punto Final ( . )**.'
+            },
+            {
+                sentence: 'pedro juega en el parque.',
+                correctRule: 'inicio',
+                errorTitle: '🕵️‍♂️ ¡Revisa la primera letra!',
+                hint: 'La palabra "pedro" está al principio de la oración en minúscula.\n\n**Recuerda:** Al comenzar a escribir, ¡la primera letra **SIEMPRE es Mayúscula**!'
+            },
+            {
+                sentence: 'Viajamos a la ciudad de lima.',
+                correctRule: 'nombre',
+                errorTitle: '🕵️‍♂️ ¡Falta respetar el lugar!',
+                hint: '"lima" es el nombre propio de una ciudad muy importante.\n\n**Recuerda:** Los nombres de ciudades y países son **Nombres Propios** e inician con Mayúscula.'
+            },
+            {
+                sentence: 'El sol brilla en el cielo',
+                correctRule: 'punto',
+                errorTitle: '🕵️‍♂️ ¡Falta el cierre!',
+                hint: 'Le falta la señal de parada al final del texto.\n\n**Recuerda:** Al terminar la idea debes poner el **Punto Final ( . )**.'
+            }
+        ];
+
+        let mode = 'teach';
+        let currentCaseIndex = 0;
+
+        // Elementos DOM
+        const screens = { intro: document.getElementById('introScreen'), game: document.getElementById('gameScreen') };
+        const statusText = document.getElementById('statusText');
+        const sentenceDisplay = document.getElementById('sentenceDisplay');
+        
+        // Modal Elements
+        const modalOverlay = document.getElementById('feedbackModal');
+        const modalBox = document.getElementById('modalBox');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalText = document.getElementById('modalText');
+        const modalBtn = document.getElementById('modalBtn');
+
+        // ==== AUDIO (Web Audio API) ====
+        let audioCtx;
+        function playSound(type) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'click') { 
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(110, audioCtx.currentTime + 0.25);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.25);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+            } else if (type === 'win') {
+                [440, 554.37, 659.25, 880].forEach((f, i) => {
+                    const oscN = audioCtx.createOscillator();
+                    const gainN = audioCtx.createGain();
+                    oscN.connect(gainN); gainN.connect(audioCtx.destination);
+                    oscN.frequency.value = f;
+                    gainN.gain.setValueAtTime(0.08, audioCtx.currentTime + i * 0.09);
+                    gainN.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.09 + 0.3);
+                    oscN.start(audioCtx.currentTime + i * 0.09);
+                    oscN.stop(audioCtx.currentTime + i * 0.09 + 0.3);
+                });
+            }
+        }
+
+        // ==== MOSTRAR MODAL INVASIVO ====
+        function showModal(title, text, type) {
+            modalBox.className = `modal-content ${type}`;
+            modalTitle.textContent = title;
+            modalText.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            modalOverlay.classList.add('active');
+        }
+
+        modalBtn.addEventListener('click', () => {
+            playSound('click');
+            modalOverlay.classList.remove('active');
+        });
+
+        // ==== BOTONES DE REGLAS / RESPUESTAS ====
+        document.querySelectorAll('.rule-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const rule = e.currentTarget.dataset.rule;
+
+                if (mode === 'teach') {
+                    playSound('click');
+                    const data = teachData[rule];
+                    sentenceDisplay.innerHTML = data.sentence;
+                    showModal(data.title, data.text, 'info');
+                } else if (mode === 'practice') {
+                    checkAnswer(rule);
+                }
+            });
+        });
+
+        // ==== LÓGICA MODO PRÁCTICA ====
+        function loadCase() {
+            if (currentCaseIndex >= practiceCases.length) {
+                statusText.textContent = "🏆 ¡CASO RESUELTO! Eres el mejor detective de la ciudad.";
+                sentenceDisplay.innerHTML = "🎉 ¡Misión Cumplida!<br><small>Has capturado todos los errores gramaticales.</small>";
+                playSound('win');
+                return;
+            }
+
+            const currentCase = practiceCases[currentCaseIndex];
+            statusText.textContent = `Caso #${currentCaseIndex + 1}: ¿Qué regla se violó en este expediente?`;
+            sentenceDisplay.textContent = `"${currentCase.sentence}"`;
+        }
+
+        function checkAnswer(selectedRule) {
+            if (currentCaseIndex >= practiceCases.length) return;
+
+            const currentCase = practiceCases[currentCaseIndex];
+
+            if (selectedRule === currentCase.correctRule) {
+                playSound('win');
+                statusText.textContent = "¡Correcto! Caso resuelto.";
+                sentenceDisplay.innerHTML = "✅ ¡Error Detectado!";
+
+                setTimeout(() => {
+                    currentCaseIndex++;
+                    loadCase();
+                }, 1400);
+            } else {
+                playSound('error');
+                showModal(currentCase.errorTitle, currentCase.hint, 'error');
+            }
+        }
+
+        // ==== CAMBIO DE MODO ====
+        function setMode(newMode) {
+            mode = newMode;
+            if (mode === 'teach') {
+                statusText.textContent = "👨‍🏫 Toca un botón para investigar la regla gramatical";
+                document.getElementById('btnTeach').classList.add('active');
+                document.getElementById('btnPractice').classList.remove('active');
+                sentenceDisplay.innerHTML = "Selecciona una regla para analizar...";
+            } else {
+                document.getElementById('btnPractice').classList.add('active');
+                document.getElementById('btnTeach').classList.remove('active');
+                // Mezclar casos para variabilidad
+                practiceCases = practiceCases.sort(() => Math.random() - 0.5);
+                currentCaseIndex = 0;
+                loadCase();
+            }
+        }
+
+        // ==== INICIALIZACIÓN ====
+        document.getElementById('startBtn').addEventListener('click', () => {
+            if (!audioCtx) playSound('click');
+            screens.intro.classList.remove('active');
+            screens.game.classList.add('active');
+            setMode('teach');
+        });
+
+        document.getElementById('btnTeach').addEventListener('click', () => setMode('teach'));
+        document.getElementById('btnPractice').addEventListener('click', () => setMode('practice'));
+
+    </script>
+</body>
+</html>

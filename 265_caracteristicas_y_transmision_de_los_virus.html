@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aventura Microscópica: Los Virus</title>
+    <style>
+        /* =========================================
+           ESTILOS BASE
+           ========================================= */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Comic Sans MS', 'Segoe UI', sans-serif; }
+
+        body {
+            background: linear-gradient(135deg, #74ebd5 0%, #9face6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            color: #333;
+        }
+
+        #app-container {
+            width: 96vw;
+            max-width: 900px;
+            height: 94vh;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 4px solid #fff;
+        }
+
+        /* =========================================
+           ENCABEZADO Y PESTAÑAS
+           ========================================= */
+        .header {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(90deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+            color: #d63031;
+            flex-shrink: 0;
+            border-bottom: 3px solid #ff7675;
+        }
+
+        .header h1 { font-size: clamp(1.3rem, 4vw, 1.8rem); font-weight: 900; }
+        .header p { font-size: clamp(0.85rem, 2vw, 1rem); font-weight: bold; opacity: 0.9; margin-top: 5px; color: #d63031;}
+
+        #tabs { display: flex; background: #ffeaa7; flex-shrink: 0; border-bottom: 3px solid #fdcb6e; }
+        
+        .tab-button {
+            flex: 1; padding: 12px 2px; border: none; background: transparent;
+            font-weight: 800; font-size: clamp(0.65rem, 2vw, 0.95rem); color: #b2bec3;
+            cursor: pointer; transition: 0.3s; border-bottom: 5px solid transparent;
+        }
+
+        .tab-button.active { color: #e17055; border-bottom: 5px solid #e17055; background: #fff; }
+
+        .tab-content {
+            display: none; flex-grow: 1; padding: 20px;
+            flex-direction: column; align-items: center; justify-content: space-between;
+            overflow-y: auto;
+        }
+        .tab-content.active { display: flex; animation: fadeIn 0.4s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .instructions { text-align: center; font-weight: 800; color: #0984e3; font-size: clamp(0.9rem, 2.5vw, 1.1rem); margin-bottom: 10px; }
+
+        /* =========================================
+           PESTAÑA 0: TEORÍA DIVERTIDA
+           ========================================= */
+        .theory-container {
+            width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 15px;
+            margin-bottom: auto;
+        }
+
+        .theory-card {
+            background: white; border-left: 6px solid #00b894; border-radius: 12px;
+            padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            border-right: 2px solid #eee; border-top: 2px solid #eee; border-bottom: 2px solid #eee;
+        }
+
+        .theory-card h3 { color: #00b894; margin-bottom: 8px; font-size: 1.2rem; display: flex; align-items: center; gap: 5px; }
+        .theory-card p { font-size: 1rem; line-height: 1.4; color: #2d3436; font-weight: bold;}
+        .theory-card strong { color: #d63031; }
+
+        /* =========================================
+           ACTIVIDAD 1: MEMORIA
+           ========================================= */
+        .memory-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+            width: 100%; max-width: 550px; flex-grow: 1;
+        }
+        
+        .memory-card {
+            background: #81ecec; border-radius: 15px; display: flex; align-items: center;
+            justify-content: center; font-size: clamp(0.75rem, 2vw, 1rem); font-weight: bold; text-align: center;
+            cursor: pointer; transition: 0.3s; box-shadow: 0 5px 0 #00cec9; user-select: none; padding: 5px; color: #2d3436; border: 2px solid #00cec9;
+        }
+
+        .memory-card:active { transform: translateY(5px); box-shadow: 0 0 0 #00cec9; }
+        .memory-card.flipped { background: #ffeaa7; box-shadow: 0 5px 0 #fdcb6e; border-color: #fdcb6e; transform: translateY(0); }
+        .memory-card.matched { background: #55efc4; color: #2d3436; box-shadow: 0 5px 0 #00b894; border-color: #00b894; cursor: default; animation: pop 0.3s; }
+        @keyframes pop { 50% { transform: scale(1.1); } }
+
+        /* =========================================
+           ACTIVIDAD 2: FALSO/VERDADERO
+           ========================================= */
+        .quiz-card {
+            background: #fff; border: 3px dashed #74b9ff; border-radius: 20px;
+            padding: 30px 20px; width: 100%; max-width: 550px; text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin: auto 0; flex-grow: 1;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+
+        .quiz-card h2 { font-size: clamp(1.2rem, 3.5vw, 1.5rem); color: #2d3436; margin-bottom: 25px; line-height: 1.4; font-weight: 900;}
+        
+        .quiz-buttons { display: flex; gap: 15px; width: 100%; }
+        
+        .btn-quiz {
+            flex: 1; padding: 15px; border: none; border-radius: 15px; font-weight: 900;
+            font-size: 1.2rem; cursor: pointer; color: white; transition: transform 0.1s, opacity 0.2s;
+        }
+        .btn-quiz:active { transform: translateY(5px); }
+        .btn-falso { background: #ff7675; box-shadow: 0 5px 0 #d63031; }
+        .btn-verdad { background: #55efc4; box-shadow: 0 5px 0 #00b894; color: #2d3436; }
+
+        /* =========================================
+           ACTIVIDAD 3: CLASIFICADOR
+           ========================================= */
+        .risk-zones { display: flex; gap: 15px; width: 100%; height: 140px; margin-bottom: 20px; }
+        
+        .zone {
+            flex: 1; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 15px 10px;
+            font-weight: 900; font-size: 1rem; text-align: center; transition: 0.3s;
+        }
+        .zone-resp { background: rgba(116, 185, 255, 0.2); border: 4px dashed #0984e3; color: #0984e3; }
+        .zone-vector { background: rgba(253, 203, 110, 0.2); border: 4px dashed #e17055; color: #e17055; }
+        
+        .items-pool {
+            display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-content: flex-start;
+            background: #f1f2f6; padding: 15px; border-radius: 20px; min-height: 120px; width: 100%; border: 2px solid #dfe4ea;
+        }
+
+        .risk-item {
+            background: white; padding: 10px 15px; border-radius: 30px; font-weight: 900; font-size: 0.95rem; color: #2d3436;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: 0.2s; user-select: none; border: 2px solid #b2bec3;
+        }
+
+        .risk-item.selected { transform: scale(1.1); box-shadow: 0 0 0 4px #fdcb6e, 0 5px 15px rgba(0,0,0,0.2); border-color: transparent;}
+        .risk-item.placed { background: #ecf0f1; box-shadow: none; pointer-events: none; border: 2px solid #bdc3c7; color: #a4b0be; font-size: 0.85rem;}
+
+        /* Mensajes de Feedback globales */
+        .feedback {
+            width: 100%; padding: 15px; border-radius: 15px; text-align: center; font-weight: 900; margin-top: 10px; display: none; font-size: 1.1rem;
+        }
+        .feedback.show { display: block; animation: fadeIn 0.3s; }
+        .fb-good { background: #55efc4; color: #2d3436; border: 3px solid #00b894; }
+        .fb-bad { background: #ff7675; color: white; border: 3px solid #d63031; }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        
+        <div class="header">
+            <h1>🦸‍♂️ Aventura Microscópica 🦠</h1>
+            <p>¡Descubre el mundo secreto de los virus!</p>
+        </div>
+
+        <div id="tabs">
+            <button class="tab-button active" data-tab="tab-teoria">📖 El Cuento</button>
+            <button class="tab-button" data-tab="tab1">🧩 Parejas</button>
+            <button class="tab-button" data-tab="tab2">🤔 ¿Sí o No?</button>
+            <button class="tab-button" data-tab="tab3">🚀 ¿Cómo viajan?</button>
+        </div>
+
+        <!-- PESTAÑA 0: TEORÍA DIVERTIDA -->
+        <div id="tab-teoria" class="tab-content active">
+            <p class="instructions">¡Lee esta historia antes de empezar a jugar!</p>
+            
+            <div class="theory-container">
+                <div class="theory-card">
+                    <h3>👾 ¿Qué son los virus?</h3>
+                    <p>Son unos "bichitos" tan, pero tan pequeños, que no los podemos ver. Tienen por dentro un mensaje secreto llamado <strong>ADN</strong> y se protegen usando una especie de armadura que los científicos llaman <strong>Cápside</strong>.</p>
+                </div>
+                <div class="theory-card">
+                    <h3>🤖 ¿Están vivos?</h3>
+                    <p>¡Sorpresa! Los virus son como <strong>mini-robots apagados</strong>. Para encenderse y poder hacer copias de sí mismos, necesitan entrar al cuerpo de una persona o animal y usar sus <strong>células</strong> (nuestras pequeñas fábricas).</p>
+                </div>
+                <div class="theory-card">
+                    <h3>✈️ ¿Cómo viajan?</h3>
+                    <p>Como no tienen patitas, usan trucos para viajar. Algunos saltan por el <strong>aire</strong> cuando alguien tose o estornuda (como la gripe). Otros usan "taxis" como <strong>mosquitos o perritos</strong> que nos pican o muerden.</p>
+                </div>
+            </div>
+
+            <p class="instructions" style="color: #e17055; margin-top: 15px;">👉 ¡Toca arriba para empezar los minijuegos!</p>
+        </div>
+
+        <!-- PESTAÑA 1: MEMORIA INFANTIL -->
+        <div id="tab1" class="tab-content">
+            <p class="instructions">Encuentra la palabra científica con su significado fácil.</p>
+            <div class="memory-grid" id="memory-game">
+                <!-- Se inyecta por JS -->
+            </div>
+            <div id="fb-memory" class="feedback fb-good"></div>
+        </div>
+
+        <!-- PESTAÑA 2: FALSO/VERDADERO DIVERTIDO -->
+        <div id="tab2" class="tab-content">
+            <p class="instructions">Lee la frase y dinos si es Verdad (👍) o Mentira (👎).</p>
+            
+            <div class="quiz-card">
+                <h2 id="quiz-text">Cargando...</h2>
+                <div class="quiz-buttons">
+                    <button class="btn-quiz btn-falso" onclick="answerQuiz(false)">👎 MENTIRA</button>
+                    <button class="btn-quiz btn-verdad" onclick="answerQuiz(true)">👍 VERDAD</button>
+                </div>
+            </div>
+            
+            <div id="fb-quiz" class="feedback"></div>
+        </div>
+
+        <!-- PESTAÑA 3: CLASIFICADOR -->
+        <div id="tab3" class="tab-content">
+            <p class="instructions">Toca una enfermedad y ponla en su "taxi" correcto.</p>
+
+            <div class="risk-zones">
+                <div class="zone zone-resp" id="zone-resp" data-type="aire">🌬️ Viajan por el Aire<br><small>(Toser, estornudar)</small></div>
+                <div class="zone zone-vector" id="zone-vector" data-type="animal">🦟 Viajan en Animales<br><small>(Mosquitos o mordidas)</small></div>
+            </div>
+
+            <div class="items-pool" id="risk-pool">
+                <div class="risk-item" data-type="aire">Gripe 🤧</div>
+                <div class="risk-item" data-type="animal">Dengue 🦟</div>
+                <div class="risk-item" data-type="aire">Covid-19 😷</div>
+                <div class="risk-item" data-type="animal">Rabia 🐶</div>
+            </div>
+
+            <div id="fb-risk" class="feedback"></div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- NAVEGACIÓN DE PESTAÑAS ---
+            const tabs = document.querySelectorAll('.tab-button');
+            const contents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contents.forEach(c => c.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.getElementById(tab.dataset.tab).classList.add('active');
+                });
+            });
+
+            // --- ACTIVIDAD 1: JUEGO DE MEMORIA (FÁCIL) ---
+            const memoryData = [
+                { id: 1, text: "Cápside 🛡️", match: 1 }, { id: 2, text: "Armadura", match: 1 },
+                { id: 3, text: "ADN 📜", match: 2 }, { id: 4, text: "Mensaje Secreto", match: 2 },
+                { id: 5, text: "Célula 🏭", match: 3 }, { id: 6, text: "Nuestra Fábrica", match: 3 }
+            ];
+            
+            let memoryGrid = document.getElementById('memory-game');
+            let hasFlippedCard = false;
+            let lockBoard = false;
+            let firstCard, secondCard;
+            let matchedPairs = 0;
+
+            memoryData.sort(() => 0.5 - Math.random());
+
+            memoryData.forEach(item => {
+                let card = document.createElement('div');
+                card.classList.add('memory-card');
+                card.dataset.match = item.match;
+                card.innerHTML = '❓'; // Reverso infantil
+                
+                card.addEventListener('click', function() {
+                    if (lockBoard || this === firstCard || this.classList.contains('matched')) return;
+                    
+                    this.classList.add('flipped');
+                    this.innerHTML = item.text;
+
+                    if (!hasFlippedCard) {
+                        hasFlippedCard = true;
+                        firstCard = this;
+                        return;
+                    }
+
+                    secondCard = this;
+                    checkForMatch();
+                });
+                memoryGrid.appendChild(card);
+            });
+
+            function checkForMatch() {
+                let isMatch = firstCard.dataset.match === secondCard.dataset.match;
+                isMatch ? disableCards() : unflipCards();
+            }
+
+            function disableCards() {
+                firstCard.classList.add('matched');
+                secondCard.classList.add('matched');
+                matchedPairs++;
+                if (matchedPairs === 3) {
+                    let fb = document.getElementById('fb-memory');
+                    fb.innerHTML = "¡Súper! Eres un genio de la ciencia 🌟";
+                    fb.classList.add('show');
+                }
+                resetBoard();
+            }
+
+            function unflipCards() {
+                lockBoard = true;
+                setTimeout(() => {
+                    firstCard.classList.remove('flipped');
+                    firstCard.innerHTML = '❓';
+                    secondCard.classList.remove('flipped');
+                    secondCard.innerHTML = '❓';
+                    resetBoard();
+                }, 1200);
+            }
+
+            function resetBoard() { [hasFlippedCard, lockBoard, firstCard, secondCard] = [false, false, null, null]; }
+
+            // --- ACTIVIDAD 2: CONCEPTOS (QUIZ INFANTIL) ---
+            const questions = [
+                { q: "Los virus son gigantes y los podemos ver a simple vista. 👀", isTrue: false },
+                { q: "Para hacer copias, el virus necesita entrar a nuestro cuerpo. 🤖", isTrue: true },
+                { q: "Lavarnos las manos con agua y jabón ayuda a destruir la armadura del virus. 🧼", isTrue: true },
+                { q: "Comer muchos dulces cura todas las enfermedades de los virus. 🍬", isTrue: false }
+            ];
+            let currentQIndex = 0;
+            let score = 0;
+
+            const quizText = document.getElementById('quiz-text');
+            const fbQuiz = document.getElementById('fb-quiz');
+
+            function loadQuestion() {
+                if (currentQIndex < questions.length) {
+                    quizText.innerText = questions[currentQIndex].q;
+                    fbQuiz.classList.remove('show');
+                } else {
+                    quizText.innerText = `¡Terminaste!\nEstrellas ganadas: ⭐ ${score}/${questions.length}`;
+                    document.querySelector('.quiz-buttons').style.display = 'none';
+                }
+            }
+
+            window.answerQuiz = function(userAnswer) {
+                let isCorrect = userAnswer === questions[currentQIndex].isTrue;
+                if (isCorrect) score++;
+                
+                fbQuiz.innerHTML = isCorrect ? "¡Correcto! Muy bien pensado 🎉" : "¡Ups! Esa no era. 😅";
+                fbQuiz.className = `feedback show ${isCorrect ? 'fb-good' : 'fb-bad'}`;
+                
+                currentQIndex++;
+                setTimeout(loadQuestion, 1500);
+            };
+
+            loadQuestion();
+
+            // --- ACTIVIDAD 3: CLASIFICADOR DE TRANSMISIÓN (INFANTIL) ---
+            const riskItems = document.querySelectorAll('.risk-item');
+            const zones = document.querySelectorAll('.zone');
+            let selectedRiskItem = null;
+            let sortedCount = 0;
+
+            riskItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if(item.classList.contains('placed')) return;
+
+                    if (selectedRiskItem === item) {
+                        item.classList.remove('selected');
+                        selectedRiskItem = null;
+                    } else {
+                        if (selectedRiskItem) selectedRiskItem.classList.remove('selected');
+                        selectedRiskItem = item;
+                        item.classList.add('selected');
+                    }
+                });
+            });
+
+            zones.forEach(zone => {
+                zone.addEventListener('click', () => {
+                    if (selectedRiskItem) {
+                        let expectedType = selectedRiskItem.dataset.type;
+                        let zoneType = zone.dataset.type;
+                        let fbRisk = document.getElementById('fb-risk');
+
+                        if (expectedType === zoneType) {
+                            zone.appendChild(selectedRiskItem);
+                            selectedRiskItem.classList.remove('selected');
+                            selectedRiskItem.classList.add('placed');
+                            selectedRiskItem = null;
+                            sortedCount++;
+                            
+                            fbRisk.innerHTML = "¡Excelente viaje! 🚕";
+                            fbRisk.className = "feedback show fb-good";
+                            setTimeout(() => fbRisk.classList.remove('show'), 1500);
+
+                            if(sortedCount === 4) {
+                                setTimeout(() => {
+                                    fbRisk.innerHTML = "¡Misión completada! Sabes cómo viajan. 🏆";
+                                    fbRisk.className = "feedback show fb-good";
+                                }, 1500);
+                            }
+                        } else {
+                            fbRisk.innerHTML = "¡Uy! Ese no es su taxi. Intenta de nuevo. 🚦";
+                            fbRisk.className = "feedback show fb-bad";
+                            selectedRiskItem.classList.remove('selected');
+                            selectedRiskItem = null;
+                            setTimeout(() => fbRisk.classList.remove('show'), 1500);
+                        }
+                    }
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>

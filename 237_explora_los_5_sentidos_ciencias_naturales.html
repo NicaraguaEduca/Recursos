@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Explora los 5 Sentidos! - Ciencias Naturales</title>
+    <!-- Tipografía redondeada ideal para niños de primaria -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --mined-blue: #0056A3;
+            --mined-light: #4BB4E6;
+            --kid-pink: #FF6B8B;
+            --kid-yellow: #FFD000;
+            --kid-green: #2ECC71;
+            --kid-purple: #9B59B6;
+            --bg-pastel: #FFF9F2;
+            --text-color: #2C3E50;
+            --transition-bounce: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Forzar visualización fija sin scrollbar en la pantalla principal */
+        html, body {
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: radial-gradient(circle, #FFFDF9 0%, #FFF5EA 100%);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+        }
+
+        /* Encabezado Infantil Compacto */
+        header {
+            width: 100%;
+            max-width: 900px;
+            background: linear-gradient(135deg, var(--mined-blue), #003F7A);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 18px;
+            text-align: center;
+            box-shadow: 0 6px 20px rgba(0, 86, 163, 0.12);
+            position: relative;
+            border: 3px solid #FFFFFF;
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            margin-bottom: 2px;
+            text-shadow: 0 2px 0px rgba(0,0,0,0.15);
+        }
+
+        header p {
+            font-size: 0.95rem;
+            color: #E2F2FF;
+        }
+
+        .decor-cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Panel de Control de Progreso */
+        .dashboard {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 6px 20px;
+            border-radius: 50px;
+            width: 100%;
+            max-width: 750px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            border: 2px solid #FFF2E0;
+            gap: 15px;
+        }
+
+        .progress-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .progress-label {
+            font-weight: 700;
+            color: var(--mined-blue);
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 12px;
+            background-color: #F0F4F8;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid #E2E8F0;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--mined-light), var(--mined-blue));
+            border-radius: 20px;
+            transition: width 0.4s ease;
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .stat-badge {
+            background-color: #EDF6FD;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            color: var(--mined-blue);
+            font-size: 0.85rem;
+            border: 1.5px solid rgba(0, 86, 163, 0.1);
+        }
+
+        /* Tablero de Juego Adaptativo a la Altura de Pantalla */
+        .game-board {
+            width: 100%;
+            max-width: 900px;
+            flex: 1;
+            min-height: 0;
+            background: white;
+            border-radius: 24px;
+            padding: 10px 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+            border: 3px solid #FFF2E0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* Contenedor de la ilustración escalable */
+        .illustration-area {
+            position: relative;
+            width: 100%;
+            max-height: 44vh;
+            aspect-ratio: 5 / 3;
+            background-color: #FAFDFE;
+            border-radius: 20px;
+            border: 2px dashed #E2E8F0;
+            margin: 0 auto;
+        }
+
+        .illustration-svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Zonas de Soltar (Dropzones) */
+        .dropzone {
+            position: absolute;
+            width: 115px;
+            height: 52px;
+            background-color: #FFFFFF;
+            border: 2.5px dashed #CBD5E1;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: translate(-50%, -50%);
+            transition: var(--transition-bounce);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.02);
+            z-index: 20;
+            cursor: pointer;
+        }
+
+        .dropzone::before {
+            content: 'Pega aquí';
+            font-size: 0.75rem;
+            color: #94A3B8;
+            font-weight: 600;
+            pointer-events: none;
+        }
+
+        .dropzone.drag-over {
+            border-color: var(--mined-light);
+            background-color: #EBF8FF;
+            transform: translate(-50%, -50%) scale(1.08);
+        }
+
+        .dropzone.occupied {
+            border-style: solid;
+            border-color: var(--mined-blue);
+        }
+
+        .dropzone.occupied::before {
+            display: none;
+        }
+
+        .dropzone.correct {
+            border-color: var(--kid-green) !important;
+            background-color: #EAFCEF !important;
+            animation: bouncePop 0.4s ease;
+        }
+
+        .dropzone.incorrect {
+            border-color: var(--kid-pink) !important;
+            background-color: #FFEBF0 !important;
+            animation: shakeHorizontal 0.4s ease;
+        }
+
+        /* Banco de Respuestas */
+        .senses-bank {
+            width: 100%;
+            background-color: #FFF9F2;
+            border-radius: 18px;
+            padding: 8px 12px;
+            border: 2px solid #FFE9D1;
+            text-align: center;
+        }
+
+        .senses-bank h2 {
+            font-size: 0.95rem;
+            color: #C36E00;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .cards-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .sense-card {
+            background: white;
+            border: 2.5px solid var(--mined-blue);
+            padding: 6px 14px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 0px var(--mined-blue);
+            transition: var(--transition-bounce);
+        }
+
+        .sense-card:active { cursor: grabbing; }
+
+        .sense-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 0px var(--mined-blue);
+            background-color: #F5FAFF;
+        }
+
+        .sense-card.dragging {
+            opacity: 0.3;
+            transform: scale(0.9);
+        }
+
+        .sense-card.selected-for-move {
+            background-color: var(--mined-light) !important;
+            color: white !important;
+            border-color: var(--mined-light) !important;
+            box-shadow: 0 4px 0px #2497C9 !important;
+            animation: pulsingGlow 1.5s infinite;
+        }
+
+        .dropzone .sense-card {
+            box-shadow: none;
+            border: none;
+            padding: 0;
+            margin: 0;
+            background: transparent;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        /* Panel de Botones inferiores */
+        .actions-panel {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            max-width: 440px;
+        }
+
+        .btn {
+            font-family: 'Fredoka', sans-serif;
+            padding: 8px 22px;
+            font-size: 1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition-bounce);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            color: white;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2ECC71, #27AE60);
+            box-shadow: 0 4px 0px #1E8449;
+            flex: 2;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0px #1E8449;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #BDC3C7, #95A5A6);
+            box-shadow: 0 4px 0px #7F8C8D;
+            flex: 1;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0px #7F8C8D;
+        }
+
+        .btn:disabled {
+            background: #E2E8F0 !important;
+            box-shadow: 0 4px 0px #CBD5E1 !important;
+            color: #94A3B8 !important;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .mobile-hint {
+            font-size: 0.8rem;
+            color: #94A3B8;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* Notificaciones flotantes */
+        .toast {
+            position: fixed;
+            bottom: 50px;
+            padding: 10px 20px;
+            border-radius: 16px;
+            font-weight: 600;
+            text-align: center;
+            max-width: 550px;
+            opacity: 0;
+            transform: translateY(15px);
+            transition: var(--transition-bounce);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 100;
+        }
+
+        .toast.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast-success { background-color: #EAFCEF; color: #1E7E34; border: 2px solid #C3E6CB; }
+        .toast-error { background-color: #FFEBF0; color: #C82333; border: 2px solid #F5C6CB; }
+
+        /* Animaciones */
+        @keyframes bouncePop {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.15); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        @keyframes shakeHorizontal {
+            0%, 100% { transform: translate(-50%, -50%) translateX(0); }
+            20%, 60% { transform: translate(-50%, -50%) translateX(-6px); }
+            40%, 80% { transform: translate(-50%, -50%) translateX(6px); }
+        }
+
+        @keyframes pulsingGlow {
+            0% { box-shadow: 0 0 0 0 rgba(75, 180, 230, 0.6); }
+            70% { box-shadow: 0 0 0 10px rgba(75, 180, 230, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(75, 180, 230, 0); }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            top: -20px;
+            z-index: 9999;
+            pointer-events: none;
+            border-radius: 50%;
+            animation: fallAnimation linear forwards;
+        }
+
+        @keyframes fallAnimation { to { transform: translateY(105vh) rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="decor-cloud" style="width: 80px; height: 30px; top: 5px; left: -15px;"></div>
+        <div class="decor-cloud" style="width: 90px; height: 35px; bottom: 5px; right: -20px;"></div>
+        <h1>✨ ¡Explora los 5 Sentidos! ✨</h1>
+        <p>Une cada tarjeta con la línea correspondiente del cuerpo humano.</p>
+    </header>
+
+    <!-- Barra de Logros -->
+    <div class="dashboard">
+        <div class="progress-container">
+            <span class="progress-label">🌟 Tu Progreso:</span>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+        </div>
+        <div class="stats-container">
+            <div class="stat-badge">🎈 Intentos: <span id="attemptCounter">0</span></div>
+            <div class="stat-badge">🏆 Logrado: <span id="successCounter">0/5</span></div>
+        </div>
+    </div>
+
+    <!-- Área de Juego Principal -->
+    <div class="game-board">
+        
+        <div class="illustration-area" id="illustrationArea">
+            
+            <svg class="illustration-svg" viewBox="0 0 750 450">
+                <defs>
+                    <filter id="softGlow" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#4BB4E6" flood-opacity="0.3"/>
+                    </filter>
+                </defs>
+
+                <!-- ================= LAYER 1: ILUSTRACIÓN DE LA NIÑA (MÁS GRANDE) ================= -->
+                <g transform="translate(375, 210) scale(1.25) translate(-375, -210)">
+                    <!-- Pelo posterior -->
+                    <path d="M 305 210 A 70 70 0 0 1 445 210 L 455 300 L 295 300 Z" fill="#6A4222" />
+                    <!-- Orejas -->
+                    <circle cx="300" cy="210" r="14" fill="#FFD6B2" />
+                    <circle cx="450" cy="210" r="14" fill="#FFD6B2" />
+                    <!-- Cuello y Ropa -->
+                    <rect x="362" y="260" width="26" height="35" rx="5" fill="#FFD6B2" />
+                    <path d="M 320 340 L 430 340 L 415 292 Q 375 302 335 292 Z" fill="var(--mined-blue)" />
+                    <path d="M 355 294 Q 375 311 395 294" fill="none" stroke="var(--mined-light)" stroke-width="4" stroke-linecap="round" />
+                    <!-- Rostro -->
+                    <circle cx="375" cy="210" r="70" fill="#FFD6B2" />
+                    <!-- Mejillas -->
+                    <circle cx="332" cy="232" r="10" fill="#FF9999" opacity="0.45" />
+                    <circle cx="418" cy="232" r="10" fill="#FF9999" opacity="0.45" />
+                    <!-- Ojo Izquierdo -->
+                    <ellipse cx="345" cy="185" rx="11" ry="8" fill="#FFFFFF" />
+                    <circle cx="345" cy="185" r="5.5" fill="#4BB4E6" />
+                    <circle cx="345" cy="185" r="3" fill="#1A1A1A" />
+                    <circle cx="343" cy="183" r="1.5" fill="#FFFFFF" />
+                    <!-- Ojo Derecho -->
+                    <ellipse cx="405" cy="185" rx="11" ry="8" fill="#FFFFFF" />
+                    <circle cx="405" cy="185" r="5.5" fill="#4BB4E6" />
+                    <circle cx="405" cy="185" r="3" fill="#1A1A1A" />
+                    <circle cx="403" cy="183" r="1.5" fill="#FFFFFF" />
+                    <!-- Cejas -->
+                    <path d="M 333 173 Q 345 167 357 174" fill="none" stroke="#4A2F1B" stroke-width="2.5" stroke-linecap="round" />
+                    <path d="M 393 174 Q 405 167 417 173" fill="none" stroke="#4A2F1B" stroke-width="2.5" stroke-linecap="round" />
+                    <!-- Nariz -->
+                    <path d="M 371 210 Q 375 218 379 210" fill="none" stroke="#E5AC82" stroke-width="3" stroke-linecap="round" />
+                    <!-- Boca Sonriente -->
+                    <path d="M 355 235 Q 375 260 395 235 Z" fill="#C0392B" />
+                    <path d="M 364 247 Q 375 239 386 247 Q 375 258 364 247" fill="#FF8A80" />
+                    <path d="M 358 237 L 392 237 Q 375 242 358 237" fill="#FFFFFF" />
+                    <!-- Cabello frontal -->
+                    <path d="M 300 200 Q 330 145 375 155 Q 420 145 450 200 Q 455 160 425 140 Q 375 130 325 140 Q 295 160 300 200" fill="#6A4222" />
+                    <!-- Coletas y Lazos -->
+                    <path d="M 305 160 Q 270 140 258 172 Q 262 200 290 190 Z" fill="#6A4222" />
+                    <path d="M 445 160 Q 480 140 492 172 Q 488 200 460 190 Z" fill="#6A4222" />
+                    <ellipse cx="295" cy="173" rx="6" ry="10" fill="var(--mined-blue)" transform="rotate(-20, 295, 173)" />
+                    <ellipse cx="455" cy="173" rx="6" ry="10" fill="var(--mined-blue)" transform="rotate(20, 455, 173)" />
+                    <!-- Brazo y Mano (Tacto) -->
+                    <path d="M 320 330 Q 270 340 250 310 L 265 300 Q 285 320 325 315 Z" fill="#FFD6B2" />
+                    <circle cx="248" cy="305" r="14" fill="#FFD6B2" />
+                    <circle cx="258" cy="298" r="6" fill="#FFD6B2" />
+                </g>
+
+                <!-- ================= LAYER 2: RAYITAS UNIFICADAS Y DELGADAS ================= -->
+                
+                <!-- Rayita 1: Vista -> Ojos (Azul Curva) -->
+                <path d="M 100 90 Q 220 70 337.5 178.75" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+                <path d="M 100 90 Q 220 70 337.5 178.75" fill="none" stroke="var(--mined-blue)" stroke-width="2.2" stroke-dasharray="4,4" stroke-linecap="round" filter="url(#softGlow)"/>
+
+                <!-- Rayita 2: Oído -> Oreja Izq (¡Mejorada a Curva Orgánica!) -->
+                <path d="M 100 210 Q 190 195 281.25 210" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+                <path d="M 100 210 Q 190 195 281.25 210" fill="none" stroke="var(--mined-blue)" stroke-width="2.2" stroke-dasharray="4,4" stroke-linecap="round" filter="url(#softGlow)"/>
+
+                <!-- Rayita 3: Tacto -> Mano Izq (Azul Curva) -->
+                <path d="M 100 330 Q 180 340 216.25 328.75" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+                <path d="M 100 330 Q 180 340 216.25 328.75" fill="none" stroke="var(--mined-blue)" stroke-width="2.2" stroke-dasharray="4,4" stroke-linecap="round" filter="url(#softGlow)"/>
+
+                <!-- Rayita 4: Olfato -> Nariz (¡Unificada en Azul con Resplandor!) -->
+                <path d="M 650 150 Q 520 130 372.5 212.5" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+                <path d="M 650 150 Q 520 130 372.5 212.5" fill="none" stroke="var(--mined-blue)" stroke-width="2.2" stroke-dasharray="4,4" stroke-linecap="round" filter="url(#softGlow)"/>
+
+                <!-- Rayita 5: Gusto -> Boca (Azul Curva) -->
+                <path d="M 650 280 Q 520 300 375 253.75" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+                <path d="M 650 280 Q 520 300 375 253.75" fill="none" stroke="var(--mined-blue)" stroke-width="2.2" stroke-dasharray="4,4" stroke-linecap="round" filter="url(#softGlow)"/>
+            </svg>
+
+            <!-- CONTENEDORES DE DROPZONE ABSOLUTOS -->
+            <div class="dropzone" id="dz-vista" data-target="vista" style="left: 13.33%; top: 20%;" ondragover="allowDrop(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" onclick="handleDropzoneClick(event)"></div>
+            <div class="dropzone" id="dz-oido" data-target="oido" style="left: 13.33%; top: 46.67%;" ondragover="allowDrop(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" onclick="handleDropzoneClick(event)"></div>
+            <div class="dropzone" id="dz-tacto" data-target="tacto" style="left: 13.33%; top: 73.33%;" ondragover="allowDrop(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" onclick="handleDropzoneClick(event)"></div>
+            <div class="dropzone" id="dz-olfato" data-target="olfato" style="left: 86.67%; top: 33.33%;" ondragover="allowDrop(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" onclick="handleDropzoneClick(event)"></div>
+            <div class="dropzone" id="dz-gusto" data-target="gusto" style="left: 86.67%; top: 62.22%;" ondragover="allowDrop(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" onclick="handleDropzoneClick(event)"></div>
+
+        </div>
+
+        <!-- Banco de Respuestas -->
+        <div class="senses-bank">
+            <h2>👈 Arrastra o toca las opciones para ponerlas en los recuadros:</h2>
+            <div class="cards-container" id="cardsContainer"></div>
+        </div>
+
+    </div>
+
+    <!-- Panel de Botones -->
+    <div class="actions-panel">
+        <button class="btn btn-secondary" id="btnReset" onclick="resetGame()">🔄 Reiniciar</button>
+        <button class="btn btn-primary" id="btnCheck" onclick="checkAnswers()" disabled>✨ ¡Comprobar! ✨</button>
+    </div>
+
+    <div class="mobile-hint">💡 Consejo táctil: Pulsa una tarjeta y luego toca el recuadro vacío del cuerpo.</div>
+
+    <!-- Mensaje flotante Toast de Respuesta -->
+    <div class="toast" id="feedbackToast"></div>
+
+    <script>
+        const senses = [
+            { id: "vista", text: "👁️ Vista (Ojos)", color: "var(--mined-blue)" },
+            { id: "oido", text: "👂 Oído (Orejas)", color: "var(--kid-purple)" },
+            { id: "tacto", text: "🖐️ Tacto (Manos)", color: "var(--kid-pink)" },
+            { id: "olfato", text: "👃 Olfato (Nariz)", color: "var(--kid-yellow)" },
+            { id: "gusto", text: "👅 Gusto (Boca)", color: "var(--kid-green)" }
+        ];
+
+        let selectedBadge = null;
+        let attemptsCount = 0;
+
+        function shuffle(array) {
+            let shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function initGame() {
+            const container = document.getElementById('cardsContainer');
+            const dropzones = document.querySelectorAll('.dropzone');
+            
+            container.innerHTML = '';
+            document.getElementById('btnCheck').disabled = true;
+            selectedBadge = null;
+            hideToast();
+
+            dropzones.forEach(dz => {
+                dz.innerHTML = '';
+                dz.className = 'dropzone';
+            });
+
+            const shuffledSenses = shuffle(senses);
+            shuffledSenses.forEach(sense => {
+                const card = document.createElement('div');
+                card.className = 'sense-card';
+                card.id = `card-${sense.id}`;
+                card.innerText = sense.text;
+                card.style.borderColor = sense.color;
+                card.style.boxShadow = `0 4px 0px ${sense.color}`;
+                card.setAttribute('draggable', 'true');
+                card.setAttribute('data-sense', sense.id);
+
+                card.addEventListener('dragstart', handleDragStart);
+                card.addEventListener('dragend', handleDragEnd);
+                card.addEventListener('click', handleCardClick);
+
+                container.appendChild(card);
+            });
+
+            updateProgressBar();
+        }
+
+        /* MANEJO DRAG AND DROP */
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.id);
+            e.target.classList.add('dragging');
+            clearActiveSelection();
+        }
+
+        function handleDragEnd(e) { e.target.classList.remove('dragging'); }
+        function allowDrop(e) {
+            e.preventDefault();
+            const dz = e.target.closest('.dropzone');
+            if (dz && !dz.classList.contains('correct')) dz.classList.add('drag-over');
+        }
+        function handleDragLeave(e) {
+            const dz = e.target.closest('.dropzone');
+            if (dz) dz.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const dz = e.target.closest('.dropzone');
+            if (!dz || dz.classList.contains('correct')) return;
+
+            dz.classList.remove('drag-over');
+            const cardId = e.dataTransfer.getData('text/plain');
+            const card = document.getElementById(cardId);
+
+            if (card) placeInDropzone(card, dz);
+        }
+
+        /* MANEJO SELECCIÓN HÍBRIDA (TÁCTIL) */
+        function handleCardClick(e) {
+            e.stopPropagation();
+            const card = e.target;
+            if (card.parentElement.classList.contains('correct')) return;
+
+            if (selectedBadge === card) {
+                card.classList.remove('selected-for-move');
+                selectedBadge = null;
+            } else {
+                clearActiveSelection();
+                selectedBadge = card;
+                card.add('selected-for-move');
+                card.classList.add('selected-for-move');
+            }
+        }
+
+        function handleDropzoneClick(e) {
+            const dz = e.target.closest('.dropzone');
+            if (!dz || dz.classList.contains('correct')) return;
+
+            if (selectedBadge) {
+                placeInDropzone(selectedBadge, dz);
+                clearActiveSelection();
+                selectedBadge = null;
+            } else if (dz.classList.contains('occupied')) {
+                const card = dz.querySelector('.sense-card');
+                if (card) {
+                    document.getElementById('cardsContainer').appendChild(card);
+                    dz.classList.remove('occupied', 'incorrect', 'correct');
+                    dz.innerHTML = '';
+                    updateProgressBar();
+                }
+            }
+        }
+
+        function clearActiveSelection() {
+            document.querySelectorAll('.sense-card').forEach(c => c.classList.remove('selected-for-move'));
+        }
+
+        function placeInDropzone(card, dz) {
+            if (dz.classList.contains('occupied') && dz !== card.parentElement) {
+                const oldCard = dz.querySelector('.sense-card');
+                document.getElementById('cardsContainer').appendChild(oldCard);
+            }
+            dz.innerHTML = '';
+            dz.appendChild(card);
+            dz.classList.add('occupied');
+            dz.classList.remove('incorrect');
+            updateProgressBar();
+        }
+
+        function updateProgressBar() {
+            const filled = document.querySelectorAll('.dropzone.occupied').length;
+            const percent = (filled / senses.length) * 100;
+            document.getElementById('progressBar').style.width = `${percent}%`;
+            document.getElementById('btnCheck').disabled = (filled < senses.length);
+        }
+
+        /* VALIDACIONES */
+        function checkAnswers() {
+            attemptsCount++;
+            document.getElementById('attemptCounter').innerText = attemptsCount;
+            let corrects = 0;
+
+            senses.forEach(sense => {
+                const dz = document.getElementById(`dz-${sense.id}`);
+                const card = dz.querySelector('.sense-card');
+
+                if (card) {
+                    const matchSense = card.getAttribute('data-sense');
+                    if (matchSense === sense.id) {
+                        corrects++;
+                        dz.classList.remove('incorrect');
+                        dz.classList.add('correct');
+                        card.setAttribute('draggable', 'false');
+                        card.style.cursor = 'default';
+                    } else {
+                        dz.classList.remove('correct');
+                        dz.classList.add('incorrect');
+                        dz.style.animation = 'none';
+                        setTimeout(() => dz.style.animation = 'shakeHorizontal 0.4s ease', 10);
+                    }
+                }
+            });
+
+            document.getElementById('successCounter').innerText = `${corrects}/${senses.length}`;
+
+            if (corrects === senses.length) {
+                showToast('toast-success', '🥳 ¡Excelente trabajo! Conectaste todos los sentidos de manera perfecta. 🌟');
+                triggerConfetti();
+            } else {
+                showToast('toast-error', `👉 Tienes algunas conexiones equivocadas. ¡Sigue las líneas punteadas y vuelve a intentar!`);
+            }
+        }
+
+        function showToast(type, text) {
+            const t = document.getElementById('feedbackToast');
+            t.className = `toast show ${type}`;
+            t.innerText = text;
+        }
+
+        function hideToast() { document.getElementById('feedbackToast').classList.remove('show'); }
+        function resetGame() {
+            attemptsCount = 0;
+            document.getElementById('attemptCounter').innerText = '0';
+            document.getElementById('successCounter').innerText = '0/5';
+            initGame();
+        }
+
+        function triggerConfetti() {
+            const palette = ['#FF6B8B', '#FFD000', '#2ECC71', '#9B59B6', '#4BB4E6'];
+            for (let i = 0; i < 70; i++) {
+                const c = document.createElement('div');
+                c.className = 'confetti';
+                c.style.left = Math.random() * 100 + 'vw';
+                c.style.backgroundColor = palette[Math.floor(Math.random() * palette.length)];
+                c.style.transform = `scale(${Math.random() * 0.8 + 0.4})`;
+                c.style.animationDuration = Math.random() * 1.5 + 1.5 + 's';
+                document.body.appendChild(c);
+                setTimeout(() => c.remove(), 3000);
+            }
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>

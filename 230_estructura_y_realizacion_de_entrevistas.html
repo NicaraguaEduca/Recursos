@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🎤 Actividad Interactiva: Entrevista al Experto</title>
+    
+    <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
+
+    <style>
+        :root {
+            --azul-institucional: #0056A3;
+            --celeste-institucional: #4BB4E6;
+            --blanco: #FFFFFF;
+            --amarillo: #FFD54F;
+            --verde: #66BB6A;
+            --naranja: #FFB74D;
+            --gris-claro: #F4F6F8;
+            --azul-oscuro: #003C75;
+            --texto-oscuro: #2C3E50;
+            --fuente-global: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --sombra-suave: 0 8px 20px rgba(0, 0, 0, 0.1);
+            --transicion: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--fuente-global);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--gris-claro);
+            color: var(--texto-oscuro);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            padding-bottom: 20px;
+        }
+
+        .vista {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            animation: entradaSuave 0.5s ease forwards;
+        }
+
+        .vista.activa {
+            display: flex;
+        }
+
+        @keyframes entradaSuave {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hud-superior {
+            width: 100%;
+            background: var(--azul-institucional);
+            color: var(--blanco);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            border-bottom: 4px solid var(--celeste-institucional);
+        }
+
+        .hud-metodo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .hud-item {
+            font-weight: bold;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 6px 12px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-principal {
+            background: linear-gradient(135deg, var(--azul-institucional), var(--azul-oscuro));
+            color: var(--blanco);
+            border: none;
+            padding: 14px 28px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: var(--sombra-suave);
+            transition: var(--transicion);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .btn-principal:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0, 86, 163, 0.3);
+            filter: brightness(1.1);
+        }
+
+        .btn-secundario {
+            background: var(--blanco);
+            color: var(--texto-oscuro);
+            border: 2px solid #ccc;
+            padding: 14px 28px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transicion);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 250px;
+        }
+
+        .btn-secundario:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+
+        .grupo-botones {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .btn-audio {
+            background: var(--naranja);
+            color: var(--texto-oscuro);
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: var(--sombra-suave);
+            transition: var(--transicion);
+            flex-shrink: 0;
+        }
+
+        .btn-audio:hover { transform: scale(1.1); }
+
+        .guia-contenedor {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: var(--blanco);
+            padding: 15px;
+            border-radius: 20px;
+            box-shadow: var(--sombra-suave);
+            width: 100%;
+            max-width: 850px;
+            margin: 15px 0;
+            border-left: 6px solid var(--celeste-institucional);
+            flex-direction: row;
+        }
+
+        .guia-avatar {
+            font-size: 3rem;
+            animation: flotar 3s ease-in-out infinite;
+        }
+
+        @keyframes flotar {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .guia-bocadillo {
+            font-size: 1.05rem;
+            line-height: 1.4;
+            color: var(--texto-oscuro);
+            flex: 1;
+        }
+
+        .grid-tarjetas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            width: 100%;
+            max-width: 1000px;
+            margin: 20px 0;
+        }
+
+        .tarjeta-info {
+            background: var(--blanco);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: var(--sombra-suave);
+            border-top: 5px solid var(--azul-institucional);
+            transition: var(--transicion);
+            text-align: center;
+        }
+
+        .tablero-drag {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            max-width: 950px;
+            margin-top: 15px;
+            flex-wrap: nowrap;
+        }
+
+        .columna-drag {
+            flex: 1;
+            width: 100%;
+            background: rgba(0, 86, 163, 0.05);
+            padding: 15px;
+            border-radius: 20px;
+            border: 2px dashed rgba(0, 86, 163, 0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 250px;
+        }
+
+        .elemento-drag {
+            background: var(--blanco);
+            padding: 12px 15px;
+            border-radius: 12px;
+            cursor: grab;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 2px solid transparent;
+            transition: var(--transicion);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            user-select: none;
+            font-size: 0.95rem;
+            touch-action: none;
+        }
+
+        .elemento-drag:active { cursor: grabbing; }
+
+        .espacio-drop {
+            background: var(--blanco);
+            border-radius: 12px;
+            min-height: 55px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            border: 2px solid #D0D7DE;
+            position: relative;
+            width: 100%;
+        }
+
+        .espacio-drop::before {
+            content: attr(data-numero);
+            position: absolute;
+            right: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: rgba(0,0,0,0.1);
+        }
+
+        .opciones-quiz {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+        }
+
+        .btn-opcion {
+            background: var(--blanco);
+            border: 2px solid #E2E8F0;
+            padding: 15px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: left;
+            transition: var(--transicion);
+        }
+
+        .btn-opcion:hover {
+            background: rgba(75, 180, 230, 0.1);
+            border-color: var(--celeste-institucional);
+        }
+
+        #canvasConfeti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .diploma-caja {
+            background: #FFFBF0;
+            border: 10px double #D4AF37;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            width: 100%;
+            max-width: 650px;
+            box-shadow: var(--sombra-suave);
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .tablero-drag { flex-direction: column; gap: 15px; }
+            .hud-superior { flex-direction: column; text-align: center; }
+            .guia-contenedor { flex-direction: column; text-align: center; }
+            .btn-principal, .btn-secundario { max-width: 100%; }
+            .elemento-drag { padding: 15px; }
+            .vista h1 { font-size: 2.2rem !important; }
+            .diploma-caja h1 { font-size: 1.8rem !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvasConfeti"></canvas>
+
+    <div class="hud-superior" id="hudGlobal" style="display: none;">
+        <h2 style="font-size: 1.2rem; text-align: center;">🎤 Unidad: La Entrevista</h2>
+        <div class="hud-metodo">
+            <div class="hud-item">⭐ Puntos: <span id="puntosValor">0</span></div>
+            <div class="hud-item">📊 Progreso: <span id="progresoValor">0%</span></div>
+            <div class="hud-item">🏅 Rango: <span id="rangoValor">Aprendiz</span></div>
+        </div>
+    </div>
+
+    <section id="vistaBienvenida" class="vista activa">
+        <div style="text-align: center; width: 100%; max-width: 650px;">
+            <span style="font-size: 4rem; display: block; margin-bottom: 10px; animation: flotar 4s ease-in-out infinite;">🎤📰</span>
+            <h1 style="color: var(--azul-institucional); font-size: 2.5rem; margin-bottom: 10px;">Entrevista al Experto</h1>
+            <p style="font-size: 1.1rem; color: var(--texto-oscuro); font-weight: 500; margin-bottom: 25px;">¡Aprende, organiza y domina las partes de una entrevista periodística!</p>
+            <div class="grupo-botones">
+                <button class="btn-principal" onclick="irAVista('vistaExplicacion')">▶ Iniciar Actividad</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="vistaExplicacion" class="vista">
+        <div class="guia-contenedor">
+            <div class="guia-avatar">👩‍💼</div>
+            <div class="guia-bocadillo">
+                <p id="txtExp1">¡Hola, reportero! Antes de salir a buscar noticias, debes saber qué es una entrevista: Es una conversación estructurada entre dos personas (<strong>Entrevistador</strong> y <strong>Entrevistado</strong>) donde se intercambian preguntas y respuestas para obtener datos valiosos.</p>
+                <button class="btn-audio" onclick="leerTexto('txtExp1')" style="margin-top:10px;">🔊</button>
+            </div>
+        </div>
+
+        <div class="grid-tarjetas">
+            <div class="tarjeta-info">
+                <span style="font-size: 2.5rem;">🎙️</span>
+                <h3>El Canal</h3>
+                <p>Uso de micrófonos o grabadoras para capturar la voz de forma clara.</p>
+            </div>
+            <div class="tarjeta-info" style="border-top-color: var(--verde);">
+                <span style="font-size: 2.5rem;">🧑‍💼</span>
+                <h3>Entrevistador</h3>
+                <p>Es la persona que hace las preguntas y dirige la conversación.</p>
+            </div>
+            <div class="tarjeta-info" style="border-top-color: var(--naranja);">
+                <span style="font-size: 2.5rem;">👩‍🔬</span>
+                <h3>Entrevistado</h3>
+                <p>El experto que responde las preguntas compartiendo su experiencia.</p>
+            </div>
+        </div>
+
+        <div class="grupo-botones">
+            <button class="btn-secundario" onclick="reiniciarModulo()">🏠 Inicio</button>
+            <button class="btn-principal" onclick="irAVista('vistaEstructura')">Siguiente: Partes ➡️</button>
+        </div>
+    </section>
+
+    <section id="vistaEstructura" class="vista">
+        <h2 style="color: var(--azul-institucional); margin-bottom: 10px; text-align:center;">Estructura de la Entrevista</h2>
+        <p style="text-align:center; max-width:700px; margin-bottom:15px; font-size: 0.95rem;">Cada sección cumple un rol crítico para que los lectores comprendan el diálogo de forma lógica.</p>
+
+        <div class="grid-tarjetas" id="contenedorEstructuras"></div>
+
+        <div class="grupo-botones">
+            <button class="btn-secundario" onclick="reiniciarModulo()">🏠 Inicio</button>
+            <button class="btn-principal" onclick="iniciarActividad1()">🎯 ¡Ir al Reto 1!</button>
+        </div>
+    </section>
+
+    <section id="vistaActividad1" class="vista">
+        <div class="guia-contenedor">
+            <div class="guia-avatar">📝</div>
+            <div class="guia-bocadillo">
+                <p id="txtAct1"><strong>Reto 1:</strong> El editor mezcló las secciones. Arrastra los bloques a las casillas vacías en su orden correcto (del 1 al 8).</p>
+                <button class="btn-audio" onclick="leerTexto('txtAct1')">🔊</button>
+            </div>
+        </div>
+
+        <div class="tablero-drag">
+            <div class="columna-drag" id="fuenteAct1"></div>
+            <div class="columna-drag" id="destinoAct1"></div>
+        </div>
+
+        <div class="grupo-botones">
+            <button class="btn-secundario" onclick="reiniciarModulo()">🏠 Inicio</button>
+            <button class="btn-principal" id="btnValidarAct1" onclick="validarActividad1()">🔍 Validar</button>
+        </div>
+    </section>
+
+    <section id="vistaActividad2" class="vista">
+        <div class="guia-contenedor">
+            <div class="guia-avatar">🔬</div>
+            <div class="guia-bocadillo">
+                <p id="txtAct2"><strong>Reto 2:</strong> ¡Construye la entrevista! Arrastra los textos reales a las casillas vacías correspondientes.</p>
+                <button class="btn-audio" onclick="leerTexto('txtAct2')">🔊</button>
+            </div>
+        </div>
+
+        <div class="tablero-drag">
+            <div class="columna-drag" id="fuenteAct2"></div>
+            <div class="columna-drag" id="destinoAct2"></div>
+        </div>
+
+        <div class="grupo-botones">
+            <button class="btn-secundario" onclick="reiniciarModulo()">🏠 Inicio</button>
+            <button class="btn-principal" onclick="validarActividad2()">🔍 Validar</button>
+        </div>
+    </section>
+
+    <section id="vistaActividad3" class="vista">
+        <div class="guia-contenedor">
+            <div class="guia-avatar">🎙️</div>
+            <div class="guia-bocadillo">
+                <p id="txtAct3"><strong>Reto 3:</strong> Clasifica las frases arrastrándolas según correspondan al Entrevistador o al Entrevistado.</p>
+                <button class="btn-audio" onclick="leerTexto('txtAct3')">🔊</button>
+            </div>
+        </div>
+
+        <div class="tablero-drag">
+            <div class="columna-drag" id="fuenteAct3"></div>
+            <div style="display:flex; flex-direction:column; gap:15px; flex:1; width: 100%;">
+                <div class="columna-drag" id="dropEntrevistador" style="min-height:120px;">
+                    <h3 style="color:var(--azul-institucional); font-size:1.1rem;">🧑‍💼 Entrevistador</h3>
+                </div>
+                <div class="columna-drag" id="dropEntrevistado" style="min-height:120px;">
+                    <h3 style="color:var(--naranja); font-size:1.1rem;">👩‍🔬 Entrevistado</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="grupo-botones">
+            <button class="btn-secundario" onclick="reiniciarModulo()">🏠 Inicio</button>
+            <button class="btn-principal" onclick="validarActividad3()">🔍 Validar</button>
+        </div>
+    </section>
+
+    <section id="vistaActividad4" class="vista">
+        <div class="guia-contenedor">
+            <div class="guia-avatar">📋</div>
+            <div class="guia-bocadillo">
+                <p id="txtAct4"><strong>Reto 4:</strong> Ordena la conversación arrastrando los globos de texto para que tenga continuidad lógica.</p>
+                <button class="btn-audio" onclick="leerTexto('txtAct4')">🔊</button>
+            </div>
+        </div>
+
+        <div class="tablero-drag" style="flex-direction: column; max-width:700px; margin: 0 auto;">
+            <div class="columna-drag" id="secuenciaDialogo" style="min-height:auto;"></div>
+        </div>
+
+        <div class="grupo-botones">
+            <button class="btn-secundario" onclick="reiniciarModulo()">🏠 Inicio</button>
+            <button class="btn-principal" onclick="validarActividad4()">🔍 Validar</button>
+        </div>
+    </section>
+
+    <section id="vistaActividad5" class="vista">
+        <div class="guia-contenedor">
+            <div class="guia-avatar">🕵️‍♂️</div>
+            <div class="guia-bocadillo">
+                <p id="txtAct5"><strong>Reto 5:</strong> Auditoría rápida. Lee la afirmación y responde si es Verdadero o Falso.</p>
+                <button class="btn-audio" onclick="leerTexto('txtAct5')">🔊</button>
+            </div>
+        </div>
+
+        <div class="panel-museo" style="width:100%; max-width:600px; text-align:center; padding: 20px;">
+            <h3 id="preguntaVF" style="font-size:1.3rem; margin-bottom:25px; line-height: 1.4;">Pregunta VF</h3>
+            <div style="display:flex; gap:15px; justify-content:center; flex-wrap: wrap;">
+                <button class="btn-principal" style="background:var(--verde); max-width: 200px;" onclick="responderVF(true)">✅ Verdadero</button>
+                <button class="btn-principal" style="background:rgba(217, 83, 79, 1); max-width: 200px;" onclick="responderVF(false)">❌ Falso</button>
+            </div>
+        </div>
+        
+        <div class="grupo-botones">
+            <button class="btn-secundario" onclick="reiniciarModulo()">🏠 Volver al Inicio</button>
+        </div>
+    </section>
+
+    <section id="vistaActividad6" class="vista">
+        <div class="panel-museo" style="width:100%; max-width:700px; padding: 15px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px; font-weight:bold; color:var(--azul-institucional); font-size: 0.9rem;">
+                <span id="quizIndice">Pregunta 1 de 15</span>
+                <span id="quizFalloFeedback" style="color:var(--naranja)"></span>
+            </div>
+            <h2 id="quizPregunta" style="font-size:1.2rem; margin-bottom:20px; line-height: 1.4;">Texto de la pregunta...</h2>
+            <div class="opciones-quiz" id="quizOpcionesContenedor"></div>
+        </div>
+        
+        <div class="grupo-botones">
+            <button class="btn-secundario" onclick="reiniciarModulo()">🏠 Volver al Inicio</button>
+        </div>
+    </section>
+
+    <section id="vistaFinal" class="vista">
+        <div class="diploma-caja" id="impresionCertificado">
+            <span style="font-size: 3.5rem;">🏆</span>
+            <h1 style="color: var(--azul-institucional); font-size: 2rem; margin: 10px 0;">DIPLOMA ACADÉMICO</h1>
+            <p style="font-style: italic; font-size: 1rem; margin-bottom: 20px;">Otorgado formalmente al estudiante de Primaria por dominar el tema de la Entrevista con rango de:</p>
+            <h2 id="rangoCertificado" style="color: var(--naranja); font-size: 1.6rem; letter-spacing: 1px; margin-bottom: 20px;">EXPERTO EN ENTREVISTAS</h2>
+            <p style="font-weight: bold; font-size: 1.1rem;">Puntaje Obtenido: <span id="puntosFinales" style="color:var(--azul-institucional)">0</span></p>
+            <div style="border-top: 2px solid #D4AF37; margin-top: 30px; padding-top: 10px; font-weight: bold; font-size: 0.8rem; color:#777;">MINED - Dirección General de Educación Primaria</div>
+        </div>
+
+        <div class="grupo-botones">
+            <button class="btn-principal" onclick="reiniciarModulo()">🏠 Volver al Inicio y Repetir</button>
+        </div>
+    </section>
+
+    <script>
+        const partesExplicacion = [
+            { titulo: "Título", icono: "📌", def: "Frase atractiva que anuncia de qué tratará o quién es el invitado.", ej: "El Guardián de los Volcanes" },
+            { titulo: "Presentación", icono: "👋", def: "Saludo inicial donde se introduce el tema principal.", ej: "Bienvenidos al programa de hoy..." },
+            { titulo: "Introducción", icono: "📖", def: "Breve explicación del motivo por el cual se realiza la entrevista.", ej: "Hoy hablaremos sobre el cambio climático." },
+            { titulo: "Datos del Entrevistado", icono: "📋", def: "Nombre, profesión y logros importantes del experto invitado.", ej: "Dra. López, experta en Biología Marina." },
+            { titulo: "Preguntas", icono: "❓", def: "Cuestionamientos elaborados con anticipación por el entrevistador.", ej: "¿Cómo se forman las lagunas?" },
+            { titulo: "Respuestas", icono: "💬", def: "Explicaciones y saberes brindados por el especialista.", ej: "Se forman por acumulación de agua de lluvia." },
+            { titulo: "Cierre", icono: "💡", def: "Resumen breve o comentario final de los puntos importantes analizados.", ej: "Cuidar el agua asegura el futuro." },
+            { titulo: "Despedida", icono: "🙏", def: "Agradecimiento final al experto y cierre de transmisión.", ej: "Muchas gracias por su tiempo, hasta pronto." }
+        ];
+
+        const preguntasQuiz = [
+            { p: "¿Quién se encarga de formular las preguntas en una entrevista?", o: ["El entrevistado", "El entrevistador", "El público lector", "El editor de sonido"], c: 1 },
+            { p: "¿Cuál es el propósito principal de la sección 'Datos del Entrevistado'?", o: ["Saber su comida favorita", "Presentar el nombre, cargo y experiencia del experto", "Escribir la despedida", "Hacer chistes"], c: 1 },
+            { p: "La parte que va al inicio de la entrevista para llamar la atención del lector es el...", o: ["Cierre", "Título", "Preguntas", "Despedida"], c: 1 },
+            { p: "¿Qué signo de puntuación es obligatorio usar al redactar las preguntas del entrevistador?", o: ["Signos de exclamación (¡!)", "Puntos suspensivos (...)", "Signos de interrogación (¿?)", "Guiones bajos (_)"], c: 2 },
+            { p: "¿En qué sección se agradece al experto por compartir sus valiosos conocimientos?", o: ["Introducción", "Despedida", "Título", "Presentación"], c: 1 },
+            { p: "¿Qué es esencialmente una entrevista?", o: ["Un monólogo aburrido", "Una conversación estructurada para obtener información", "Un examen escrito", "Un cuento de ficción"], c: 1 },
+            { p: "Si una persona responde: 'Llevo 10 años estudiando las estrellas', ¿qué rol cumple?", o: ["Entrevistador", "Entrevistado", "Camarógrafo", "Director"], c: 1 },
+            { p: "¿Qué elemento sigue inmediatamente después del Título en la estructura estándar?", o: ["Despedida", "Presentación", "Respuestas", "Cierre"], c: 1 },
+            { p: "El 'Cierre' sirve para...", o: ["Hacer más preguntas", "Resumir o destacar una idea importante de la charla", "Interrumpir al entrevistado", "Pedir autógrafos"], c: 1 },
+            { p: "¿Es correcto hacer preguntas improvisadas que no dañen la temática central?", o: ["No, nunca", "Sí, si ayudan a aclarar un punto interesante", "Solo si el entrevistado se enoja", "Está prohibido por ley"], c: 1 },
+            { p: "Antes de hacer una entrevista, el entrevistador siempre debe...", o: ["Dormir en el set", "Investigar del tema y preparar un guión de preguntas", "Comprar micrófonos caros", "Inventar las respuestas"], c: 1 },
+            { p: "¿Cuál de las siguientes frases representa una 'Presentación'?", o: ["¡Adiós a todos!", "Dígame su edad.", "Muy buenos días, hoy nos acompaña el geólogo Carlos...", "Gracias por venir."], c: 2 },
+            { p: "¿El entrevistado puede negarse a contestar preguntas personales incómodas?", o: ["Sí, la entrevista debe ser respetuosa y profesional", "No, debe responder todo obligatoriamente", "Solo si paga una multa", "Depende del clima"], c: 0 },
+            { p: "Las opiniones entregadas en la entrevista pertenecen a...", o: ["El micrófono", "El Entrevistado", "El que vende los periódicos", "Nadie"], c: 1 },
+            { p: "Estructurar correctamente la entrevista permite...", o: ["Que el lector se confunda", "Que la información sea clara, ordenada y fácil de entender", "Gastar más hojas de papel", "Hacerla eterna"], c: 1 }
+        ];
+
+        const datosVF = [
+            { p: "El entrevistado es la persona encargada de formular el cuestionario escrito.", c: false },
+            { p: "La despedida es el bloque estructural que se coloca al puro final de la transcripción.", c: true },
+            { p: "Las preguntas de una entrevista deben llevar obligatoriamente signos de interrogación (¿?).", c: true },
+            { p: "El título de la entrevista siempre debe ser aburrido y sin creatividad.", c: false },
+            { p: "Una entrevista es una herramienta útil para conocer información detallada de un tema científico o cultural.", c: true }
+        ];
+
+        let estado = {
+            puntos: 0,
+            progreso: 0,
+            rango: "Periodista Aprendiz",
+            indiceQuiz: 0,
+            indiceVF: 0
+        };
+
+        function cargarProgresoLocal() {
+            const guardado = localStorage.getItem("progresoEntrevistaExperto");
+            if(guardado) {
+                estado = JSON.parse(guardado);
+                actualizarHUD();
+            }
+        }
+
+        function guardarProgresoLocal() {
+            localStorage.setItem("progresoEntrevistaExperto", JSON.stringify(estado));
+        }
+
+        function irAVista(idVista) {
+            document.querySelectorAll('.vista').forEach(v => v.classList.remove('activa'));
+            document.getElementById(idVista).classList.add('activa');
+            
+            if(idVista !== 'vistaBienvenida') {
+                document.getElementById('hudGlobal').style.display = 'flex';
+            } else {
+                document.getElementById('hudGlobal').style.display = 'none';
+            }
+            window.scrollTo(0,0);
+        }
+
+        function actualizarHUD() {
+            document.getElementById('puntosValor').innerText = estado.puntos;
+            document.getElementById('progresoValor').innerText = `${estado.progreso}%`;
+            
+            if(estado.puntos >= 180) estado.rango = "Experto en Entrevistas";
+            else if(estado.puntos >= 90) estado.rango = "Periodista Escolar";
+            else estado.rango = "Reportero Junior";
+
+            document.getElementById('rangoValor').innerText = estado.rango;
+            guardarProgresoLocal();
+        }
+
+        function inicializarTarjetasEstructura() {
+            const contenedor = document.getElementById('contenedorEstructuras');
+            contenedor.innerHTML = "";
+            partesExplicacion.forEach(parte => {
+                contenedor.innerHTML += `
+                    <div class="tarjeta-info">
+                        <span style="font-size:2.2rem;">${parte.icono}</span>
+                        <h3 style="color:var(--azul-institucional); margin:5px 0; font-size:1.1rem;">${parte.titulo}</h3>
+                        <p style="font-size:0.9rem; margin-bottom:8px;">${parte.def}</p>
+                        <p style="font-size:0.85rem; color:#777; font-style:italic;"><strong>Ejemplo:</strong> "${parte.ej}"</p>
+                    </div>
+                `;
+            });
+        }
+
+        /* ----- ACTIVIDAD 1: ESTRUCTURA ----- */
+        function iniciarActividad1() {
+            irAVista('vistaActividad1');
+            const fuente = document.getElementById('fuenteAct1');
+            const destino = document.getElementById('destinoAct1');
+            fuente.innerHTML = ""; destino.innerHTML = "";
+
+            let desordenadas = [...partesExplicacion].sort(() => Math.random() - 0.5);
+
+            desordenadas.forEach((parte) => {
+                const idUnico = `act1_tarjeta_${parte.titulo.replace(/\s+/g, '')}`;
+                fuente.innerHTML += `<div class="elemento-drag" id="${idUnico}" draggable="true">${parte.icono} ${parte.titulo}</div>`;
+            });
+
+            partesExplicacion.forEach((_, idx) => {
+                destino.innerHTML += `<div class="espacio-drop" data-numero="${idx + 1}" id="drop_act1_${idx}"></div>`;
+            });
+
+            // Lógica Drag & Drop exclusiva para Actividad 1
+            document.querySelectorAll('#fuenteAct1 .elemento-drag').forEach(item => {
+                item.addEventListener('dragstart', (e) => { 
+                    e.dataTransfer.setData('text/plain', e.target.id); 
+                });
+            });
+
+            document.querySelectorAll('#destinoAct1 .espacio-drop').forEach(zona => {
+                zona.addEventListener('dragover', (e) => e.preventDefault());
+                zona.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const idData = e.dataTransfer.getData('text/plain');
+                    const elemento = document.getElementById(idData);
+                    // Solo permite soltar si el espacio está vacío
+                    if(elemento && zona.children.length === 0) {
+                        zona.appendChild(elemento);
+                    }
+                });
+            });
+
+            // Permitir regresar las tarjetas a la columna de origen
+            fuente.addEventListener('dragover', (e) => e.preventDefault());
+            fuente.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const idData = e.dataTransfer.getData('text/plain');
+                const elemento = document.getElementById(idData);
+                if (elemento) {
+                    fuente.appendChild(elemento);
+                }
+            });
+        }
+
+        function validarActividad1() {
+            let aciertos = 0;
+            partesExplicacion.forEach((parte, idx) => {
+                const zona = document.getElementById(`drop_act1_${idx}`);
+                if(zona.children.length > 0) {
+                    const textoHijo = zona.children[0].id;
+                    if(textoHijo.includes(parte.titulo.replace(/\s+/g, ''))) {
+                        aciertos++;
+                        zona.style.borderColor = "var(--verde)";
+                        zona.style.background = "#E8F5E9";
+                    } else {
+                        zona.style.borderColor = "red";
+                        zona.style.background = "#FFEBEE";
+                    }
+                }
+            });
+
+            if(aciertos === 8) {
+                lanzarEfectoCelebracion();
+                alert("🎉 ¡Perfecto! Has ordenado la estructura correctamente.");
+                estado.puntos += 30;
+                estado.progreso = 20;
+                actualizarHUD();
+                setTimeout(iniciarActividad2, 1200);
+            } else {
+                reproducirTonoFisico(180, "sawtooth", 0.3);
+                alert(`❌ Tienes errores. Has colocado ${aciertos} de 8 de forma correcta.`);
+            }
+        }
+
+        /* ----- ACTIVIDAD 2: TRANSCRIPCIÓN ----- */
+        const fragmentosEntrevista = [
+            { tipo: "Título", txt: "📋 Entrevista a la Guardabosques" },
+            { tipo: "Presentación", txt: "👋 Estimados alumnos, hoy transmitimos en vivo." },
+            { tipo: "Introducción", txt: "📖 Queremos descubrir cómo protegen las especies nativas." },
+            { tipo: "Datos del Entrevistado", txt: "👩‍🌾 Nos acompaña la ingeniera Elena Torres." },
+            { tipo: "Preguntas", txt: "🎙️ ¿Cuál es el animal más difícil de monitorear?" },
+            { tipo: "Respuestas", txt: "🐆 El jaguar, viaja largas distancias de noche." },
+            { tipo: "Cierre", txt: "💡 Concluimos en que cuidar los bosques salva la fauna." },
+            { tipo: "Despedida", txt: "🙏 Muchas gracias ingeniera. ¡Hasta la próxima!" }
+        ];
+
+        function iniciarActividad2() {
+            irAVista('vistaActividad2');
+            const fuente = document.getElementById('fuenteAct2');
+            const destino = document.getElementById('destinoAct2');
+            fuente.innerHTML = ""; destino.innerHTML = "";
+
+            let desordenados = [...fragmentosEntrevista].sort(() => Math.random() - 0.5);
+            desordenados.forEach(f => {
+                fuente.innerHTML += `<div class="elemento-drag" id="frag_${f.tipo.replace(/\s+/g, '')}" draggable="true">📄 "${f.txt}"</div>`;
+            });
+
+            fragmentosEntrevista.forEach((f, idx) => {
+                destino.innerHTML += `
+                    <div style="margin-bottom:10px; width:100%;">
+                        <strong style="font-size:0.9rem; color:var(--azul-institucional)">Ubicación de: [${f.tipo}]</strong>
+                        <div class="espacio-drop" id="drop_act2_${f.tipo.replace(/\s+/g, '')}" data-numero="${idx+1}"></div>
+                    </div>`;
+            });
+
+            // Lógica Drag & Drop exclusiva para Actividad 2
+            document.querySelectorAll('#fuenteAct2 .elemento-drag').forEach(item => {
+                item.addEventListener('dragstart', (e) => { 
+                    e.dataTransfer.setData('text/plain', e.target.id); 
+                });
+            });
+
+            document.querySelectorAll('#destinoAct2 .espacio-drop').forEach(zona => {
+                zona.addEventListener('dragover', (e) => e.preventDefault());
+                zona.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const idData = e.dataTransfer.getData('text/plain');
+                    const elemento = document.getElementById(idData);
+                    if(elemento && zona.children.length === 0) {
+                        zona.appendChild(elemento);
+                    }
+                });
+            });
+
+            fuente.addEventListener('dragover', (e) => e.preventDefault());
+            fuente.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const idData = e.dataTransfer.getData('text/plain');
+                const elemento = document.getElementById(idData);
+                if (elemento) {
+                    fuente.appendChild(elemento);
+                }
+            });
+        }
+
+        function validarActividad2() {
+            let correctos = 0;
+            fragmentosEntrevista.forEach(f => {
+                const tipoLimpio = f.tipo.replace(/\s+/g, '');
+                const zona = document.getElementById(`drop_act2_${tipoLimpio}`);
+                if(zona.children.length > 0 && zona.children[0].id === `frag_${tipoLimpio}`) {
+                    correctos++;
+                    zona.style.background = "#E8F5E9";
+                } else {
+                    zona.style.background = "#FFEBEE";
+                }
+            });
+
+            if(correctos === 8) {
+                lanzarEfectoCelebracion();
+                alert("🎉 ¡Grandioso! Completaste la plantilla textual.");
+                estado.puntos += 30;
+                estado.progreso = 40;
+                actualizarHUD();
+                setTimeout(iniciarActividad3, 1200);
+            } else {
+                reproducirTonoFisico(180, "triangle", 0.25);
+                alert("❌ Algunos bloques no corresponden a esa sección estructural.");
+            }
+        }
+
+        /* ----- ACTIVIDAD 3: ROLES ----- */
+        const frasesRoles = [
+            { rol: "dor", txt: "¿Qué herramientas utiliza para medir la temperatura del suelo?" },
+            { rol: "ado", txt: "Utilizo sensores térmicos digitales conectados vía satélite." },
+            { rol: "dor", txt: "¿A qué hora empiezan las investigaciones botánicas?" },
+            { rol: "ado", txt: "Iniciamos al amanecer, recolectando muestras biológicas frescas." }
+        ];
+
+        function iniciarActividad3() {
+            irAVista('vistaActividad3');
+            const fuente = document.getElementById('fuenteAct3');
+            fuente.innerHTML = "";
+            
+            frasesRoles.sort(() => Math.random() - 0.5).forEach((f, i) => {
+                fuente.innerHTML += `<div class="elemento-drag" id="rol_${f.rol}_${i}" draggable="true">🗣️ "${f.txt}"</div>`;
+            });
+
+            // Lógica Drag & Drop exclusiva para Actividad 3
+            document.querySelectorAll('#fuenteAct3 .elemento-drag').forEach(item => {
+                item.addEventListener('dragstart', (e) => { 
+                    e.dataTransfer.setData('text/plain', e.target.id); 
+                });
+            });
+
+            ['dropEntrevistador', 'dropEntrevistado', 'fuenteAct3'].forEach(id => {
+                const zona = document.getElementById(id);
+                zona.addEventListener('dragover', (e) => e.preventDefault());
+                zona.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const idData = e.dataTransfer.getData('text/plain');
+                    const elemento = document.getElementById(idData);
+                    if (elemento) {
+                        zona.appendChild(elemento);
+                    }
+                });
+            });
+        }
+
+        function validarActividad3() {
+            const dorHijos = document.getElementById('dropEntrevistador').querySelectorAll('.elemento-drag');
+            const adoHijos = document.getElementById('dropEntrevistado').querySelectorAll('.elemento-drag');
+            let error = false;
+
+            dorHijos.forEach(h => { if(!h.id.includes('rol_dor')) error = true; });
+            adoHijos.forEach(h => { if(!h.id.includes('rol_ado')) error = true; });
+
+            if(!error && (dorHijos.length + adoHijos.length === 4)) {
+                lanzarEfectoCelebracion();
+                alert("🎯 ¡Excelente! Diferenciaste perfectamente los roles.");
+                estado.puntos += 30;
+                estado.progreso = 60;
+                actualizarHUD();
+                setTimeout(iniciarActividad4, 1200);
+            } else {
+                reproducirTonoFisico(200, "square", 0.3);
+                alert("❌ Hay diálogos cruzados. Revísalo de nuevo.");
+            }
+        }
+
+        /* ----- ACTIVIDAD 4: SECUENCIA LÓGICA ----- */
+        const secuenciaLogica = [
+            { paso: 1, txt: "Entrevistador: Buenos días, ¿por qué es importante el estudio de las abejas?" },
+            { paso: 2, txt: "Entrevistado: Hola, porque son los insectos polinizadores más masivos del planeta." },
+            { paso: 3, txt: "Entrevistador: ¿Qué pasaría si se extinguieran por completo?" },
+            { paso: 4, txt: "Entrevistado: La producción de frutas caería drásticamente." }
+        ];
+
+        function iniciarActividad4() {
+            irAVista('vistaActividad4');
+            const col = document.getElementById('secuenciaDialogo');
+            col.innerHTML = "";
+
+            let des = [...secuenciaLogica].sort(() => Math.random() - 0.5);
+            des.forEach(d => {
+                col.innerHTML += `<div class="elemento-drag" id="sec_${d.paso}" draggable="true" style="border-left:4px solid var(--azul-institucional)">💬 ${d.txt}</div>`;
+            });
+
+            // Lógica Drag & Drop para ordenar verticalmente
+            col.querySelectorAll('.elemento-drag').forEach(item => {
+                item.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', e.target.id);
+                });
+                item.addEventListener('dragover', (e) => e.preventDefault());
+                item.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const idArrastrado = e.dataTransfer.getData('text/plain');
+                    const elementoArrastrado = document.getElementById(idArrastrado);
+                    if(elementoArrastrado && elementoArrastrado !== item) {
+                        col.insertBefore(elementoArrastrado, item);
+                    }
+                });
+            });
+            // Permitir soltar al final de la columna si se arrastra hasta abajo
+            col.addEventListener('dragover', (e) => e.preventDefault());
+            col.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const idArrastrado = e.dataTransfer.getData('text/plain');
+                const elementoArrastrado = document.getElementById(idArrastrado);
+                if(elementoArrastrado && e.target === col) {
+                    col.appendChild(elementoArrastrado);
+                }
+            });
+        }
+
+        function validarActividad4() {
+            const itemsActuales = document.getElementById('secuenciaDialogo').querySelectorAll('.elemento-drag');
+            let ordenCorrecto = true;
+            
+            itemsActuales.forEach((item, index) => {
+                if(item.id !== `sec_${index + 1}`) {
+                    ordenCorrecto = false;
+                }
+            });
+
+            if(ordenCorrecto) {
+                lanzarEfectoCelebracion();
+                alert("🎉 ¡Brillante! El hilo de la conversación fluye con perfecta coherencia.");
+                estado.puntos += 30;
+                estado.progreso = 75;
+                actualizarHUD();
+                setTimeout(iniciarActividad5, 1200);
+            } else {
+                reproducirTonoFisico(190, "sawtooth", 0.25);
+                alert("❌ El diálogo no tiene sentido en ese orden.");
+            }
+        }
+
+        /* ----- ACTIVIDAD 5 y 6: VF y QUIZ ----- */
+        function iniciarActividad5() {
+            irAVista('vistaActividad5');
+            const item = datosVF[estado.indiceVF];
+            document.getElementById('preguntaVF').innerText = `"${item.p}"`;
+        }
+
+        function responderVF(respuestaUsuario) {
+            const item = datosVF[estado.indiceVF];
+            if(respuestaUsuario === item.c) {
+                reproducirTonoFisico(600, "sine", 0.1);
+                estado.puntos += 10;
+                alert("✅ ¡Respuesta Correcta!");
+            } else {
+                reproducirTonoFisico(150, "square", 0.3);
+                alert("❌ Respuesta Incorrecta.");
+            }
+
+            estado.indiceVF++;
+            if(estado.indiceVF < datosVF.length) {
+                iniciarActividad5();
+            } else {
+                estado.progreso = 85;
+                actualizarHUD();
+                iniciarActividad6();
+            }
+        }
+
+        function iniciarActividad6() {
+            irAVista('vistaActividad6');
+            const q = preguntasQuiz[estado.indiceQuiz];
+            document.getElementById('quizIndice').innerText = `Pregunta ${estado.indiceQuiz + 1} de 15`;
+            document.getElementById('quizPregunta').innerText = q.p;
+            
+            const contenedor = document.getElementById('quizOpcionesContenedor');
+            contenedor.innerHTML = "";
+
+            q.o.forEach((opcion, idx) => {
+                contenedor.innerHTML += `
+                    <button class="btn-opcion" onclick="evaluarQuizOpcion(${idx})">${opcion}</button>
+                `;
+            });
+        }
+
+        function evaluarQuizOpcion(seleccionado) {
+            const q = preguntasQuiz[estado.indiceQuiz];
+            if(seleccionado === q.c) {
+                reproducirTonoFisico(880, "sine", 0.1);
+                estado.puntos += 5;
+                document.getElementById('quizFalloFeedback').innerText = "✅ ¡Correcto!";
+            } else {
+                reproducirTonoFisico(220, "triangle", 0.25);
+                document.getElementById('quizFalloFeedback').innerText = "❌ Incorrecto";
+            }
+
+            setTimeout(() => {
+                document.getElementById('quizFalloFeedback').innerText = "";
+                estado.indiceQuiz++;
+                if(estado.indiceQuiz < preguntasQuiz.length) {
+                    iniciarActividad6();
+                } else {
+                    finalizarEcosistema();
+                }
+            }, 800);
+        }
+
+        function finalizarEcosistema() {
+            estado.progreso = 100;
+            actualizarHUD();
+            irAVista('vistaFinal');
+            document.getElementById('puntosFinales').innerText = estado.puntos;
+            document.getElementById('rangoCertificado').innerText = estado.rango.toUpperCase();
+            lanzarEfectoCelebracion();
+            reproducirTonoFisico(440, "sine", 0.5);
+        }
+
+        function reiniciarModulo() {
+            estado = { puntos: 0, progreso: 0, rango: "Aprendiz", indiceQuiz: 0, indiceVF: 0 };
+            localStorage.removeItem("progresoEntrevistaExperto");
+            actualizarHUD();
+            irAVista('vistaBienvenida');
+        }
+
+        /* ----- HERRAMIENTAS ADICIONALES ----- */
+        function reproducirTonoFisico(frec, tipo, duracion) {
+            try {
+                const ctxAudio = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctxAudio.createOscillator();
+                const gain = ctxAudio.createGain();
+                osc.type = tipo;
+                osc.frequency.setValueAtTime(frec, ctxAudio.currentTime);
+                gain.gain.setValueAtTime(0.08, ctxAudio.currentTime);
+                osc.connect(gain);
+                gain.connect(ctxAudio.destination);
+                osc.start();
+                osc.stop(ctxAudio.currentTime + duracion);
+            } catch(e) { console.log("Audio no habilitado"); }
+        }
+
+        function leerTexto(idElemento) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const texto = document.getElementById(idElemento).innerText;
+                const vocero = new SpeechSynthesisUtterance(texto);
+                vocero.lang = 'es-ES';
+                window.speechSynthesis.speak(vocero);
+            } else {
+                alert("Lectura de voz no compatible con este navegador.");
+            }
+        }
+
+        function lanzarEfectoCelebracion() {
+            const canvas = document.getElementById('canvasConfeti');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            let particulas = [];
+            for(let i=0; i<100; i++) {
+                particulas.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    r: Math.random() * 5 + 3,
+                    d: Math.random() * canvas.height,
+                    color: `rgba(${Math.floor(Math.random()*255)}, ${Math.floor(Math.random()*255)}, ${Math.floor(Math.random()*255)}, 1)`,
+                    v: Math.random() * 3 + 2
+                });
+            }
+
+            function dibujarParticulas() {
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                particulas.forEach(p => {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+                    ctx.fillStyle = p.color;
+                    ctx.fill();
+                    p.y += p.v;
+                });
+                if(particulas[0].y < canvas.height) {
+                    requestAnimationFrame(dibujarParticulas);
+                } else {
+                    ctx.clearRect(0,0,canvas.width,canvas.height);
+                }
+            }
+            dibujarParticulas();
+        }
+
+        window.onload = () => {
+            inicializarTarjetasEstructura();
+            cargarProgresoLocal();
+        };
+    </script>
+</body>
+</html>

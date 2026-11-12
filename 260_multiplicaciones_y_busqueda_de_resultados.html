@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sopa de Letras Matemática Pro</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Fredoka -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti Library para fuegos artificiales y confeti real -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        }
+        
+        /* Animación y diseño de celdas */
+        .grid-cell {
+            display: flex; 
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: 700;
+            cursor: pointer;
+            user-select: none; 
+            border-radius: 12px;
+            border: 2px solid #a7f3d0; 
+            background-color: #ffffff;
+            color: #047857;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        
+        .grid-cell:hover:not(.found):not(.selected) {
+            background-color: #ecfdf5;
+            transform: translateY(-2px);
+            border-color: #34d399;
+        }
+        
+        /* Animación de selección (Efecto de encierro / resaltado brillante) */
+        .selected {
+            background: linear-gradient(135deg, #f87171 0%, #ef4444 100%) !important;
+            color: white !important;
+            border-color: #991b1b !important;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+            z-index: 10;
+            border-radius: 14px;
+        }
+        
+        .found {
+            background: linear-gradient(135deg, #34d399 0%, #059669 100%) !important;
+            color: white !important;
+            border-color: #047857 !important;
+            animation: bounce-found 0.5s ease-in-out;
+            pointer-events: none; 
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.3);
+        }
+
+        .correct-answer {
+            background-color: #10b981 !important; 
+            color: white !important;
+        }
+
+        @keyframes bounce-found {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="p-4 flex items-center justify-center min-h-screen">
+
+    <div id="game-container" class="bg-white/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl w-full max-w-5xl border border-emerald-100">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-700 tracking-tight drop-shadow-sm">
+                Sopa Matemática 🧮✨
+            </h1>
+            <p class="text-slate-500 font-semibold mt-2">¡Encuentra los resultados de las multiplicaciones ocultas!</p>
+        </header>
+        
+        <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-8">
+            
+            <!-- Panel Lateral de Puntuación y Retos -->
+            <div class="bg-emerald-50/80 border border-emerald-200 p-6 rounded-2xl shadow-inner w-full md:w-1/3 order-2 md:order-1 flex flex-col justify-between">
+                <div>
+                    <div class="text-2xl font-bold mb-4 text-emerald-900 flex items-center justify-between">
+                        <span>Puntuación:</span>
+                        <span id="score" class="text-4xl text-emerald-600 bg-white px-4 py-1 rounded-xl shadow-sm border border-emerald-100">0</span>
+                    </div>
+                    
+                    <h2 class="text-xl font-bold mb-3 text-emerald-800">Busca estos resultados:</h2>
+                    <div id="target-list" class="space-y-2.5 max-h-56 overflow-y-auto pr-1">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tablero de Juego -->
+            <div id="word-search-grid" 
+                 class="grid grid-cols-10 grid-rows-10 w-full md:w-2/3 max-w-lg mx-auto order-1 md:order-2 
+                        p-3 bg-emerald-900/5 border-4 border-emerald-400 rounded-2xl shadow-xl gap-1">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </div>
+        
+        <div id="message" class="text-center text-xl font-bold mt-4 min-h-[2rem] text-rose-500"></div>
+        
+        <div class="flex justify-center mt-6">
+            <button id="reset-button" 
+                    class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 
+                           text-white font-bold py-3.5 px-10 rounded-2xl text-xl transition-all duration-300 
+                           shadow-lg hover:shadow-emerald-500/30 transform hover:-translate-y-0.5 active:translate-y-0">
+                🔄 Reiniciar Juego
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        const GRID_SIZE = 10;
+        const TARGET_COUNT = 8; 
+        const MAX_FACTOR = 9; 
+
+        let grid = [];
+        let score = 0;
+        let targets = []; 
+        let selectedCells = []; 
+
+        const gridElement = document.getElementById('word-search-grid');
+        const scoreElement = document.getElementById('score');
+        const targetListElement = document.getElementById('target-list');
+        const messageElement = document.getElementById('message');
+        const resetButton = document.getElementById('reset-button');
+
+        function generateTargets() {
+            const uniqueResults = new Set();
+            targets = [];
+
+            while (targets.length < TARGET_COUNT) {
+                const f1 = Math.floor(Math.random() * MAX_FACTOR) + 1;
+                const f2 = Math.floor(Math.random() * MAX_FACTOR) + 1;
+                const result = f1 * f2;
+
+                if (!uniqueResults.has(result)) {
+                    uniqueResults.add(result);
+                    targets.push({
+                        factor1: f1,
+                        factor2: f2,
+                        result: result.toString(), 
+                        found: false
+                    });
+                }
+            }
+        }
+
+        function initializeGrid() {
+            grid = [];
+            for (let r = 0; r < GRID_SIZE; r++) {
+                grid[r] = [];
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    grid[r][c] = Math.floor(Math.random() * 10).toString(); 
+                }
+            }
+        }
+
+        function placeWord(word) {
+            const wordLength = word.length;
+            const directions = [
+                { dr: 0, dc: 1 },  // Horizontal
+                { dr: 1, dc: 0 },  // Vertical
+            ];
+            const maxAttempts = 50;
+
+            for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                const direction = directions[Math.floor(Math.random() * directions.length)];
+                const startR = Math.floor(Math.random() * GRID_SIZE);
+                const startC = Math.floor(Math.random() * GRID_SIZE);
+
+                let fits = true;
+                let r = startR;
+                let c = startC;
+
+                for (let i = 0; i < wordLength; i++) {
+                    if (r >= GRID_SIZE || c >= GRID_SIZE || r < 0 || c < 0) {
+                        fits = false;
+                        break;
+                    }
+                    r += direction.dr;
+                    c += direction.dc;
+                }
+
+                if (fits) {
+                    r = startR;
+                    c = startC;
+                    for (let i = 0; i < wordLength; i++) {
+                        grid[r][c] = word[i];
+                        r += direction.dr;
+                        c += direction.dc;
+                    }
+                    return true;
+                }
+            }
+            return false; 
+        }
+
+        function renderGame() {
+            gridElement.innerHTML = '';
+            gridElement.style.gridTemplateColumns = `repeat(${GRID_SIZE}, minmax(0, 1fr))`;
+
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    const cell = document.createElement('div');
+                    cell.textContent = grid[r][c];
+                    cell.className = 'grid-cell';
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    cell.addEventListener('mousedown', handleCellClick);
+                    gridElement.appendChild(cell);
+                }
+            }
+
+            renderTargetList();
+        }
+
+        function renderTargetList() {
+            targetListElement.innerHTML = targets.map(target => {
+                const isFound = target.found ? 'line-through opacity-50 text-emerald-700' : 'font-bold text-emerald-900';
+                const bgColor = target.found ? 'bg-emerald-200/60 border-emerald-300' : 'bg-white shadow-sm border-emerald-100 hover:border-emerald-300';
+                return `
+                    <div class="text-base p-2.5 rounded-xl border ${bgColor} ${isFound} flex justify-between items-center transition-all duration-200">
+                        <span>${target.factor1} × ${target.factor2}</span>
+                        ${target.found ? '<span class="text-lg">✅</span>' : '<span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-semibold">Pendiente</span>'}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function initGame() {
+            score = 0;
+            scoreElement.textContent = score;
+            messageElement.textContent = '¡Busca los resultados correctos en el tablero!';
+            selectedCells = [];
+
+            generateTargets();
+            initializeGrid();
+
+            targets.forEach(target => {
+                placeWord(target.result);
+            });
+
+            renderGame();
+        }
+
+        function handleCellClick(event) {
+            const cell = event.target;
+            if (cell.classList.contains('found')) return;
+
+            if (selectedCells.length === 1 && selectedCells[0] === cell) {
+                clearSelection();
+                return;
+            }
+            
+            if (selectedCells.length === 2) {
+                clearSelection();
+            }
+            
+            if (!cell.classList.contains('selected')) {
+                selectedCells.push(cell);
+                cell.classList.add('selected');
+            }
+
+            messageElement.textContent = ''; 
+
+            if (selectedCells.length === 1 || selectedCells.length === 2) {
+                checkSelection();
+            }
+        }
+
+        function clearSelection() {
+            selectedCells.forEach(cell => cell.classList.remove('selected', 'correct-answer'));
+            selectedCells = [];
+        }
+
+        function checkSelection() {
+            if (selectedCells.length === 1) {
+                const cell = selectedCells[0];
+                const word = cell.textContent;
+                let foundTarget = targets.find(t => !t.found && t.result === word);
+
+                if (foundTarget) {
+                    processCorrectAnswer([cell], foundTarget);
+                    return; 
+                }
+                return;
+            }
+
+            if (selectedCells.length !== 2) return;
+
+            const cell1 = selectedCells[0];
+            const cell2 = selectedCells[1];
+            
+            const r1 = parseInt(cell1.dataset.row);
+            const c1 = parseInt(cell1.dataset.col);
+            const r2 = parseInt(cell2.dataset.row);
+            const c2 = parseInt(cell2.dataset.col);
+
+            const selectedCoordinates = getCoordinatesBetween(r1, c1, r2, c2);
+            
+            if (!selectedCoordinates) {
+                messageElement.textContent = '⚠️ Selección inválida. Usa líneas rectas.';
+                selectedCells.forEach(cell => cell.classList.add('correct-answer'));
+                setTimeout(clearSelection, 500);
+                return;
+            }
+            
+            const word = selectedCoordinates.map(([r, c]) => grid[r][c]).join('');
+            const reversedWord = word.split('').reverse().join('');
+            
+            let foundTarget = targets.find(t => !t.found && (t.result === word || t.result === reversedWord));
+
+            if (foundTarget) {
+                const allCells = selectedCoordinates.map(([r, c]) => 
+                    document.querySelector(`[data-row="${r}"][data-col="${c}"]`)
+                );
+                processCorrectAnswer(allCells, foundTarget);
+            } else {
+                messageElement.textContent = '❌ ¡Incorrecto! Sigue intentando.';
+                selectedCells.forEach(cell => {
+                    cell.classList.remove('selected');
+                    cell.classList.add('correct-answer');
+                    setTimeout(() => cell.classList.remove('correct-answer'), 500);
+                });
+                clearSelection();
+            }
+        }
+
+        function processCorrectAnswer(cellsToMark, foundTarget) {
+            foundTarget.found = true;
+            score += 10;
+            scoreElement.textContent = score;
+
+            cellsToMark.forEach(cell => {
+                cell.classList.remove('selected');
+                cell.classList.add('found');
+            });
+
+            messageElement.textContent = `🎉 ¡Excelente! ${foundTarget.factor1} × ${foundTarget.factor2} = ${foundTarget.result}`;
+            
+            renderTargetList();
+            clearSelection();
+            checkWinCondition();
+        }
+
+        function getCoordinatesBetween(r1, c1, r2, c2) {
+            const coords = [];
+            if (r1 === r2) {
+                const startC = Math.min(c1, c2);
+                const endC = Math.max(c1, c2);
+                for (let c = startC; c <= endC; c++) coords.push([r1, c]);
+                return coords;
+            }
+            if (c1 === c2) {
+                const startR = Math.min(r1, r2);
+                const endR = Math.max(r1, r2);
+                for (let r = startR; r <= endR; r++) coords.push([r, c1]);
+                return coords;
+            }
+            return null;
+        }
+
+        function checkWinCondition() {
+            const remaining = targets.filter(t => !t.found).length;
+            if (remaining === 0) {
+                messageElement.textContent = `🏆 ¡JUEGO COMPLETADO! Puntuación final: ${score} Puntos`;
+                
+                // Disparar fuegos artificiales y confeti avanzado
+                triggerFireworks();
+            }
+        }
+
+        function triggerFireworks() {
+            const duration = 3.5 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+                const particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+
+        resetButton.addEventListener('click', initGame);
+        window.onload = initGame;
+    </script>
+</body>
+</html>

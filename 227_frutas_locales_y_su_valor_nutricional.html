@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🍎 Presentación: Frutas Locales y Nutrición</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .presentation-deck {
+            width: 100%;
+            max-width: 900px;
+            background: #ffffff;
+            color: #1e293b;
+            border-radius: 30px;
+            border: 8px solid #22c55e;
+            padding: 2rem;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            min-height: 580px;
+            justify-content: space-between;
+        }
+
+        /* Encabezado con Indicador de Diapositiva */
+        .deck-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f0fdf4;
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 3px solid #86efac;
+        }
+
+        .deck-title {
+            font-size: 1.2rem;
+            color: #15803d;
+            font-weight: bold;
+        }
+
+        .slide-counter {
+            background: #22c55e;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        /* Área de Contenido de la Diapositiva */
+        .slide-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 1.2rem;
+            flex-grow: 1;
+            justify-content: center;
+        }
+
+        /* Carátula de la Fruta */
+        .fruit-display {
+            font-size: 6.5rem;
+            line-height: 1;
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: #fef08a;
+            width: 160px;
+            height: 160px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            border: 6px solid #facc15;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .fruit-display:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .fruit-name {
+            font-size: 2.8rem;
+            color: #166534;
+            font-weight: bold;
+        }
+
+        .season-badge {
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 2px solid #bae6fd;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        /* Caja de Superpoder Nutritivo */
+        .power-box {
+            background: #fff7ed;
+            border: 4px dashed #fdba74;
+            border-radius: 22px;
+            padding: 1.2rem 1.8rem;
+            max-width: 700px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        .power-box.active {
+            background: #ffedd5;
+            border-style: solid;
+            border-color: #f97316;
+            box-shadow: 0 8px 20px rgba(249, 115, 22, 0.2);
+        }
+
+        .power-title {
+            font-size: 1.3rem;
+            color: #c2410c;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        .power-desc {
+            font-size: 1.4rem;
+            color: #431407;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+
+        /* Botón de Acción en Diapositiva */
+        .action-btn {
+            background: #f97316;
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #c2410c;
+            transition: all 0.1s;
+        }
+        .action-btn:active {
+            transform: translateY(3px);
+            box-shadow: none;
+        }
+
+        /* Barra de Navegación Inferior */
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-btn {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #15803d;
+            transition: all 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-btn:disabled {
+            background: #cbd5e1;
+            box-shadow: 0 5px 0 #94a3b8;
+            cursor: not-allowed;
+        }
+        .nav-btn:not(:disabled):active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        @media (max-width: 650px) {
+            .presentation-deck { padding: 1.2rem; min-height: 500px; }
+            .fruit-display { width: 120px; height: 120px; font-size: 4.8rem; }
+            .fruit-name { font-size: 2rem; }
+            .power-desc { font-size: 1.15rem; }
+            .nav-btn { padding: 10px 18px; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="presentation-deck">
+        
+        <!-- ENCABEZADO -->
+        <div class="deck-header">
+            <span class="deck-title">🍓 Ciencias Naturales: Frutas y Nutrición</span>
+            <span class="slide-counter" id="slideCounter">1 / 7</span>
+        </div>
+
+        <!-- CONTENIDO DINÁMICO DE DIAPOSITIVA -->
+        <div class="slide-content" id="slideContent">
+            <!-- Renderizado dinámico desde JavaScript -->
+        </div>
+
+        <!-- BARRA DE NAVEGACIÓN -->
+        <div class="nav-bar">
+            <button class="nav-btn" id="prevBtn">⬅️ Anterior</button>
+            <button class="nav-btn" id="nextBtn">Siguiente ➡️</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Datos de las Diapositivas de la Presentación
+        const slides = [
+            {
+                type: 'intro',
+                emoji: '🧺',
+                title: '¡Las Frutas Locales y sus Superpoderes!',
+                subtitle: 'Aprenderemos qué frutas comer en cada temporada para mantener nuestro cuerpo sano y fuerte.',
+                btnText: '▶ ¡Comenzar Presentación!'
+            },
+            {
+                type: 'fruit',
+                name: 'El Banano',
+                emoji: '🍌',
+                season: '☀️ Temporada: Todo el año',
+                power: '¡Nos regala ENERGÍA RÁPIDA para correr, saltar y jugar sin cansarnos!',
+                hint: '¡Toca el Banano para descubrir su superpoder!'
+            },
+            {
+                type: 'fruit',
+                name: 'La Manzana',
+                emoji: '🍎',
+                season: '🍏 Temporada: Cosecha Fresca',
+                power: '¡Tiene mucha fibra que limpia nuestros dientes y cuida nuestro corazón!',
+                hint: '¡Toca la Manzana para descubrir su superpoder!'
+            },
+            {
+                type: 'fruit',
+                name: 'La Naranja',
+                emoji: '🍊',
+                season: '🍊 Temporada: Cítricos de Invierno',
+                power: '¡Está llena de VITAMINA C que nos protege de los resfríos y la tos!',
+                hint: '¡Toca la Naranja para descubrir su superpoder!'
+            },
+            {
+                type: 'fruit',
+                name: 'La Fresa',
+                emoji: '🍓',
+                season: '🌱 Temporada: Primavera y Verano',
+                power: '¡Contiene antioxidantes que ayudan a nuestros músculos y cerebro a crecer!',
+                hint: '¡Toca la Fresa para descubrir su superpoder!'
+            },
+            {
+                type: 'fruit',
+                name: 'La Sandía',
+                emoji: '🍉',
+                season: '☀️ Temporada: Días Calurosos',
+                power: '¡Tiene muchísima AGUA que nos mantiene frescos e hidratados cuando hace calor!',
+                hint: '¡Toca la Sandía para descubrir su superpoder!'
+            },
+            {
+                type: 'summary',
+                emoji: '🥗',
+                title: '¡El Plato Coloreado de la Salud!',
+                desc: 'Comer frutas de diferentes colores todos los días nos da todos los superpoderes que necesitamos.',
+                tips: [
+                    '🔴 Rojo (Fresa/Manzana): Corazón fuerte.',
+                    '🟡 Amarillo/Naranja (Banano/Naranja): Energía y Defensas.',
+                    '🟢 Verde/Agua (Sandía/Melón): Hidratación y Frescura.'
+                ]
+            }
+        ];
+
+        let currentSlide = 0;
+        let powerRevealed = false;
+
+        // Elementos DOM
+        const slideCounter = document.getElementById('slideCounter');
+        const slideContent = document.getElementById('slideContent');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        // Audio Sintetizado Simple (Web Audio API)
+        let audioCtx;
+        function playAudio(type) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'slide') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'power') {
+                [440, 554, 659, 880].forEach((f, i) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.connect(g); g.connect(audioCtx.destination);
+                    o.frequency.value = f;
+                    g.gain.setValueAtTime(0.08, audioCtx.currentTime + i * 0.08);
+                    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.08 + 0.25);
+                    o.start(audioCtx.currentTime + i * 0.08);
+                    o.stop(audioCtx.currentTime + i * 0.08 + 0.25);
+                });
+            }
+        }
+
+        // Renderizar la Diapositiva Actual
+        function renderSlide() {
+            const data = slides[currentSlide];
+            slideCounter.textContent = `${currentSlide + 1} / ${slides.length}`;
+            powerRevealed = false;
+
+            // Habilitar/Deshabilitar botones
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === slides.length - 1;
+
+            if (data.type === 'intro') {
+                slideContent.innerHTML = `
+                    <div class="fruit-display" style="width:180px; height:180px; font-size:7rem;">${data.emoji}</div>
+                    <h1 class="fruit-name" style="font-size:2.5rem; color:#15803d;">${data.title}</h1>
+                    <p style="font-size:1.3rem; color:#475569; max-width:650px;">${data.subtitle}</p>
+                    <button class="action-btn" onclick="nextSlide()">${data.btnText}</button>
+                `;
+            } else if (data.type === 'fruit') {
+                slideContent.innerHTML = `
+                    <div class="season-badge">${data.season}</div>
+                    <div class="fruit-display" id="fruitIcon">${data.emoji}</div>
+                    <h1 class="fruit-name">${data.name}</h1>
+
+                    <div class="power-box" id="powerBox">
+                        <div class="power-title">⚡ Superpoder Nutritivo:</div>
+                        <div class="power-desc" id="powerDesc">❓ ${data.hint}</div>
+                    </div>
+                `;
+
+                // Evento para revelar superpoder
+                document.getElementById('fruitIcon').addEventListener('click', revealPower);
+                document.getElementById('powerBox').addEventListener('click', revealPower);
+
+            } else if (data.type === 'summary') {
+                slideContent.innerHTML = `
+                    <div class="fruit-display" style="width:140px; height:140px; font-size:5.5rem;">${data.emoji}</div>
+                    <h1 class="fruit-name" style="font-size:2.2rem; color:#15803d;">${data.title}</h1>
+                    <p style="font-size:1.2rem; color:#475569; max-width:650px;">${data.desc}</p>
+                    <div class="power-box active" style="text-align:left;">
+                        ${data.tips.map(tip => `<p style="font-size:1.15rem; margin-bottom:8px; color:#1e293b;">${tip}</p>`).join('')}
+                    </div>
+                `;
+            }
+        }
+
+        // Revelar el superpoder de la fruta
+        function revealPower() {
+            if (powerRevealed) return;
+            const data = slides[currentSlide];
+            if (data.type !== 'fruit') return;
+
+            playAudio('power');
+            powerRevealed = true;
+
+            const powerBox = document.getElementById('powerBox');
+            const powerDesc = document.getElementById('powerDesc');
+
+            powerBox.classList.add('active');
+            powerDesc.textContent = data.power;
+        }
+
+        function nextSlide() {
+            if (currentSlide < slides.length - 1) {
+                playAudio('slide');
+                currentSlide++;
+                renderSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                playAudio('slide');
+                currentSlide--;
+                renderSlide();
+            }
+        }
+
+        // Eventos
+        nextBtn.addEventListener('click', nextSlide);
+        prevBtn.addEventListener('click', prevSlide);
+
+        // Iniciar
+        renderSlide();
+    </script>
+</body>
+</html>

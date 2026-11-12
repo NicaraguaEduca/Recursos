@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>🧱 Constructor de Oraciones | Sujeto, Predicado y Núcleo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #1b2a4a 0%, #2a3f6a 100%);
+            font-family: 'Comic Neue', 'Segoe UI', 'Patrick Hand', 'Comic Sans MS', cursive, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+        }
+
+        .app-container {
+            max-width: 1300px;
+            width: 100%;
+            background: #f5f0e8;
+            border-radius: 70px;
+            box-shadow: 0 30px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .screen {
+            display: none;
+            padding: 2rem;
+            animation: fadeSlide 0.4s ease;
+        }
+        .screen.active { display: block; }
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* INTRO */
+        .intro-screen {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            text-align: center;
+        }
+        .title-badge {
+            background: #2d4059;
+            display: inline-block;
+            padding: 8px 28px;
+            border-radius: 60px;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 5px 0 #1a2633;
+        }
+        h1 {
+            font-size: 2.8rem;
+            background: linear-gradient(135deg, #e63946, #f4a261);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 15px 0;
+        }
+        .grade {
+            background: #2d4059;
+            display: inline-block;
+            padding: 5px 25px;
+            border-radius: 40px;
+            color: white;
+            font-size: 1.2rem;
+        }
+        .objective-card {
+            background: rgba(255,250,225,0.9);
+            border-radius: 50px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-left: 12px solid #e63946;
+            text-align: center;
+        }
+        .btn-start {
+            background: linear-gradient(90deg, #2d4059, #1f2f44);
+            color: white;
+            font-size: 1.6rem;
+            font-weight: bold;
+            padding: 12px 35px;
+            border: none;
+            border-radius: 80px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #141f2e;
+            transition: 0.07s linear;
+            margin: 15px 0;
+        }
+        .btn-start:active { transform: translateY(4px); box-shadow: 0 4px 0 #141f2e; }
+
+        /* PANTALLA PRINCIPAL */
+        .game-screen {
+            background: #f5f0e8;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: #ffd966;
+            border-radius: 60px;
+            padding: 10px 20px;
+            margin-bottom: 1.5rem;
+        }
+        .score {
+            background: white;
+            border-radius: 50px;
+            padding: 5px 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .message-area {
+            background: #2d4059;
+            color: white;
+            border-radius: 50px;
+            padding: 8px 20px;
+            font-weight: bold;
+        }
+
+        /* Zona de explicación / referencia */
+        .concepts-box {
+            background: #e0e7f0;
+            border-radius: 50px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        .concept-chip {
+            background: white;
+            border-radius: 40px;
+            padding: 6px 18px;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .concept-chip span { color: #e63946; }
+
+        /* Área de construcción: bloques */
+        .construction-area {
+            background: #d9d0c0;
+            border-radius: 60px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: inset 0 0 0 4px #fff9e8, 0 8px 20px rgba(0,0,0,0.1);
+            min-height: 200px;
+        }
+        .sentence-builder {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .word-block {
+            background: #fef9e7;
+            border-radius: 50px;
+            padding: 10px 20px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border: 3px solid #b8a58a;
+            box-shadow: 0 6px 0 #8f7d64;
+            cursor: pointer;
+            transition: 0.07s linear;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .word-block:active { transform: translateY(3px); box-shadow: 0 2px 0 #8f7d64; }
+        .word-block.selected {
+            border-color: #e63946;
+            background: #ffd9d9;
+            box-shadow: 0 0 0 3px #e63946;
+        }
+        .word-block.placed {
+            opacity: 0.4;
+            cursor: default;
+            pointer-events: none;
+            filter: grayscale(0.6);
+        }
+        .word-block.nucleo {
+            border-color: #2a9d8f;
+            background: #c8f0e8;
+        }
+
+        .drop-zones {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 25px;
+            margin: 20px 0;
+        }
+        .drop-zone {
+            background: #f0e8d8;
+            border-radius: 60px;
+            padding: 12px 25px;
+            min-width: 200px;
+            min-height: 80px;
+            border: 3px dashed #b8a58a;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.1s;
+        }
+        .drop-zone.highlight {
+            border-color: #2a9d8f;
+            background: #d4ede8;
+        }
+        .drop-zone-label {
+            font-weight: bold;
+            color: #5f4d38;
+            width: 100%;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        .drop-zone .word-block {
+            box-shadow: 0 4px 0 #8f7d64;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        .btn-action {
+            background: #2a9d8f;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #1e6b61;
+            transition: 0.07s linear;
+        }
+        .btn-action:active { transform: translateY(3px); box-shadow: 0 2px 0 #1e6b61; }
+        .btn-action.reset { background: #e76f51; box-shadow: 0 5px 0 #b3543a; }
+        .btn-action.check { background: #e9c46a; color: #2d4059; box-shadow: 0 5px 0 #b8943a; }
+
+        .feedback-panel {
+            background: #fff0cf;
+            border-radius: 50px;
+            padding: 12px 20px;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            margin-top: 1.2rem;
+            color: #b87a4a;
+        }
+        @media (max-width: 650px) {
+            .word-block { font-size: 1rem; padding: 6px 12px; }
+            .drop-zone { min-width: 150px; min-height: 60px; }
+            h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <!-- INTRO -->
+    <div id="introScreen" class="screen intro-screen active">
+        <div class="title-badge">📚 Lengua y Literatura - III UP 📚</div>
+        <h1>🧱 Constructor de Oraciones 🧱</h1>
+        <div class="grade">📖 5º / 6º Grado</div>
+        <div class="objective-card">
+            <p>🎯 <strong>Objetivo: IDENTIFICAR SUJETO, PREDICADO Y NÚCLEO</strong><br>
+            Una oración tiene dos partes: <strong>Sujeto</strong> (quién hace la acción) y <strong>Predicado</strong> (lo que se dice del sujeto).<br>
+            El <strong>núcleo</strong> del sujeto es un sustantivo o pronombre, y del predicado es el verbo.<br>
+            🧱 Arma oraciones arrastrando bloques y descubre sus partes.</p>
+        </div>
+        <button class="btn-start" id="startGameBtn">🧱 ¡A construir oraciones! 🧱</button>
+        <footer>✨ Arrastra palabras a las cajas y aprende jugando ✨</footer>
+    </div>
+
+    <!-- JUEGO -->
+    <div id="gameScreen" class="screen game-screen">
+        <div class="header">
+            <div class="score">🏆 Aciertos: <span id="scoreCount">0</span></div>
+            <div class="message-area" id="mainMessage">🧱 Elige una palabra para empezar</div>
+        </div>
+
+        <!-- Conceptos rápidos -->
+        <div class="concepts-box">
+            <div class="concept-chip">📌 Sujeto: <span>¿Quién?</span></div>
+            <div class="concept-chip">📌 Predicado: <span>¿Qué hace?</span></div>
+            <div class="concept-chip">🔵 Núcleo Sujeto: <span>sustantivo</span></div>
+            <div class="concept-chip">🔴 Núcleo Predicado: <span>verbo</span></div>
+        </div>
+
+        <!-- Bloques de palabras -->
+        <div class="construction-area">
+            <div style="text-align:center; font-weight:bold; margin-bottom:12px; color:#5f4d38;">📦 Bloques de palabras (toca uno para seleccionar)</div>
+            <div class="sentence-builder" id="wordBlocksContainer"></div>
+
+            <!-- Zonas de colocación -->
+            <div class="drop-zones">
+                <div class="drop-zone" id="sujetoZone">
+                    <div class="drop-zone-label">📌 SUJETO (¿Quién?)</div>
+                </div>
+                <div class="drop-zone" id="predicadoZone">
+                    <div class="drop-zone-label">📌 PREDICADO (¿Qué hace?)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="action-buttons">
+            <button class="btn-action check" id="checkBtn">✅ Comprobar oración</button>
+            <button class="btn-action reset" id="resetBtn">🔄 Reiniciar</button>
+        </div>
+
+        <div id="feedbackPanel" class="feedback-panel">💡 Selecciona una palabra y colócala en el sujeto o predicado.</div>
+        <footer>🧠 Recuerda: el núcleo del sujeto es un sustantivo, el del predicado un verbo.</footer>
+    </div>
+</div>
+
+<script>
+    // --- DATOS DE LAS ORACIONES (palabras mezcladas) ---
+    const oraciones = [
+        {
+            sujeto: { palabras: ["El", "gato"], nucleo: "gato" },
+            predicado: { palabras: ["duerme", "en", "el", "sofá"], nucleo: "duerme" }
+        },
+        {
+            sujeto: { palabras: ["La", "niña"], nucleo: "niña" },
+            predicado: { palabras: ["come", "manzanas", "frescas"], nucleo: "come" }
+        },
+        {
+            sujeto: { palabras: ["Mi", "perro"], nucleo: "perro" },
+            predicado: { palabras: ["ladra", "fuerte", "por", "la", "noche"], nucleo: "ladra" }
+        },
+        {
+            sujeto: { palabras: ["Los", "estudiantes"], nucleo: "estudiantes" },
+            predicado: { palabras: ["estudian", "en", "la", "biblioteca"], nucleo: "estudian" }
+        },
+        {
+            sujeto: { palabras: ["El", "sol"], nucleo: "sol" },
+            predicado: { palabras: ["brilla", "en", "el", "cielo"], nucleo: "brilla" }
+        }
+    ];
+
+    let currentOracionIndex = 0;   // índice de la oración actual
+    let palabrasDisponibles = [];  // array de objetos { texto, esNucleo, tipo } donde tipo: 'sujeto' o 'predicado'
+    let colocadas = { sujeto: [], predicado: [] };
+    let puntaje = 0;
+    let palabraSeleccionada = null; // elemento DOM de la palabra seleccionada
+    let palabraData = null;        // datos de la palabra seleccionada
+
+    // Elementos DOM
+    const introDiv = document.getElementById('introScreen');
+    const gameDiv = document.getElementById('gameScreen');
+    const startBtn = document.getElementById('startGameBtn');
+    const wordBlocksContainer = document.getElementById('wordBlocksContainer');
+    const sujetoZone = document.getElementById('sujetoZone');
+    const predicadoZone = document.getElementById('predicadoZone');
+    const feedbackPanel = document.getElementById('feedbackPanel');
+    const scoreSpan = document.getElementById('scoreCount');
+    const mainMessage = document.getElementById('mainMessage');
+    const checkBtn = document.getElementById('checkBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    // Audio
+    let audioCtx = null;
+    let soundEnabled = false;
+
+    function initAudio() {
+        if (audioCtx) return;
+        try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+    }
+
+    function playSound(type) {
+        if (!audioCtx || !soundEnabled) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        if (type === 'select') {
+            osc.frequency.value = 659.25;
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+            osc.start();
+            osc.stop(now + 0.15);
+        } else if (type === 'place') {
+            osc.frequency.value = 880;
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+            osc.start();
+            osc.stop(now + 0.2);
+        } else if (type === 'wrong') {
+            osc.frequency.value = 440;
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+            osc.start();
+            osc.stop(now + 0.3);
+        } else if (type === 'complete') {
+            [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+                const oscN = audioCtx.createOscillator();
+                const gainN = audioCtx.createGain();
+                oscN.connect(gainN);
+                gainN.connect(audioCtx.destination);
+                oscN.frequency.value = f;
+                gainN.gain.setValueAtTime(0.2, now + i * 0.12);
+                gainN.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.12 + 0.3);
+                oscN.start(now + i * 0.12);
+                oscN.stop(now + i * 0.12 + 0.3);
+            });
+        }
+    }
+
+    function enableSound() {
+        if (!audioCtx) initAudio();
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        soundEnabled = true;
+        playSound('select');
+    }
+
+    // Mezclar array (Fisher-Yates)
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    // Cargar una oración
+    function loadOracion(index) {
+        const oracion = oraciones[index];
+        // Construir lista de palabras con su tipo y si es núcleo
+        let palabras = [];
+        // Sujeto
+        oracion.sujeto.palabras.forEach(p => {
+            palabras.push({ texto: p, esNucleo: p === oracion.sujeto.nucleo, tipo: 'sujeto' });
+        });
+        // Predicado
+        oracion.predicado.palabras.forEach(p => {
+            palabras.push({ texto: p, esNucleo: p === oracion.predicado.nucleo, tipo: 'predicado' });
+        });
+        palabrasDisponibles = shuffleArray(palabras);
+        colocadas = { sujeto: [], predicado: [] };
+        renderWordBlocks();
+        renderDropZones();
+        feedbackPanel.innerHTML = '💡 Selecciona una palabra y colócala en el sujeto o predicado.';
+        mainMessage.innerHTML = '🧱 Arma la oración correctamente.';
+        // Deseleccionar
+        palabraSeleccionada = null;
+        palabraData = null;
+    }
+
+    // Renderizar bloques de palabras disponibles
+    function renderWordBlocks() {
+        wordBlocksContainer.innerHTML = '';
+        palabrasDisponibles.forEach((p, idx) => {
+            const block = document.createElement('div');
+            block.className = 'word-block';
+            if (p.esNucleo) block.classList.add('nucleo');
+            block.textContent = p.texto;
+            block.dataset.index = idx;
+            block.dataset.tipo = p.tipo;
+            block.dataset.nucleo = p.esNucleo ? 'true' : 'false';
+            block.addEventListener('click', () => {
+                selectWord(block, p);
+            });
+            wordBlocksContainer.appendChild(block);
+        });
+    }
+
+    // Seleccionar una palabra
+    function selectWord(block, data) {
+        if (block.classList.contains('placed')) return;
+        // Deseleccionar anterior
+        if (palabraSeleccionada) {
+            palabraSeleccionada.classList.remove('selected');
+        }
+        palabraSeleccionada = block;
+        palabraData = data;
+        block.classList.add('selected');
+        if (soundEnabled) playSound('select');
+        feedbackPanel.innerHTML = `✅ Has seleccionado: "${data.texto}". Colócalo en el sujeto o predicado.`;
+    }
+
+    // Renderizar zonas de drop (con las palabras ya colocadas)
+    function renderDropZones() {
+        // Sujeto
+        sujetoZone.innerHTML = '<div class="drop-zone-label">📌 SUJETO (¿Quién?)</div>';
+        colocadas.sujeto.forEach(p => {
+            const block = document.createElement('div');
+            block.className = 'word-block';
+            if (p.esNucleo) block.classList.add('nucleo');
+            block.textContent = p.texto;
+            block.style.pointerEvents = 'none';
+            block.style.cursor = 'default';
+            sujetoZone.appendChild(block);
+        });
+
+        // Predicado
+        predicadoZone.innerHTML = '<div class="drop-zone-label">📌 PREDICADO (¿Qué hace?)</div>';
+        colocadas.predicado.forEach(p => {
+            const block = document.createElement('div');
+            block.className = 'word-block';
+            if (p.esNucleo) block.classList.add('nucleo');
+            block.textContent = p.texto;
+            block.style.pointerEvents = 'none';
+            block.style.cursor = 'default';
+            predicadoZone.appendChild(block);
+        });
+    }
+
+    // Colocar palabra seleccionada en una zona
+    function placeWordInZone(zona) {
+        if (!palabraSeleccionada || !palabraData) {
+            feedbackPanel.innerHTML = '⚠️ Primero selecciona una palabra haciendo clic en ella.';
+            if (soundEnabled) playSound('wrong');
+            return;
+        }
+        if (palabraSeleccionada.classList.contains('placed')) {
+            feedbackPanel.innerHTML = '⚠️ Esta palabra ya está colocada.';
+            return;
+        }
+        // Verificar si la palabra ya fue colocada en otra zona (no debería)
+        // Verificar si la zona corresponde al tipo de palabra
+        const tipoPalabra = palabraData.tipo;
+        if ((zona === 'sujeto' && tipoPalabra !== 'sujeto') || (zona === 'predicado' && tipoPalabra !== 'predicado')) {
+            feedbackPanel.innerHTML = `❌ "${palabraData.texto}" no pertenece a esta parte. Debe ir en ${tipoPalabra === 'sujeto' ? 'SUJETO' : 'PREDICADO'}.`;
+            if (soundEnabled) playSound('wrong');
+            return;
+        }
+        // Colocar
+        colocadas[zona].push({ texto: palabraData.texto, esNucleo: palabraData.esNucleo, tipo: palabraData.tipo });
+        palabraSeleccionada.classList.add('placed');
+        palabraSeleccionada.classList.remove('selected');
+        // Remover de disponibles
+        const idx = palabrasDisponibles.findIndex(p => p.texto === palabraData.texto && p.tipo === palabraData.tipo && p.esNucleo === palabraData.esNucleo);
+        if (idx !== -1) palabrasDisponibles.splice(idx, 1);
+        // Reset selección
+        palabraSeleccionada = null;
+        palabraData = null;
+        renderDropZones();
+        if (soundEnabled) playSound('place');
+        feedbackPanel.innerHTML = `✅ Palabra colocada correctamente. ¡Sigue así!`;
+        // Verificar si ya se colocaron todas las palabras
+        if (colocadas.sujeto.length + colocadas.predicado.length === (oraciones[currentOracionIndex].sujeto.palabras.length + oraciones[currentOracionIndex].predicado.palabras.length)) {
+            feedbackPanel.innerHTML = '🎉 ¡Has colocado todas las palabras! Presiona "Comprobar oración" para verificar.';
+        }
+    }
+
+    // Configurar eventos de drop en las zonas
+    function setupDropZones() {
+        // Sujeto
+        sujetoZone.addEventListener('click', () => placeWordInZone('sujeto'));
+        // Predicado
+        predicadoZone.addEventListener('click', () => placeWordInZone('predicado'));
+    }
+
+    // Comprobar oración (verifica núcleos y orden)
+    function checkSentence() {
+        const oracion = oraciones[currentOracionIndex];
+        // Verificar que todas las palabras estén colocadas
+        const totalPalabras = oracion.sujeto.palabras.length + oracion.predicado.palabras.length;
+        const colocadasTotal = colocadas.sujeto.length + colocadas.predicado.length;
+        if (colocadasTotal < totalPalabras) {
+            feedbackPanel.innerHTML = `⚠️ Faltan palabras por colocar. Llevas ${colocadasTotal} de ${totalPalabras}.`;
+            if (soundEnabled) playSound('wrong');
+            return;
+        }
+
+        // Verificar núcleos en cada zona
+        const nucleoSujetoColocado = colocadas.sujeto.some(p => p.esNucleo);
+        const nucleoPredicadoColocado = colocadas.predicado.some(p => p.esNucleo);
+
+        let correcto = true;
+        let mensaje = '';
+        if (!nucleoSujetoColocado) {
+            mensaje += '❌ Falta el núcleo del sujeto (sustantivo). ';
+            correcto = false;
+        } else {
+            // Verificar que el núcleo del sujeto sea el correcto
+            const nucleo = colocadas.sujeto.find(p => p.esNucleo);
+            if (nucleo.texto !== oracion.sujeto.nucleo) {
+                mensaje += `❌ El núcleo del sujeto debería ser "${oracion.sujeto.nucleo}". `;
+                correcto = false;
+            }
+        }
+        if (!nucleoPredicadoColocado) {
+            mensaje += '❌ Falta el núcleo del predicado (verbo). ';
+            correcto = false;
+        } else {
+            const nucleo = colocadas.predicado.find(p => p.esNucleo);
+            if (nucleo.texto !== oracion.predicado.nucleo) {
+                mensaje += `❌ El núcleo del predicado debería ser "${oracion.predicado.nucleo}". `;
+                correcto = false;
+            }
+        }
+
+        if (correcto) {
+            feedbackPanel.innerHTML = '🎉 ¡ORACIÓN CORRECTA! Has identificado bien los núcleos. +1 punto.';
+            puntaje++;
+            scoreSpan.innerText = puntaje;
+            if (soundEnabled) playSound('complete');
+            // Avanzar a la siguiente oración después de un momento
+            setTimeout(() => {
+                if (currentOracionIndex < oraciones.length - 1) {
+                    currentOracionIndex++;
+                    loadOracion(currentOracionIndex);
+                    feedbackPanel.innerHTML = `📖 Nueva oración. ¡A construir!`;
+                } else {
+                    feedbackPanel.innerHTML = '🏆 ¡FELICIDADES! Completaste todas las oraciones. ¡Eres un experto! 🏆';
+                    // Mostrar confeti
+                    showConfetti();
+                }
+            }, 1500);
+        } else {
+            feedbackPanel.innerHTML = mensaje + ' Revisa y corrige.';
+            if (soundEnabled) playSound('wrong');
+        }
+    }
+
+    // Reiniciar la oración actual
+    function resetCurrent() {
+        loadOracion(currentOracionIndex);
+        feedbackPanel.innerHTML = '🔄 Oración reiniciada. Vuelve a intentarlo.';
+        if (soundEnabled) playSound('select');
+    }
+
+    // Confeti
+    function showConfetti() {
+        for (let i = 0; i < 80; i++) {
+            const conf = document.createElement('div');
+            conf.textContent = ['🧱','📚','✏️','🎉','🌟','💡','📖','✨'][Math.floor(Math.random()*8)];
+            conf.style.position = 'fixed';
+            conf.style.left = Math.random() * 100 + '%';
+            conf.style.top = '-20px';
+            conf.style.fontSize = (Math.random() * 22 + 16) + 'px';
+            conf.style.pointerEvents = 'none';
+            conf.style.zIndex = '2000';
+            conf.style.transition = 'all 1.2s ease-out';
+            document.body.appendChild(conf);
+            setTimeout(() => {
+                conf.style.transform = `translateY(${window.innerHeight+100}px) rotate(${Math.random()*360}deg)`;
+                conf.style.opacity = '0';
+            }, 20);
+            setTimeout(() => conf.remove(), 1400);
+        }
+    }
+
+    // Iniciar juego
+    function startGame() {
+        enableSound();
+        introDiv.classList.remove('active');
+        gameDiv.classList.add('active');
+        puntaje = 0;
+        scoreSpan.innerText = puntaje;
+        currentOracionIndex = 0;
+        loadOracion(currentOracionIndex);
+        setupDropZones();
+        mainMessage.innerHTML = '🧱 ¡Construye oraciones correctas!';
+    }
+
+    // Eventos
+    startBtn.addEventListener('click', startGame);
+    checkBtn.addEventListener('click', checkSentence);
+    resetBtn.addEventListener('click', resetCurrent);
+
+    initAudio();
+    document.body.addEventListener('click', function firstEnable() {
+        if (!soundEnabled) enableSound();
+    }, { once: true });
+</script>
+</body>
+</html>

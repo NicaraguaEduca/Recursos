@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Aventura Matemática 🌟</title>
+    <style>
+        /* =========================================
+           PALETA DE COLORES Y ESTILOS GLOBALES
+           ========================================= */
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Fredoka+One&display=swap');
+
+        :root {
+            --primary: #4FACFE;
+            --primary-shadow: #0088EA;
+            --secondary: #FFD200;
+            --secondary-shadow: #E5B900;
+            --success: #38E54D;
+            --success-shadow: #21A331;
+            --danger: #FF595E;
+            --danger-shadow: #CC3A3E;
+            --bg-gradient: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            --text-dark: #2B2D42;
+            --white: #FFFFFF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Nunito', 'Comic Sans MS', sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* =========================================
+           CONTENEDOR PRINCIPAL
+           ========================================= */
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+            background-color: var(--white);
+            border-radius: 35px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15), inset 0 -10px 0 rgba(0,0,0,0.05);
+            position: relative;
+            border: 6px solid #FFF;
+        }
+
+        /* Cabecera de Puntos y Nivel */
+        #game-header {
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background-color: #F8F9FA;
+            border-bottom: 4px solid #E9ECEF;
+            border-top-left-radius: 25px;
+            border-top-right-radius: 25px;
+        }
+
+        .points-badge {
+            background-color: var(--secondary);
+            color: var(--text-dark);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 1.3rem;
+            font-weight: 900;
+            box-shadow: 0 6px 0 var(--secondary-shadow);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* =========================================
+           BOTONES 3D ESTILO JUEGO
+           ========================================= */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 18px 40px;
+            font-size: 1.8rem;
+            font-weight: 900;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'Fredoka One', 'Nunito', sans-serif;
+            width: 100%;
+        }
+
+        .btn-start {
+            background-color: var(--success);
+            color: white;
+            box-shadow: 0 8px 0 var(--success-shadow);
+            margin-top: 20px;
+        }
+
+        .btn-next {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 8px 0 var(--primary-shadow);
+            margin-top: 20px;
+            display: none;
+        }
+
+        .btn:active {
+            transform: translateY(8px);
+            box-shadow: 0 0 0 transparent;
+        }
+
+        /* =========================================
+           PANTALLAS
+           ========================================= */
+        #start-screen {
+            padding: 60px 20px;
+            text-align: center;
+            background: url('https://www.transparenttextures.com/patterns/cubes.png'), linear-gradient(to bottom, #81d4fa, #4fc3f7);
+            color: var(--text-dark);
+            border-radius: 25px;
+        }
+
+        #start-screen h1 {
+            font-family: 'Fredoka One', sans-serif;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            color: var(--white);
+            text-shadow: 4px 4px 0 #0277bd;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .hero-emoji {
+            font-size: 6rem;
+            animation: float 3s ease-in-out infinite;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        #game-screen, #end-screen {
+            display: none;
+            padding: 30px;
+        }
+
+        /* =========================================
+           BARRA DE PROGRESO
+           ========================================= */
+        .progress-container {
+            width: 100%;
+            height: 20px;
+            background-color: #E9ECEF;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #FFD200, #FF9800);
+            width: 0%;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 20px;
+            box-shadow: inset 0 -4px 0 rgba(0,0,0,0.1);
+        }
+
+        /* =========================================
+           ÁREA DE PREGUNTAS
+           ========================================= */
+        .question-box {
+            background-color: #FFF3CD;
+            border: 4px solid #FFE69C;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.05);
+        }
+
+        .question-text {
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+            color: #664D03;
+            font-weight: 900;
+            line-height: 1.4;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .option-btn {
+            background-color: #E7F1FF;
+            color: #084298;
+            border: 4px solid #B6D4FE;
+            padding: 15px 10px;
+            border-radius: 20px;
+            font-size: 2.2rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 6px 0 #B6D4FE;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-4px);
+            background-color: #CFE2FF;
+        }
+
+        .option-btn:active:not(:disabled) {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 transparent;
+        }
+
+        .option-btn.correct {
+            background-color: var(--success);
+            color: white;
+            border-color: var(--success-shadow);
+            box-shadow: 0 6px 0 var(--success-shadow);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .option-btn.incorrect {
+            background-color: var(--danger);
+            color: white;
+            border-color: var(--danger-shadow);
+            box-shadow: 0 6px 0 var(--danger-shadow);
+            animation: shake 0.5s;
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        /* =========================================
+           FEEDBACK Y ANIMACIONES
+           ========================================= */
+        .feedback {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin-top: 15px;
+            min-height: 35px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feedback.show {
+            opacity: 1;
+        }
+
+        /* Pantalla Final */
+        #end-screen {
+            text-align: center;
+            background: linear-gradient(to bottom, #a5d6a7, #66bb6a);
+            border-radius: 25px;
+        }
+
+        #end-screen h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            color: white;
+            text-shadow: 3px 3px 0 #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        .final-score-box {
+            background: white;
+            padding: 20px;
+            border-radius: 25px;
+            margin: 20px 0;
+            box-shadow: 0 8px 0 rgba(0,0,0,0.1);
+        }
+
+        .final-score {
+            font-size: 2.2rem;
+            color: var(--text-dark);
+            font-weight: 900;
+        }
+
+        .final-points {
+            font-size: 1.8rem;
+            color: var(--secondary-shadow);
+            font-weight: 900;
+            margin-top: 10px;
+        }
+
+        .confetti {
+            position: fixed;
+            width: 15px;
+            height: 15px;
+            background-color: #f00;
+            z-index: 1000;
+            animation: confetti-fall linear forwards;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        @keyframes confetti-fall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Ajustes específicos para móviles pequeños */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            #game-header { padding: 15px 20px; }
+            #start-screen { padding: 40px 15px; }
+            #game-screen, #end-screen { padding: 20px 15px; }
+            .hero-emoji { font-size: 4.5rem; margin-bottom: 10px; }
+            .options-grid { gap: 10px; }
+            .btn { padding: 15px 20px; font-size: 1.4rem; }
+            .option-btn { font-size: 1.8rem; padding: 12px; }
+            .question-box { margin-bottom: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- Cabecera de Juego -->
+        <div id="game-header">
+            <div style="font-size: 1.1rem; font-weight: 900; color: #6C757D;" id="level-indicator">Nivel 1/8</div>
+            <div class="points-badge">
+                ⭐ <span id="score-display">0</span>
+            </div>
+        </div>
+
+        <!-- Pantalla de inicio -->
+        <div id="start-screen">
+            <div class="hero-emoji">🦸‍♂️🧮🦸‍♀️</div>
+            <h1>Aventura<br>Matemática</h1>
+            <p style="font-size: 1.3rem; font-weight: bold; color: white; margin-bottom: 15px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">
+                ¡Resuelve los retos y gana puntos estrella!
+            </p>
+            <button id="start-btn" class="btn btn-start">¡JUGAR AHORA! 🎮</button>
+        </div>
+        
+        <!-- Pantalla de juego -->
+        <div id="game-screen">
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+
+            <div class="question-box">
+                <div class="question-text" id="question-text">
+                    <!-- La pregunta se insertará aquí -->
+                </div>
+            </div>
+
+            <div class="options-grid" id="options-container">
+                <!-- Las opciones se insertarán aquí -->
+            </div>
+
+            <div class="feedback" id="feedback">
+                <!-- El feedback visual -->
+            </div>
+
+            <button id="next-btn" class="btn btn-next">¡Siguiente Reto! 🚀</button>
+        </div>
+        
+        <!-- Pantalla de finalización -->
+        <div id="end-screen">
+            <div style="font-size: 4rem; margin-bottom: -10px;">🏆</div>
+            <h1>¡Eres Genial!</h1>
+            
+            <div class="final-score-box">
+                <div class="final-score" id="final-correct">Aciertos: 0/8</div>
+                <div class="final-points" id="final-points-total">⭐⭐ Puntos: 0 ⭐⭐</div>
+            </div>
+
+            <button id="restart-btn" class="btn btn-start">¡Volver a Jugar! 🔄</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Banco de Preguntas Originales Mejoradas con Emojis
+        const questions = [
+            {
+                question: "Si tienes 3 manzanas 🍎 y tu mamá te da 2 más... ¿Cuántas manzanas tienes en total?",
+                options: ["4", "5", "6", "3"],
+                correct: 1 // El índice 1 es "5"
+            },
+            {
+                question: "Había 5 pájaros 🐦 en un árbol. Si 2 se fueron volando asustados... ¿Cuántos pájaros quedaron?",
+                options: ["2", "3", "4", "5"],
+                correct: 1 // El índice 1 es "3"
+            },
+            {
+                question: "En una fiesta 🎉 súper divertida hay 4 niños 👦 y 3 niñas 👧. ¿Cuántos invitados hay en total?",
+                options: ["6", "7", "8", "5"],
+                correct: 1 // El índice 1 es "7"
+            },
+            {
+                question: "Un reto rápido: ⚡ ¿Cuánto es 2 + 3?",
+                options: ["4", "5", "6", "7"],
+                correct: 1 // El índice 1 es "5"
+            },
+            {
+                question: "Otro reto rápido: ⚡ ¿Cuánto es 6 - 2?",
+                options: ["3", "4", "5", "6"],
+                correct: 1 // El índice 1 es "4"
+            },
+            {
+                question: "Si cada niño 👦 tiene 2 manos ✋, y hay 3 niños juntos... ¿Cuántas manos hay en total?",
+                options: ["4", "5", "6", "7"],
+                correct: 2 // El índice 2 es "6"
+            },
+            {
+                question: "Tengo 8 caramelos 🍬 y 2 amigos. Si les reparto la misma cantidad a cada uno, ¿cuántos le tocan a cada amigo?",
+                options: ["3", "4", "5", "6"],
+                correct: 1 // El índice 1 es "4"
+            },
+            {
+                question: "Último reto: María tiene 4 galletas 🍪 y su hermano le regala 3 más. ¿Cuántas galletas tiene ahora?",
+                options: ["6", "7", "8", "9"],
+                correct: 1 // El índice 1 es "7"
+            }
+        ];
+
+        // Variables del Juego
+        let currentQuestion = 0;
+        let correctAnswers = 0;
+        let totalPoints = 0;
+        const POINTS_PER_QUESTION = 100;
+
+        // Elementos del DOM
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const gameHeader = document.getElementById('game-header');
+        
+        const startBtn = document.getElementById('start-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedback = document.getElementById('feedback');
+        const progressBar = document.getElementById('progress-bar');
+        const levelIndicator = document.getElementById('level-indicator');
+        const scoreDisplay = document.getElementById('score-display');
+        
+        const finalCorrect = document.getElementById('final-correct');
+        const finalPointsTotal = document.getElementById('final-points-total');
+
+        // Event Listeners
+        startBtn.addEventListener('click', startGame);
+        nextBtn.addEventListener('click', nextQuestion);
+        restartBtn.addEventListener('click', restartGame);
+
+        function startGame() {
+            startScreen.style.display = 'none';
+            gameHeader.style.display = 'flex';
+            gameScreen.style.display = 'block';
+            
+            currentQuestion = 0;
+            correctAnswers = 0;
+            totalPoints = 0;
+            updateScoreDisplay();
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            // Actualizar UI
+            levelIndicator.textContent = `Reto ${currentQuestion + 1} de ${questions.length}`;
+            progressBar.style.width = `${(currentQuestion / questions.length) * 100}%`;
+            
+            const question = questions[currentQuestion];
+            questionText.textContent = question.question;
+            
+            // Limpiar área de opciones
+            optionsContainer.innerHTML = '';
+            feedback.className = 'feedback';
+            feedback.innerHTML = '';
+            nextBtn.style.display = 'none';
+            
+            // ==========================================
+            // LÓGICA PARA MEZCLAR LAS OPCIONES
+            // ==========================================
+            
+            // 1. Creamos un arreglo con el texto de la opción y su índice original
+            let opcionesMezcladas = question.options.map((texto, indexOriginal) => {
+                return { texto: texto, indexOriginal: indexOriginal };
+            });
+
+            // 2. Mezclamos el arreglo usando el algoritmo Fisher-Yates
+            for (let i = opcionesMezcladas.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [opcionesMezcladas[i], opcionesMezcladas[j]] = [opcionesMezcladas[j], opcionesMezcladas[i]];
+            }
+
+            // 3. Generamos los botones con el orden mezclado
+            opcionesMezcladas.forEach((opcion) => {
+                const button = document.createElement('button');
+                button.textContent = opcion.texto;
+                button.className = 'option-btn';
+                
+                // Guardamos el índice original en el botón para saber si es el correcto luego
+                button.dataset.originalIndex = opcion.indexOriginal; 
+                
+                button.addEventListener('click', () => checkAnswer(opcion.indexOriginal, button));
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selectedIndexOriginal, clickedButton) {
+            const question = questions[currentQuestion];
+            const optionButtons = document.querySelectorAll('.option-btn');
+            
+            // Deshabilitar botones para evitar múltiples clics
+            optionButtons.forEach(btn => btn.disabled = true);
+            
+            if (selectedIndexOriginal === question.correct) {
+                // CORRECTO
+                clickedButton.classList.add('correct');
+                feedback.innerHTML = '¡SÚPER BIEN! 🎉 <span style="color:var(--success)">+100 pts</span>';
+                feedback.style.color = 'var(--success)';
+                
+                // Sumar puntos
+                correctAnswers++;
+                totalPoints += POINTS_PER_QUESTION;
+                animateScore();
+                
+            } else {
+                // INCORRECTO
+                clickedButton.classList.add('incorrect');
+                
+                // Mostrar la correcta buscando cuál botón tiene el índice original correcto
+                optionButtons.forEach(btn => {
+                    if (parseInt(btn.dataset.originalIndex) === question.correct) {
+                        btn.classList.add('correct');
+                    }
+                });
+                
+                feedback.innerHTML = '¡Casi! La próxima será 😅';
+                feedback.style.color = 'var(--danger)';
+            }
+            
+            feedback.classList.add('show');
+            nextBtn.style.display = 'block';
+            
+            // Hacer scroll hacia abajo en pantallas pequeñas automáticamente
+            setTimeout(() => {
+                nextBtn.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }, 100);
+        }
+
+        function animateScore() {
+            // Efecto visual rápido en el puntaje superior
+            scoreDisplay.style.transform = 'scale(1.5)';
+            scoreDisplay.style.color = '#FFF';
+            setTimeout(() => {
+                updateScoreDisplay();
+                scoreDisplay.style.transform = 'scale(1)';
+                scoreDisplay.style.color = 'inherit';
+            }, 300);
+        }
+
+        function updateScoreDisplay() {
+            scoreDisplay.textContent = totalPoints;
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            gameHeader.style.display = 'none';
+            gameScreen.style.display = 'none';
+            endScreen.style.display = 'block';
+            
+            progressBar.style.width = '100%';
+            
+            finalCorrect.textContent = `Aciertos: ${correctAnswers}/${questions.length}`;
+            finalPointsTotal.textContent = `⭐⭐ Puntos: ${totalPoints} ⭐⭐`;
+            
+            lanzarConfeti();
+        }
+
+        function lanzarConfeti() {
+            const colors = ['#4FACFE', '#FFD200', '#38E54D', '#FF595E', '#9D4EDD'];
+            
+            for (let i = 0; i < 60; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                // Formas aleatorias (cuadrados o círculos)
+                if(Math.random() > 0.5) confetti.style.borderRadius = '50%';
+                
+                confetti.style.width = Math.random() * 10 + 10 + 'px';
+                confetti.style.height = confetti.style.width;
+                
+                confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
+                confetti.style.animationDelay = Math.random() * 1 + 's';
+                
+                document.body.appendChild(confetti);
+                
+                // Limpiar DOM después de la animación
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+
+        function restartGame() {
+            endScreen.style.display = 'none';
+            startScreen.style.display = 'block';
+            
+            // Limpiar cualquier confeti atascado
+            document.querySelectorAll('.confetti').forEach(c => c.remove());
+        }
+    </script>
+</body>
+</html>

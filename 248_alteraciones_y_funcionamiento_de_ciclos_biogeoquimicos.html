@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌍 Exploradores de la Naturaleza: Ciclos Biogeoquímicos</title>
+    <style>
+        /* Variables de Color - Estilo Infantil y Divertido */
+        :root {
+            --color-principal: #007BFF; 
+            --color-secundario: #FFC107; 
+            --color-verde: #28A745; 
+            --color-fondo: #F0F8FF; 
+            --color-texto: #333333;
+            --color-error: #FF6B6B;
+            --color-acierto: #4ECDC4;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Verdana', sans-serif;
+            background-color: var(--color-fondo);
+            color: var(--color-texto);
+            margin: 0;
+            padding: clamp(10px, 3vw, 20px);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 900px;
+            background-color: white;
+            padding: clamp(15px, 4vw, 30px);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 123, 255, 0.15);
+            display: flex;
+            flex-direction: column;
+            border: 4px solid #E1EFFF;
+        }
+
+        /* Botón de Navegación Superior */
+        .top-nav {
+            display: none; 
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding: 10px 0 20px 0;
+            border-bottom: 3px dashed var(--color-secundario);
+        }
+
+        .nav-button {
+            background-color: var(--color-principal);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            display: flex; 
+            align-items: center;
+            gap: 8px; 
+            box-shadow: 0 4px 0px #0056b3;
+            flex: 1;
+            min-width: 200px;
+            justify-content: center;
+            font-family: inherit;
+        }
+
+        .nav-button:hover {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0px #0056b3;
+        }
+        
+        .nav-button.active {
+            background-color: var(--color-secundario); 
+            color: #856404;
+            box-shadow: 0 4px 0px #d39e00;
+            pointer-events: none; 
+        }
+
+        /* Encabezados */
+        h1, h2 {
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        h1 { color: var(--color-principal); }
+        h2 { color: var(--color-verde); font-size: clamp(1.4em, 4vw, 1.8em); }
+
+        /* PANTALLA DE INICIO */
+        #start-screen {
+            text-align: center;
+            padding: clamp(20px, 5vw, 40px) 20px;
+            background: linear-gradient(135deg, #E0F7FA 0%, #B2EBF2 100%); 
+            border-radius: 15px;
+            border: 3px dashed var(--color-principal);
+            animation: fadeInScale 0.6s ease-out;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex: 1;
+        }
+
+        #start-screen h1 {
+            font-size: clamp(2em, 6vw, 3em);
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 0px white;
+            animation: bounceIn 0.8s ease-out;
+        }
+
+        #start-screen p {
+            font-size: clamp(1.1em, 3vw, 1.3em);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .start-buttons-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 400px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .big-start-button {
+            padding: 18px 25px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: inherit;
+        }
+
+        .btn-green { background-color: var(--color-verde); box-shadow: 0 6px 0px #1e7e34; }
+        .btn-green:hover { transform: translateY(3px); box-shadow: 0 3px 0px #1e7e34; }
+        
+        .btn-blue { background-color: var(--color-principal); box-shadow: 0 6px 0px #0056b3; }
+        .btn-blue:hover { transform: translateY(3px); box-shadow: 0 3px 0px #0056b3; }
+
+        .splash-icon { font-size: clamp(3em, 10vw, 5em); margin-bottom: 10px; animation: bounce 2s infinite; }
+
+        /* CONTENIDO DE REPASO - MEJORADO CON GRID Y 3D */
+        #repaso-screen { display: none; animation: fadeInScale 0.4s ease-out; }
+
+        .repaso-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .repaso-section {
+            padding: 25px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .repaso-section:hover { 
+            transform: translateY(-8px) scale(1.02); 
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+
+        .repaso-section h3 {
+            margin-top: 0;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px dashed rgba(0,0,0,0.1);
+            padding-bottom: 10px;
+        }
+
+        .repaso-section ul {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+
+        .repaso-section li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        /* Estilos específicos para cada tarjeta */
+        .repaso-section.agua { 
+            background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); 
+            border-top: 8px solid #2196F3; 
+        }
+        .repaso-section.agua h3 { color: #1565C0; }
+
+        .repaso-section.carbono { 
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%); 
+            border-top: 8px solid #4CAF50; 
+        }
+        .repaso-section.carbono h3 { color: #2E7D32; }
+
+        .repaso-section.nitrogeno { 
+            background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%); 
+            border-top: 8px solid #FF9800; 
+        }
+        .repaso-section.nitrogeno h3 { color: #E65100; }
+
+        .repaso-section.oxigeno { 
+            background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%); 
+            border-top: 8px solid #9C27B0; 
+        }
+        .repaso-section.oxigeno h3 { color: #6A1B9A; }
+
+        .activities-box {
+            background-color: #FFF9C4;
+            padding: 20px;
+            border-radius: 15px;
+            border: 3px dashed var(--color-secundario);
+            margin-top: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        /* ACTIVIDAD Y QUIZ */
+        #activity-screen { display: none; animation: fadeInScale 0.4s ease-out; }
+
+        .case-study {
+            background-color: #FFFBE6;
+            padding: 25px;
+            border: 4px solid var(--color-secundario);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.2);
+            position: relative;
+        }
+
+        .case-study h3 { 
+            color: #D35400; 
+            margin-top: 0; 
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .case-study p {
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+
+        /* Barra de progreso */
+        .progress-container {
+            width: 100%;
+            height: 15px;
+            background-color: #E0E0E0;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-secundario), var(--color-verde));
+            width: 0%;
+            transition: width 0.4s ease;
+            border-radius: 10px;
+        }
+
+        .question-card {
+            background-color: white;
+            padding: clamp(15px, 4vw, 25px);
+            margin-bottom: 25px;
+            border-radius: 15px;
+            border: 3px solid #F0F0F0;
+            transition: transform 0.2s ease;
+        }
+
+        .question-card:hover {
+            border-color: #E1EFFF;
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.1);
+        }
+
+        .question-text {
+            font-size: 1.15em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2C3E50;
+        }
+
+        .options-group { display: flex; flex-direction: column; gap: 10px; }
+
+        .option-button {
+            width: 100%;
+            padding: 15px;
+            background-color: #FAFAFA; 
+            border: 2px solid #E0E0E0;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1em;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        .option-button:hover:not(.correct):not(.incorrect):not(.selected) {
+            background-color: #E1EFFF;
+            border-color: var(--color-principal);
+            transform: translateX(5px);
+        }
+
+        .option-button.selected {
+            background-color: #FFF3CD;
+            border-color: var(--color-secundario);
+            font-weight: bold;
+            box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.3);
+        }
+
+        .option-button.correct {
+            background-color: var(--color-acierto) !important;
+            color: white !important;
+            border-color: #38a89d !important;
+            font-weight: bold;
+            animation: bounceIn 0.4s ease;
+        }
+
+        .option-button.incorrect {
+            background-color: var(--color-error) !important;
+            color: white !important;
+            border-color: #c94c4c !important;
+            font-weight: bold;
+            opacity: 0.8;
+        }
+
+        .action-button {
+            background-color: var(--color-principal);
+            color: white;
+            padding: 18px 25px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+            box-shadow: 0 6px 0px #0056b3;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        .action-button:hover:not(:disabled) { transform: translateY(3px); box-shadow: 0 3px 0px #0056b3; }
+        .action-button:disabled { background-color: #BDC3C7; box-shadow: 0 6px 0px #95A5A6; cursor: not-allowed; transform: none; }
+
+        #result-section {
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: 30px;
+            border-radius: 20px;
+            background-color: #E8F8F5;
+            border: 4px dashed var(--color-verde);
+            display: none;
+            animation: bounceIn 0.6s ease-out;
+            box-shadow: 0 10px 25px rgba(40, 167, 69, 0.2);
+        }
+
+        #score { font-size: clamp(2em, 5vw, 3em); font-weight: bold; margin: 10px 0; color: var(--color-verde); }
+
+        /* Animaciones */
+        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes bounceIn { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        
+        <!-- NAVEGACIÓN -->
+        <div class="top-nav">
+            <button class="nav-button" id="nav-repaso">📖 Leer la Guía</button>
+            <button class="nav-button" id="nav-activity">🎮 Jugar el Reto</button>
+        </div>
+
+        <!-- PANTALLA DE INICIO -->
+        <div id="start-screen">
+            <div class="splash-icon">🌍💧🌱</div>
+            <h1>¡Hola Exploradores!</h1>
+            <p>La naturaleza tiene un súper poder: <strong>¡Sabe reciclar!</strong> Acompáñanos a descubrir cómo la Tierra reutiliza el agua, el aire y la energía todos los días.</p>
+            <div class="start-buttons-container">
+                <button class="big-start-button btn-blue" id="btn-start-repaso">📖 Leer la Guía de Explorador</button>
+                <button class="big-start-button btn-green" id="btn-start-activity">🎮 ¡Jugar el Reto Ahora!</button>
+            </div>
+        </div>
+
+        <!-- PANTALLA DE REPASO -->
+        <div id="repaso-screen">
+            <h2>📚 Guía de Súper Exploradores</h2>
+            <p style="text-align: center; font-size: 1.1em; margin-bottom: 30px;">Conoce los 4 ciclos mágicos de la naturaleza pasando el ratón sobre ellos.</p>
+
+            <div class="repaso-grid">
+                <div class="repaso-section agua">
+                    <h3>💧 El Viaje del Agua</h3>
+                    <ul>
+                        <li><strong>Evaporación:</strong> El sol calienta el agua y la convierte en vapor.</li>
+                        <li><strong>Condensación:</strong> Ese vapor se enfría allá arriba y forma las nubes.</li>
+                        <li><strong>Precipitación:</strong> El agua cae de regreso como lluvia o nieve.</li>
+                        <li><strong>Colección:</strong> El agua se junta en ríos, lagos y mares para empezar de nuevo.</li>
+                    </ul>
+                </div>
+
+                <div class="repaso-section carbono">
+                    <h3>🌳 El Ciclo del Carbono</h3>
+                    <ul>
+                        <li><strong>Fotosíntesis:</strong> Las plantas atrapan el dióxido de carbono (CO₂) del aire para crecer.</li>
+                        <li><strong>Respiración:</strong> Los animales y nosotros soltamos CO₂ al respirar.</li>
+                        <li><strong>Combustión:</strong> Quemar cosas (como gasolina) libera mucho carbono al aire.</li>
+                        <li><strong>Reservorios:</strong> El suelo y los océanos guardan carbono por mucho tiempo.</li>
+                    </ul>
+                </div>
+
+                <div class="repaso-section nitrogeno">
+                    <h3>🧪 El Ciclo del Nitrógeno</h3>
+                    <ul>
+                        <li><strong>Fijación:</strong> Bacterias especiales atrapan el nitrógeno del aire.</li>
+                        <li><strong>Nitrificación:</strong> Lo transforman en nutrientes para la tierra.</li>
+                        <li><strong>Asimilación:</strong> ¡Las plantas lo absorben por sus raíces para fabricar proteínas!</li>
+                        <li><strong>Desnitrificación:</strong> Otras bacterias lo devuelven al aire.</li>
+                    </ul>
+                </div>
+
+                <div class="repaso-section oxigeno">
+                    <h3>💨 El Ciclo del Oxígeno</h3>
+                    <ul>
+                        <li>Las plantas y las algas liberan el oxígeno cuando hacen fotosíntesis.</li>
+                        <li>¡Es el aire fresquito que todos necesitamos para vivir y respirar!</li>
+                        <li>Se gasta cuando respiramos o cuando hay fuego (combustión).</li>
+                        <li>¡Trabaja en equipo con el ciclo del carbono!</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="activities-box">
+                <h3>💡 ¡Misiones para hacer en Casa!</h3>
+                <ul>
+                    <li>Haz un dibujo gigante con los cuatro ciclos conectados.</li>
+                    <li>Pon un vaso con un poquito de agua al sol y fíjate qué pasa a los pocos días (¡Evaporación!).</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- PANTALLA DE ACTIVIDAD -->
+        <div id="activity-screen">
+            
+            <!-- Estudio de Caso Simplificado -->
+            <div class="case-study">
+                <h3>🏭 Misterio en "Las Aguas"</h3>
+                <p>En el pueblo de <strong>"Las Aguas"</strong>, construyeron una fábrica gigante cerca del río. Ahora, los vecinos notan que el agua está más turbia, hay menos peces y las plantas crecen débiles.</p>
+                <p><strong>¡Es tu turno de ser el detective!</strong> Pon a prueba lo que sabes para descubrir qué ciclos mágicos de la naturaleza se están dañando.</p>
+            </div>
+
+            <h2>📝 ¡Reto de Conocimiento!</h2>
+            <div class="progress-container"><div class="progress-fill" id="progress-bar"></div></div>
+
+            <form id="quiz-form">
+                <div class="question-card" data-q="1" data-correct="A">
+                    <div class="question-text">1. ¿Qué proceso de la naturaleza convierte el agua del río en vapor para subir al cielo?</div>
+                    <div class="options-group">
+                        <button type="button" class="option-button" data-val="A">Evaporación</button>
+                        <button type="button" class="option-button" data-val="B">Condensación</button>
+                        <button type="button" class="option-button" data-val="C">Nitrificación</button>
+                    </div>
+                </div>
+
+                <div class="question-card" data-q="2" data-correct="B">
+                    <div class="question-text">2. ¿Qué seres vivos nos ayudan haciendo la fotosíntesis?</div>
+                    <div class="options-group">
+                        <button type="button" class="option-button" data-val="A">Los hongos y los insectos</button>
+                        <button type="button" class="option-button" data-val="B">Las plantas y las algas</button>
+                        <button type="button" class="option-button" data-val="C">Los animales y los humanos</button>
+                    </div>
+                </div>
+
+                <div class="question-card" data-q="3" data-correct="C">
+                    <div class="question-text">3. Las encargadas de atrapar el nitrógeno del aire para dárselo a las plantas son...</div>
+                    <div class="options-group">
+                        <button type="button" class="option-button" data-val="A">Las rocas de las montañas</button>
+                        <button type="button" class="option-button" data-val="B">Las nubes tormentosas</button>
+                        <button type="button" class="option-button" data-val="C">Unas bacterias especiales en la tierra</button>
+                    </div>
+                </div>
+
+                <div class="question-card" data-q="4" data-correct="A">
+                    <div class="question-text">4. Si la fábrica quema petróleo, libera mucho humo. ¿De dónde viene ese carbono?</div>
+                    <div class="options-group">
+                        <button type="button" class="option-button" data-val="A">Del carbón y el petróleo que estaban guardados bajo tierra</button>
+                        <button type="button" class="option-button" data-val="B">Del oxígeno de los árboles</button>
+                        <button type="button" class="option-button" data-val="C">Del vapor de las nubes</button>
+                    </div>
+                </div>
+
+                <div class="question-card" data-q="5" data-correct="B">
+                    <div class="question-text">5. ¿Qué proceso le devuelve el oxígeno fresco al aire para que podamos respirar?</div>
+                    <div class="options-group">
+                        <button type="button" class="option-button" data-val="A">La respiración de los peces</button>
+                        <button type="button" class="option-button" data-val="B">La fotosíntesis de las plantas</button>
+                        <button type="button" class="option-button" data-val="C">La evaporación de los lagos</button>
+                    </div>
+                </div>
+
+                <div class="question-card" data-q="6" data-correct="C">
+                    <div class="question-text">6. ¿Qué pasa si la fábrica tira demasiados químicos (como nitratos) al río?</div>
+                    <div class="options-group">
+                        <button type="button" class="option-button" data-val="A">El agua se vuelve más limpia y cristalina</button>
+                        <button type="button" class="option-button" data-val="B">Los peces crecen más grandes y fuertes</button>
+                        <button type="button" class="option-button" data-val="C">Eutrofización (crecen demasiadas algas y tapan el río)</button>
+                    </div>
+                </div>
+
+                <button type="submit" id="submit-button" class="action-button" disabled>✅ Revisar mis Respuestas</button>
+            </form>
+
+            <div id="result-section">
+                <h2>¡Misión Completada! ⭐️</h2>
+                <div id="score"></div>
+                <div id="message"></div>
+                <button type="button" id="retry-button" class="action-button" style="background-color: var(--color-secundario); color: #333; box-shadow: 0 6px 0px #d39e00;">🔄 ¡Jugar de Nuevo!</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const startScreen = document.getElementById('start-screen');
+            const repasoScreen = document.getElementById('repaso-screen');
+            const activityScreen = document.getElementById('activity-screen');
+            const topNav = document.querySelector('.top-nav'); 
+
+            const btnStartActivity = document.getElementById('btn-start-activity');
+            const btnStartRepaso = document.getElementById('btn-start-repaso');
+            const navActivity = document.getElementById('nav-activity');
+            const navRepaso = document.getElementById('nav-repaso');
+            
+            const quizForm = document.getElementById('quiz-form');
+            const questionCards = document.querySelectorAll('.question-card');
+            const submitButton = document.getElementById('submit-button');
+            const retryButton = document.getElementById('retry-button');
+            const resultSection = document.getElementById('result-section');
+            const scoreDisplay = document.getElementById('score');
+            const messageDisplay = document.getElementById('message'); 
+            const progressBar = document.getElementById('progress-bar');
+
+            let userAnswers = {};
+            const totalQuestions = questionCards.length;
+
+            const updateProgress = () => {
+                const answered = Object.keys(userAnswers).length;
+                const percentage = (answered / totalQuestions) * 100;
+                progressBar.style.width = `${percentage}%`;
+                
+                if(answered === totalQuestions) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = "✅ Revisar mis Respuestas";
+                } else {
+                    submitButton.disabled = true;
+                    submitButton.textContent = `Te faltan ${totalQuestions - answered} preguntas`;
+                }
+            };
+
+            const resetQuiz = () => {
+                userAnswers = {};
+                submitButton.disabled = true;
+                submitButton.textContent = "Responde para continuar";
+                resultSection.style.display = 'none';
+                progressBar.style.width = '0%';
+                
+                questionCards.forEach(card => {
+                    card.style.pointerEvents = 'auto'; 
+                    card.querySelectorAll('.option-button').forEach(btn => {
+                        btn.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                });
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            const showScreen = (screenToShow, screenId) => {
+                startScreen.style.display = 'none';
+                repasoScreen.style.display = 'none';
+                activityScreen.style.display = 'none';
+                
+                if (screenToShow === startScreen) {
+                    topNav.style.display = 'none'; 
+                } else {
+                    topNav.style.display = 'flex'; 
+                    navActivity.classList.remove('active');
+                    navRepaso.classList.remove('active');
+                    if (screenId === 'activity') navActivity.classList.add('active');
+                    else if (screenId === 'repaso') navRepaso.classList.add('active');
+                }
+
+                screenToShow.style.display = 'block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            btnStartActivity.addEventListener('click', () => { showScreen(activityScreen, 'activity'); resetQuiz(); });
+            btnStartRepaso.addEventListener('click', () => showScreen(repasoScreen, 'repaso'));
+            navActivity.addEventListener('click', () => showScreen(activityScreen, 'activity'));
+            navRepaso.addEventListener('click', () => showScreen(repasoScreen, 'repaso'));
+            retryButton.addEventListener('click', resetQuiz);
+
+            showScreen(startScreen, 'start');
+
+            questionCards.forEach(card => {
+                const buttons = card.querySelectorAll('.option-button');
+                const qId = card.dataset.q;
+
+                buttons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        buttons.forEach(btn => btn.classList.remove('selected'));
+                        button.classList.add('selected');
+                        userAnswers[qId] = button.dataset.val;
+                        updateProgress();
+                    });
+                });
+            });
+
+            quizForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                let score = 0;
+
+                questionCards.forEach(card => {
+                    card.style.pointerEvents = 'none'; 
+                    const qId = card.dataset.q;
+                    const correctAnswer = card.dataset.correct;
+                    const userAnswer = userAnswers[qId];
+                    const buttons = card.querySelectorAll('.option-button');
+
+                    buttons.forEach(button => {
+                        button.classList.remove('selected');
+                        if (button.dataset.val === correctAnswer) {
+                            button.classList.add('correct');
+                        }
+                        if (button.dataset.val === userAnswer && userAnswer !== correctAnswer) {
+                            button.classList.add('incorrect');
+                        }
+                    });
+
+                    if (userAnswer === correctAnswer) score++;
+                });
+
+                scoreDisplay.textContent = `${score} de ${totalQuestions} estrellas 🌟`;
+
+                if (score === totalQuestions) {
+                    messageDisplay.innerHTML = "<strong>¡Excelente trabajo!</strong> Eres un verdadero Guardián de la Naturaleza. 🌿";
+                } else if (score >= 4) {
+                    messageDisplay.innerHTML = "<strong>¡Muy bien!</strong> Sabes mucho sobre nuestro planeta. ¡Sigue así! 🌎";
+                } else {
+                    messageDisplay.innerHTML = "<strong>¡Sigue practicando!</strong> Puedes leer la guía de nuevo para aprender más. 🔍";
+                }
+
+                submitButton.style.display = 'none'; 
+                setTimeout(()=> { submitButton.style.display = 'block'; submitButton.disabled = true; }, 100); 
+                
+                resultSection.style.display = 'block';
+                setTimeout(() => {
+                    resultSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            });
+        });
+    </script>
+</body>
+</html>

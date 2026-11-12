@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Must vs Mustn't - Interactive Mastery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* === BASE & ZERO-SCROLL === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; /* ZERO SCROLL GUARANTEED */
+            display: flex;
+            flex-direction: column;
+            color: #333;
+        }
+
+        /* === BACKGROUND ANIMATIONS === */
+        .bg-shapes {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            overflow: hidden; z-index: -1;
+        }
+        .shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border-radius: 50%;
+            animation: float 8s infinite ease-in-out;
+        }
+        .shape:nth-child(1) { width: 300px; height: 300px; top: -10%; left: -10%; }
+        .shape:nth-child(2) { width: 400px; height: 400px; bottom: -20%; right: -10%; animation-delay: -4s; }
+        .shape:nth-child(3) { width: 150px; height: 150px; top: 40%; left: 50%; animation-duration: 12s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-30px) scale(1.05); }
+        }
+
+        /* === LAYOUT === */
+        header {
+            height: 70px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            color: white;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        main {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* === GLASSMORPHISM CONTAINERS === */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 1200px;
+            height: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .view-section {
+            display: none;
+            height: 100%;
+            flex-direction: column;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .view-section.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* === DASHBOARD / MENU === */
+        .rules-legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 15px;
+            border: 2px dashed #cbd5e1;
+        }
+
+        .rule-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        .rule-must { color: #16a34a; }
+        .rule-mustnt { color: #dc2626; }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            flex: 1;
+        }
+
+        .menu-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 3px solid transparent;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: #6366f1;
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2);
+        }
+
+        .menu-card .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .menu-card h2 { color: #4f46e5; margin-bottom: 10px; font-size: 1.8rem;}
+
+        /* === TWO-COLUMN ACTIVITY LAYOUT === */
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .activity-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            flex: 1;
+            min-height: 0; /* Important for grid internal scrolling if needed, though we aim for 0 scroll */
+        }
+
+        .exercise-col {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
+        }
+
+        .exercise-col h3 {
+            color: #4f46e5;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* === UI ELEMENTS === */
+        .progress-container { display: flex; align-items: center; gap: 15px; }
+        .progress-bar { width: 150px; height: 12px; background: #e2e8f0; border-radius: 6px; overflow: hidden; }
+        .progress-fill { height: 100%; background: #22c55e; width: 0%; transition: width 0.4s ease; }
+        .score-badge { background: #4f46e5; color: white; padding: 4px 12px; border-radius: 12px; font-weight: 600; font-size: 0.9rem;}
+
+        .btn {
+            background: #4f46e5; color: white; border: none; padding: 10px 20px;
+            border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 8px; font-size: 0.95rem;
+        }
+        .btn:hover { background: #4338ca; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+        .btn-outline { background: transparent; border: 2px solid #cbd5e1; color: #475569; }
+        .btn-outline:hover { background: #f1f5f9; border-color: #94a3b8; color: #334155;}
+        
+        .action-row { display: flex; gap: 10px; margin-top: auto; padding-top: 15px; }
+
+        /* === SPECIFIC EXERCISES === */
+        /* Drag & Drop */
+        .sentences-list { display: flex; flex-direction: column; gap: 10px; }
+        .d-sentence {
+            background: white; padding: 12px 15px; border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 0.95rem; display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+        }
+        .drop-zone {
+            width: 90px; height: 32px; border: 2px dashed #a5b4fc; border-radius: 8px;
+            display: inline-flex; justify-content: center; align-items: center;
+            background: #e0e7ff; font-weight: 600; transition: all 0.2s; color: #4f46e5;
+        }
+        .drop-zone.active { border-color: #4f46e5; background: #c7d2fe; transform: scale(1.05); }
+        .drag-bank { display: flex; gap: 15px; justify-content: center; margin-top: 15px; padding: 10px; background: #e0e7ff; border-radius: 12px; }
+        .draggable {
+            background: #4f46e5; color: white; padding: 8px 20px; border-radius: 8px;
+            font-weight: 600; cursor: grab; transition: transform 0.2s;
+        }
+        .draggable:active { cursor: grabbing; transform: scale(0.95); }
+
+        /* Fill Blanks */
+        .f-select {
+            padding: 6px 12px; border: 2px solid #cbd5e1; border-radius: 8px;
+            font-weight: 600; color: #333; outline: none; transition: all 0.2s; cursor: pointer;
+        }
+        .f-select:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); }
+
+        /* Memory Game */
+        .memory-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; height: 100%;
+        }
+        .m-card {
+            background: #6366f1; border-radius: 12px; display: flex; justify-content: center;
+            align-items: center; text-align: center; color: white; font-weight: 600; font-size: 0.85rem;
+            cursor: pointer; padding: 10px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d; border: 2px solid transparent;
+        }
+        .m-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(99, 102, 241, 0.3); }
+        .m-card.flipped { background: white; color: #4f46e5; border-color: #4f46e5; transform: rotateY(180deg); }
+        .m-card.matched { background: #22c55e; color: white; border-color: #16a34a; transform: scale(0.95); opacity: 0.8; pointer-events: none; }
+        .m-card .content { transform: rotateY(180deg); display: none; }
+        .m-card.flipped .content, .m-card.matched .content { display: block; }
+        .m-card.flipped .cover, .m-card.matched .cover { display: none; }
+
+        /* Multiple Choice */
+        .mc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .mc-item { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .mc-question { font-size: 0.9rem; font-weight: 600; margin-bottom: 10px; }
+        .mc-opts { display: flex; gap: 10px; }
+        .mc-opt {
+            flex: 1; text-align: center; padding: 8px; border: 2px solid #e2e8f0; border-radius: 8px;
+            cursor: pointer; font-weight: 600; transition: all 0.2s; font-size: 0.9rem;
+        }
+        .mc-opt:hover { border-color: #a5b4fc; background: #f5f3ff; }
+        .mc-opt.selected { background: #4f46e5; color: white; border-color: #4f46e5; }
+
+        /* === GLOBAL FEEDBACK MODAL (Zero Scroll Guarantee) === */
+        .overlay-modal {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .overlay-modal.show { opacity: 1; pointer-events: all; }
+        .modal-box {
+            background: white; padding: 40px; border-radius: 24px; text-align: center;
+            max-width: 400px; transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .overlay-modal.show .modal-box { transform: scale(1); }
+        .modal-icon { font-size: 4rem; margin-bottom: 15px; }
+        .modal-title { font-size: 1.5rem; color: #1e293b; margin-bottom: 10px; }
+        .modal-text { color: #64748b; margin-bottom: 25px; }
+
+        /* Helpers for logic */
+        .correct-ans { background: #22c55e !important; color: white !important; border-color: #16a34a !important; }
+        .wrong-ans { background: #ef4444 !important; color: white !important; border-color: #dc2626 !important; animation: shake 0.4s; }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Decoration -->
+    <div class="bg-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <h1>✨ Grammar Master: Must vs Mustn't</h1>
+        <button class="btn btn-outline" style="color:white; border-color:white;" onclick="goHome()">🏠 Dashboard</button>
+    </header>
+
+    <main>
+        <div class="glass-panel">
+            
+            <!-- VIEW: MAIN DASHBOARD -->
+            <div id="view-dashboard" class="view-section active">
+                <div class="rules-legend">
+                    <div class="rule-badge rule-must">
+                        <span style="font-size: 1.8rem;">✅</span>
+                        <div><strong>MUST</strong><br><span style="font-size: 0.8rem; color:#64748b;">Obligation / Necessity</span></div>
+                    </div>
+                    <div class="rule-badge rule-mustnt">
+                        <span style="font-size: 1.8rem;">🚫</span>
+                        <div><strong>MUSTN'T</strong><br><span style="font-size: 0.8rem; color:#64748b;">Prohibition / Don't do it</span></div>
+                    </div>
+                </div>
+
+                <div class="menu-grid">
+                    <div class="menu-card" onclick="openActivity(1)">
+                        <div class="icon">📚</div>
+                        <h2>Study Time Rules</h2>
+                        <p style="color: #64748b;">Master the rules of the classroom and homework using Drag & Drop and Fill-in-the-blanks.</p>
+                    </div>
+                    <div class="menu-card" onclick="openActivity(2)">
+                        <div class="icon">🌙</div>
+                        <h2>Bedtime Habits</h2>
+                        <p style="color: #64748b;">Learn night routines through a Memory Game and Multiple Choice challenges.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: ACTIVITY 1 -->
+            <div id="view-act1" class="view-section">
+                <div class="activity-header">
+                    <h2>📚 Study Time Rules</h2>
+                    <div class="progress-container">
+                        <div class="progress-bar"><div class="progress-fill" id="prog1"></div></div>
+                        <div class="score-badge">Score: <span id="score1">0</span>/100</div>
+                    </div>
+                </div>
+
+                <div class="activity-body">
+                    <!-- Col 1: Drag & Drop -->
+                    <div class="exercise-col">
+                        <h3>Part 1: Drag & Drop <button class="btn btn-outline" style="padding: 4px 10px; font-size: 0.8rem;" onclick="resetDragDrop()">Reset</button></h3>
+                        <div class="sentences-list">
+                            <div class="d-sentence" data-ans="must">You <div class="drop-zone"></div> finish your homework before playing.</div>
+                            <div class="d-sentence" data-ans="must">You <div class="drop-zone"></div> keep your books organized.</div>
+                            <div class="d-sentence" data-ans="mustn't">Students <div class="drop-zone"></div> use their phones while studying.</div>
+                            <div class="d-sentence" data-ans="must">You <div class="drop-zone"></div> review your notes every day.</div>
+                        </div>
+                        <div class="drag-bank">
+                            <div class="draggable" draggable="true" id="drag-must">must</div>
+                            <div class="draggable" draggable="true" id="drag-mustnt">mustn't</div>
+                        </div>
+                        <div class="action-row">
+                            <button class="btn" style="width: 100%; justify-content: center;" onclick="checkDragDrop()">Verify Part 1</button>
+                        </div>
+                    </div>
+
+                    <!-- Col 2: Fill in Blanks -->
+                    <div class="exercise-col">
+                        <h3>Part 2: Select the Rule <button class="btn btn-outline" style="padding: 4px 10px; font-size: 0.8rem;" onclick="resetFillBlanks()">Reset</button></h3>
+                        <div class="sentences-list">
+                            <div class="d-sentence">During study time, you <select class="f-select" data-ans="must"><option value="">---</option><option value="must">must</option><option value="mustn't">mustn't</option></select> stay focused.</div>
+                            <div class="d-sentence">You <select class="f-select" data-ans="mustn't"><option value="">---</option><option value="must">must</option><option value="mustn't">mustn't</option></select> watch TV while doing homework.</div>
+                            <div class="d-sentence">Students <select class="f-select" data-ans="must"><option value="">---</option><option value="must">must</option><option value="mustn't">mustn't</option></select> bring all materials to class.</div>
+                            <div class="d-sentence">You <select class="f-select" data-ans="mustn't"><option value="">---</option><option value="must">must</option><option value="mustn't">mustn't</option></select> interrupt others while they study.</div>
+                        </div>
+                        <div class="action-row">
+                            <button class="btn" style="width: 100%; justify-content: center; background:#2563eb;" onclick="checkFillBlanks()">Verify Part 2</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: ACTIVITY 2 -->
+            <div id="view-act2" class="view-section">
+                <div class="activity-header">
+                    <h2>🌙 Bedtime Habits</h2>
+                    <div class="progress-container">
+                        <div class="progress-bar"><div class="progress-fill" id="prog2"></div></div>
+                        <div class="score-badge">Score: <span id="score2">0</span>/100</div>
+                    </div>
+                </div>
+
+                <div class="activity-body">
+                    <!-- Col 1: Memory Game -->
+                    <div class="exercise-col">
+                        <h3>Part 1: Match Pairs <button class="btn btn-outline" style="padding: 4px 10px; font-size: 0.8rem;" onclick="initMemoryGame()">Restart</button></h3>
+                        <div class="memory-grid" id="memory-board">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Col 2: Multiple Choice -->
+                    <div class="exercise-col">
+                        <h3>Part 2: Multiple Choice <button class="btn btn-outline" style="padding: 4px 10px; font-size: 0.8rem;" onclick="resetMC()">Reset</button></h3>
+                        <div class="mc-grid">
+                            <div class="mc-item" data-ans="must">
+                                <div class="mc-question">Before bed, I ___ turn off the lights.</div>
+                                <div class="mc-opts">
+                                    <div class="mc-opt" onclick="selectMC(this, 'must')">must</div>
+                                    <div class="mc-opt" onclick="selectMC(this, 'mustn\'t')">mustn't</div>
+                                </div>
+                            </div>
+                            <div class="mc-item" data-ans="mustn't">
+                                <div class="mc-question">I ___ play video games late at night.</div>
+                                <div class="mc-opts">
+                                    <div class="mc-opt" onclick="selectMC(this, 'must')">must</div>
+                                    <div class="mc-opt" onclick="selectMC(this, 'mustn\'t')">mustn't</div>
+                                </div>
+                            </div>
+                            <div class="mc-item" data-ans="must">
+                                <div class="mc-question">I ___ prepare my school bag for tomorrow.</div>
+                                <div class="mc-opts">
+                                    <div class="mc-opt" onclick="selectMC(this, 'must')">must</div>
+                                    <div class="mc-opt" onclick="selectMC(this, 'mustn\'t')">mustn't</div>
+                                </div>
+                            </div>
+                            <div class="mc-item" data-ans="mustn't">
+                                <div class="mc-question">I ___ stay awake after midnight.</div>
+                                <div class="mc-opts">
+                                    <div class="mc-opt" onclick="selectMC(this, 'must')">must</div>
+                                    <div class="mc-opt" onclick="selectMC(this, 'mustn\'t')">mustn't</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="action-row">
+                            <button class="btn" style="width: 100%; justify-content: center; background:#2563eb;" onclick="checkMC()">Verify Part 2</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- UI Modal for Feedback -->
+    <div class="overlay-modal" id="feedback-modal">
+        <div class="modal-box">
+            <div class="modal-icon" id="fb-icon">🎉</div>
+            <h2 class="modal-title" id="fb-title">Great Job!</h2>
+            <p class="modal-text" id="fb-text">You got all answers correct.</p>
+            <button class="btn" onclick="closeModal()">Continue</button>
+        </div>
+    </div>
+
+    <script>
+        /* === NAVIGATION LOGIC === */
+        function openActivity(num) {
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-act' + num).classList.add('active');
+            if(num === 2) initMemoryGame();
+        }
+
+        function goHome() {
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-dashboard').classList.add('active');
+        }
+
+        /* === MODAL LOGIC === */
+        function showModal(icon, title, text) {
+            document.getElementById('fb-icon').textContent = icon;
+            document.getElementById('fb-title').textContent = title;
+            document.getElementById('fb-text').innerHTML = text;
+            document.getElementById('feedback-modal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('feedback-modal').classList.remove('show');
+        }
+
+        function updateProgress(act, score) {
+            document.getElementById('prog' + act).style.width = score + '%';
+            document.getElementById('score' + act).textContent = Math.round(score);
+        }
+
+        /* === ACTIVITY 1: DRAG & DROP === */
+        let draggedText = "";
+        const draggables = document.querySelectorAll('.draggable');
+        const dropZones = document.querySelectorAll('.drop-zone');
+
+        draggables.forEach(d => {
+            d.addEventListener('dragstart', (e) => {
+                draggedText = e.target.textContent;
+                e.target.style.opacity = '0.5';
+            });
+            d.addEventListener('dragend', (e) => { e.target.style.opacity = '1'; });
+        });
+
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('active'); });
+            zone.addEventListener('dragleave', e => zone.classList.remove('active'));
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('active');
+                zone.textContent = draggedText;
+                zone.classList.remove('correct-ans', 'wrong-ans');
+            });
+        });
+
+        function checkDragDrop() {
+            const sentences = document.querySelectorAll('#view-act1 .d-sentence[data-ans]');
+            let correct = 0;
+            sentences.forEach(s => {
+                const zone = s.querySelector('.drop-zone');
+                const ans = s.getAttribute('data-ans');
+                zone.classList.remove('correct-ans', 'wrong-ans');
+                
+                if(zone.textContent === ans) {
+                    zone.classList.add('correct-ans');
+                    correct++;
+                } else if(zone.textContent !== "") {
+                    zone.classList.add('wrong-ans');
+                }
+            });
+
+            if(correct === 4) {
+                showModal('🌟', 'Perfect!', 'All Drag & Drop answers are correct.<br><br><strong>Must:</strong> Obligation<br><strong>Mustn\'t:</strong> Prohibition');
+                calcAct1Score();
+            } else {
+                showModal('🤔', 'Keep Trying', `You got ${correct} out of 4 right. Check the red boxes and try dragging again!`);
+            }
+        }
+
+        function resetDragDrop() {
+            document.querySelectorAll('.drop-zone').forEach(z => {
+                z.textContent = ""; z.classList.remove('correct-ans', 'wrong-ans');
+            });
+            calcAct1Score();
+        }
+
+        /* === ACTIVITY 1: FILL BLANKS === */
+        function checkFillBlanks() {
+            const selects = document.querySelectorAll('.f-select');
+            let correct = 0;
+            selects.forEach(sel => {
+                const ans = sel.getAttribute('data-ans');
+                sel.classList.remove('correct-ans', 'wrong-ans');
+                if(sel.value === ans) {
+                    sel.classList.add('correct-ans');
+                    correct++;
+                } else if(sel.value !== "") {
+                    sel.classList.add('wrong-ans');
+                }
+            });
+
+            if(correct === 4) {
+                showModal('🏆', 'Excellent!', 'All dropdown answers are correct!');
+                calcAct1Score();
+            } else {
+                showModal('🎯', 'Review the rules', `You got ${correct} out of 4 right. Remember: Focus is a MUST, Distraction is a MUSTN'T.`);
+            }
+        }
+
+        function resetFillBlanks() {
+            document.querySelectorAll('.f-select').forEach(s => {
+                s.value = ""; s.classList.remove('correct-ans', 'wrong-ans');
+            });
+            calcAct1Score();
+        }
+
+        function calcAct1Score() {
+            let correct = document.querySelectorAll('#view-act1 .correct-ans').length;
+            updateProgress(1, (correct / 8) * 100);
+        }
+
+        /* === ACTIVITY 2: MEMORY GAME === */
+        const memData = [
+            { text: "I must brush teeth", id: 1 }, { text: "Debo lavarme los dientes", id: 1 },
+            { text: "I mustn't use phone", id: 2 }, { text: "No debo usar el teléfono", id: 2 },
+            { text: "I must sleep early", id: 3 }, { text: "Debo dormir temprano", id: 3 },
+            { text: "I mustn't eat sweets", id: 4 }, { text: "No debo comer dulces", id: 4 }
+        ];
+        
+        let flipped = [];
+        let matched = 0;
+
+        function initMemoryGame() {
+            const board = document.getElementById('memory-board');
+            board.innerHTML = "";
+            flipped = []; matched = 0;
+            let shuffled = [...memData].sort(() => Math.random() - 0.5);
+            
+            shuffled.forEach((item, index) => {
+                let card = document.createElement('div');
+                card.className = 'm-card';
+                card.dataset.id = item.id;
+                card.innerHTML = `<span class="cover">?</span><span class="content">${item.text}</span>`;
+                card.onclick = () => flipCard(card);
+                board.appendChild(card);
+            });
+            calcAct2Score();
+        }
+
+        function flipCard(card) {
+            if(flipped.length < 2 && !card.classList.contains('flipped') && !card.classList.contains('matched')) {
+                card.classList.add('flipped');
+                flipped.push(card);
+                if(flipped.length === 2) setTimeout(checkMatch, 800);
+            }
+        }
+
+        function checkMatch() {
+            const [c1, c2] = flipped;
+            if(c1.dataset.id === c2.dataset.id) {
+                c1.classList.add('matched'); c2.classList.add('matched');
+                matched += 2;
+                calcAct2Score();
+                if(matched === 8) showModal('🧠', 'Brilliant Memory!', 'You successfully matched all English-Spanish pairs.');
+            } else {
+                c1.classList.remove('flipped'); c2.classList.remove('flipped');
+            }
+            flipped = [];
+        }
+
+        /* === ACTIVITY 2: MULTIPLE CHOICE === */
+        function selectMC(el, val) {
+            let siblings = el.parentElement.querySelectorAll('.mc-opt');
+            siblings.forEach(s => s.classList.remove('selected', 'correct-ans', 'wrong-ans'));
+            el.classList.add('selected');
+            el.dataset.val = val;
+        }
+
+        function checkMC() {
+            let correct = 0;
+            document.querySelectorAll('.mc-item').forEach(item => {
+                let ans = item.getAttribute('data-ans');
+                let selected = item.querySelector('.mc-opt.selected');
+                
+                if(selected) {
+                    if(selected.dataset.val === ans) {
+                        selected.classList.add('correct-ans');
+                        correct++;
+                    } else {
+                        selected.classList.add('wrong-ans');
+                    }
+                }
+            });
+
+            if(correct === 4) {
+                showModal('🎊', 'Mastered!', 'You are an expert at bedtime rules!');
+                calcAct2Score();
+            } else {
+                showModal('📚', 'Review time', `You got ${correct}/4. Analyze the red options and pick again!`);
+            }
+        }
+
+        function resetMC() {
+            document.querySelectorAll('.mc-opt').forEach(opt => {
+                opt.classList.remove('selected', 'correct-ans', 'wrong-ans');
+                opt.removeAttribute('data-val');
+            });
+            calcAct2Score();
+        }
+
+        function calcAct2Score() {
+            let memPoints = (matched / 8) * 50; 
+            let correctMC = document.querySelectorAll('#view-act2 .correct-ans').length;
+            let mcPoints = (correctMC / 4) * 50;
+            updateProgress(2, memPoints + mcPoints);
+        }
+    </script>
+</body>
+</html>

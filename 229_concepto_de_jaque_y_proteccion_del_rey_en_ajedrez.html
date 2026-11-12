@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Guardianes del Reino del Ajedrez</title>
+    <style>
+        :root {
+            --azul: #0059A6;
+            --celeste: #00A8E8;
+            --verde: #A5C83F;
+            --amarillo: #FFEC01;
+            --morado: #833189;
+            --fucsia: #E32085;
+            --blanco: #FFFFFF;
+            --oscuro: #2D3748;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--azul), var(--morado));
+            color: var(--oscuro);
+        }
+
+        #app {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Fondo animado de estrellas/partículas */
+        .bg-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            animation: floatParticle 8s infinite linear;
+        }
+        @keyframes floatParticle {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+        }
+
+        /* Barra superior de progreso */
+        header {
+            position: relative;
+            z-index: 10;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border-bottom: 4px solid var(--amarillo);
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .stat-badge {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #f0f4f8;
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 2px solid var(--celeste);
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            background: var(--azul);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 #003d73;
+        }
+        .btn-icon:hover {
+            transform: translateY(-2px);
+            background: var(--celeste);
+        }
+        .btn-icon:active {
+            transform: translateY(2px);
+            box-shadow: 0 0 0 #003d73;
+        }
+
+        /* Contenedor Principal de Pantallas */
+        main {
+            position: relative;
+            z-index: 5;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            overflow: hidden;
+        }
+
+        .screen {
+            position: absolute;
+            width: 95%;
+            height: 92%;
+            max-width: 1100px;
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 25px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 6px solid var(--celeste);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: scale(0.9);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .screen.active {
+            transform: scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        h1 {
+            color: var(--azul);
+            font-size: 2.2rem;
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0px var(--amarillo);
+        }
+
+        h2 {
+            color: var(--morado);
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 1.1rem;
+            text-align: center;
+            color: var(--oscuro);
+            line-height: 1.4;
+            max-width: 800px;
+        }
+
+        /* Botones generales estilo juego */
+        .btn-main {
+            background: linear-gradient(135deg, var(--verde), #8ab528);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #688a1a, 0 10px 20px rgba(0,0,0,0.2);
+            transition: all 0.1s ease;
+            text-transform: uppercase;
+        }
+        .btn-main:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 9px 0 #688a1a, 0 15px 25px rgba(0,0,0,0.3);
+        }
+        .btn-main:active {
+            transform: translateY(3px);
+            box-shadow: 0 3px 0 #688a1a, 0 5px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Pantalla Inicial */
+        .castle-anim {
+            font-size: 5rem;
+            animation: bounceCastle 2s infinite ease-in-out;
+            margin: 10px 0;
+        }
+        @keyframes bounceCastle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        /* Tableros y Actividades */
+        .content-box {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            overflow: hidden;
+        }
+
+        .chessboard {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            width: 320px;
+            height: 320px;
+            border: 4px solid var(--morado);
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        .square {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .square.light { background: #f0d9b5; }
+        .square.dark { background: #b58863; }
+        .square:hover { opacity: 0.8; }
+        .square.highlight { background: var(--amarillo) !important; }
+
+        /* Tarjetas de Piezas */
+        .pieces-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 700px;
+        }
+        .piece-card {
+            background: white;
+            border: 3px solid var(--celeste);
+            border-radius: 15px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .piece-card:hover {
+            transform: scale(1.05);
+            border-color: var(--fucsia);
+        }
+        .piece-icon {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+        }
+
+        /* Mini videojuego Carrera del Caballero */
+        #gameCanvas {
+            background: #222;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            border: 4px solid var(--verde);
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .btn-ctrl {
+            background: var(--azul);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #003d73;
+        }
+        .btn-ctrl:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #003d73;
+        }
+
+        /* Modales de Feedback / Alertas */
+        .feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .feedback-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .feedback-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            border: 5px solid var(--verde);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            transform: scale(0.8);
+            transition: transform 0.3s;
+        }
+        .feedback-overlay.show .feedback-card {
+            transform: scale(1);
+        }
+
+        /* Confeti */
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--amarillo);
+            top: -10px;
+            z-index: 1000;
+            animation: fallConfetti 3s linear forwards;
+        }
+        @keyframes fallConfetti {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        .diploma {
+            background: #fffdf0;
+            border: 8px solid var(--amarillo);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+            max-width: 700px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <!-- Fondo Animado de Partículas -->
+    <div class="bg-particles" id="particles"></div>
+
+    <!-- Barra Superior -->
+    <header>
+        <div class="stats-container">
+            <div class="stat-badge">⭐ <span id="score-val">0</span> pts</div>
+            <div class="stat-badge">❤️ <span id="lives-val">3</span></div>
+            <div class="stat-badge">🏅 <span id="medals-val">0</span></div>
+            <div class="stat-badge">📚 Nivel <span id="level-val">1</span>/10</div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-icon" onclick="app.goHome()">🏠 Inicio</button>
+            <button class="btn-icon" onclick="app.restartCurrentLevel()">🔄 Reiniciar</button>
+        </div>
+    </header>
+
+    <!-- Contenedor Principal de Pantallas -->
+    <main>
+        <!-- PANTALLA 0: INICIO -->
+        <div class="screen active" id="screen-0">
+            <h1>🏰 Guardianes del Reino del Ajedrez</h1>
+            <div class="castle-anim">🏰🐉♟️</div>
+            <p>¡Un antiguo reino está en peligro porque un dragón ha capturado al Rey! Para rescatarlo deberás aprender las reglas básicas del ajedrez y superar diferentes desafíos. Cada nivel recupera una parte del castillo.</p>
+            <p style="font-weight: bold; color: var(--azul);">"Hoy aprenderás a jugar ajedrez y descubrirás cómo proteger al Rey utilizando el Jaque Mate."</p>
+            <button class="btn-main" onclick="app.nextScreen()">▶ Comenzar Aventura</button>
+        </div>
+
+        <!-- PANTALLA 1: NIVEL 1 - ¿Qué es el ajedrez? -->
+        <div class="screen" id="screen-1">
+            <h1>Nivel 1: ¿Qué es el Ajedrez?</h1>
+            <div class="content-box" style="justify-content: space-around;">
+                <div style="font-size: 4rem;">♟️⚔️👑</div>
+                <div style="background: #eef6fc; padding: 20px; border-radius: 15px; border-left: 6px solid var(--azul); max-width: 800px;">
+                    <p style="text-align: left; margin-bottom: 10px;">• <strong>¿Qué es?</strong> Es un juego de estrategia milenario entre dos jugadores.</p>
+                    <p style="text-align: left; margin-bottom: 10px;">• <strong>¿Para qué sirve?</strong> Desarrolla la concentración, la paciencia y la toma de decisiones.</p>
+                    <p style="text-align: left; margin-bottom: 10px;">• <strong>Jugadores:</strong> Participan exactamente 2 jugadores (Blancas y Negras).</p>
+                    <p style="text-align: left;">• <strong>Objetivo:</strong> Atrapar al Rey rival en una trampa sin salida llamada <em>Jaque Mate</em>.</p>
+                </div>
+            </div>
+            <button class="btn-main" onclick="app.completeLevel(1)">¡Entendido, Continuar! 🚀</button>
+        </div>
+
+        <!-- PANTALLA 2: NIVEL 2 - Conoce el Tablero -->
+        <div class="screen" id="screen-2">
+            <h1>Nivel 2: Conoce el Tablero</h1>
+            <p id="board-instruction">Haz clic en una casilla <strong>blanca</strong> para demostrar que conoces el tablero.</p>
+            <div class="content-box">
+                <div class="chessboard" id="interactive-chessboard"></div>
+            </div>
+            <button class="btn-main" id="btn-next-2" style="display: none;" onclick="app.completeLevel(2)">Siguiente Nivel 🏆</button>
+        </div>
+
+        <!-- PANTALLA 3: NIVEL 3 - Conoce las Piezas -->
+        <div class="screen" id="screen-3">
+            <h1>Nivel 3: Conoce las Piezas</h1>
+            <p>Descubre a los defensores del reino:</p>
+            <div class="content-box">
+                <div class="pieces-grid">
+                    <div class="piece-card" onclick="app.showPieceInfo('Rey', '♔', 'La pieza más importante. Se mueve 1 casilla a cualquier lado.')">
+                        <div class="piece-icon">♔</div>
+                        <h3>Rey</h3>
+                    </div>
+                    <div class="piece-card" onclick="app.showPieceInfo('Reina', '♕', 'La pieza más poderosa. Se mueve en todas direcciones y distancia libre.')">
+                        <div class="piece-icon">♕</div>
+                        <h3>Reina</h3>
+                    </div>
+                    <div class="piece-card" onclick="app.showPieceInfo('Torre', '♖', 'Se mueve en líneas rectas (horizontales y verticales).')">
+                        <div class="piece-icon">♖</div>
+                        <h3>Torre</h3>
+                    </div>
+                    <div class="piece-card" onclick="app.showPieceInfo('Alfil', '♗', 'Se mueve únicamente en diagonales.')">
+                        <div class="piece-icon">♗</div>
+                        <h3>Alfil</h3>
+                    </div>
+                    <div class="piece-card" onclick="app.showPieceInfo('Caballo', '♘', 'Se mueve en forma de L y puede saltar sobre otras piezas.')">
+                        <div class="piece-icon">♘</div>
+                        <h3>Caballo</h3>
+                    </div>
+                    <div class="piece-card" onclick="app.showPieceInfo('Peón', '♙', 'Avanza hacia adelante 1 casilla (2 en su primer movimiento). Captura en diagonal.')">
+                        <div class="piece-icon">♙</div>
+                        <h3>Peón</h3>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-main" onclick="app.completeLevel(3)">¡Piezas Conocidas! Continuar 🛡️</button>
+        </div>
+
+        <!-- PANTALLA 4: NIVEL 4 - ¿Qué es el Jaque? -->
+        <div class="screen" id="screen-4">
+            <h1>Nivel 4: ¿Qué es el Jaque?</h1>
+            <div class="content-box">
+                <div style="font-size: 3rem;">♕ ⚡ ♔</div>
+                <div style="background: #fff8e1; padding: 20px; border-radius: 15px; border: 3px solid var(--amarillo); max-width: 700px;">
+                    <p><strong>¡Alerta Roja!</strong> Cuando una pieza enemiga amenaza directamente al Rey con capturarlo en el siguiente turno, se dice que el Rey está en <strong>JAQUE</strong>.</p>
+                </div>
+                <p style="font-weight: bold; margin-top: 10px;">En la situación mostrada, ¿Está el Rey en Jaque?</p>
+                <div style="display: flex; gap: 20px;">
+                    <button class="btn-main" style="background: var(--verde);" onclick="app.answerJaque(true)">Sí, es Jaque</button>
+                    <button class="btn-main" style="background: var(--fucsia);" onclick="app.answerJaque(false)">No</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA 5: NIVEL 5 - ¿Qué es el Jaque Mate? -->
+        <div class="screen" id="screen-5">
+            <h1>Nivel 5: ¿Qué es el Jaque Mate?</h1>
+            <div class="content-box">
+                <div style="font-size: 3rem;">🏰 ⚔️ ♔ ⚔️</div>
+                <div style="background: #fce8f3; padding: 20px; border-radius: 15px; border: 3px solid var(--fucsia); max-width: 700px;">
+                    <p>Cuando el Rey está en <strong>Jaque</strong>, no puede escapar, no puede bloquear el ataque y ninguna pieza puede ayudarlo... ¡Ocurre el <strong>JAQUE MATE</strong> y termina la batalla!</p>
+                </div>
+                <p>Compara: <strong>Jaque</strong> = Advertencia de peligro / <strong>Jaque Mate</strong> = El juego terminó, el reino está a salvo.</p>
+            </div>
+            <button class="btn-main" onclick="app.completeLevel(5)">¡Comprendido! Siguiente Desafío ⚔️</button>
+        </div>
+
+        <!-- PANTALLA 6: NIVEL 6 - Actividad: Detective del Rey -->
+        <div class="screen" id="screen-6">
+            <h1>Nivel 6: Detective del Rey</h1>
+            <p>Identifica cuál de las siguientes situaciones representa un <strong>Jaque Mate</strong> real:</p>
+            <div class="content-box">
+                <div style="display: flex; gap: 20px; width: 100%; justify-content: center;">
+                    <div style="border: 3px solid var(--celeste); padding: 15px; border-radius: 15px; text-align: center; background: white; cursor: pointer; flex: 1; max-width: 300px;" onclick="app.detectiveChoice(false)">
+                        <div style="font-size: 3rem;">♔ vs ♖</div>
+                        <p style="margin-top: 10px;">El Rey puede huir a la casilla de al lado.</p>
+                        <button class="btn-icon" style="margin-top: 10px;">Elegir (No es Mate)</button>
+                    </div>
+                    <div style="border: 3px solid var(--verde); padding: 15px; border-radius: 15px; text-align: center; background: white; cursor: pointer; flex: 1; max-width: 300px;" onclick="app.detectiveChoice(true)">
+                        <div style="font-size: 3rem;">♔ 🔒 ♕</div>
+                        <p style="margin-top: 10px;">Atrapado sin salida ni ayuda posible.</p>
+                        <button class="btn-main" style="font-size: 0.9rem; padding: 8px 15px; margin-top: 10px;">¡Es Jaque Mate!</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA 7: NIVEL 7 - Memorama de Ajedrez -->
+        <div class="screen" id="screen-7">
+            <h1>Nivel 7: Memorama Ajedrecístico</h1>
+            <p>Empareja cada pieza con su característica principal (Haz clic en dos cartas para buscar su pareja).</p>
+            <div class="content-box">
+                <div id="memory-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; max-width: 600px;">
+                    <!-- Generado por JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA 8: NIVEL 8 - Verdadero o Falso -->
+        <div class="screen" id="screen-8">
+            <h1>Nivel 8: Verdadero o Falso</h1>
+            <div class="content-box" style="justify-content: center;">
+                <div id="vf-question-box" style="background: #f0f4f8; padding: 30px; border-radius: 20px; border: 4px solid var(--azul); max-width: 700px; text-align: center; margin-bottom: 20px;">
+                    <p id="vf-statement" style="font-size: 1.3rem; font-weight: bold;"></p>
+                </div>
+                <div style="display: flex; gap: 30px;">
+                    <button class="btn-main" style="background: var(--verde);" onclick="app.answerVF(true)">✔ Verdadero</button>
+                    <button class="btn-main" style="background: var(--fucsia);" onclick="app.answerVF(false)">✖ Falso</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA 9: NIVEL 9 - Mini Videojuego: Carrera del Caballero -->
+        <div class="screen" id="screen-9">
+            <h1>Nivel 9: Carrera del Caballero</h1>
+            <p>¡Usa los botones para mover al Caballero ♘ y esquivar al Dragón 🐉 atrapando coronas!</p>
+            <div class="content-box">
+                <canvas id="gameCanvas" width="400" height="250"></canvas>
+                <div class="game-controls">
+                    <button class="btn-ctrl" onclick="app.moveKnight(-1)">⬅ Izquierda</button>
+                    <button class="btn-ctrl" onclick="app.moveKnight(1)">Derecha ➡</button>
+                </div>
+            </div>
+            <button class="btn-main" id="btn-finish-game" style="display:none;" onclick="app.completeLevel(9)">¡Superado! Siguiente 🚀</button>
+        </div>
+
+        <!-- PANTALLA 10: NIVEL 10 - Quiz Final -->
+        <div class="screen" id="screen-10">
+            <h1>Nivel 10: Desafío Final del Reino</h1>
+            <div class="content-box" style="justify-content: flex-start; padding-top: 10px;">
+                <div id="quiz-container" style="width: 100%; max-width: 800px; background: #f9fbfd; padding: 20px; border-radius: 15px; border: 3px solid var(--morado);">
+                    <h3 id="quiz-question" style="color: var(--azul); margin-bottom: 15px;">Pregunta</h3>
+                    <div id="quiz-options" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA 11: VICTORIA FINAL -->
+        <div class="screen" id="screen-11">
+            <h1>🎉 ¡Reino Salvado! 🎉</h1>
+            <div class="diploma">
+                <h2>🏆 Diploma de Honor 🏆</h2>
+                <p style="margin: 15px 0; font-size: 1.2rem;">Se otorga el título de:</p>
+                <h1 style="color: var(--morado); font-size: 2rem;">Maestro del Jaque Mate</h1>
+                <p>¡Felicitaciones! Has protegido al Rey, superado todos los retos y demostrado ser un verdadero Caballero del Reino del Ajedrez.</p>
+                <div style="font-size: 3rem; margin-top: 10px;">👑🛡️✨</div>
+            </div>
+            <button class="btn-main" onclick="app.restartAdventure()">🔄 Jugar Nuevamente</button>
+        </div>
+    </main>
+
+    <!-- Modal de Feedback -->
+    <div class="feedback-overlay" id="feedback-overlay">
+        <div class="feedback-card" id="feedback-card">
+            <h2 id="feedback-title">¡Excelente!</h2>
+            <p id="feedback-text">Has ganado +20 puntos.</p>
+            <button class="btn-main" style="margin-top: 15px;" onclick="app.closeFeedback()">Continuar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    class SoundFX {
+        constructor() {
+            try {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            } catch(e) {
+                this.ctx = null;
+            }
+        }
+        playTone(freq, type, duration) {
+            if (!this.ctx) return;
+            try {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            } catch(e) {}
+        }
+        correct() {
+            this.playTone(587.33, 'triangle', 0.15);
+            setTimeout(() => this.playTone(880, 'triangle', 0.3), 150);
+        }
+        incorrect() {
+            this.playTone(200, 'sawtooth', 0.2);
+            setTimeout(() => this.playTone(150, 'sawtooth', 0.3), 200);
+        }
+        levelUp() {
+            [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+                setTimeout(() => this.playTone(f, 'sine', 0.15), i * 100);
+            });
+        }
+    }
+
+    const soundFX = new SoundFX();
+
+    class ChessAdventureApp {
+        constructor() {
+            this.currentScreen = 0;
+            this.score = 0;
+            this.lives = 3;
+            this.medals = 0;
+            this.level = 1;
+            this.maxScreens = 11;
+            
+            this.quizQuestions = [
+                { q: "¿Cuántos jugadores participan en una partida de ajedrez?", options: ["1 jugador", "2 jugadores", "4 jugadores"], correct: 1 },
+                { q: "¿Cuál es la pieza más importante del tablero?", options: ["La Reina", "El Peón", "El Rey"], correct: 2 },
+                { q: "¿Cómo se llama la situación de amenaza directa al Rey?", options: ["Jaque", "Gol", "Jaque Mate"], correct: 0 },
+                { q: "¿Qué ocurre al producirse un Jaque Mate?", options: ["Continúa el juego", "Termina la partida", "Se cambia de turno"], correct: 1 },
+                { q: "¿Cómo se mueve el Alfil?", options: ["En líneas rectas", "En diagonales", "En forma de L"], correct: 1 },
+                { q: "¿Cuál pieza puede saltar sobre otras?", options: ["El Caballo", "La Torre", "El Peón"], correct: 0 },
+                { q: "¿Cuántas casillas tiene un tablero de ajedrez en total?", options: ["64 casillas", "32 casillas", "100 casillas"], correct: 0 },
+                { q: "¿Qué pieza se mueve en todas direcciones y sin límite de casillas?", options: ["La Reina", "El Rey", "El Peón"], correct: 0 },
+                { q: "¿El objetivo principal del ajedrez es capturar todas las piezas rivales?", options: ["Verdadero", "Falso"], correct: 1 },
+                { q: "¿Puede el Rey quedarse en una casilla donde está amenazado (en Jaque)?", options: ["Sí", "No"], correct: 1 },
+                { q: "¿Cómo se le llama al final definitivo de la partida por atrapamiento del Rey?", options: ["Jaque Mate", "Jaque Simple", "Tablas"], correct: 0 },
+                { q: "¿Qué color de casilla se alterna en el tablero de ajedrez?", options: ["Blanco y Negro", "Azul y Rojo", "Verde y Amarillo"], correct: 0 },
+                { q: "¿El Peón puede avanzar dos casillas en su primer movimiento?", options: ["Verdadero", "Falso"], correct: 0 },
+                { q: "¿Qué premio obtienes al superar toda la aventura?", options: ["Diploma de Maestro", "Una medalla de bronce", "Un trofeo de fútbol"], correct: 0 },
+                { q: "¿Es el ajedrez un juego de estrategia y concentración?", options: ["Sí, totalmente", "No, es de suerte"], correct: 0 }
+            ];
+            this.currentQuizIndex = 0;
+            this.correctQuizCount = 0;
+
+            this.vfQuestions = [
+                { statement: "El Rey puede moverse dos casillas en cualquier dirección.", answer: false },
+                { statement: "El Jaque Mate termina la partida y da la victoria.", answer: true },
+                { statement: "El Rey puede quedarse donde está aunque esté en Jaque.", answer: false },
+                { statement: "El objetivo principal del juego es hacer Jaque Mate al Rey rival.", answer: true }
+            ];
+            this.currentVFIndex = 0;
+
+            this.initParticles();
+            this.updateStats();
+        }
+
+        initParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 25; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = `${Math.random() * 100}%`;
+                p.style.width = `${Math.random() * 8 + 4}px`;
+                p.style.height = p.style.width;
+                p.style.animationDuration = `${Math.random() * 5 + 5}s`;
+                p.style.animationDelay = `${Math.random() * 5}s`;
+                container.appendChild(p);
+            }
+        }
+
+        updateStats() {
+            document.getElementById('score-val').innerText = this.score;
+            document.getElementById('lives-val').innerText = this.lives;
+            document.getElementById('medals-val').innerText = this.medals;
+            document.getElementById('level-val').innerText = this.level;
+        }
+
+        showScreen(index) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(`screen-${index}`).classList.add('active');
+            this.currentScreen = index;
+            this.level = index === 0 ? 1 : index;
+            if(index > 0 && index <= 10) this.medals = index;
+            this.updateStats();
+
+            if (index === 2) this.initChessboardLevel2();
+            if (index === 7) this.initMemoryGame();
+            if (index === 8) this.loadVFQuestion();
+            if (index === 9) this.initKnightGame();
+            if (index === 10) this.loadQuizQuestion();
+            if (index === 11) this.triggerConfettiRain();
+        }
+
+        nextScreen() {
+            if (this.currentScreen < this.maxScreens) {
+                this.showScreen(this.currentScreen + 1);
+            }
+        }
+
+        goHome() {
+            this.showScreen(0);
+        }
+
+        restartCurrentLevel() {
+            this.showScreen(this.currentScreen);
+        }
+
+        completeLevel(lvl) {
+            soundFX.levelUp();
+            this.score += 20;
+            this.showFeedback("¡Nivel Superado!", "+20 Puntos ⭐ ¡Estrella obtenida!", () => {
+                this.nextScreen();
+            });
+        }
+
+        showFeedback(title, text, callback) {
+            document.getElementById('feedback-title').innerText = title;
+            document.getElementById('feedback-text').innerText = text;
+            document.getElementById('feedback-overlay').classList.add('show');
+            this.feedbackCallback = callback;
+        }
+
+        closeFeedback() {
+            document.getElementById('feedback-overlay').classList.remove('show');
+            if (this.feedbackCallback) {
+                this.feedbackCallback();
+                this.feedbackCallback = null;
+            }
+        }
+
+        // Nivel 2: Tablero Interactivo Corregido
+        initChessboardLevel2() {
+            const board = document.getElementById('interactive-chessboard');
+            board.innerHTML = '';
+            board.style.pointerEvents = 'auto'; // Asegurar que reciba clics
+
+            this.targetSquareIsWhite = Math.random() > 0.5;
+            document.getElementById('board-instruction').innerHTML = `Haz clic en una casilla <strong>${this.targetSquareIsWhite ? 'blanca' : 'negra'}</strong>.`;
+            document.getElementById('btn-next-2').style.display = 'none';
+
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    const sq = document.createElement('div');
+                    const isWhite = (r + c) % 2 === 0;
+                    sq.className = `square ${isWhite ? 'light' : 'dark'}`;
+                    
+                    // Función unificada para clic y toque táctil
+                    const handleSquareClick = (e) => {
+                        e.preventDefault();
+                        if (board.style.pointerEvents === 'none') return;
+
+                        if (isWhite === this.targetSquareIsWhite) {
+                            soundFX.correct();
+                            sq.classList.add('highlight');
+                            this.score += 20;
+                            this.updateStats();
+                            document.getElementById('btn-next-2').style.display = 'block';
+                            board.style.pointerEvents = 'none';
+                        } else {
+                            soundFX.incorrect();
+                            this.lives = Math.max(0, this.lives - 1);
+                            this.updateStats();
+                        }
+                    };
+
+                    sq.addEventListener('click', handleSquareClick);
+                    sq.addEventListener('touchstart', handleSquareClick, { passive: false });
+                    
+                    board.appendChild(sq);
+                }
+            }
+        }
+
+        showPieceInfo(name, icon, desc) {
+            soundFX.correct();
+            this.showFeedback(`${icon} ${name}`, desc, null);
+        }
+
+        answerJaque(isYes) {
+            if (isYes) {
+                soundFX.correct();
+                this.score += 20;
+                this.showFeedback("¡Correcto!", "La Reina está amenazando al Rey directamente. ¡Es Jaque!", () => {
+                    this.nextScreen();
+                });
+            } else {
+                soundFX.incorrect();
+                this.lives = Math.max(0, this.lives - 1);
+                this.updateStats();
+                this.showFeedback("Inténtalo de nuevo", "Observa bien: la pieza enemiga apunta directamente al Rey.", null);
+            }
+        }
+
+        detectiveChoice(isCorrect) {
+            if (isCorrect) {
+                soundFX.correct();
+                this.score += 20;
+                this.showFeedback("¡Excelente Detective!", "Has identificado correctamente el Jaque Mate.", () => {
+                    this.nextScreen();
+                });
+            } else {
+                soundFX.incorrect();
+                this.lives = Math.max(0, this.lives - 1);
+                this.updateStats();
+                this.showFeedback("Casi...", "En esa posición el Rey aún puede escapar o recibir ayuda.", null);
+            }
+        }
+
+        initMemoryGame() {
+            const grid = document.getElementById('memory-grid');
+            grid.innerHTML = '';
+            const pairs = [
+                { name: 'Rey ♔', match: '1' }, { name: 'Se mueve 1 casilla', match: '1' },
+                { name: 'Reina ♕', match: '2' }, { name: 'Poderosa y libre', match: '2' },
+                { name: 'Torre ♖', match: '3' }, { name: 'Líneas rectas', match: '3' },
+                { name: 'Caballo ♘', match: '4' }, { name: 'Se mueve en L', match: '4' }
+            ];
+            pairs.sort(() => Math.random() - 0.5);
+            this.firstCard = null;
+            this.matchedPairsCount = 0;
+
+            pairs.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'piece-card';
+                card.style.height = '80px';
+                card.style.display = 'flex';
+                card.style.alignItems = 'center';
+                card.style.justifyContent = 'center';
+                card.style.fontSize = '0.9rem';
+                card.style.fontWeight = 'bold';
+                card.innerText = '❓';
+                card.dataset.match = item.match;
+                card.dataset.name = item.name;
+
+                card.onclick = () => {
+                    if (card.classList.contains('matched') || card === this.firstCard) return;
+                    soundFX.playTone(400, 'sine', 0.1);
+                    card.innerText = card.dataset.name;
+                    card.style.background = '#eef6fc';
+
+                    if (!this.firstCard) {
+                        this.firstCard = card;
+                    } else {
+                        if (this.firstCard.dataset.match === card.dataset.match) {
+                            soundFX.correct();
+                            this.firstCard.classList.add('matched');
+                            card.classList.add('matched');
+                            this.firstCard = null;
+                            this.matchedPairsCount++;
+                            if (this.matchedPairsCount === 4) {
+                                this.score += 40;
+                                setTimeout(() => this.completeLevel(7), 500);
+                            }
+                        } else {
+                            soundFX.incorrect();
+                            const c1 = this.firstCard;
+                            this.firstCard = null;
+                            setTimeout(() => {
+                                c1.innerText = '❓';
+                                c1.style.background = 'white';
+                                card.innerText = '❓';
+                                card.style.background = 'white';
+                            }, 800);
+                        }
+                    }
+                };
+                grid.appendChild(card);
+            });
+        }
+
+        loadVFQuestion() {
+            if (this.currentVFIndex < this.vfQuestions.length) {
+                document.getElementById('vf-statement').innerText = this.vfQuestions[this.currentVFIndex].statement;
+            } else {
+                this.currentVFIndex = 0;
+                this.completeLevel(8);
+            }
+        }
+
+        answerVF(userAnswer) {
+            const current = this.vfQuestions[this.currentVFIndex];
+            if (userAnswer === current.answer) {
+                soundFX.correct();
+                this.score += 10;
+                this.currentVFIndex++;
+                this.loadVFQuestion();
+            } else {
+                soundFX.incorrect();
+                this.lives = Math.max(0, this.lives - 1);
+                this.updateStats();
+                this.showFeedback("¡Incorrecto!", "Analiza bien la regla del ajedrez.", null);
+            }
+        }
+
+        initKnightGame() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            let knightX = 180;
+            const knightY = 200;
+            let obstacles = [];
+            let crowns = [];
+            let gameScore = 0;
+            let gameRunning = true;
+            document.getElementById('btn-finish-game').style.display = 'none';
+
+            const interval = setInterval(() => {
+                if (!gameRunning) return;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                ctx.font = '30px sans-serif';
+                ctx.fillText('♘', knightX, knightY);
+
+                if (Math.random() < 0.04) {
+                    obstacles.push({ x: Math.random() * (canvas.width - 30), y: 0 });
+                }
+                if (Math.random() < 0.03) {
+                    crowns.push({ x: Math.random() * (canvas.width - 30), y: 0 });
+                }
+
+                ctx.font = '25px sans-serif';
+                obstacles.forEach((obs, index) => {
+                    obs.y += 3;
+                    ctx.fillText('🐉', obs.x, obs.y);
+                    if (Math.abs(obs.x - knightX) < 25 && Math.abs(obs.y - knightY) < 25) {
+                        soundFX.incorrect();
+                        gameRunning = false;
+                        clearInterval(interval);
+                        this.showFeedback("¡Atrapado por el Dragón!", "Vuelve a intentarlo.", () => this.initKnightGame());
+                    }
+                    if (obs.y > canvas.height) obstacles.splice(index, 1);
+                });
+
+                crowns.forEach((cr, index) => {
+                    cr.y += 2;
+                    ctx.fillText('👑', cr.x, cr.y);
+                    if (Math.abs(cr.x - knightX) < 25 && Math.abs(cr.y - knightY) < 25) {
+                        soundFX.correct();
+                        crowns.splice(index, 1);
+                        gameScore++;
+                        if (gameScore >= 5) {
+                            gameRunning = false;
+                            clearInterval(interval);
+                            document.getElementById('btn-finish-game').style.display = 'block';
+                            this.score += 50;
+                            this.updateStats();
+                        }
+                    }
+                    if (cr.y > canvas.height) crowns.splice(index, 1);
+                });
+
+                ctx.fillStyle = '#fff';
+                ctx.font = '14px sans-serif';
+                ctx.fillText(`Coronas: ${gameScore}/5`, 10, 20);
+
+            }, 30);
+
+            this.knightMover = (dir) => {
+                if (!gameRunning) return;
+                knightX = Math.max(0, Math.min(canvas.width - 35, knightX + dir * 35));
+            };
+        }
+
+        moveKnight(dir) {
+            if (this.knightMover) this.knightMover(dir);
+        }
+
+        loadQuizQuestion() {
+            if (this.currentQuizIndex < this.quizQuestions.length) {
+                const qData = this.quizQuestions[this.currentQuizIndex];
+                document.getElementById('quiz-question').innerText = `Pregunta ${this.currentQuizIndex + 1}: ${qData.q}`;
+                const optContainer = document.getElementById('quiz-options');
+                optContainer.innerHTML = '';
+                qData.options.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-icon';
+                    btn.style.padding = '12px';
+                    btn.style.fontSize = '1.1rem';
+                    btn.style.textAlign = 'left';
+                    btn.innerText = opt;
+                    btn.onclick = () => this.answerQuiz(idx, qData.correct);
+                    optContainer.appendChild(btn);
+                });
+            } else {
+                this.nextScreen();
+            }
+        }
+
+        answerQuiz(selected, correct) {
+            if (selected === correct) {
+                soundFX.correct();
+                this.score += 15;
+                this.correctQuizCount++;
+            } else {
+                soundFX.incorrect();
+            }
+            this.currentQuizIndex++;
+            this.loadQuizQuestion();
+        }
+
+        restartAdventure() {
+            this.score = 0;
+            this.lives = 3;
+            this.medals = 0;
+            this.currentQuizIndex = 0;
+            this.correctQuizCount = 0;
+            this.currentVFIndex = 0;
+            this.showScreen(0);
+        }
+
+        triggerConfettiRain() {
+            soundFX.levelUp();
+            for (let i = 0; i < 70; i++) {
+                const conf = document.createElement('div');
+                conf.className = 'confetti-piece';
+                conf.style.left = `${Math.random() * 100}vw`;
+                conf.style.backgroundColor = ['#0059A6', '#00A8E8', '#A5C83F', '#FFEC01', '#833189', '#E32085'][Math.floor(Math.random() * 6)];
+                conf.style.animationDuration = `${Math.random() * 2 + 2}s`;
+                conf.style.animationDelay = `${Math.random() * 1.5}s`;
+                document.body.appendChild(conf);
+                setTimeout(() => conf.remove(), 4000);
+            }
+        }
+    }
+
+    const app = new ChessAdventureApp();
+</script>
+
+</body>
+</html>

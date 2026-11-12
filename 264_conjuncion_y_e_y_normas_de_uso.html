@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actividad Interactiva: Uso Correcto de la "Y"</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed; 
+        }
+
+        /* Glassmorphism Styles */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .glass-sidebar {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Animaciones */
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+
+        .pop { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes pop {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Botones Ejercicio 1 */
+        .inline-selector {
+            display: inline-flex;
+            background: #e2e8f0;
+            border-radius: 8px;
+            padding: 4px;
+            gap: 6px;
+            margin: 0 5px;
+            vertical-align: middle;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .inline-btn {
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #ffffff;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .inline-btn:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+            transform: translateY(-1px);
+        }
+        .inline-btn.selected {
+            background: #6a11cb;
+            color: white;
+            border-color: #6a11cb;
+            box-shadow: 0 4px 6px rgba(106, 17, 203, 0.4);
+            transform: translateY(0);
+        }
+
+        /* Inputs Ejercicio 3 */
+        .blank-input {
+            width: 50px;
+            text-align: center;
+            border: none;
+            border-bottom: 3px solid #cbd5e1;
+            background: transparent;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #6a11cb;
+            transition: border-color 0.3s;
+            padding: 0 5px;
+        }
+        .blank-input:focus {
+            outline: none;
+            border-bottom-color: #6a11cb;
+        }
+        .blank-input.correct { border-bottom-color: #10b981; color: #10b981; }
+        .blank-input.incorrect { border-bottom-color: #ef4444; color: #ef4444; }
+
+        /* Flip Card Ejercicio 4 */
+        .word-flip {
+            display: inline-block;
+            cursor: pointer;
+            perspective: 1000px;
+            margin: 0 4px;
+            vertical-align: middle;
+        }
+        .word-flip-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            display: inline-block;
+            padding: 2px 8px;
+            font-weight: bold;
+        }
+        .word-flip.flipped .word-flip-inner {
+            transform: rotateY(180deg);
+        }
+        .word-front, .word-back {
+            backface-visibility: hidden;
+            border-radius: 6px;
+            padding: 2px 10px;
+        }
+        .word-front {
+            background: #fee2e2;
+            color: #ef4444;
+            border: 1px dashed #ef4444;
+        }
+        .word-back {
+            background: #d1fae5;
+            color: #10b981;
+            transform: rotateY(180deg);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #10b981;
+        }
+
+        /* Constructor Ejercicio 5 */
+        .word-chip {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.1s, box-shadow 0.1s;
+            user-select: none;
+            display: inline-block;
+        }
+        .word-chip:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .word-chip:active {
+            transform: translateY(0);
+        }
+        .sentence-area {
+            min-height: 60px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            background: rgba(255,255,255,0.5);
+            transition: border-color 0.3s;
+        }
+        .sentence-area.has-content {
+            border-style: solid;
+            border-color: #6a11cb;
+        }
+        .word-bank {
+            min-height: 60px;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        /* Opciones Múltiples Ex 2 */
+        .option-card {
+            transition: all 0.2s ease;
+            border: 2px solid #e2e8f0;
+        }
+        .option-card:hover {
+            border-color: #8b5cf6;
+            transform: translateY(-2px);
+        }
+        .option-card.selected {
+            border-color: #6a11cb;
+            background-color: #f3e8ff;
+        }
+        .option-card.correct { border-color: #10b981; background-color: #d1fae5; }
+        .option-card.incorrect { border-color: #ef4444; background-color: #fee2e2; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 4px; }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex items-center justify-center p-2 sm:p-4 md:p-6">
+
+    <div class="glass-panel w-full h-full max-h-[95vh] max-w-5xl rounded-2xl md:rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative">
+        
+        <!-- BARRA LATERAL -->
+        <aside class="glass-sidebar w-full md:w-1/3 p-4 md:p-6 flex flex-col border-b md:border-b-0 md:border-r border-gray-200 flex-shrink-0 z-10 md:overflow-y-auto">
+            <div class="mb-4 text-center md:text-left">
+                <h1 class="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-500 mb-1">
+                    Uso de la "Y"
+                </h1>
+                <p class="text-gray-600 text-xs md:text-sm">Práctica interactiva de conjunciones.</p>
+            </div>
+
+            <div class="bg-gradient-to-r from-purple-500 to-indigo-500 rounded-2xl p-4 text-white shadow-lg mb-4 md:mb-6">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold"><i class="fas fa-trophy text-yellow-300 mr-2"></i>Puntos</span>
+                    <span class="text-2xl font-black" id="score-display">0</span>
+                </div>
+                <div class="w-full bg-white/30 rounded-full h-2 mb-1">
+                    <div id="progress-bar" class="bg-yellow-300 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div class="text-xs text-right text-purple-100">Ejercicio <span id="exercise-counter">1</span> de 5</div>
+            </div>
+
+            <details class="md:hidden mb-2 bg-white rounded-xl shadow-sm border border-gray-100 group">
+                <summary class="font-bold text-purple-700 p-3 cursor-pointer list-none flex justify-between items-center text-sm">
+                    <span><i class="fas fa-book-open mr-2"></i> Ver Reglas</span>
+                    <i class="fas fa-chevron-down transform group-open:rotate-180 transition-transform"></i>
+                </summary>
+                <div class="p-3 pt-0 text-xs text-gray-700 space-y-2 border-t border-gray-100">
+                    <p>• La "Y" se convierte en "E" antes de "i" o "hi".</p>
+                    <p>• Se mantiene como "Y" en enumeraciones regulares.</p>
+                    <p>• No cambia si "i" o "hi" inician un diptongo (ej. hielo).</p>
+                </div>
+            </details>
+
+            <div class="hidden md:flex bg-white rounded-xl shadow-sm p-5 border border-purple-100 flex-1 flex-col">
+                <h3 class="font-bold text-purple-700 mb-3 flex items-center">
+                    <i class="fas fa-book-open mr-2 text-xl"></i> Reglas Clave
+                </h3>
+                <ul class="text-sm text-gray-700 space-y-3 flex-1">
+                    <li class="flex items-start"><i class="fas fa-check text-green-500 mt-1 mr-2"></i> La "Y" se convierte en "E" cuando la palabra siguiente comienza con "i" o "hi".</li>
+                    <li class="flex items-start"><i class="fas fa-check text-green-500 mt-1 mr-2"></i> Se mantiene como "Y" cuando une elementos que no inician con ese sonido.</li>
+                    <li class="flex items-start"><i class="fas fa-exclamation-circle text-orange-400 mt-1 mr-2"></i> No se cambia por "E" cuando la "i" o "hi" forman un diptongo (ej. h<b>ie</b>lo, h<b>ie</b>rba).</li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- ÁREA PRINCIPAL -->
+        <main class="w-full md:w-2/3 p-4 md:p-8 flex flex-col flex-1 overflow-y-auto bg-slate-50/50">
+            
+            <div id="exercises-container" class="flex-1">
+                
+                <!-- Ejercicio 1 -->
+                <div class="exercise-section fade-in flex flex-col h-full" id="ex-1">
+                    <div>
+                        <span class="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold mb-3 uppercase tracking-wide">Desafío 1</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-1">Selecciona la conjunción correcta</h2>
+                        <p class="text-sm md:text-base text-gray-500 mb-6">Haz clic en el botón correcto para cada oración.</p>
+                    </div>
+
+                    <div class="space-y-4 bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100 text-base md:text-lg text-gray-700">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span>1. Padre</span>
+                            <div class="inline-selector ex1-group" data-correct="e">
+                                <button class="inline-btn" data-val="y">Y</button>
+                                <button class="inline-btn" data-val="e">E</button>
+                            </div>
+                            <span>hijo fueron al partido.</span>
+                        </div>
+                        <hr class="border-gray-100">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span>2. Compré manzanas</span>
+                            <div class="inline-selector ex1-group" data-correct="y">
+                                <button class="inline-btn" data-val="y">Y</button>
+                                <button class="inline-btn" data-val="e">E</button>
+                            </div>
+                            <span>naranjas.</span>
+                        </div>
+                        <hr class="border-gray-100">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span>3. Estudié matemáticas</span>
+                            <div class="inline-selector ex1-group" data-correct="e">
+                                <button class="inline-btn" data-val="y">Y</button>
+                                <button class="inline-btn" data-val="e">E</button>
+                            </div>
+                            <span>historia.</span>
+                        </div>
+                        <hr class="border-gray-100">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span>4. Me gusta el café</span>
+                            <div class="inline-selector ex1-group" data-correct="y">
+                                <button class="inline-btn" data-val="y">Y</button>
+                                <button class="inline-btn" data-val="e">E</button>
+                            </div>
+                            <span>el té.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ejercicio 2 -->
+                <div class="exercise-section fade-in hidden" id="ex-2">
+                    <span class="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold mb-3 uppercase tracking-wide">Desafío 2</span>
+                    <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-1">Encuentra los errores</h2>
+                    <p class="text-sm md:text-base text-gray-500 mb-6">Selecciona <b>todas</b> las oraciones que contengan un error gramatical.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="option-card bg-white p-4 rounded-xl cursor-pointer ex2-card" data-is-error="true">
+                            <p class="font-medium text-gray-800">María y Ignacio fueron al cine.</p>
+                        </div>
+                        <div class="option-card bg-white p-4 rounded-xl cursor-pointer ex2-card" data-is-error="false">
+                            <p class="font-medium text-gray-800">Compré pan, leche y huevos.</p>
+                        </div>
+                        <div class="option-card bg-white p-4 rounded-xl cursor-pointer ex2-card" data-is-error="true">
+                            <p class="font-medium text-gray-800">Estudié inglés y italiano.</p>
+                        </div>
+                        <div class="option-card bg-white p-4 rounded-xl cursor-pointer ex2-card" data-is-error="false">
+                            <p class="font-medium text-gray-800">Viajé a Francia e Italia.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ejercicio 3 -->
+                <div class="exercise-section fade-in hidden" id="ex-3">
+                    <span class="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold mb-3 uppercase tracking-wide">Desafío 3</span>
+                    <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-1">Completa la oración</h2>
+                    <p class="text-sm md:text-base text-gray-500 mb-6">Escribe la letra correcta (<b>Y</b> o <b>E</b>) usando tu teclado.</p>
+
+                    <div class="space-y-3">
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 text-base md:text-lg text-gray-700">
+                            Me gusta el fútbol <input type="text" class="blank-input uppercase ex3-input" maxlength="1" data-correct="Y"> el básquetbol.
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 text-base md:text-lg text-gray-700">
+                            Visité México <input type="text" class="blank-input uppercase ex3-input" maxlength="1" data-correct="Y"> Honduras.
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 text-base md:text-lg text-gray-700">
+                            Estudié biología <input type="text" class="blank-input uppercase ex3-input" maxlength="1" data-correct="E"> hidrología.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ejercicio 4 -->
+                <div class="exercise-section fade-in hidden" id="ex-4">
+                    <span class="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold mb-3 uppercase tracking-wide">Desafío 4</span>
+                    <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-1">Corrección Mágica</h2>
+                    <p class="text-sm md:text-base text-gray-500 mb-6">Haz clic sobre las conjunciones en <b>rojo</b> para corregirlas.</p>
+
+                    <div class="space-y-3 text-base md:text-lg">
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-wrap items-center">
+                            <span>Ana</span>
+                            <div class="word-flip ex4-flip" data-corrected="false">
+                                <div class="word-flip-inner">
+                                    <div class="word-front">y</div>
+                                    <div class="word-back">e</div>
+                                </div>
+                            </div>
+                            <span>Isabel son hermanas.</span>
+                        </div>
+                        
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-wrap items-center">
+                            <span>Compré pan</span>
+                            <div class="word-flip ex4-flip" data-corrected="false">
+                                <div class="word-flip-inner">
+                                    <div class="word-front">e</div>
+                                    <div class="word-back">y</div>
+                                </div>
+                            </div>
+                            <span>mantequilla.</span>
+                        </div>
+
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-wrap items-center">
+                            <span>Estudié francés</span>
+                            <div class="word-flip ex4-flip" data-corrected="false">
+                                <div class="word-flip-inner">
+                                    <div class="word-front">y</div>
+                                    <div class="word-back">e</div>
+                                </div>
+                            </div>
+                            <span>inglés.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ejercicio 5 (Mejorado) -->
+                <div class="exercise-section fade-in hidden" id="ex-5">
+                    <span class="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold mb-3 uppercase tracking-wide">Desafío Final</span>
+                    <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-1">Construye la oración</h2>
+                    <p class="text-sm md:text-base text-gray-500 mb-4">Toca las palabras en orden para formar la oración gramaticalmente correcta.</p>
+
+                    <div class="mb-6 build-container" data-correct="María,e,Ignacio,estudiaron,matemáticas,y,español">
+                        <div class="sentence-area mb-3"></div>
+                        <div class="word-bank"></div>
+                    </div>
+
+                    <!-- Nueva oración que prueba la regla regular y la excepción del diptongo -->
+                    <div class="build-container" data-correct="Padre,e,hijo,compraron,azúcar,y,hielo">
+                        <div class="sentence-area mb-3"></div>
+                        <div class="word-bank"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Feedback Area Mejorado -->
+            <div id="feedback-area" class="mt-4 hidden p-3 md:p-4 rounded-xl text-center border-2 pop flex flex-col md:flex-row items-center gap-3">
+                <div id="feedback-icon" class="text-3xl"></div>
+                <div class="text-left">
+                    <h4 id="feedback-title" class="font-extrabold text-sm md:text-base uppercase tracking-wider"></h4>
+                    <p id="feedback-text" class="text-sm md:text-base font-medium mt-1"></p>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row gap-3 justify-between items-center shrink-0">
+                <button id="btn-reset" class="px-5 py-2 md:py-3 rounded-full text-gray-500 hover:bg-gray-100 font-semibold transition-colors w-full sm:w-auto text-sm md:text-base">
+                    <i class="fas fa-undo mr-2"></i> Reiniciar
+                </button>
+                <button id="btn-check" class="px-6 py-2 md:py-3 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all w-full sm:w-auto text-sm md:text-base">
+                    Comprobar Respuesta
+                </button>
+            </div>
+            
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let currentExercise = 1;
+            const totalExercises = 5;
+            let score = 0;
+            const scorePerEx = 20;
+
+            const DOM = {
+                btnCheck: document.getElementById('btn-check'),
+                btnReset: document.getElementById('btn-reset'),
+                scoreDisplay: document.getElementById('score-display'),
+                progressBar: document.getElementById('progress-bar'),
+                exerciseCounter: document.getElementById('exercise-counter'),
+                feedbackArea: document.getElementById('feedback-area'),
+                feedbackIcon: document.getElementById('feedback-icon'),
+                feedbackTitle: document.getElementById('feedback-title'),
+                feedbackText: document.getElementById('feedback-text'),
+                sections: document.querySelectorAll('.exercise-section')
+            };
+
+            initInteractions();
+            initExercise5();
+
+            function initInteractions() {
+                // Ex 1
+                document.querySelectorAll('.ex1-group .inline-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const parent = e.target.closest('.ex1-group');
+                        parent.querySelectorAll('.inline-btn').forEach(b => b.classList.remove('selected'));
+                        e.target.classList.add('selected');
+                    });
+                });
+
+                // Ex 2
+                document.querySelectorAll('.ex2-card').forEach(card => {
+                    card.addEventListener('click', (e) => {
+                        e.currentTarget.classList.toggle('selected');
+                    });
+                });
+
+                // Ex 4
+                document.querySelectorAll('.ex4-flip').forEach(flip => {
+                    flip.addEventListener('click', (e) => {
+                        const el = e.currentTarget;
+                        el.classList.add('flipped');
+                        el.dataset.corrected = "true";
+                        el.style.pointerEvents = "none";
+                    });
+                });
+
+                DOM.btnCheck.addEventListener('click', handleCheck);
+                DOM.btnReset.addEventListener('click', resetApp);
+            }
+
+            function initExercise5() {
+                const s1Words = ['matemáticas', 'español', 'y', 'María', 'Ignacio', 'estudiaron', 'e'].sort(() => Math.random() - 0.5);
+                const s2Words = ['Padre', 'hielo', 'compraron', 'hijo', 'azúcar', 'y', 'e'].sort(() => Math.random() - 0.5);
+                
+                const containers = document.querySelectorAll('.build-container');
+                
+                populateBank(containers[0], s1Words);
+                populateBank(containers[1], s2Words);
+
+                function populateBank(container, words) {
+                    const bank = container.querySelector('.word-bank');
+                    const area = container.querySelector('.sentence-area');
+                    bank.innerHTML = '';
+                    area.innerHTML = '';
+                    area.classList.remove('has-content');
+
+                    words.forEach(w => {
+                        const chip = document.createElement('div');
+                        chip.className = 'word-chip pop';
+                        chip.textContent = w;
+                        
+                        chip.addEventListener('click', () => {
+                            if (chip.parentElement === bank) {
+                                area.appendChild(chip);
+                                area.classList.add('has-content');
+                            } else {
+                                bank.appendChild(chip);
+                                if(area.children.length === 0) area.classList.remove('has-content');
+                            }
+                        });
+                        bank.appendChild(chip);
+                    });
+                }
+            }
+
+            function handleCheck() {
+                if (DOM.btnCheck.textContent.includes("Siguiente") || DOM.btnCheck.textContent.includes("Finalizar")) {
+                    goToNext();
+                    return;
+                }
+
+                let isCorrect = false;
+                
+                switch(currentExercise) {
+                    case 1: isCorrect = checkEx1(); break;
+                    case 2: isCorrect = checkEx2(); break;
+                    case 3: isCorrect = checkEx3(); break;
+                    case 4: isCorrect = checkEx4(); break;
+                    case 5: isCorrect = checkEx5(); break;
+                }
+
+                showFeedback(isCorrect, currentExercise);
+
+                if (isCorrect) {
+                    score += scorePerEx;
+                    updateUI();
+                    fireConfetti(currentExercise === totalExercises);
+                    
+                    if (currentExercise < totalExercises) {
+                        DOM.btnCheck.innerHTML = 'Siguiente Desafío <i class="fas fa-arrow-right ml-2"></i>';
+                        DOM.btnCheck.classList.replace('from-blue-600', 'from-green-500');
+                        DOM.btnCheck.classList.replace('to-purple-600', 'to-emerald-600');
+                    } else {
+                        DOM.btnCheck.innerHTML = '<i class="fas fa-star mr-2"></i> Actividad Completada';
+                        DOM.btnCheck.disabled = true;
+                    }
+                } else {
+                    const activeSection = document.getElementById(`ex-${currentExercise}`);
+                    activeSection.classList.remove('shake');
+                    void activeSection.offsetWidth; 
+                    activeSection.classList.add('shake');
+                }
+            }
+
+            function checkEx1() {
+                const groups = document.querySelectorAll('#ex-1 .ex1-group');
+                let correct = true;
+                groups.forEach(g => {
+                    const selected = g.querySelector('.selected');
+                    if (!selected || selected.dataset.val !== g.dataset.correct) correct = false;
+                });
+                return correct;
+            }
+
+            function checkEx2() {
+                const cards = document.querySelectorAll('#ex-2 .ex2-card');
+                let correct = true;
+                cards.forEach(c => {
+                    const isSelected = c.classList.contains('selected');
+                    const shouldBeSelected = c.dataset.isError === "true";
+                    if (isSelected !== shouldBeSelected) correct = false;
+                    if (shouldBeSelected) c.classList.add(isSelected ? 'correct' : 'incorrect');
+                });
+                return correct;
+            }
+
+            function checkEx3() {
+                const inputs = document.querySelectorAll('#ex-3 .ex3-input');
+                let correct = true;
+                inputs.forEach(input => {
+                    const val = input.value.trim().toUpperCase();
+                    if (val === input.dataset.correct) {
+                        input.classList.add('correct');
+                        input.classList.remove('incorrect');
+                    } else {
+                        input.classList.add('incorrect');
+                        input.classList.remove('correct');
+                        correct = false;
+                    }
+                });
+                return correct;
+            }
+
+            function checkEx4() {
+                const flips = document.querySelectorAll('#ex-4 .ex4-flip');
+                let correct = true;
+                flips.forEach(f => {
+                    if (f.dataset.corrected !== "true") correct = false;
+                });
+                return correct;
+            }
+
+            function checkEx5() {
+                const containers = document.querySelectorAll('#ex-5 .build-container');
+                let correct = true;
+                containers.forEach(c => {
+                    const expectedStr = c.dataset.correct;
+                    const chips = Array.from(c.querySelectorAll('.sentence-area .word-chip'));
+                    const currentStr = chips.map(chip => chip.textContent).join(',');
+                    if (currentStr !== expectedStr) correct = false;
+                });
+                return correct;
+            }
+
+            // --- SISTEMA DE FEEDBACK ENRIQUECIDO ---
+            function showFeedback(isCorrect, exerciseNum) {
+                DOM.feedbackArea.classList.remove('hidden', 'pop');
+                void DOM.feedbackArea.offsetWidth;
+                DOM.feedbackArea.classList.add('pop');
+
+                let title = "";
+                let msg = "";
+
+                if (isCorrect) {
+                    DOM.feedbackArea.className = "mt-4 p-3 md:p-4 rounded-xl text-center border-2 pop bg-green-50 border-green-400 text-green-800 flex flex-col md:flex-row items-center gap-3";
+                    DOM.feedbackIcon.innerHTML = '<i class="fas fa-check-circle text-green-500"></i>';
+                    title = "¡Excelente trabajo!";
+                    
+                    switch(exerciseNum) {
+                        case 1: msg = "Lograste identificar cuándo la 'Y' debe cambiar a 'E' para evitar la cacofonía sonora."; break;
+                        case 2: msg = "Descubriste las oraciones con choque de vocales. 'y Ignacio' e 'y italiano' suenan mal juntas."; break;
+                        case 3: msg = "Dominas el concepto. Las palabras como 'Honduras' o 'Básquetbol' no interfieren con la 'Y'."; break;
+                        case 4: msg = "¡Correcciones perfectas! Evitaste el choque de la 'i' cambiando la conjunción correctamente."; break;
+                        case 5: msg = "¡Sintaxis perfecta! Has demostrado dominar las reglas, incluyendo la excepción de los diptongos como en 'hielo'."; break;
+                    }
+                } else {
+                    DOM.feedbackArea.className = "mt-4 p-3 md:p-4 rounded-xl text-center border-2 pop bg-red-50 border-red-400 text-red-800 flex flex-col md:flex-row items-center gap-3";
+                    DOM.feedbackIcon.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
+                    title = "Hay detalles por corregir";
+
+                    switch(exerciseNum) {
+                        case 1: msg = "Recuerda: usamos 'E' antes de palabras que empiezan con el sonido /i/ (como 'hijo' o 'historia')."; break;
+                        case 2: msg = "Las oraciones incorrectas son aquellas donde la 'y' está justo antes de una palabra que inicia con 'i' o 'hi'. ¡Búscalas!"; break;
+                        case 3: msg = "Revisa de nuevo. Si la palabra siguiente empieza con 'hi' (como 'hidrología'), obligatoriamente lleva 'E'."; break;
+                        case 4: msg = "Asegúrate de cambiar a 'e' solo si la siguiente palabra empieza con 'i' o 'hi'. ¡Dale la vuelta a las palabras correctas!"; break;
+                        case 5: msg = "El orden es clave. La 'e' va antes de 'Ignacio' y de 'hijo'. Pero cuidado, 'hielo' empieza con diptongo, ¡así que usa 'y'!"; break;
+                    }
+                }
+
+                DOM.feedbackTitle.textContent = title;
+                DOM.feedbackText.textContent = msg;
+                
+                DOM.feedbackArea.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }
+
+            function hideFeedback() {
+                DOM.feedbackArea.classList.add('hidden');
+            }
+
+            function goToNext() {
+                DOM.sections[currentExercise - 1].classList.add('hidden');
+                currentExercise++;
+                DOM.sections[currentExercise - 1].classList.remove('hidden');
+                
+                hideFeedback();
+                updateUI();
+                
+                DOM.btnCheck.innerHTML = 'Comprobar Respuesta';
+                DOM.btnCheck.classList.replace('from-green-500', 'from-blue-600');
+                DOM.btnCheck.classList.replace('to-emerald-600', 'to-purple-600');
+                
+                document.querySelector('main').scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            function updateUI() {
+                DOM.scoreDisplay.textContent = score;
+                DOM.progressBar.style.width = `${(score / (totalExercises * scorePerEx)) * 100}%`;
+                DOM.exerciseCounter.textContent = Math.min(currentExercise, totalExercises);
+            }
+
+            function resetApp() {
+                currentExercise = 1;
+                score = 0;
+                
+                DOM.sections.forEach((sec, i) => {
+                    if(i === 0) sec.classList.remove('hidden');
+                    else sec.classList.add('hidden');
+                });
+
+                document.querySelectorAll('.inline-btn').forEach(b => b.classList.remove('selected'));
+                document.querySelectorAll('.ex2-card').forEach(c => c.classList.remove('selected', 'correct', 'incorrect'));
+                document.querySelectorAll('.ex3-input').forEach(i => { i.value = ''; i.classList.remove('correct', 'incorrect'); });
+                document.querySelectorAll('.ex4-flip').forEach(f => { f.classList.remove('flipped'); f.dataset.corrected = "false"; f.style.pointerEvents = "auto"; });
+                initExercise5();
+
+                hideFeedback();
+                updateUI();
+                
+                DOM.btnCheck.disabled = false;
+                DOM.btnCheck.innerHTML = 'Comprobar Respuesta';
+                DOM.btnCheck.classList.replace('from-green-500', 'from-blue-600');
+                DOM.btnCheck.classList.replace('to-emerald-600', 'to-purple-600');
+            }
+
+            function fireConfetti(isFinal) {
+                const count = isFinal ? 200 : 50;
+                const spread = isFinal ? 100 : 60;
+                confetti({
+                    particleCount: count,
+                    spread: spread,
+                    origin: { y: 0.6 },
+                    colors: ['#6a11cb', '#2575fc', '#10b981', '#f59e0b']
+                });
+            }
+        });
+    </script>
+</body>
+</html>

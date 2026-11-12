@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🕵️‍♂️ CAZADOR DE LETRAS: La Misión de la V y la S</title>
+    <style>
+        /* ==========================================================================
+           1. VARIABLES DE DISEÑO, PALETA MINED Y TEMAS DE ACCESIBILIDAD
+           ========================================================================== */
+        :root {
+            --azul-mined: #0056A3;
+            --celeste-mined: #4BB4E6;
+            --blanco: #FFFFFF;
+            --verde-exito: #2ECC71;
+            --amarillo-sol: #F1C40F;
+            --naranja-alerta: #E67E22;
+            --rojo-error: #E74C3C;
+            --oscuro: #2C3E50;
+            --fuente-principal: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --transicion: all 0.3s ease;
+            --escala-fuente: 1rem;
+        }
+
+        .alto-contraste {
+            --azul-mined: #000000;
+            --celeste-mined: #1A1A1A;
+            --verde-exito: #00FF00;
+            --amarillo-sol: #FFFF00;
+            --naranja-alerta: #FF8800;
+            --rojo-error: #FF0000;
+            --oscuro: #FFFFFF;
+            background: #121212 !important;
+            color: #FFFFFF !important;
+        }
+
+        /* ==========================================================================
+           2. ESTILOS BASE Y CONTENEDORES PRINCIPALES
+           ========================================================================== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--fuente-principal);
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            color: #1e293b;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            font-size: var(--escala-fuente);
+        }
+
+        /* Utilidades de Accesibilidad y Animación */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        .vibrar {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+
+        /* Barra Superior de Accesibilidad y Control */
+        .barra-accesibilidad {
+            background: rgba(0, 86, 163, 0.9);
+            color: white;
+            padding: 8px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .controles-accesibilidad button {
+            background: white;
+            border: none;
+            padding: 5px 10px;
+            margin-right: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--azul-mined);
+            font-size: 0.9rem;
+        }
+
+        .controles-accesibilidad button:hover {
+            background: var(--amarillo-sol);
+        }
+
+        /* HUD del Videojuego (Estatus en vivo) */
+        .hud-juego {
+            background: white;
+            padding: 12px 20px;
+            margin: 15px auto;
+            border-radius: 50px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 90%;
+            max-width: 800px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .hud-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .barra-progreso-contenedor {
+            width: 100%;
+            background: #e2e8f0;
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .barra-progreso-relleno {
+            height: 100%;
+            background: var(--verde-exito);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        /* ==========================================================================
+           3. SISTEMA DE CAPAS / ESCENARIOS DE JUEGO
+           ========================================================================== */
+        .pantalla {
+            display: none;
+            flex: 1;
+            padding: 20px;
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pantalla.activa {
+            display: flex;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Pantalla de Bienvenida */
+        .bienvenida-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            border: 4px solid var(--celeste-mined);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .titulo-animado {
+            color: var(--azul-mined);
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px var(--celeste-mined);
+        }
+
+        .subtitulo {
+            color: #64748b;
+            font-style: italic;
+            margin-bottom: 25px;
+        }
+
+        .avatar-bienvenida {
+            font-size: 5rem;
+            animation: bounce 2s infinite;
+            margin: 20px 0;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .btn-principal {
+            background: var(--naranja-alerta);
+            color: white;
+            border: none;
+            padding: 15px 32px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #c25e00;
+            transition: all 0.1s ease;
+            margin: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-principal:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #c25e00;
+        }
+
+        .btn-secundario {
+            background: var(--azul-mined);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #003366;
+            margin: 10px;
+        }
+
+        .btn-secundario:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #003366;
+        }
+
+        /* ==========================================================================
+           4. MAPA DE AVENTURA
+           ========================================================================== */
+        .mapa-contenedor {
+            background: #fef08a; /* Representación visual base de mapa del tesoro */
+            border: 8px solid #ca8a04;
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            min-height: 450px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            position: relative;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.15);
+        }
+
+        .estaciones-mapa {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            max-width: 850px;
+            flex-wrap: wrap;
+            gap: 20px;
+            z-index: 2;
+        }
+
+        .estacion {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            color: #64748b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            border: 4px solid #94a3b8;
+            cursor: not-allowed;
+            position: relative;
+            box-shadow: 0 6px 0 #64748b;
+        }
+
+        .estacion.desbloqueada {
+            background: var(--amarillo-sol);
+            border-color: #d97706;
+            color: #78350f;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #b45309;
+        }
+
+        .estacion.desbloqueada:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #b45309;
+        }
+
+        .estacion.completada {
+            background: var(--verde-exito);
+            border-color: #15803d;
+            color: white;
+            box-shadow: 0 6px 0 #166534;
+        }
+
+        .estacion .meta-tag {
+            position: absolute;
+            bottom: -30px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        /* Globos de Diálogo de Personajes */
+        .contenedor-narrativa {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            width: 100%;
+            border-left: 6px solid var(--azul-mined);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .personaje-icono {
+            font-size: 3rem;
+        }
+
+        .bocadillo-texto {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        /* ==========================================================================
+           5. MECÁNICAS ESPECÍFICAS DE CADA NIVEL (1, 2, 3, 4, FINAL)
+           ========================================================================== */
+        .tarjeta-juego {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        /* Nivel 1: Encuentra la letra correcta */
+        .visualizador-n1 {
+            font-size: 4.5rem;
+            margin: 20px 0;
+            letter-spacing: 2px;
+            font-weight: bold;
+            color: var(--azul-mined);
+        }
+
+        .opciones-letra-grid {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 25px;
+        }
+
+        .btn-opcion-letra {
+            width: 120px;
+            height: 120px;
+            font-size: 3.5rem;
+            font-weight: bold;
+            border-radius: 20px;
+            border: 4px solid #cbd5e1;
+            background: #f8fafc;
+            cursor: pointer;
+            transition: var(--transicion);
+            box-shadow: 0 8px 0 #cbd5e1;
+        }
+
+        .btn-opcion-letra:hover {
+            background: #f0fdf4;
+            border-color: var(--celeste-mined);
+        }
+
+        .btn-opcion-letra:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #cbd5e1;
+        }
+
+        /* Nivel 2: Atrapa las palabras correctas (Caída Libre Controlada) */
+        .arena-caida {
+            width: 100%;
+            height: 380px;
+            background: linear-gradient(to bottom, #bae6fd, #e0f2fe);
+            border: 4px dashed var(--azul-mined);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .palabra-cayendo {
+            position: absolute;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            border: 2px solid var(--azul-mined);
+            animation: descender var(--velocidad-caida, 5s) linear forwards;
+            white-space: nowrap;
+        }
+
+        @keyframes descender {
+            0% { top: -60px; }
+            100% { top: 390px; }
+        }
+
+        /* Nivel 3: Rompecabezas Ortográfico (Drag & Drop) */
+        .contenedor-silabas {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            min-height: 80px;
+            flex-wrap: wrap;
+            padding: 10px;
+            background: #f1f5f9;
+            border-radius: 12px;
+        }
+
+        .silaba-bloque {
+            background: var(--amarillo-sol);
+            color: #78350f;
+            padding: 15px 25px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: grab;
+            box-shadow: 0 4px 0 #d97706;
+            touch-action: none;
+        }
+
+        .zona-destino-puzzle {
+            width: 100%;
+            max-width: 400px;
+            height: 90px;
+            border: 4px dashed #94a3b8;
+            background: #f8fafc;
+            margin: 30px auto;
+            border-radius: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .zona-destino-puzzle.sobre {
+            background: #e0f2fe;
+            border-color: var(--azul-mined);
+        }
+
+        /* Nivel 4 y Final: Formularios y Quizzes */
+        .input-completar {
+            font-size: 2rem;
+            padding: 10px;
+            width: 120px;
+            text-align: center;
+            border: 4px solid var(--azul-mined);
+            border-radius: 12px;
+            margin: 20px 0;
+            text-transform: uppercase;
+        }
+
+        .opciones-quiz-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .opciones-quiz-container { grid-template-columns: 1fr; }
+        }
+
+        .btn-quiz-opcion {
+            background: #f8fafc;
+            border: 3px solid #cbd5e1;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transicion);
+        }
+
+        .btn-quiz-opcion:hover {
+            background: #f0fdf4;
+            border-color: var(--azul-mined);
+        }
+
+        /* Modales de Retroalimentación Pedagógica */
+        .capa-bloqueo {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            padding: 20px;
+        }
+
+        .capa-bloqueo.activa { display: flex; }
+
+        .modal-feedback {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.2);
+            animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popUp {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-feedback.correcto { border-top: 10px solid var(--verde-exito); }
+        .modal-feedback.incorrecto { border-top: 10px solid var(--rojo-error); }
+
+        .feedback-icono { font-size: 4rem; margin-bottom: 15px; }
+
+        .regla-explicacion {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.95rem;
+            color: #475569;
+            text-align: left;
+            border-left: 4px solid var(--celeste-mined);
+        }
+
+        /* Efectos Visuales Especiales (Confeti overlay) */
+        #canvas-efectos {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 300;
+        }
+
+        /* ==========================================================================
+           6. PANELES DE INFORME: DOCENTE Y DIPLOMA (Optimizado para Impresión)
+           ========================================================================== */
+        .seccion-reporte {
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .tabla-reporte {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .tabla-reporte th, .tabla-reporte td {
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .tabla-reporte th { background: #f1f5f9; }
+
+        .tarjeta-diploma {
+            background: #fffdf5;
+            border: 10px double #d97706;
+            padding: 40px;
+            border-radius: 4px;
+            max-width: 750px;
+            width: 100%;
+            text-align: center;
+            margin: 20px 0;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .firma-linea {
+            margin-top: 60px;
+            border-top: 2px solid #94a3b8;
+            display: inline-block;
+            width: 250px;
+            padding-top: 5px;
+            color: #64748b;
+        }
+
+        /* Estilos de Impresión Limpios y Profesionales */
+        @media print {
+            body { background: white; color: black; font-size: 12pt; }
+            .barra-accesibilidad, .hud-juego, .btn-principal, .btn-secundario, .barra-navegacion, button, .no-print {
+                display: none !important;
+            }
+            .pantalla { display: block !important; opacity: 1 !important; transform: none !important; padding: 0; }
+            .seccion-reporte, .tarjeta-diploma {
+                box-shadow: none !important;
+                border: 1px solid black !important;
+                page-break-inside: avoid;
+                margin: 0 auto;
+            }
+            .tarjeta-diploma { border: 6px double #000 !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- CANVAS PARA ANIMACIÓN DE CONFETI Y CELEBRACIONES -->
+    <canvas id="canvas-efectos"></canvas>
+
+    <!-- BARRA SUPERIOR: ACCESIBILIDAD Y CONTROL DE AUDIO -->
+    <header class="barra-accesibilidad" role="banner">
+        <div class="modulo-identificador">
+            <strong>MINED - Primaria Regular</strong> | 3.º y 4.º Grado
+        </div>
+        <div class="controles-accesibilidad" role="toolbar" aria-label="Controles de accesibilidad">
+            <button onclick="controladorAccesibilidad.cambiarTamano(0.1)" aria-label="Aumentar tamaño del texto">A+</button>
+            <button onclick="controladorAccesibilidad.cambiarTamano(-0.1)" aria-label="Disminuir tamaño del texto">A-</button>
+            <button onclick="controladorAccesibilidad.alternarContraste()" aria-label="Alternar alto contraste">Contrastes</button>
+            <button id="btn-audio-global" onclick="controladorAudio.alternarMute()" aria-label="Activar o desactivar sonido">🔊 Sonido: ON</button>
+            <button onclick="enrutarA('pantalla-docente')" class="no-print">📊 Panel Docente</button>
+        </div>
+    </header>
+
+    <!-- HUD PRINCIPAL: ESTADO DE GAMIFICACIÓN EN VIVO -->
+    <section class="hud-juego no-print" id="hud-global" aria-label="Estado del juego">
+        <div class="hud-item" title="Puntos de Experiencia"><span aria-hidden="true">⭐</span> <span id="hud-xp">0</span> XP</div>
+        <div class="hud-item" title="Monedas de Oro"><span aria-hidden="true">🪙</span> <span id="hud-monedas">0</span></div>
+        <div class="hud-item" title="Vidas Restantes" id="contenedor-vidas">
+            <span aria-hidden="true">❤️</span>
+            <span aria-hidden="true">❤️</span>
+            <span aria-hidden="true">❤️</span>
+        </div>
+        <div class="hud-item" style="flex: 1; min-width: 150px;">
+            <div style="width: 100%;">
+                <span id="hud-lbl-progreso">Progreso Global</span>
+                <div class="barra-progreso-contenedor">
+                    <div class="barra-progreso-relleno" id="hud-barra-llenado" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <main id="contenedor-pantallas" role="main">
+
+        <!-- PANTALLA 1: BIENVENIDA / MENÚ PRINCIPAL -->
+        <div id="pantalla-bienvenida" class="pantalla activa">
+            <div class="bienvenida-card">
+                <div class="avatar-bienvenida" aria-hidden="true">🕵️‍♂️</div>
+                <h1 class="titulo-animado">CAZADOR DE LETRAS</h1>
+                <p class="subtitulo">La Misión de la V y la S</p>
+                <p style="margin-bottom: 25px; color: #475569;">¡Hola explorador! El travieso duende Confusín ha revuelto las letras del Reino. ¿Nos ayudas a recuperarlas?</p>
+                
+                <div style="margin-bottom: 15px;">
+                    <label for="nombre-jugador-input" style="display:block; font-weight:bold; margin-bottom:5px;">Escribe tu nombre:</label>
+                    <input type="text" id="nombre-jugador-input" value="Explorador" style="padding:10px; font-size:1.1rem; text-align:center; border-radius:8px; border:2px solid var(--azul-mined); width:80%; max-width:300px;">
+                </div>
+
+                <button class="btn-principal" onclick="sistemaJuego.iniciarJuego()">▶ Comenzar Aventura</button>
+                <div>
+                    <button class="btn-secundario" onclick="mostrarInstrucciones()">📖 Cómo jugar</button>
+                    <button class="btn-secundario" onclick="enrutarA('pantalla-logros')">🏆 Logros</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA 2: MAPA DE NIVELES (OVERWORLD) -->
+        <div id="pantalla-mapa" class="pantalla">
+            <div class="contenedor-narrativa">
+                <div class="personaje-icono" aria-hidden="true">🦉</div>
+                <div class="bocadillo-texto" id="texto-guia-mapa">¡Excelente! Aquí tienes el mapa del Reino. Selecciona el nivel desbloqueado para iniciar tu búsqueda.</div>
+            </div>
+            <div class="mapa-contenedor">
+                <div class="estaciones-mapa">
+                    <button class="estacion desbloqueada" id="btn-estacion-1" onclick="sistemaJuego.cargarNivel(1)">
+                        1 <span class="meta-tag">Bosque (Uso de V)</span>
+                    </button>
+                    <button class="estacion" id="btn-estacion-2" onclick="sistemaJuego.cargarNivel(2)">
+                        2 <span class="meta-tag">Lluvia de Letras</span>
+                    </button>
+                    <button class="estacion" id="btn-estacion-3" onclick="sistemaJuego.cargarNivel(3)">
+                        3 <span class="meta-tag">Rompecabezas</span>
+                    </button>
+                    <button class="estacion" id="btn-estacion-4" onclick="sistemaJuego.cargarNivel(4)">
+                        4 <span class="meta-tag">Completar</span>
+                    </button>
+                    <button class="estacion" id="btn-estacion-5" onclick="sistemaJuego.cargarNivel(5)">
+                        Final <span class="meta-tag">Gran Desafío</span>
+                    </button>
+                </div>
+                <button class="btn-secundario" onclick="enrutarA('pantalla-bienvenida')" style="margin-top: 50px;">⬅ Volver al Menú</button>
+            </div>
+        </div>
+
+        <!-- PANTALLA 3: ENTORNO GENERAL DE EJECUCIÓN DE NIVELES -->
+        <div id="pantalla-juego-activo" class="pantalla">
+            <div class="contenedor-narrativa">
+                <div class="personaje-icono" id="juego-personaje-avatar" aria-hidden="true">🧒</div>
+                <div class="bocadillo-texto" id="juego-personaje-texto">¡Analiza con cuidado y escoge la opción correcta!</div>
+            </div>
+
+            <div class="tarjeta-juego">
+                <h2 id="juego-titulo-nivel">Nivel en Curso</h2>
+                <p id="juego-instrucción-nivel" style="color:#475569; margin-bottom:20px;"></p>
+                
+                <!-- Sub-contenedores dinámicos donde se inyectan las mecánicas específicas -->
+                <div id="dinamico-nivel-1" style="display:none;">
+                    <div class="visualizador-n1" id="n1-palabra-muestra">__aca</div>
+                    <div class="opciones-letra-grid">
+                        <button class="btn-opcion-letra" onclick="sistemaJuego.procesarRespuestaN1('V')">V</button>
+                        <button class="btn-opcion-letra" onclick="sistemaJuego.procesarRespuestaN1('S')">S</button>
+                    </div>
+                </div>
+
+                <div id="dinamico-nivel-2" style="display:none;">
+                    <p style="font-weight:bold; color:var(--azul-mined);">¡Haz clic RÁPIDO solo en las palabras bien escritas!</p>
+                    <div class="arena-caida" id="n2-arena"></div>
+                </div>
+
+                <div id="dinamico-nivel-3" style="display:none;">
+                    <div class="contenedor-silabas" id="n3-origen-silabas"></div>
+                    <div class="zona-destino-puzzle" id="n3-destino" ondragover="event.preventDefault()" ondrop="sistemaJuego.dropPuzzle(event)">
+                        <span style="color:#94a3b8;" id="n3-placeholder">Arrastra las sílabas aquí en orden</span>
+                    </div>
+                    <button class="btn-principal" onclick="sistemaJuego.verificarN3()">Comprobar Palabra</button>
+                </div>
+
+                <div id="dinamico-nivel-4" style="display:none;">
+                    <div class="visualizador-n1" id="n4-palabra-muestra">__iento</div>
+                    <input type="text" id="n4-input-respuesta" class="input-completar" maxlength="1" autofocus autocomplete="off">
+                    <br>
+                    <button class="btn-principal" onclick="sistemaJuego.verificarN4()">Validar</button>
+                </div>
+
+                <div id="dinamico-nivel-5" style="display:none;">
+                    <div style="background: #f1f5f9; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-weight: bold;">
+                        ⏱️ Tiempo restante: <span id="n5-cronometro" style="color:var(--rojo-error);">02:00</span>
+                    </div>
+                    <h3 id="n5-pregunta-texto" style="margin-bottom:20px;">Pregunta del Quiz</h3>
+                    <div class="opciones-quiz-container" id="n5-contenedor-opciones"></div>
+                </div>
+            </div>
+            
+            <button class="btn-secundario" onclick="sistemaJuego.abandonarNivel()" style="margin-top:20px;">🏳️ Salir al Mapa</button>
+        </div>
+
+        <!-- PANTALLA 4: RECUENTO GLOBAL / SISTEMA DE LOGROS -->
+        <div id="pantalla-logros" class="pantalla">
+            <div class="bienvenida-card" style="max-width: 800px;">
+                <h2>🏆 Tus Insignias de Explorador</h2>
+                <p style="margin-bottom:20px;">Completa misiones y demuestra tu maestría ortográfica para desbloquearlas todas.</p>
+                <div id="lista-logros-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:20px;">
+                    <!-- Se rellena dinámicamente -->
+                </div>
+                <button class="btn-principal" onclick="enrutarA('pantalla-bienvenida')" style="margin-top:30px;">Volver</button>
+            </div>
+        </div>
+
+        <!-- PANTALLA 5: PANEL DOCENTE (ANALÍTICAS Y REPORTES) -->
+        <div id="pantalla-docente" class="pantalla">
+            <div class="seccion-reporte">
+                <h2>📊 Panel de Control del Docente</h2>
+                <p>Seguimiento pedagógico y métricas de rendimiento en tiempo real.</p>
+                
+                <table class="tabla-reporte">
+                    <thead>
+                        <tr>
+                            <th>Estudiante</th>
+                            <th>Nivel Máx</th>
+                            <th>Puntaje XP</th>
+                            <th>Aciertos / Errores</th>
+                            <th>% Logro</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td id="rep-nombre">-</td>
+                            <td id="rep-nivel">-</td>
+                            <td id="rep-xp">-</td>
+                            <td id="rep-ratio">-</td>
+                            <td id="rep-porcentaje">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>💡 Recomendaciones Pedagógicas de Refuerzo</h3>
+                <div class="regla-explicacion" id="rep-recomendacion">
+                    No se registran errores suficientes para emitir un diagnóstico. ¡Continúa jugando!
+                </div>
+
+                <div class="no-print" style="margin-top: 20px;">
+                    <button class="btn-principal" onclick="window.print()">🖨️ Imprimir Reporte Docente</button>
+                    <button class="btn-secundario" onclick="enrutarA('pantalla-bienvenida')">Regresar al Juego</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA 6: FIN DE JUEGO / CERTIFICACIÓN (DIPLOMA) -->
+        <div id="pantalla-final" class="pantalla">
+            <div class="contenedor-narrativa">
+                <div class="personaje-icono" aria-hidden="true">🎉</div>
+                <div class="bocadillo-texto">¡Increíble! Has derrotado las confusiones de Confusín y restaurado la paz en el Reino de las Palabras.</div>
+            </div>
+
+            <div class="tarjeta-diploma" id="bloque-diploma">
+                <h1 style="color:var(--azul-mined); font-size:2.4rem; margin-bottom:10px;">DIPLOMA DE HONOR</h1>
+                <p style="font-size:1.2rem; font-style:italic;">Otorgado con orgullo por el Reino de las Palabras a:</p>
+                <h2 id="diploma-nombre-estudiante" style="font-size:2.2rem; color:var(--naranja-alerta); margin:20px 0; border-bottom: 2px dashed #cbd5e1; display:inline-block; padding:0 30px;" contenteditable="true">Explorador</h2>
+                <p style="max-width:550px; margin:0 auto 20px auto; font-size:1.1rem; line-height:1.6;">
+                    Por haber completado con éxito la aventura gamificada de <strong>"Cazador de Letras"</strong>, demostrando un dominio absoluto en el uso correcto de las reglas ortográficas de la <strong>V</strong> y la <strong>S</strong>.
+                </p>
+                <div style="display:flex; justify-content:space-around; margin-top:30px; font-size:0.95rem; color:#475569;">
+                    <div>
+                        <strong>Puntaje de Victory:</strong> <span id="diploma-xp">0</span> XP<br>
+                        <strong>Fecha de Emisión:</strong> <span id="diploma-fecha">--/--/----</span>
+                    </div>
+                    <div>
+                        <div class="firma-linea">Firma del Docente / Tutor</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="no-print" style="margin-top:20px;">
+                <button class="btn-principal" onclick="window.print()">🖨️ Imprimir / Guardar PDF del Diploma</button>
+                <button class="btn-secundario" onclick="sistemaJuego.reiniciarTodo()">🔄 Jugar de Nuevo</button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- INTERFAZ DE DIÁLOGOS DE RETROALIMENTACIÓN (MODAL) -->
+    <div class="capa-bloqueo" id="modal-retroalimentacion" role="dialog" aria-modal="true">
+        <div class="modal-feedback" id="modal-feedback-contenido">
+            <div class="feedback-icono" id="feedback-icono">✓</div>
+            <h3 id="feedback-titulo" style="font-size:1.6rem; margin-bottom:10px;">¡Excelente!</h3>
+            <p id="feedback-texto-principal" style="font-size:1.1rem; margin-bottom:10px;"></p>
+            <div class="regla-explicacion" id="feedback-regla">Regla ortográfica aplicada.</div>
+            <button class="btn-principal" id="btn-siguiente-accion" onclick="sistemaJuego.cerrarFeedback()">Siguiente</button>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+       7. LÓGICA DE NEGOCIO Y MOTOR DE JUEGO (JAVASCRIPT ES6)
+       ========================================================================== */ -->
+    <script>
+        /**
+         * BANCO DE PALABRAS Y REGLAS ORTOGRÁFICAS (Soporta la carga dinámica de reactivos)
+         */
+        const BANCO_ORTOGRAFICO = {
+            v: [
+                { palabra: "vaca", pista: "__aca", regla: "Se escribe con V. Es un sustantivo común que designa a este animal." },
+                { palabra: "vaso", pista: "__aso", regla: "Se escribe con V. Los utensilios para beber líquidos comunes suelen iniciar con V." },
+                { palabra: "vela", pista: "__ela", regla: "Se escribe con V de forma correcta." },
+                { palabra: "ventana", pista: "__entana", regla: "Se escribe con V de forma correcta." },
+                { palabra: "volcán", pista: "__olcán", regla: "Se escribe con V de forma correcta." },
+                { palabra: "viento", pista: "__iento", regla: "Se escribe con V de forma correcta." },
+                { palabra: "viaje", pista: "__iaje", regla: "Se escribe con V de forma correcta." },
+                { palabra: "vestido", pista: "__estido", regla: "Se escribe con V de forma correcta." },
+                { palabra: "invierno", pista: "in__ierno", regla: "Se escribe V después de la letra N (in-vierno)." },
+                { palabra: "universo", pista: "uni__erso", regla: "Se escriben con V las palabras terminadas en -verso." },
+                // NUEVOS EJERCICIOS INCORPORADOS CON LA REGLA DE LA V
+                { palabra: "avión", pista: "a__ión", regla: "Se escribe con V. Las palabras con la sílaba medial o fonema de uso común como avión emplean V." },
+                { palabra: "huevos", pista: "hue__os", regla: "Se escribe con V. Las palabras que contienen el diptongo 'ue' seguido de sonido /b/ se escriben con V." },
+                { palabra: "viento", pista: "__iento", regla: "Se escribe con V al inicio en sustantivos relacionados a fenómenos climáticos." }
+            ],
+            s: [
+                { palabra: "sapo", pista: "__apo", regla: "Se escribe con S al inicio de la palabra de forma correcta." },
+                { palabra: "silla", pista: "__illa", regla: "Se escribe con S de forma correcta." },
+                { palabra: "sol", pista: "__ol", regla: "Se escribe con S de forma correcta." },
+                { palabra: "serpiente", pista: "__erpiente", regla: "Se escribe con S al inicio de la palabra de forma correcta." },
+                { palabra: "sombrero", pista: "__ombrero", regla: "Se escribe con S de forma correcta." },
+                { palabra: "semilla", pista: "__emilla", regla: "Se escribe con S de forma correcta." },
+                { palabra: "sonrisa", pista: "__onrisa", regla: "Se escribe con S de forma correcta." },
+                { palabra: "salón", pista: "__alón", regla: "Se escribe con S de forma correcta." },
+                { palabra: "silencio", pista: "__ilencio", regla: "Se escribe con S de forma correcta." },
+                { palabra: "sabio", pista: "__abio", regla: "Se escribe con S de forma correcta." }
+            ],
+            distractoras: ["saca", "savón", "sela", "vol", "biento", "zapo", "baca", "bela", "abión", "huebos"]
+        };
+
+        const LOGROS_SISTEMA = [
+            { id: "novato", titulo: "Explorador Novato", desc: "Comenzaste tu aventura en el Reino.", icono: "🏅", obtenido: false },
+            { id: "n1", titulo: "Maestro de la V", desc: "Superaste con éxito el nivel del bosque.", icono: "🌲", obtenido: false },
+            { id: "n2", titulo: "Detective Veloz", desc: "Atrapaste palabras al vuelo.", icono: "⚡", obtenido: false },
+            { id: "n3", titulo: "Constructor de Palabras", desc: "Armaste los rompecabezas ortográficos.", icono: "🧩", obtenido: false },
+            { id: "guardian", titulo: "Gardián de las Letras", desc: "Completaste el reto de rellenar palabras.", icono: "🛡️", obtenido: false },
+            { id: "campeon", titulo: "Campeón Ortográfico", desc: "Dominaste el Gran Desafío Final de la V y la S.", icono: "👑", obtenido: false }
+        ];
+
+        /**
+         * MÓDULO DE ACCESIBILIDAD (Fines inclusivos, control de contrastes y escalas)
+         */
+        const controladorAccesibilidad = {
+            alternarContraste() {
+                document.body.classList.toggle('alto-contraste');
+            },
+            cambiarTamano(factor) {
+                let actual = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--escala-fuente')) || 1;
+                actual += factor;
+                if(actual >= 0.8 && actual <= 1.6) {
+                    document.documentElement.style.setProperty('--escala-fuente', actual + 'rem');
+                }
+            }
+        };
+
+        /**
+         * MÓDULO DE AUDIO Y SÍNTESIS DE VOZ (SpeechSynthesis API nativa sin internet)
+         */
+        const controladorAudio = {
+            mute: false,
+            ctx: null,
+
+            inicializar() {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            },
+            alternarMute() {
+                this.mute = !this.mute;
+                document.getElementById('btn-audio-global').innerText = this.mute ? "🔇 Sonido: OFF" : "🔊 Sonido: ON";
+            },
+            reproducirTono(frecuencia, tipo, duracion) {
+                if (this.mute) return;
+                try {
+                    if(!this.ctx) this.inicializar();
+                    let osc = this.ctx.createOscillator();
+                    let gain = this.ctx.createGain();
+                    osc.type = tipo;
+                    osc.frequency.setValueAtTime(frecuencia, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duracion);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duracion);
+                } catch(e) { console.log("AudioContext no iniciado aún."); }
+            },
+            correcto() { this.reproducirTono(523.25, 'triangle', 0.3); }, // Nota Do
+            incorrecto() { this.reproducirTono(196.00, 'sawtooth', 0.4); }, // Nota Sol baja
+            narrar(texto) {
+                if (this.mute) return;
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    let enunciado = new SpeechSynthesisUtterance(texto);
+                    enunciado.lang = 'es-ES';
+                    enunciado.rate = 0.95;
+                    window.speechSynthesis.speak(enunciado);
+                }
+            }
+        };
+
+        /**
+         * MOTOR PRINCIPAL DEL JUEGO (Arquitectura de estado y control de flujo)
+         */
+        const sistemaJuego = {
+            // Variables de Estado del Jugador
+            nombreJugador: "Explorador",
+            xp: 0,
+            monedas: 0,
+            vidas: 3,
+            nivelMaximoDesbloqueado: 1,
+            
+            // Estados Internos de Control
+            nivelActual: 0,
+            subFaseActual: 0,
+            itemActualData: null,
+            conteoAciertosGlobal: 0,
+            conteoErroresGlobal: 0,
+            tiempoInicioAbsoluto: null,
+            cronometroN5Interval: null,
+            puzzleSilabasSeleccionadas: [],
+
+            iniciarJuego() {
+                let inputNom = document.getElementById('nombre-jugador-input').value.trim();
+                if(inputNom) this.nombreJugador = inputNom;
+                this.tiempoInicioAbsoluto = new Date();
+                this.concederLogro("novato");
+                enrutarA('pantalla-mapa');
+                controladorAudio.narrar("¡Bienvenido al mapa del reino! Selecciona tu primera misión.");
+            },
+
+            actualizarHUD() {
+                document.getElementById('hud-xp').innerText = this.xp;
+                document.getElementById('hud-monedas').innerText = this.monedas;
+                
+                // Actualizar Vidas Gráficas
+                let contenedorVidas = document.getElementById('contenedor-vidas');
+                contenedorVidas.innerHTML = '';
+                for(let i=0; i<3; i++) {
+                    let corazon = document.createElement('span');
+                    corazon.innerHTML = i < this.vidas ? '❤️ ' : '🖤 ';
+                    contenedorVidas.appendChild(corazon);
+                }
+
+                // Barra de progreso calculada según niveles completados
+                let pct = ((this.nivelMaximoDesbloqueado - 1) / 5) * 100;
+                document.getElementById('hud-barra-llenado').style.width = pct + "%";
+                document.getElementById('hud-barra-llenado').setAttribute('aria-valuenow', pct);
+            },
+
+            cargarNivel(numeroNivel) {
+                if(numeroNivel > this.nivelMaximoDesbloqueado) {
+                    controladorAudio.narrar("Este nivel está bloqueado. Supera las misiones anteriores.");
+                    alert("🔒 Debes completar los niveles anteriores primero.");
+                    return;
+                }
+                
+                this.nivelActual = numeroNivel;
+                this.subFaseActual = 0;
+                this.actualizarHUD();
+                
+                // Ocultar sub-contenedores
+                for(let i=1; i<=5; i++) {
+                    document.getElementById(`dinamico-nivel-${i}`).style.display = 'none';
+                }
+                
+                enrutarA('pantalla-juego-activo');
+                document.getElementById(`dinamico-nivel-${numeroNivel}`).style.display = 'block';
+
+                // Configuración específica de la interfaz de cada nivel
+                switch(numeroNivel) {
+                    case 1:
+                        document.getElementById('juego-titulo-nivel').innerText = "Misión 1: El Bosque de las Letras";
+                        document.getElementById('juego-instrucción-nivel').innerText = "Descubre si la palabra oculta lleva la letra V o la S.";
+                        document.getElementById('juego-personaje-avatar').innerText = "🐿️";
+                        this.ejecutarFaseN1();
+                        break;
+                    case 2:
+                        document.getElementById('juego-titulo-nivel').innerText = "Misión 2: Lluvia de Palabras";
+                        document.getElementById('juego-instrucción-nivel').innerText = "Las palabras caen. Haz clic solo en aquellas que estén correctamente escritas.";
+                        document.getElementById('juego-personaje-avatar').innerText = "🐸";
+                        this.ejecutarFaseN2();
+                        break;
+                    case 3:
+                        document.getElementById('juego-titulo-nivel').innerText = "Misión 3: Rompecabezas del Sabio";
+                        document.getElementById('juego-instrucción-nivel').innerText = "Arrastra y une las sílabas desordenadas para construir la palabra correcta.";
+                        document.getElementById('juego-personaje-avatar').innerText = "🦉";
+                        this.ejecutarFaseN3();
+                        break;
+                    case 4:
+                        document.getElementById('juego-titulo-nivel').innerText = "Misión 4: Desafío de Escritura";
+                        document.getElementById('juego-instrucción-nivel').innerText = "Escribe directamente en la caja la letra que falta (V o S).";
+                        document.getElementById('juego-personaje-avatar').innerText = "🧒";
+                        this.ejecutarFaseN4();
+                        break;
+                    case 5:
+                        document.getElementById('juego-titulo-nivel').innerText = "Misión Final: El Gran Desafío";
+                        document.getElementById('juego-instrucción-nivel').innerText = "Responde correctamente el cuestionario antes de que el tiempo se agote.";
+                        document.getElementById('juego-personaje-avatar').innerText = "🧙";
+                        this.ejecutarFaseN5();
+                        break;
+                }
+            },
+
+            // ==========================================================================
+            // DESARROLLO DE LÓGICAS POR NIVEL
+            // ==========================================================================
+
+            // NIVEL 1
+            ejecutarFaseN1() {
+                if(this.subFaseActual >= 5) { this.completarNivelExitoso(2); return; }
+                let lista = BANCO_ORTOGRAFICO.v.concat(BANCO_ORTOGRAFICO.s);
+                this.itemActualData = lista[Math.floor(Math.random() * lista.length)];
+                
+                document.getElementById('n1-palabra-muestra').innerText = this.itemActualData.pista;
+                controladorAudio.narrar("Completa la palabra que ves en pantalla.");
+            },
+            procesarRespuestaN1(letraSeleccionada) {
+                let palabraLcase = this.itemActualData.palabra.toLowerCase();
+                let pistaLcase = this.itemActualData.pista.toLowerCase();
+                let indexFalta = pistaLcase.indexOf("__");
+                let letraCorrecta = "";
+                
+                if (indexFalta !== -1) {
+                    letraCorrecta = palabraLcase.charAt(indexFalta).toUpperCase();
+                } else {
+                    letraCorrecta = palabraLcase.charAt(0).toUpperCase();
+                }
+                
+                if(letraSeleccionada === letraCorrecta) {
+                    this.lanzarFeedback(true, `¡Magnífico! Formaste la palabra: ${this.itemActualData.palabra.toUpperCase()}`, this.itemActualData.regla);
+                } else {
+                    this.lanzarFeedback(false, `¡Oh, no! La palabra correcta no usa esa estructura.`, this.itemActualData.regla);
+                }
+            },
+
+            // NIVEL 2
+            ejecutarFaseN2() {
+                let arena = document.getElementById('n2-arena');
+                arena.innerHTML = '';
+                let palabrasGeneradas = 0;
+                
+                let cicloCaida = setInterval(() => {
+                    if(this.nivelActual !== 2 || palabrasGeneradas >= 8) {
+                        clearInterval(cicloCaida);
+                        if(this.nivelActual === 2 && this.vidas > 0) this.completarNivelExitoso(3);
+                        return;
+                    }
+
+                    let esCorrecta = Math.random() > 0.4;
+                    let textoPalabra = "";
+                    
+                    if(esCorrecta) {
+                        let pool = BANCO_ORTOGRAFICO.v.concat(BANCO_ORTOGRAFICO.s);
+                        textoPalabra = pool[Math.floor(Math.random() * pool.length)].palabra;
+                    } else {
+                        textoPalabra = BANCO_ORTOGRAFICO.distractoras[Math.floor(Math.random() * BANCO_ORTOGRAFICO.distractoras.length)];
+                    }
+
+                    let el = document.createElement('div');
+                    el.className = 'palabra-cayendo';
+                    el.innerText = textoPalabra;
+                    el.style.left = Math.floor(Math.random() * (arena.clientWidth - 120)) + "px";
+                    el.style.setProperty('--velocidad-caida', (3 + Math.random()*3) + "s");
+
+                    el.onclick = () => {
+                        if(esCorrecta) {
+                            controladorAudio.correcto();
+                            this.xp += 15; this.monedas += 5;
+                            this.conteoAciertosGlobal++;
+                            el.remove();
+                        } else {
+                            this.registrarErrorEjecucion();
+                            el.remove();
+                        }
+                        this.actualizarHUD();
+                    };
+
+                    arena.appendChild(el);
+                    palabrasGeneradas++;
+                }, 1500);
+            },
+
+            // NIVEL 3
+            ejecutarFaseN3() {
+                if(this.subFaseActual >= 3) { this.completarNivelExitoso(4); return; }
+                
+                let pool = BANCO_ORTOGRAFICO.v.concat(BANCO_ORTOGRAFICO.s).filter(p => p.palabra.length <= 6);
+                this.itemActualData = pool[Math.floor(Math.random() * pool.length)];
+                
+                let mitad = Math.ceil(this.itemActualData.palabra.length / 2);
+                let silaba1 = this.itemActualData.palabra.substring(0, mitad).toUpperCase();
+                let silaba2 = this.itemActualData.palabra.substring(mitad).toUpperCase();
+                
+                let contenedorOrig = document.getElementById('n3-origen-silabas');
+                contenedorOrig.innerHTML = '';
+                document.getElementById('n3-destino').innerHTML = '<span style="color:#94a3b8;" id="n3-placeholder">Suelta las sílabas aquí</span>';
+                this.puzzleSilabasSeleccionadas = [];
+
+                let arraySilabas = [silaba1, silaba2].sort(() => Math.random() - 0.5);
+                
+                arraySilabas.forEach((sil, idx) => {
+                    let sBlk = document.createElement('div');
+                    sBlk.className = 'silaba-bloque';
+                    sBlk.innerText = sil;
+                    sBlk.draggable = true;
+                    sBlk.id = "silaba-" + idx;
+                    sBlk.ondragstart = (e) => e.dataTransfer.setData("text", e.target.id);
+                    // Soporte táctil básico
+                    sBlk.onclick = () => this.manejarClickSilabaMovil(sil, sBlk);
+                    contenedorOrig.appendChild(sBlk);
+                });
+            },
+            manejarClickSilabaMovil(silaba, elemento) {
+                this.puzzleSilabasSeleccionadas.push(silaba);
+                let dest = document.getElementById('n3-destino');
+                let placeholder = document.getElementById('n3-placeholder');
+                if(placeholder) placeholder.remove();
+                
+                let nSpan = document.createElement('span');
+                nSpan.className = 'silaba-bloque';
+                nSpan.innerText = silaba;
+                dest.appendChild(nSpan);
+                elemento.style.visibility = 'hidden';
+            },
+            dropPuzzle(e) {
+                e.preventDefault();
+                let id = e.dataTransfer.getData("text");
+                let el = document.getElementById(id);
+                if(el) {
+                    this.puzzleSilabasSeleccionadas.push(el.innerText);
+                    let dest = document.getElementById('n3-destino');
+                    let placeholder = document.getElementById('n3-placeholder');
+                    if(placeholder) placeholder.remove();
+                    
+                    let cls = el.cloneNode(true);
+                    cls.draggable = false;
+                    dest.appendChild(cls);
+                    el.style.visibility = 'hidden';
+                }
+            },
+            verificarN3() {
+                let construida = this.puzzleSilabasSeleccionadas.join("").toLowerCase();
+                // Eliminación de acentos simple para emparejar validaciones del DOM silábico
+                let normalizar = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                if(normalizar(construida) === normalizar(this.itemActualData.palabra.toLowerCase())) {
+                    this.lanzarFeedback(true, `¡Excelente rompecabezas! Armaste ${this.itemActualData.palabra.toUpperCase()}`, this.itemActualData.regla);
+                } else {
+                    this.lanzarFeedback(false, "El orden de las sílabas no es el correcto. Inténtalo de nuevo.", this.itemActualData.regla);
+                }
+            },
+
+            // NIVEL 4
+            ejecutarFaseN4() {
+                if(this.subFaseActual >= 4) { this.completarNivelExitoso(5); return; }
+                let pool = BANCO_ORTOGRAFICO.v.concat(BANCO_ORTOGRAFICO.s);
+                this.itemActualData = pool[Math.floor(Math.random() * pool.length)];
+                
+                document.getElementById('n4-palabra-muestra').innerText = this.itemActualData.pista;
+                document.getElementById('n4-input-respuesta').value = '';
+                document.getElementById('n4-input-respuesta').focus();
+            },
+            verificarN4() {
+                let r = document.getElementById('n4-input-respuesta').value.trim().toLowerCase();
+                let pista = this.itemActualData.pista.toLowerCase();
+                let indexFalta = pista.indexOf("__");
+                let letraCorrecta = "";
+                
+                if (indexFalta !== -1) {
+                    letraCorrecta = this.itemActualData.palabra.toLowerCase().charAt(indexFalta);
+                } else {
+                    letraCorrecta = this.itemActualData.palabra.toLowerCase().charAt(0);
+                }
+
+                if(r === letraCorrecta) {
+                    this.lanzarFeedback(true, `¡Excelente escritura! Completaste: ${this.itemActualData.palabra.toUpperCase()}`, this.itemActualData.regla);
+                } else {
+                    this.lanzarFeedback(false, `Letra incorrecta para esta palabra.`, this.itemActualData.regla);
+                }
+            },
+
+            // NIVEL 5
+            ejecutarFaseN5() {
+                let segs = 120;
+                let c = document.getElementById('n5-cronometro');
+                
+                this.cronometroN5Interval = setInterval(() => {
+                    segs--;
+                    let m = Math.floor(segs / 60).toString().padStart(2, '0');
+                    let s = (segs % 60).toString().padStart(2, '0');
+                    c.innerText = `${m}:${s}`;
+                    
+                    if(segs <= 0) {
+                        clearInterval(this.cronometroN5Interval);
+                        this.abandonarNivel();
+                        alert("⏱️ ¡Se agotó el tiempo del Gran Desafío!");
+                    }
+                }, 1000);
+
+                this.cargarPreguntaQuizN5();
+            },
+            cargarPreguntaQuizN5() {
+                if(this.subFaseActual >= 5) {
+                    clearInterval(this.cronometroN5Interval);
+                    this.completarNivelExitoso(6); // Finaliza todo el juego
+                    return;
+                }
+
+                let contenedorOpciones = document.getElementById('n5-contenedor-opciones');
+                contenedorOpciones.innerHTML = '';
+
+                // Bucle de tipos de reactivo alternados
+                if(this.subFaseActual % 2 === 0) {
+                    // Tipo Verdadero o Falso
+                    let esVerdad = Math.random() > 0.5;
+                    let p = BANCO_ORTOGRAFICO.v[Math.floor(Math.random() * BANCO_ORTOGRAFICO.v.length)];
+                    
+                    document.getElementById('n5-pregunta-texto').innerText = esVerdad ? 
+                        `¿La palabra "${p.palabra.toUpperCase()}" está bien escrita?` : 
+                        `¿La palabra "${p.palabra.toUpperCase().replace('V','B').replace('v','b')}" está bien escrita?`;
+                    
+                    let btnV = document.createElement('button');
+                    btnV.className = 'btn-quiz-opcion'; btnV.innerText = "VERDADERO";
+                    btnV.onclick = () => this.procesarQuizN5(esVerdad === true);
+                    
+                    let btnF = document.createElement('button');
+                    btnF.className = 'btn-quiz-opcion'; btnF.innerText = "FALSO";
+                    btnF.onclick = () => this.procesarQuizN5(esVerdad === false);
+
+                    contenedorOpciones.appendChild(btnV);
+                    contenedorOpciones.appendChild(btnF);
+                } else {
+                    // Tipo Opción Múltiple
+                    let p = BANCO_ORTOGRAFICO.s[Math.floor(Math.random() * BANCO_ORTOGRAFICO.s.length)];
+                    document.getElementById('n5-pregunta-texto').innerText = `¿Cuál es la escritura correcta para designar este concepto?`;
+                    
+                    let optCorrecta = p.palabra.toUpperCase();
+                    let optIncorrecta = p.palabra.toUpperCase().replace('S','V');
+
+                    let arr = [optCorrecta, optIncorrecta].sort(() => Math.random() - 0.5);
+                    arr.forEach(txt => {
+                        let btn = document.createElement('button');
+                        btn.className = 'btn-quiz-opcion';
+                        btn.innerText = txt;
+                        btn.onclick = () => this.procesarQuizN5(txt === optCorrecta);
+                        contenedorOpciones.appendChild(btn);
+                    });
+                }
+            },
+            procesarQuizN5(fueCorrecto) {
+                if(fueCorrecto) {
+                    this.xp += 20; this.monedas += 10;
+                    this.conteoAciertosGlobal++;
+                    controladorAudio.correcto();
+                    this.subFaseActual++;
+                    this.cargarPreguntaQuizN5();
+                } else {
+                    this.registrarErrorEjecucion();
+                    this.subFaseActual++;
+                    this.cargarPreguntaQuizN5();
+                }
+                this.actualizarHUD();
+            },
+
+            // ==========================================================================
+            // CONTROLADOR DE RETROALIMENTACIÓN Y RECOMPENSAS
+            // ==========================================================================
+            lanzarFeedback(esCorrecto, titulo, reglaTexto) {
+                let modal = document.getElementById('modal-retroalimentacion');
+                let contenido = document.getElementById('modal-feedback-contenido');
+                let icn = document.getElementById('feedback-icono');
+                let ttl = document.getElementById('feedback-titulo');
+                let txt = document.getElementById('feedback-texto-principal');
+                let rgl = document.getElementById('feedback-regla');
+
+                modal.className = "capa-bloqueo activa";
+                rgl.innerText = reglaTexto;
+
+                if(esCorrecto) {
+                    controladorAudio.correcto();
+                    contenido.className = "modal-feedback correcto";
+                    icn.innerText = "⭐";
+                    ttl.innerText = "¡Excelente!";
+                    txt.innerText = titulo;
+                    this.xp += 20;
+                    this.monedas += 5;
+                    this.conteoAciertosGlobal++;
+                    dispararEfectoConfeti();
+                } else {
+                    controladorAudio.incorrecto();
+                    contenido.className = "modal-feedback incorrecto";
+                    icn.innerText = "❌";
+                    ttl.innerText = "¡Sigue Aprendiendo!";
+                    txt.innerText = titulo;
+                    this.registrarErrorEjecucion();
+                }
+
+                this.actualizarHUD();
+                controladorAudio.narrar(ttl.innerText + ". " + txt.innerText);
+            },
+
+            cerrarFeedback() {
+                document.getElementById('modal-retroalimentacion').className = "capa-bloqueo";
+                this.subFaseActual++;
+                
+                if(this.nivelActual === 1) this.ejecutarFaseN1();
+                if(this.nivelActual === 3) this.ejecutarFaseN3();
+                if(this.nivelActual === 4) this.ejecutarFaseN4();
+            },
+
+            registrarErrorEjecucion() {
+                this.vidas--;
+                this.conteoErroresGlobal++;
+                controladorAudio.incorrecto();
+                
+                // Efecto de vibración háptica/visual solicitado
+                let tarjeta = document.querySelector('.tarjeta-juego');
+                if(tarjeta) {
+                    tarjeta.classList.add('vibrar');
+                    setTimeout(() => tarjeta.classList.remove('vibrar'), 500);
+                }
+
+                if(this.vidas <= 0) {
+                    alert("💥 ¡Te has quedado sin vidas! Regresarás al mapa para repasar.");
+                    this.abandonarNivel();
+                }
+                this.actualizarHUD();
+            },
+
+            abandonarNivel() {
+                if(this.cronometroN5Interval) clearInterval(this.cronometroN5Interval);
+                this.vidas = 3;
+                this.actualizarHUD();
+                enrutarA('pantalla-mapa');
+            },
+
+            completarNivelExitoso(siguienteNivel) {
+                if(this.cronometroN5Interval) clearInterval(this.cronometroN5Interval);
+                
+                // Otorgar insignias según el nivel superado
+                if(this.nivelActual === 1) this.concederLogro("n1");
+                if(this.nivelActual === 2) this.concederLogro("n2");
+                if(this.nivelActual === 3) this.concederLogro("n3");
+                if(this.nivelActual === 4) this.concederLogro("guardian");
+
+                if(siguienteNivel > this.nivelMaximoDesbloqueado) {
+                    this.nivelMaximoDesbloqueado = siguienteNivel;
+                }
+
+                if(siguienteNivel === 6) {
+                    // Fin del juego absoluto alcanzado
+                    this.concederLogro("campeon");
+                    this.cargarPantallaFinalCompleta();
+                    return;
+                }
+
+                alert(`🎉 ¡Nivel Completado! Has liberado una zona del Reino de las Palabras.`);
+                
+                // Desbloqueo gráfico en el mapa
+                let proximaEst = document.getElementById(`btn-estacion-${siguienteNivel}`);
+                if(proximaEst) proximaEst.classList.add('desbloqueada');
+                
+                let actualEst = document.getElementById(`btn-estacion-${this.nivelActual}`);
+                if(actualEst) actualEst.classList.add('completada');
+
+                this.abandonarNivel();
+            },
+
+            concederLogro(id) {
+                let l = LOGROS_SISTEMA.find(x => x.id === id);
+                if(l && !l.obtenido) {
+                    l.obtenido = true;
+                    this.xp += 50;
+                }
+            },
+
+            cargarPantallaFinalCompleta() {
+                enrutarA('pantalla-final');
+                dispararEfectoConfeti();
+                
+                // Setear Métricas en el Diploma
+                document.getElementById('diploma-nombre-estudiante').innerText = this.nombreJugador;
+                document.getElementById('diploma-xp').innerText = this.xp;
+                document.getElementById('diploma-fecha').innerText = new Date().toLocaleDateString();
+
+                // Sincronizar datos al Panel Docente de forma automática
+                document.getElementById('rep-nombre').innerText = this.nombreJugador;
+                document.getElementById('rep-nivel').innerText = (this.nivelMaximoDesbloqueado === 6) ? "¡Todo completado!" : this.nivelMaximoDesbloqueado;
+                document.getElementById('rep-xp').innerText = this.xp;
+                document.getElementById('rep-ratio').innerText = `Aciertos: ${this.conteoAciertosGlobal} / Errores: ${this.conteoErroresGlobal}`;
+                
+                let totalRespuestas = this.conteoAciertosGlobal + this.conteoErroresGlobal;
+                let pct = totalRespuestas > 0 ? Math.round((this.conteoAciertosGlobal / totalRespuestas) * 100) : 100;
+                document.getElementById('rep-porcentaje').innerText = pct + "%";
+
+                // Motor de diagnóstico pedagógico inteligente según historial de errores
+                let rec = document.getElementById('rep-recomendacion');
+                if(this.conteoErroresGlobal > 3) {
+                    rec.innerText = "⚠️ Recomendación de Refuerzo: El estudiante presenta vacilaciones sistemáticas entre grafías homófonas (V/S). Se sugiere dictado de oraciones contextualizadas enfatizando vocablos con prefijos 'in-' seguidos de V, y vocablos de alta frecuencia como 'ventana', 'viaje' y 'serpiente'.";
+                } else {
+                    rec.innerText = "✅ Excelente desempeño: El estudiante demuestra apropiación consolidada de las regularidades ortográficas analizadas para el nivel de desarrollo lingüístico esperado en la educación primaria básica.";
+                }
+            },
+
+            reiniciarTodo() {
+                this.xp = 0; this.monedas = 0; this.vidas = 3;
+                this.nivelMaximoDesbloqueado = 1;
+                this.conteoAciertosGlobal = 0; this.conteoErroresGlobal = 0;
+                LOGROS_SISTEMA.forEach(l => l.obtenido = false);
+                
+                // Quitar clases gráficas del mapa
+                for(let i=1; i<=5; i++) {
+                    let btn = document.getElementById(`btn-estacion-${i}`);
+                    if(btn) {
+                        btn.className = "estacion";
+                        if(i===1) btn.classList.add('desbloqueada');
+                    }
+                }
+                this.actualizarHUD();
+                enrutarA('pantalla-bienvenida');
+            }
+        };
+
+        /**
+         * ENRUTADOR SIMPLIFICADO DE VISTAS (SPA)
+         */
+        function enrutarA(idPantalla) {
+            document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+            document.getElementById(idPantalla).classList.add('activa');
+            
+            // Ocultar HUD en bienvenida o pantallas específicas de reporte para inmersión
+            if(idPantalla === 'pantalla-bienvenida' || idPantalla === 'pantalla-docente' || idPantalla === 'pantalla-final') {
+                document.getElementById('hud-global').style.display = 'none';
+            } else {
+                document.getElementById('hud-global').style.display = 'flex';
+            }
+
+            // Inyectar datos dinámicos si se entra a la pantalla de logros
+            if(idPantalla === 'pantalla-logros') {
+                let grid = document.getElementById('lista-logros-grid');
+                grid.innerHTML = '';
+                LOGROS_SISTEMA.forEach(l => {
+                    let card = document.createElement('div');
+                    card.style.padding = '15px';
+                    card.style.borderRadius = '12px';
+                    card.style.background = l.obtenido ? '#f0fdf4' : '#f1f5f9';
+                    card.style.border = l.obtenido ? '2px solid var(--verde-exito)' : '2px solid #cbd5e1';
+                    card.style.opacity = l.obtenido ? '1' : '0.5';
+                    card.innerHTML = `
+                        <div style="font-size:2.5rem;">${l.icono}</div>
+                        <strong>${l.titulo}</strong>
+                        <p style="font-size:0.85rem; color:#64748b;">${l.desc}</p>
+                        <small style="color:var(--verde-exito); font-weight:bold;">${l.obtenido ? '¡Desbloqueado!' : 'Bloqueado'}</small>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+        }
+
+        function mostrarInstrucciones() {
+            alert("🕵️‍♂️ GUÍA DE JUEGO:\n\n1. Usa el mapa para avanzar por las misiones.\n2. Evita perder tus 3 corazones respondiendo de forma errónea.\n3. En el Nivel 2, haz clic rápido antes de que las palabras toquen el suelo.\n4. Al final obtendrás un reporte detallado para tu profesor y tu propio diploma.\n\n¡La ortografía es tu superpoder!");
+        }
+
+        /**
+         * EFECTOS VISUALES: SISTEMA DE PARTICULAS NATIVO (CONFETI DE VICTORIA)
+         */
+        const canvas = document.getElementById("canvas-efectos");
+        const ctx = canvas.getContext("2d");
+        let particulas = [];
+
+        function ajustarCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', ajustarCanvas);
+        ajustarCanvas();
+
+        function dispararEfectoConfeti() {
+            particulas = [];
+            for (let i = 0; i < 100; i++) {
+                particulas.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    r: Math.random() * 6 + 4,
+                    d: Math.random() * canvas.height,
+                    color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                    v: Math.random() * 3 + 2
+                });
+            }
+        }
+
+        function animarParticulas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particulas.forEach((p, index) => {
+                ctx.beginPath();
+                ctx.fillStyle = p.color;
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2, true);
+                ctx.fill();
+                
+                p.y += p.v;
+                if (p.y > canvas.height) {
+                    particulas.splice(index, 1);
+                }
+            });
+            requestAnimationFrame(animarParticulas);
+        }
+        animarParticulas();
+    </script>
+</body>
+</html>

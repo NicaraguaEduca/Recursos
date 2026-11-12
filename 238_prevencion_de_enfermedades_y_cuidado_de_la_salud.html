@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Guardianes de la Salud</title>
+    <style>
+        /* ================= PALETA DE COLORES MINED Y VARIABLES ================= */
+        :root {
+            --azul: #0059A6;
+            --celeste: #00A8E8;
+            --verde: #A5C83F;
+            --amarillo: #FFEC01;
+            --morado: #833189;
+            --fucsia: #E32085;
+            --blanco: #FFFFFF;
+            --texto: #333333;
+            --sombra: rgba(0, 0, 0, 0.15);
+        }
+
+        /* ================= ESTILOS GLOBALES (SIN SCROLL) ================= */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        body, html {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--celeste), var(--azul), var(--morado));
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--texto);
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ================= UI PRINCIPAL ================= */
+        #app-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        #hud {
+            height: 10vh;
+            background: rgba(255, 255, 255, 0.95);
+            display: none;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 4px 15px var(--sombra);
+            z-index: 100;
+            font-weight: bold;
+            font-size: 2.5vmin;
+            border-bottom: 4px solid var(--fucsia);
+        }
+
+        .hud-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 15px;
+            border-radius: 20px;
+            background: var(--blanco);
+            box-shadow: inset 0 -3px 0 rgba(0,0,0,0.1);
+        }
+        
+        .hud-item.puntos { color: var(--azul); }
+        .hud-item.estrellas { color: #d4af37; }
+        .hud-item.salud { color: var(--fucsia); }
+
+        #screen-container {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2vmin;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2vmin;
+            animation: fadeIn 0.5s ease;
+            position: relative;
+        }
+
+        .screen.active { display: flex; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* ================= COMPONENTES ================= */
+        h1 { color: var(--azul); font-size: 6vmin; margin-bottom: 2vmin; text-shadow: 2px 2px 0px var(--celeste); }
+        h2 { color: var(--morado); font-size: 4vmin; margin-bottom: 2vmin; }
+        p { font-size: 2.5vmin; margin-bottom: 3vmin; line-height: 1.4; }
+
+        .btn {
+            background: var(--verde);
+            color: white;
+            border: none;
+            padding: 1.5vmin 4vmin;
+            font-size: 3vmin;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 6px 0px #7d9e2b, 0 10px 10px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+            text-transform: uppercase;
+            margin: 1vmin;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 0px #7d9e2b, 0 12px 15px rgba(0,0,0,0.3); }
+        .btn:active { transform: translateY(4px); box-shadow: 0 2px 0px #7d9e2b, 0 5px 5px rgba(0,0,0,0.2); }
+        .btn-azul { background: var(--azul); box-shadow: 0 6px 0px #003d75; }
+        .btn-azul:hover { box-shadow: 0 8px 0px #003d75; }
+        .btn-fucsia { background: var(--fucsia); box-shadow: 0 6px 0px #a3155f; }
+        .btn-fucsia:hover { box-shadow: 0 8px 0px #a3155f; }
+        .btn-morado { background: var(--morado); box-shadow: 0 6px 0px #5c2261; }
+        .btn-amarillo { background: var(--amarillo); color: var(--texto); box-shadow: 0 6px 0px #cca300; }
+
+        .activity-controls {
+            position: absolute;
+            bottom: 2vmin;
+            right: 2vmin;
+            display: flex;
+            gap: 1vmin;
+        }
+        
+        .activity-controls button {
+            font-size: 2vmin;
+            padding: 1vmin 2vmin;
+        }
+
+        /* ================= MAPA DE NIVELES ================= */
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2vmin;
+            width: 90%;
+            height: 70%;
+        }
+
+        .level-btn {
+            background: var(--blanco);
+            border: 4px solid var(--celeste);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 3vmin;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .level-btn:hover:not(.locked) { transform: scale(1.05); border-color: var(--fucsia); }
+        .level-btn.locked { filter: grayscale(100%); opacity: 0.6; cursor: not-allowed; }
+        .level-btn.completed { background: var(--verde); color: white; border-color: white; }
+        .level-icon { font-size: 6vmin; margin-bottom: 1vmin; }
+
+        /* ================= ACT 1: ARRASTRAR Y SOLTAR ================= */
+        .drag-container { display: flex; width: 100%; height: 75%; gap: 2vmin; }
+        .drag-items { flex: 1; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 1vmin; padding: 1vmin; background: rgba(0,168,232,0.1); border-radius: 15px; min-height: 50vh; }
+        .drop-zones { flex: 1; display: flex; flex-direction: column; gap: 2vmin; }
+        .drop-zone { flex: 1; border: 4px dashed var(--azul); border-radius: 15px; display: flex; flex-wrap: wrap; gap: 1vmin; padding: 1vmin; align-items: flex-start; align-content: flex-start; transition: background 0.3s;}
+        .drop-zone.drag-over { background: rgba(255,255,255,0.8) !important; border-style: solid; transform: scale(1.02); }
+        .drop-zone.good { border-color: var(--verde); background: rgba(165, 200, 63, 0.1); }
+        .drop-zone.bad { border-color: var(--fucsia); background: rgba(227, 32, 133, 0.1); }
+        .draggable { background: white; padding: 1.5vmin 2vmin; border-radius: 10px; box-shadow: 0 4px 6px var(--sombra); cursor: grab; font-weight: bold; border: 2px solid var(--azul); transition: transform 0.1s; touch-action: none; }
+        .draggable:active { cursor: grabbing; transform: scale(1.05); }
+        .draggable.dragging { opacity: 0.5; }
+        
+        /* ================= ACT 2: DETECTAR ERROR ================= */
+        .scene-container { width: 100%; height: 70%; background: #e0f7fa; border-radius: 15px; position: relative; border: 4px solid var(--celeste); overflow: hidden; }
+        .scene-item { position: absolute; font-size: 8vmin; cursor: pointer; transition: transform 0.2s; }
+        .scene-item:hover { transform: scale(1.2); }
+        .found-error { border-radius: 50%; box-shadow: 0 0 0 5px var(--fucsia); animation: pulse 1s infinite; }
+        
+        /* ================= ACT 3: VERDADERO O FALSO ================= */
+        .tf-card { background: var(--amarillo); padding: 5vmin; border-radius: 20px; font-size: 4vmin; margin-bottom: 4vmin; box-shadow: 0 8px 15px rgba(0,0,0,0.1); border: 4px solid #cca300; width: 80%; }
+        .tf-buttons { display: flex; gap: 4vmin; }
+
+        /* ================= ACT 4: MEMORAMA ================= */
+        .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2vmin; width: 80%; height: 75%; }
+        
+        /* CORRECCIÓN MEMORAMA: Rotación correcta del texto */
+        .memory-card { 
+            background: var(--azul); 
+            border-radius: 10px; 
+            cursor: pointer; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            font-size: 5vmin; 
+            color: transparent; 
+            transition: all 0.4s ease; 
+            transform-style: preserve-3d; 
+            border: 3px solid transparent;
+        }
+        .memory-card.flipped { 
+            background: white; 
+            border-color: var(--azul); 
+            transform: rotateY(180deg); 
+        }
+        .memory-card span {
+            opacity: 0;
+            transform: rotateY(180deg); /* Revierte el efecto espejo para que se lea bien */
+            transition: opacity 0.2s;
+        }
+        .memory-card.flipped span {
+            opacity: 1;
+            color: var(--texto);
+        }
+        .memory-card.matched { 
+            background: var(--verde); 
+            border-color: transparent;
+            opacity: 0.8; 
+        }
+        .memory-card.matched span {
+            color: white;
+        }
+
+        /* ================= ACT 5: CARRERA ================= */
+        #gameCanvas { background: #87CEEB; border-radius: 15px; border: 4px solid var(--azul); box-shadow: inset 0 0 20px rgba(0,0,0,0.2); touch-action: none; cursor: crosshair; }
+        
+        /* ================= ACT 6: RULETA ================= */
+        .roulette-container { position: relative; width: 40vmin; height: 40vmin; margin: 0 auto 3vmin; }
+        .wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid var(--morado); overflow: hidden; transition: transform 4s cubic-bezier(0.17, 0.67, 0.1, 1); background: conic-gradient(var(--celeste) 0 60deg, var(--fucsia) 60deg 120deg, var(--amarillo) 120deg 180deg, var(--verde) 180deg 240deg, var(--azul) 240deg 300deg, var(--morado) 300deg 360deg); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .pointer { position: absolute; top: -2vmin; left: 50%; transform: translateX(-50%); font-size: 6vmin; z-index: 10; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        #question-box { background: white; padding: 2vmin; border-radius: 10px; border: 3px solid var(--azul); display: none; font-size: 3vmin; font-weight: bold; width: 80%; margin: 0 auto; }
+
+        /* ================= ACT 7: ESCAPE ROOM ================= */
+        .lock-container { display: flex; justify-content: center; gap: 2vmin; margin: 3vmin 0; }
+        .lock-digit { width: 10vmin; height: 12vmin; font-size: 6vmin; text-align: center; border: 4px solid var(--azul); border-radius: 10px; font-weight: bold; background: #eee; }
+        .clue-box { background: var(--amarillo); padding: 2vmin; border-radius: 10px; font-weight: bold; margin-bottom: 2vmin; font-size: 2.5vmin; border: 2px dashed #cca300;}
+
+        /* ================= ACT 8: QUIZ FINAL ================= */
+        .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 2vmin; width: 80%; }
+        
+        /* Modal */
+        #modal { display: none; position: absolute; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 4vmin; border-radius: 20px; text-align: center; max-width: 60%; animation: bounceIn 0.5s; border: 5px solid var(--verde); }
+        @keyframes bounceIn { 0% { transform: scale(0.1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        
+        #confetti { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; display: none; }
+        .diploma { background: ivory; border: 10px double var(--amarillo); padding: 5vmin; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); color: var(--azul); }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <div id="hud">
+        <div class="hud-item salud">❤️ Salud: <span id="ui-health">0</span>%</div>
+        <div class="hud-item estrellas">⭐ Estrellas: <span id="ui-stars">0</span>/8</div>
+        <div class="hud-item puntos">🏅 Puntos: <span id="ui-points">0</span></div>
+    </div>
+
+    <div id="screen-container">
+        <!-- PANTALLA INICIO -->
+        <div id="screen-home" class="screen active" style="background: rgba(255,255,255,0.95);">
+            <div style="font-size: 15vmin;">🦸‍♂️🏥🦸‍♀️</div>
+            <h1>Guardianes de la Salud</h1>
+            <p style="font-size: 3vmin; font-weight: bold; color: var(--texto); max-width: 80%;">
+                ¡Alerta! Los virus y bacterias han atacado nuestra ciudad. Necesitamos tu ayuda para enseñar a todos los hábitos saludables y recuperar la salud de cada barrio.
+            </p>
+            <button class="btn" onclick="startGame()">Comenzar Misión 🚀</button>
+        </div>
+
+        <!-- MAPA -->
+        <div id="screen-map" class="screen">
+            <h2>Mapa de la Ciudad</h2>
+            <p>Completa las misiones para sanar los barrios.</p>
+            <div class="map-grid" id="map-grid"></div>
+        </div>
+
+        <!-- ================= ACT 1 ================= -->
+        <div id="screen-act1" class="screen">
+            <h2>Misión 1: Clasifica los Hábitos</h2>
+            <p>Arrastra cada hábito a la columna correcta.</p>
+            <div class="drag-container">
+                <div class="drag-items" id="act1-items"></div>
+                <div class="drop-zones">
+                    <div class="drop-zone good" id="act1-good" data-zone="good">✅ Saludables</div>
+                    <div class="drop-zone bad" id="act1-bad" data-zone="bad">❌ Peligrosos</div>
+                </div>
+            </div>
+            <div class="activity-controls">
+                <button class="btn btn-morado" onclick="goMap()">Inicio</button>
+                <button class="btn btn-amarillo" onclick="initAct1()">Reiniciar</button>
+            </div>
+        </div>
+
+        <!-- ================= ACT 2 ================= -->
+        <div id="screen-act2" class="screen">
+            <h2>Misión 2: Encuentra los Errores</h2>
+            <p>Haz clic en los 4 hábitos incorrectos o riesgos de salud en el parque.</p>
+            <div class="scene-container" id="act2-scene"></div>
+            <div class="activity-controls">
+                <button class="btn btn-morado" onclick="goMap()">Inicio</button>
+                <button class="btn btn-amarillo" onclick="initAct2()">Reiniciar</button>
+            </div>
+        </div>
+
+        <!-- ================= ACT 3 ================= -->
+        <div id="screen-act3" class="screen">
+            <h2>Misión 3: Vacuna o Mito</h2>
+            <div class="tf-card" id="act3-card">Pregunta aquí</div>
+            <div class="tf-buttons">
+                <button class="btn btn-azul" onclick="checkAct3(true)">✅ Verdadero</button>
+                <button class="btn btn-fucsia" onclick="checkAct3(false)">❌ Falso</button>
+            </div>
+            <div class="activity-controls">
+                <button class="btn btn-morado" onclick="goMap()">Inicio</button>
+                <button class="btn btn-amarillo" onclick="initAct3()">Reiniciar</button>
+            </div>
+        </div>
+
+        <!-- ================= ACT 4 ================= -->
+        <div id="screen-act4" class="screen">
+            <h2>Misión 4: Encuentra las Parejas</h2>
+            <p>Relaciona el elemento con su beneficio.</p>
+            <div class="memory-grid" id="act4-grid"></div>
+            <div class="activity-controls">
+                <button class="btn btn-morado" onclick="goMap()">Inicio</button>
+                <button class="btn btn-amarillo" onclick="initAct4()">Reiniciar</button>
+            </div>
+        </div>
+
+        <!-- ================= ACT 5 ================= -->
+        <div id="screen-act5" class="screen">
+            <h2>Misión 5: Atrapa la Salud</h2>
+            <p>Mueve el canasto con tu ratón, dedo o flechas. Atrapa 10 objetos sanos, evita los virus.</p>
+            <canvas id="gameCanvas" width="600" height="400" style="max-width:100%; height:auto;"></canvas>
+            <div class="activity-controls">
+                <button class="btn btn-morado" onclick="cancelAct5(); goMap()">Inicio</button>
+                <button class="btn btn-amarillo" onclick="initAct5()">Reiniciar</button>
+            </div>
+        </div>
+
+        <!-- ================= ACT 6 ================= -->
+        <div id="screen-act6" class="screen">
+            <h2>Misión 6: La Ruleta del Saber</h2>
+            <div class="roulette-container">
+                <div class="pointer">📍</div>
+                <div class="wheel" id="act6-wheel"></div>
+            </div>
+            <button class="btn btn-azul" id="act6-spin-btn" onclick="spinWheel()">Girar Ruleta</button>
+            <div id="question-box">
+                <p id="act6-q">Pregunta...</p>
+                <div id="act6-opts"></div>
+            </div>
+            <div class="activity-controls">
+                <button class="btn btn-morado" onclick="goMap()">Inicio</button>
+                <button class="btn btn-amarillo" onclick="initAct6()">Reiniciar</button>
+            </div>
+        </div>
+
+        <!-- ================= ACT 7 ================= -->
+        <div id="screen-act7" class="screen">
+            <h2>Misión 7: Abre el Botiquín</h2>
+            <p>Resuelve los acertijos para descubrir la clave de 3 dígitos.</p>
+            <div class="clue-box" id="act7-clue1">1. Días a la semana que debes bañarte (0-9).</div>
+            <div class="clue-box" id="act7-clue2">2. Veces al año que debes ir al dentista como mínimo.</div>
+            <div class="clue-box" id="act7-clue3">3. Litros de agua recomendados al día (aprox, un solo dígito).</div>
+            
+            <div class="lock-container">
+                <input type="number" class="lock-digit" id="d1" min="0" max="9" value="0">
+                <input type="number" class="lock-digit" id="d2" min="0" max="9" value="0">
+                <input type="number" class="lock-digit" id="d3" min="0" max="9" value="0">
+            </div>
+            <button class="btn btn-fucsia" onclick="checkLock()">Desbloquear Botiquín 🧰</button>
+            <div class="activity-controls">
+                <button class="btn btn-morado" onclick="goMap()">Inicio</button>
+                <button class="btn btn-amarillo" onclick="initAct7()">Reiniciar</button>
+            </div>
+        </div>
+
+        <!-- ================= ACT 8 ================= -->
+        <div id="screen-act8" class="screen">
+            <h2>Misión Final: El Gran Desafío</h2>
+            <p>Demuestra todo lo aprendido.</p>
+            <div class="tf-card" id="act8-card" style="font-size: 3vmin; margin-bottom: 2vmin;">Pregunta...</div>
+            <div class="quiz-options" id="act8-opts"></div>
+            <p style="margin-top: 2vmin; font-weight: bold;">Pregunta <span id="act8-current">1</span>/5</p>
+            <div class="activity-controls">
+                <button class="btn btn-morado" onclick="goMap()">Inicio</button>
+                <button class="btn btn-amarillo" onclick="initAct8()">Reiniciar</button>
+            </div>
+        </div>
+
+        <!-- RECOMPENSA -->
+        <div id="screen-reward" class="screen" style="background: var(--celeste);">
+            <canvas id="confetti"></canvas>
+            <div class="diploma">
+                <h1 style="font-size: 5vmin; color: var(--morado);">¡Felicidades!</h1>
+                <p style="font-size: 3vmin; font-weight: bold;">Has recuperado la salud de toda la ciudad.</p>
+                <div style="font-size: 10vmin; margin: 2vmin 0;">🏅</div>
+                <h2 style="color: var(--azul);">Súper Protector de la Salud</h2>
+                <p>Puntaje Final: <span id="final-score">0</span></p>
+            </div>
+            <button class="btn btn-verde" style="margin-top: 4vmin;" onclick="location.reload()">Jugar Nuevamente</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal">
+    <div class="modal-content">
+        <h2 id="modal-title">¡Correcto!</h2>
+        <p id="modal-text">Has ganado 20 puntos.</p>
+        <button class="btn btn-azul" onclick="closeModal()">Continuar</button>
+    </div>
+</div>
+
+<script>
+    /* AUDIO WEB */
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        const now = audioCtx.currentTime;
+        if (type === 'click') {
+            osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+            gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            osc.start(now); osc.stop(now + 0.1);
+        } else if (type === 'correct') {
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(400, now); osc.frequency.setValueAtTime(600, now + 0.1); osc.frequency.setValueAtTime(800, now + 0.2);
+            gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.4);
+            osc.start(now); osc.stop(now + 0.4);
+        } else if (type === 'wrong') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.linearRampToValueAtTime(100, now + 0.3);
+            gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
+            osc.start(now); osc.stop(now + 0.3);
+        } else if (type === 'win') {
+            osc.type = 'square'; osc.frequency.setValueAtTime(523.25, now); osc.frequency.setValueAtTime(659.25, now + 0.1); osc.frequency.setValueAtTime(783.99, now + 0.2); osc.frequency.setValueAtTime(1046.50, now + 0.3);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.6);
+            osc.start(now); osc.stop(now + 0.6);
+        }
+    }
+
+    /* ESTADO DEL JUEGO */
+    let state = { points: 0, stars: 0, health: 0, activitiesCompleted: Array(8).fill(false) };
+
+    function updateHUD() {
+        document.getElementById('ui-points').innerText = state.points;
+        document.getElementById('ui-stars').innerText = state.stars;
+        document.getElementById('ui-health').innerText = state.health;
+    }
+
+    function addPoints(pts) { state.points += pts; updateHUD(); }
+
+    function completeActivity(index) {
+        if (!state.activitiesCompleted[index]) {
+            state.activitiesCompleted[index] = true;
+            state.stars++;
+            state.health = Math.round((state.stars / 8) * 100);
+            updateHUD();
+            playSound('win');
+            showModal("¡Misión Completada!", "Has recuperado una parte de la ciudad. ⭐ +1 Estrella");
+            renderMap();
+            if(state.stars === 8) {
+                setTimeout(() => showScreen('screen-reward'), 2000);
+                startConfetti();
+                document.getElementById('final-score').innerText = state.points;
+            }
+        }
+    }
+
+    function showScreen(id) {
+        playSound('click');
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(id !== 'screen-home' && id !== 'screen-reward') document.getElementById('hud').style.display = 'flex';
+    }
+
+    function goMap() { showScreen('screen-map'); }
+
+    function showModal(title, text) {
+        document.getElementById('modal-title').innerText = title;
+        document.getElementById('modal-text').innerText = text;
+        document.getElementById('modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        playSound('click');
+        document.getElementById('modal').style.display = 'none';
+        if(state.stars === 8 && !document.getElementById('screen-reward').classList.contains('active')) {
+             showScreen('screen-reward'); startConfetti(); document.getElementById('final-score').innerText = state.points;
+        }
+    }
+
+    function startGame() { playSound('win'); renderMap(); showScreen('screen-map'); }
+
+    /* MAPA */
+    const actTitles = ["Clasificar Hábitos", "Detectar Errores", "Vacuna o Mito", "Memorama", "Atrapa la Salud", "Ruleta del Saber", "Abre el Botiquín", "Gran Desafío"];
+    function renderMap() {
+        const map = document.getElementById('map-grid');
+        map.innerHTML = '';
+        for (let i = 0; i < 8; i++) {
+            const btn = document.createElement('div');
+            btn.className = `level-btn ${state.activitiesCompleted[i] ? 'completed' : ''}`;
+            let locked = i > 0 && !state.activitiesCompleted[i-1];
+            if(locked) btn.classList.add('locked');
+            btn.innerHTML = `<div class="level-icon">${state.activitiesCompleted[i] ? '✅' : (locked ? '🔒' : '📍')}</div><div>Nivel ${i + 1}</div><div style="font-size: 1.5vmin; font-weight:normal">${actTitles[i]}</div>`;
+            if(!locked) btn.onclick = () => { window[`initAct${i+1}`](); showScreen(`screen-act${i+1}`); };
+            map.appendChild(btn);
+        }
+    }
+
+    /* ACT 1: ARRASTRAR Y SOLTAR */
+    const act1Data = [
+        { t: "Lavarse las manos", v: "good" }, { t: "Dormir poco", v: "bad" },
+        { t: "Comer frutas", v: "good" }, { t: "No vacunarse", v: "bad" },
+        { t: "Beber agua potable", v: "good" }, { t: "Mucha chatarra", v: "bad" }
+    ];
+    let act1Score = 0;
+    let draggedItem = null;
+
+    function initAct1() {
+        act1Score = 0;
+        draggedItem = null;
+        const container = document.getElementById('act1-items');
+        container.innerHTML = '';
+        document.getElementById('act1-good').innerHTML = '✅ Saludables';
+        document.getElementById('act1-bad').innerHTML = '❌ Peligrosos';
+
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            zone.ondragover = e => { e.preventDefault(); zone.classList.add('drag-over'); };
+            zone.ondragleave = e => { zone.classList.remove('drag-over'); };
+            zone.ondrop = e => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                if(draggedItem) procesarCaida(draggedItem, zone.dataset.zone);
+            };
+        });
+
+        let shuffled = act1Data.sort(() => Math.random() - 0.5);
+        shuffled.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'draggable';
+            el.innerText = item.t;
+            el.dataset.val = item.v;
+            el.setAttribute('draggable', 'true');
+
+            el.ondragstart = e => { draggedItem = el; setTimeout(() => el.classList.add('dragging'), 0); };
+            el.ondragend = e => { el.classList.remove('dragging'); draggedItem = null; };
+
+            el.ontouchstart = e => {
+                draggedItem = el; el.classList.add('dragging');
+                el.style.position = 'absolute'; el.style.zIndex = 1000;
+                moverElementoTactil(e.touches[0], el);
+            };
+            
+            el.ontouchmove = e => { e.preventDefault(); moverElementoTactil(e.touches[0], el); };
+            
+            el.ontouchend = e => {
+                el.classList.remove('dragging'); el.style.position = 'static'; el.style.zIndex = 'auto';
+                el.style.display = 'none'; 
+                let touch = e.changedTouches[0];
+                let elemDebajo = document.elementFromPoint(touch.clientX, touch.clientY);
+                el.style.display = 'block';
+
+                let zona = elemDebajo ? elemDebajo.closest('.drop-zone') : null;
+                if (zona && zona.dataset.zone) procesarCaida(el, zona.dataset.zone);
+                else document.getElementById('act1-items').appendChild(el); 
+                draggedItem = null;
+            };
+            container.appendChild(el);
+        });
+    }
+
+    function moverElementoTactil(touch, el) {
+        el.style.left = touch.pageX - (el.offsetWidth / 2) + 'px';
+        el.style.top = touch.pageY - (el.offsetHeight / 2) + 'px';
+    }
+
+    function procesarCaida(item, targetZone) {
+        if(item.dataset.val === targetZone) {
+            playSound('correct'); addPoints(20);
+            document.getElementById(`act1-${targetZone}`).appendChild(item);
+            item.setAttribute('draggable', 'false');
+            item.ontouchstart = null; item.ontouchmove = null; item.ontouchend = null;
+            item.style.cursor = 'default'; item.style.border = 'none';
+            act1Score++;
+            if(act1Score === act1Data.length) setTimeout(() => completeActivity(0), 500);
+        } else { playSound('wrong'); document.getElementById('act1-items').appendChild(item); }
+    }
+
+    /* ACT 2: DETECTAR ERROR */
+    const act2Items = [
+        { e: '🍔', bad: true, x: 20, y: 30, msg: "Comida chatarra en exceso causa enfermedades." },
+        { e: '🦠', bad: true, x: 70, y: 70, msg: "Basura atrae bacterias." },
+        { e: '🤧', bad: true, x: 50, y: 20, msg: "Toser sin cubrirse propaga el virus." },
+        { e: '🚱', bad: true, x: 80, y: 40, msg: "Beber agua no potable causa diarrea." },
+        { e: '🏃', bad: false, x: 10, y: 60, msg: "" },
+        { e: '🍎', bad: false, x: 40, y: 80, msg: "" }
+    ];
+    let act2Found = 0;
+    function initAct2() {
+        act2Found = 0;
+        const scene = document.getElementById('act2-scene');
+        scene.innerHTML = '<div style="position:absolute; bottom:0; width:100%; height:40%; background:var(--verde);"></div>';
+        act2Items.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'scene-item'; el.innerText = item.e; el.style.left = item.x + '%'; el.style.top = item.y + '%';
+            el.onclick = () => {
+                if(el.classList.contains('found-error')) return;
+                if(item.bad) {
+                    playSound('correct'); el.classList.add('found-error'); addPoints(20); act2Found++;
+                    alert("¡Bien! " + item.msg);
+                    if(act2Found === 4) completeActivity(1);
+                } else playSound('wrong');
+            };
+            scene.appendChild(el);
+        });
+    }
+
+    /* ACT 3: V/F */
+    const act3Data = [ { q: "Las vacunas ayudan a tu cuerpo a crear defensas.", a: true }, { q: "Comer tierra te hace más fuerte.", a: false }, { q: "Lavarse las manos elimina muchos gérmenes.", a: true }, { q: "Solo los niños deben cuidar su higiene.", a: false } ];
+    let act3Index = 0;
+    function initAct3() { act3Index = 0; showAct3Q(); }
+    function showAct3Q() {
+        if(act3Index < act3Data.length) document.getElementById('act3-card').innerText = act3Data[act3Index].q;
+        else completeActivity(2);
+    }
+    function checkAct3(ans) {
+        if(ans === act3Data[act3Index].a) { playSound('correct'); addPoints(20); } else playSound('wrong');
+        act3Index++; showAct3Q();
+    }
+
+    /* ACT 4: MEMORAMA CORREGIDO */
+    const memData = [ { e: '🧼', m: '1' }, { e: 'Lavado', m: '1' }, { e: '💉', m: '2' }, { e: 'Protección', m: '2' }, { e: '🍎', m: '3' }, { e: 'Nutrición', m: '3' }, { e: '😴', m: '4' }, { e: 'Descanso', m: '4' } ];
+    let memCards = [], memFlipped = [], memMatches = 0;
+    
+    function initAct4() {
+        memMatches = 0; memFlipped = [];
+        const grid = document.getElementById('act4-grid'); grid.innerHTML = '';
+        memCards = [...memData].sort(() => Math.random() - 0.5);
+        memCards.forEach((item, idx) => {
+            const card = document.createElement('div');
+            card.className = 'memory-card'; card.dataset.m = item.m; 
+            
+            // Corrección: El contenido va dentro de un span para revertir el espejo
+            card.innerHTML = `<span>${item.e}</span>`;
+            
+            card.onclick = () => {
+                if(memFlipped.length >= 2 || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+                playSound('click'); card.classList.add('flipped'); memFlipped.push(card);
+                if(memFlipped.length === 2) setTimeout(checkMem, 1000);
+            };
+            grid.appendChild(card);
+        });
+    }
+    
+    function checkMem() {
+        const [c1, c2] = memFlipped;
+        if(c1.dataset.m === c2.dataset.m) {
+            playSound('correct'); c1.classList.add('matched'); c2.classList.add('matched'); addPoints(20); memMatches++;
+            if(memMatches === memData.length / 2) completeActivity(3);
+        } else { playSound('wrong'); c1.classList.remove('flipped'); c2.classList.remove('flipped'); }
+        memFlipped = [];
+    }
+
+    /* ACT 5: CARRERA CORREGIDO (Añadido control de ratón) */
+    let canvas, ctx, act5Req, player = { x: 250, w: 100, h: 20, speed: 20 }, fallingItems = [], act5Score = 0;
+    
+    function initAct5() {
+        canvas = document.getElementById('gameCanvas'); ctx = canvas.getContext('2d');
+        player.x = canvas.width / 2 - player.w / 2; fallingItems = []; act5Score = 0; cancelAct5();
+        
+        window.addEventListener('keydown', handleKey);
+        canvas.addEventListener('touchmove', handleTouch, {passive: false});
+        
+        // Corrección: Evento de movimiento de ratón
+        canvas.addEventListener('mousemove', handleMouse);
+        
+        gameLoop();
+    }
+    
+    function cancelAct5() {
+        if(act5Req) cancelAnimationFrame(act5Req);
+        window.removeEventListener('keydown', handleKey);
+        if(canvas) {
+            canvas.removeEventListener('touchmove', handleTouch);
+            canvas.removeEventListener('mousemove', handleMouse);
+        }
+    }
+    
+    function handleKey(e) {
+        if(e.key === 'ArrowLeft' && player.x > 0) player.x -= player.speed;
+        if(e.key === 'ArrowRight' && player.x < canvas.width - player.w) player.x += player.speed;
+    }
+    
+    function handleTouch(e) {
+        e.preventDefault();
+        let touchX = e.touches[0].clientX - canvas.getBoundingClientRect().left;
+        player.x = touchX - player.w / 2;
+        limitPlayerBounds();
+    }
+    
+    // Nueva función para mover con el ratón
+    function handleMouse(e) {
+        let rect = canvas.getBoundingClientRect();
+        let mouseX = e.clientX - rect.left;
+        player.x = mouseX - player.w / 2;
+        limitPlayerBounds();
+    }
+
+    function limitPlayerBounds() {
+        if(player.x < 0) player.x = 0;
+        if(player.x > canvas.width - player.w) player.x = canvas.width - player.w;
+    }
+
+    function gameLoop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#A5C83F'; ctx.fillRect(player.x, canvas.height - 30, player.w, 20);
+        if(Math.random() < 0.03) {
+            const isGood = Math.random() > 0.4;
+            fallingItems.push({ x: Math.random() * (canvas.width - 30), y: 0, good: isGood, emoji: isGood ? (Math.random()>0.5?'🍎':'💧') : '🦠' });
+        }
+        for(let i = fallingItems.length - 1; i >= 0; i--) {
+            let item = fallingItems[i]; item.y += 3;
+            ctx.font = '30px Arial'; ctx.fillText(item.emoji, item.x, item.y);
+            if(item.y > canvas.height - 30 && item.x > player.x - 20 && item.x < player.x + player.w) {
+                if(item.good) { playSound('correct'); addPoints(10); act5Score++; }
+                else { playSound('wrong'); act5Score = Math.max(0, act5Score - 1); }
+                fallingItems.splice(i, 1);
+            } else if (item.y > canvas.height) fallingItems.splice(i, 1);
+        }
+        ctx.fillStyle = '#0059A6'; ctx.font = '20px Arial'; ctx.fillText(`Sanos atrapados: ${act5Score}/10`, 10, 30);
+        if(act5Score >= 10) { cancelAct5(); completeActivity(4); } else act5Req = requestAnimationFrame(gameLoop);
+    }
+
+    /* ACT 6: RULETA CORREGIDA (Giro fluido acumulativo) */
+    const rouletteQ = [ { q: "¿Qué previenen las vacunas?", opts: ["Enfermedades", "El sueño"], a: 0 }, { q: "¿Antes de comer debes...?", opts: ["Jugar", "Lavarte las manos"], a: 1 }, { q: "¿Cuántas horas dormir?", opts: ["8-10 horas", "2 horas"], a: 0 }, { q: "¿Bebida más sana?", opts: ["Gaseosa", "Agua Potable"], a: 1 } ];
+    let wheelSpinning = false, act6Score = 0;
+    
+    // Corrección: Variable para guardar la rotación actual y que siempre sume hacia adelante
+    let currentRotation = 0; 
+    
+    function initAct6() {
+        currentRotation = 0;
+        document.getElementById('act6-wheel').style.transform = `rotate(0deg)`; 
+        document.getElementById('question-box').style.display = 'none';
+        document.getElementById('act6-spin-btn').style.display = 'inline-block'; 
+        wheelSpinning = false; act6Score = 0;
+    }
+    
+    function spinWheel() {
+        if(wheelSpinning) return; 
+        wheelSpinning = true; playSound('click');
+        const wheel = document.getElementById('act6-wheel');
+        
+        // Corrección: Se suma un valor al azar (mínimo 4 vueltas = 1440 grados) a la rotación actual
+        currentRotation += Math.floor(Math.random() * 360) + 1440; 
+        wheel.style.transform = `rotate(${currentRotation}deg)`;
+        
+        setTimeout(() => { playSound('correct'); showRouletteQuestion(); }, 4000);
+    }
+    
+    function showRouletteQuestion() {
+        document.getElementById('act6-spin-btn').style.display = 'none';
+        const box = document.getElementById('question-box'), qData = rouletteQ[act6Score % rouletteQ.length];
+        document.getElementById('act6-q').innerText = qData.q;
+        const optsDiv = document.getElementById('act6-opts'); optsDiv.innerHTML = '';
+        qData.opts.forEach((opt, idx) => {
+            const b = document.createElement('button'); b.className = 'btn btn-celeste'; b.style.fontSize = '2vmin'; b.style.margin = '1vmin'; b.innerText = opt;
+            b.onclick = () => {
+                if(idx === qData.a) {
+                    playSound('correct'); addPoints(20); act6Score++; box.style.display = 'none';
+                    if(act6Score >= 3) completeActivity(5);
+                    else { wheelSpinning = false; document.getElementById('act6-spin-btn').style.display = 'inline-block'; }
+                } else {
+                    playSound('wrong'); alert("Incorrecto. Intenta girar de nuevo."); box.style.display = 'none';
+                    wheelSpinning = false; document.getElementById('act6-spin-btn').style.display = 'inline-block';
+                }
+            };
+            optsDiv.appendChild(b);
+        });
+        box.style.display = 'block';
+    }
+
+    /* ACT 7: ESCAPE ROOM */
+    function initAct7() { document.getElementById('d1').value = 0; document.getElementById('d2').value = 0; document.getElementById('d3').value = 0; }
+    function checkLock() {
+        if(document.getElementById('d1').value == 7 && document.getElementById('d2').value == 2 && document.getElementById('d3').value == 8) {
+            addPoints(50); completeActivity(6);
+        } else { playSound('wrong'); showModal("Código Incorrecto", "Revisa las pistas. Pista: Te bañas todos los días, vas al dentista dos veces, tomas 8 vasos."); }
+    }
+
+    /* ACT 8: FINAL QUIZ */
+    const finalQ = [ { q: "¿Cuál no es un hábito saludable?", opts: ["Dormir 9h", "Comer frutas", "No bañarse", "Beber agua"], a: 2 }, { q: "Las vacunas nos protegen creando...", opts: ["Dolor", "Anticuerpos", "Hambre", "Sueño"], a: 1 }, { q: "Para evitar virus respiratorios debo...", opts: ["Toser al aire", "Cubrirme al toser", "Gritar", "No lavarme"], a: 1 }, { q: "El lavado de manos debe durar al menos...", opts: ["5 seg", "20 seg", "1 hora", "No es necesario"], a: 1 }, { q: "¿Por qué el ejercicio es importante?", opts: ["Fortalece el corazón", "Daña los huesos", "Causa caries", "Atrae virus"], a: 0 } ];
+    let quizIndex = 0, quizCorrect = 0;
+    function initAct8() { quizIndex = 0; quizCorrect = 0; showQuizQ(); }
+    function showQuizQ() {
+        if(quizIndex < finalQ.length) {
+            const data = finalQ[quizIndex];
+            document.getElementById('act8-card').innerText = data.q; document.getElementById('act8-current').innerText = quizIndex + 1;
+            const optsDiv = document.getElementById('act8-opts'); optsDiv.innerHTML = '';
+            data.opts.forEach((opt, i) => {
+                const btn = document.createElement('button'); btn.className = 'btn btn-azul'; btn.innerText = opt;
+                btn.onclick = () => { if(i === data.a) { playSound('correct'); addPoints(20); quizCorrect++; } else playSound('wrong'); quizIndex++; showQuizQ(); };
+                optsDiv.appendChild(btn);
+            });
+        } else {
+            if(quizCorrect >= 4) completeActivity(7);
+            else { showModal("Vuelve a intentarlo", "Necesitas al menos 4 correctas. ¡Tú puedes!"); initAct8(); }
+        }
+    }
+
+    /* CONFETI */
+    let confettiCanvas, cCtx, particles = [];
+    function startConfetti() {
+        playSound('win'); confettiCanvas = document.getElementById('confetti'); confettiCanvas.style.display = 'block';
+        confettiCanvas.width = window.innerWidth; confettiCanvas.height = window.innerHeight; cCtx = confettiCanvas.getContext('2d');
+        for(let i=0; i<150; i++) particles.push({ x: Math.random() * confettiCanvas.width, y: Math.random() * confettiCanvas.height - confettiCanvas.height, r: Math.random() * 6 + 4, d: Math.random() * 25 + 10, color: ['#0059A6', '#00A8E8', '#A5C83F', '#FFEC01', '#833189', '#E32085'][Math.floor(Math.random()*6)], tilt: Math.random() * 10 - 10 });
+        requestAnimationFrame(drawConfetti);
+    }
+    function drawConfetti() {
+        cCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        particles.forEach((p) => {
+            p.y += Math.cos(p.d) + 1 + p.r/2; p.x += Math.sin(p.d);
+            cCtx.beginPath(); cCtx.lineWidth = p.r; cCtx.strokeStyle = p.color; cCtx.moveTo(p.x + p.tilt, p.y); cCtx.lineTo(p.x, p.y + p.tilt + p.r); cCtx.stroke();
+            if(p.y > confettiCanvas.height) p.y = -10;
+        });
+        requestAnimationFrame(drawConfetti);
+    }
+</script>
+</body>
+</html>

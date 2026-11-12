@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sintaxis Aventura - Laboratorio de Oraciones</title>
+    <!-- Tailwind CSS para diseño rápido y responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fuentes amigables y de alta legibilidad para educación -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Quicksand:wght@300..700&family=Material+Icons&display=swap" rel="stylesheet">
+    <!-- Confeti para celebrar hitos pedagógicos -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --font-game: 'Fredoka', sans-serif;
+            --font-body: 'Quicksand', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+        }
+
+        .title-font {
+            font-family: var(--font-game);
+        }
+
+        /* Bloques de construcción optimizados con micro-interacciones */
+        .word-card {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .word-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .word-card:active {
+            transform: scale(0.97);
+        }
+
+        /* Bloqueo de scroll principal para simular una app nativa inmersiva */
+        .height-lock {
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
+        }
+
+        .custom-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.02);
+            border-radius: 99px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.12);
+            border-radius: 99px;
+        }
+    </style>
+</head>
+<body class="height-lock flex flex-col justify-between">
+
+    <header class="bg-white border-b-4 border-indigo-100 py-3 px-6 flex-shrink-0 shadow-sm z-10">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 text-white p-2.5 rounded-2xl shadow-md flex items-center justify-center">
+                    <span class="material-icons text-2xl animate-pulse">menu_book</span>
+                </div>
+                <div>
+                    <h1 class="title-font text-xl md:text-2xl text-indigo-900 font-extrabold leading-none flex items-center gap-2">
+                        Sintaxis Aventura <span class="text-[10px] bg-amber-500 text-white font-bold py-0.5 px-2.5 rounded-full uppercase tracking-wider">Primaria Pro</span>
+                    </h1>
+                    <p class="text-[11px] text-slate-500 font-semibold">Aprende Sujeto, Predicado y sus Núcleos de forma interactiva</p>
+                </div>
+            </div>
+
+            <!-- Panel de Estado del Alumno -->
+            <div class="flex items-center gap-3">
+                <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl px-4 py-1.5 flex items-center gap-2 shadow-sm">
+                    <span class="text-base">⭐</span>
+                    <span class="text-xs font-black title-font text-amber-800" id="hud-score">0 Puntos</span>
+                </div>
+                <div class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl px-4 py-1.5 flex items-center gap-2 shadow-sm">
+                    <span class="text-base">🏆</span>
+                    <span class="text-xs font-black title-font text-emerald-800" id="hud-badges">0/3 Logros</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow min-h-0 flex flex-col p-4 max-w-7xl w-full mx-auto gap-4">
+        
+        <!-- Pestañas de Navegación del Alumno -->
+        <nav class="flex gap-2 justify-center md:justify-start flex-shrink-0">
+            <button onclick="switchTab('tab-assemble')" id="btn-tab-assemble" class="bg-indigo-600 text-white text-xs md:text-sm font-bold py-2.5 px-5 rounded-2xl flex items-center gap-2 shadow-md transition-all">
+                <span class="material-icons text-base">construction</span>
+                <span>1. Constructor Mecánico</span>
+            </button>
+            <button onclick="switchTab('tab-analyzer')" id="btn-tab-analyzer" class="bg-white border-2 border-indigo-100 text-indigo-800 text-xs md:text-sm font-bold py-2.5 px-5 rounded-2xl flex items-center gap-2 hover:bg-indigo-50 transition-all">
+                <span class="material-icons text-base">center_focus_strong</span>
+                <span>2. Analizador de Oraciones</span>
+            </button>
+            <button onclick="switchTab('tab-quiz')" id="btn-tab-quiz" class="bg-white border-2 border-indigo-100 text-indigo-800 text-xs md:text-sm font-bold py-2.5 px-5 rounded-2xl flex items-center gap-2 hover:bg-indigo-50 transition-all">
+                <span class="material-icons text-base">military_tech</span>
+                <span>3. Examen del Reino</span>
+            </button>
+        </nav>
+
+        <!-- PESTAÑA 1: CONSTRUCTOR DE ORACIONES (TALLER) -->
+        <section id="tab-assemble" class="flex-grow min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+            
+            <!-- Tablero de Ensamble de Piezas (8/12) -->
+            <div class="lg:col-span-8 bg-white rounded-3xl p-5 shadow-md border-2 border-slate-100 flex flex-col justify-between min-h-0">
+                <div class="flex-grow min-h-0 flex flex-col justify-between gap-3">
+                    
+                    <!-- Meta e Instrucción de la oración actual -->
+                    <div class="flex justify-between items-center flex-shrink-0">
+                        <span class="bg-indigo-100 text-indigo-800 font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wide">Misión de Construcción</span>
+                        <span class="text-xs text-slate-500 font-bold" id="sentence-target-desc">Carga un kit para comenzar</span>
+                    </div>
+
+                    <!-- Canchas de Ensamble Visual (Sujeto y Predicado) -->
+                    <div class="space-y-4 flex-grow flex flex-col justify-center">
+                        
+                        <!-- Caja de Depósito del Sujeto -->
+                        <div class="border-3 border-dashed border-sky-300 rounded-2xl p-4 bg-sky-50/20 relative transition-all" id="subject-dropzone">
+                            <span class="absolute top-2 left-4 text-sky-600 font-black text-[10px] uppercase tracking-wider flex items-center gap-1">
+                                <span class="w-2 h-2 bg-sky-500 rounded-full"></span> Sujeto (¿Quién o qué hace la acción?)
+                            </span>
+                            <div class="flex flex-wrap gap-2 items-center justify-center min-h-[64px] pt-4" id="subject-slots-container">
+                                <p class="text-slate-400 text-xs italic" id="subject-placeholder">Las palabras del sujeto se mostrarán aquí...</p>
+                            </div>
+                        </div>
+
+                        <!-- Caja de Depósito del Predicado -->
+                        <div class="border-3 border-dashed border-rose-300 rounded-2xl p-4 bg-rose-50/20 relative transition-all" id="predicate-dropzone">
+                            <span class="absolute top-2 left-4 text-rose-600 font-black text-[10px] uppercase tracking-wider flex items-center gap-1">
+                                <span class="w-2 h-2 bg-rose-500 rounded-full"></span> Predicado (¿Qué se dice o qué hace el sujeto?)
+                            </span>
+                            <div class="flex flex-wrap gap-2 items-center justify-center min-h-[64px] pt-4" id="predicate-slots-container">
+                                <p class="text-slate-400 text-xs italic" id="predicate-placeholder">Las palabras del predicado se mostrarán aquí...</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Depósito Inferior de Palabras Sueltas con Botones Integrados -->
+                    <div class="border-t border-slate-100 pt-3 flex-shrink-0">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-2">
+                            <h3 class="title-font font-bold text-slate-700 text-sm uppercase flex items-center gap-1.5">
+                                <span>📦 Banco de Palabras Disponibles:</span>
+                            </h3>
+                            <div class="flex gap-2">
+                                <button onclick="setSentenceSet(0)" id="set-btn-0" class="text-xs font-bold px-3 py-1 rounded-xl transition-all">🪐 Astronautas</button>
+                                <button onclick="setSentenceSet(1)" id="set-btn-1" class="text-xs font-bold px-3 py-1 rounded-xl transition-all">🐕 Mascotas</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Caja contenedora de cartas físicas -->
+                        <div class="flex flex-wrap gap-3 p-3 bg-slate-50 border-2 border-slate-200 rounded-2xl min-h-[100px] max-h-[140px] overflow-y-auto custom-scroll justify-center items-center" id="words-bank">
+                            <!-- Inyectado dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="flex gap-3 mt-4 flex-shrink-0">
+                    <button onclick="clearBuilder()" class="bg-slate-200 hover:bg-slate-300 active:bg-slate-400 text-slate-800 font-bold py-2.5 px-5 rounded-2xl text-xs md:text-sm flex items-center gap-2 transition-all">
+                        <span class="material-icons text-base">restart_alt</span>
+                        <span>Reiniciar</span>
+                    </button>
+                    <button onclick="verifySentenceAssembly()" class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-bold py-2.5 px-5 rounded-2xl text-xs md:text-sm flex-grow flex items-center justify-center gap-2 shadow-md transition-all">
+                        <span class="material-icons text-lg">rocket_launch</span>
+                        <span>¡Verificar Oración!</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tutor Inteligente "Gramati-Bot" (4/12) -->
+            <div class="lg:col-span-4 flex flex-col gap-4 min-h-0">
+                <div class="bg-white rounded-3xl p-5 shadow-md border-2 border-indigo-50 flex flex-col justify-between flex-grow min-h-0">
+                    <div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="text-4xl animate-bounce">🤖</span>
+                            <div>
+                                <h3 class="title-font text-base text-indigo-950 font-bold">Gramati-Bot</h3>
+                                <p class="text-[10px] text-indigo-500 font-extrabold uppercase tracking-wider">Asistente Lingüístico</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Burbuja de Diálogo Interactiva -->
+                        <div class="relative bg-indigo-50 border border-indigo-100 p-4 rounded-2xl text-slate-700 text-sm leading-relaxed font-semibold">
+                            <div class="absolute -left-2 top-5 w-4 h-4 bg-indigo-50 border-l border-b border-indigo-100 rotate-45"></div>
+                            <p id="tutor-instructions">
+                                ¡Hola explorador! Elige un Kit arriba. En cada carta verás botones: presiona <strong class="text-sky-600">S</strong> para enviarla al Sujeto o <strong class="text-rose-600">P</strong> para enviarla al Predicado.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta de Refuerzo de Teoría -->
+                    <div class="bg-amber-50 border-2 border-amber-200 p-4 rounded-2xl">
+                        <h4 class="font-extrabold text-xs text-amber-900 flex items-center gap-2 mb-1.5">
+                            <span class="material-icons text-base text-amber-600">tips_and_updates</span>
+                            <span>La Regla de Oro Sintáctica</span>
+                        </h4>
+                        <p class="text-[11px] text-amber-800 leading-relaxed font-semibold">
+                            El <strong>Sujeto</strong> y el <strong>Predicado</strong> siempre deben concordar en número (singular/plural) y persona. El verbo es el motor que da sentido a toda la oración.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PESTAÑA 2: ESCÁNER DE NÚCLEOS -->
+        <section id="tab-analyzer" class="hidden flex-grow min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+            
+            <!-- Tablero del Analizador (8/12) -->
+            <div class="lg:col-span-8 bg-white rounded-3xl p-5 shadow-md border-2 border-slate-100 flex flex-col justify-between min-h-0">
+                <div class="flex-grow min-h-0 flex flex-col gap-3">
+                    <div class="text-center mb-1">
+                        <span class="bg-purple-100 text-purple-800 font-bold text-[10px] px-3 py-1 rounded-full uppercase tracking-wider inline-block">Laboratorio de Sintaxis</span>
+                        <h2 class="title-font text-lg md:text-xl text-indigo-950 font-bold mt-1">Escáner Sintáctico Profesional</h2>
+                        <p class="text-slate-500 text-xs font-semibold">Toca una palabra y asígnale su rol sintáctico para revelar sus núcleos.</p>
+                    </div>
+
+                    <!-- Selectores de Oraciones para Analizar -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 flex-shrink-0">
+                        <button onclick="loadSentenceToAnalyze(0)" id="analyzer-sent-0" class="border-2 text-left p-3 rounded-2xl text-xs font-bold transition-all truncate shadow-sm">
+                            🚀 O1: La astronauta explora Marte.
+                        </button>
+                        <button onclick="loadSentenceToAnalyze(1)" id="analyzer-sent-1" class="border-2 text-left p-3 rounded-2xl text-xs font-bold transition-all truncate shadow-sm">
+                            🐈 O2: Los gatitos toman leche tibia.
+                        </button>
+                        <button onclick="loadSentenceToAnalyze(2)" id="analyzer-sent-2" class="border-2 text-left p-3 rounded-2xl text-xs font-bold transition-all truncate shadow-sm">
+                            🌳 O3: Un árbol purifica el aire.
+                        </button>
+                    </div>
+
+                    <!-- Consola Virtual del Escáner (Tablero de Pintura) -->
+                    <div class="bg-slate-900 rounded-3xl p-6 border-4 border-indigo-950 flex flex-col items-center justify-center flex-grow min-h-0 relative overflow-hidden">
+                        <div class="flex flex-wrap gap-3 justify-center items-center" id="analysis-interactive-area">
+                            <!-- Inyectado dinámicamente -->
+                        </div>
+
+                        <!-- Paleta de Etiquetas Sintácticas -->
+                        <div class="mt-6 flex flex-wrap gap-2 justify-center flex-shrink-0" id="role-selector-panel">
+                            <button onclick="assignRoleToSelected('Sujeto')" class="bg-sky-600 hover:bg-sky-700 active:scale-95 text-white font-extrabold px-4 py-2 rounded-2xl text-xs flex items-center gap-2 shadow-md transition-all">
+                                <span class="w-3 h-3 bg-sky-200 rounded-full"></span> Sujeto (S)
+                            </button>
+                            <button onclick="assignRoleToSelected('NS')" class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-extrabold px-4 py-2 rounded-2xl text-xs flex items-center gap-2 shadow-md transition-all">
+                                <span class="w-3 h-3 bg-yellow-300 rounded-full animate-ping"></span> Núcleo Sujeto (NS)
+                            </button>
+                            <button onclick="assignRoleToSelected('Predicado')" class="bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-extrabold px-4 py-2 rounded-2xl text-xs flex items-center gap-2 shadow-md transition-all">
+                                <span class="w-3 h-3 bg-rose-200 rounded-full"></span> Predicado (P)
+                            </button>
+                            <button onclick="assignRoleToSelected('NP')" class="bg-amber-600 hover:bg-amber-700 active:scale-95 text-white font-extrabold px-4 py-2 rounded-2xl text-xs flex items-center gap-2 shadow-md transition-all">
+                                <span class="w-3 h-3 bg-amber-200 rounded-full animate-ping"></span> Núcleo Predicado (NP)
+                            </button>
+                            <button onclick="clearSelectedWordRole()" class="bg-slate-700 hover:bg-slate-800 text-white font-extrabold px-4 py-2 rounded-2xl text-xs flex items-center gap-2 transition-all">
+                                <span class="material-icons text-base">cleaning_services</span> Limpiar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Consola Diagnóstica en la Base -->
+                <div class="bg-slate-50 p-3 rounded-2xl border-2 border-slate-200 flex flex-col md:flex-row justify-between items-center gap-3 text-xs flex-shrink-0 mt-3">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl" id="analyzer-diagnostic-icon">🔍</span>
+                        <span class="text-slate-600 font-extrabold" id="analyzer-diagnostic-desc">Selecciona palabras para asignarles un rol.</span>
+                    </div>
+                    <button onclick="checkAnalysisCorrectness()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-2 px-5 rounded-xl transition-all flex items-center gap-1.5 shadow-sm">
+                        <span class="material-icons text-base">playlist_add_check</span>
+                        <span>Validar Análisis</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panel Teórico del Analizador (4/12) -->
+            <div class="lg:col-span-4 bg-slate-900 rounded-3xl p-5 shadow-md text-white flex flex-col justify-between min-h-0">
+                <div class="flex-grow min-h-0 flex flex-col justify-between">
+                    <div>
+                        <span class="bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold text-[10px] px-3 py-1 rounded-full uppercase tracking-wider mb-3 inline-block">Código de Clasificación</span>
+                        <h3 class="title-font text-base font-bold mb-3">Guía de Identificación</h3>
+                        
+                        <!-- Lista de Reglas Pedagógicas -->
+                        <ul class="space-y-3 text-xs text-slate-300 font-semibold">
+                            <li class="flex items-start gap-2">
+                                <span class="bg-sky-500 text-white text-[11px] w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 font-bold">S</span>
+                                <span><strong>Sujeto:</strong> Responde a la pregunta: ¿Quién ejecuta la acción?</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="bg-indigo-600 text-white text-[11px] w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 font-bold">NS</span>
+                                <span><strong>Núcleo del Sujeto:</strong> El sustantivo o pronombre más importante.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="bg-rose-500 text-white text-[11px] w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 font-bold">P</span>
+                                <span><strong>Predicado:</strong> La acción completa y todas sus circunstancias.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="bg-amber-600 text-white text-[11px] w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 font-bold">NP</span>
+                                <span><strong>Núcleo del Predicado:</strong> El verbo conjugado (la acción en sí).</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white/5 border border-white/10 p-4 rounded-2xl mt-4">
+                        <p class="text-[11px] text-indigo-200 leading-relaxed font-semibold">
+                            💡 <strong>Tip Pro:</strong> El núcleo del sujeto nunca empieza con una preposición (de, en, con, etc.).
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PESTAÑA 3: DESAFÍO TRIVIA -->
+        <section id="tab-quiz" class="hidden flex-grow min-h-0 flex flex-col justify-center max-w-2xl mx-auto w-full">
+            
+            <!-- Ventana de Trivia -->
+            <div id="quiz-playable-area" class="bg-white border-2 border-indigo-100 rounded-3xl p-6 shadow-md flex flex-col justify-between flex-grow min-h-0">
+                <div>
+                    <!-- Encabezado de Pregunta -->
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-xs font-bold text-indigo-600 uppercase tracking-widest" id="quiz-question-number">Pregunta 1 de 5</span>
+                        <div class="w-36 bg-indigo-50 h-3 rounded-full overflow-hidden">
+                            <div class="bg-indigo-600 h-full transition-all duration-300" id="quiz-progress-bar" style="width: 20%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Enunciado Principal -->
+                    <h3 class="title-font text-lg md:text-xl text-indigo-950 font-bold mb-5 text-center leading-normal" id="quiz-question-text">
+                        Cargando desafío gramatical...
+                    </h3>
+
+                    <!-- Opciones de Respuesta -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="quiz-options-container">
+                        <!-- Botones Inyectados -->
+                    </div>
+                </div>
+
+                <!-- Botón de Soporte de Trivia -->
+                <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center flex-shrink-0">
+                    <span class="text-[11px] text-slate-500 font-bold flex items-center gap-1.5">
+                        <span class="material-icons text-base text-indigo-500">military_tech</span>
+                        <span>¡Logra el puntaje máximo para graduarte!</span>
+                    </span>
+                    <button onclick="showQuizHint()" class="bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-1.5 px-4 rounded-xl text-xs flex items-center gap-1 transition-all">
+                        <span class="material-icons text-xs">emoji_objects</span>
+                        <span>Pista rápida</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pantalla del Diploma de Graduación -->
+            <div id="quiz-congratulations" class="hidden bg-gradient-to-br from-[#FFFDF9] to-[#F0FDF4] border-4 border-indigo-600 p-8 rounded-3xl shadow-xl text-center relative max-w-md mx-auto my-auto flex flex-col items-center justify-center">
+                <span class="text-6xl block animate-bounce mb-3">🎓</span>
+                <h3 class="title-font text-2xl text-indigo-900 font-black tracking-tight leading-none">CERTIFICADO ACADÉMICO</h3>
+                <p class="text-[10px] text-indigo-500 font-extrabold uppercase tracking-widest mt-1 mb-4">Otorgado por la Academia Gramati-Bot</p>
+                
+                <p class="text-[11px] text-slate-500 uppercase font-extrabold tracking-wider leading-none">En reconocimiento al talento del alumno:</p>
+                <h4 class="title-font text-2xl text-indigo-800 my-2 font-black" id="student-cert-name">Gran Sintáctico</h4>
+                
+                <p class="text-xs text-indigo-950 max-w-xs mx-auto leading-relaxed font-semibold">
+                    Ha demostrado comprender con maestría el orden, coherencia y clasificación del Sujeto y el Predicado en la Lengua Española.
+                </p>
+
+                <!-- Puntuaciones del Certificado -->
+                <div class="grid grid-cols-2 gap-4 mt-6 pt-4 border-t border-dashed border-indigo-200 w-full">
+                    <div>
+                        <span class="text-[9px] text-indigo-600 uppercase font-black block tracking-wider">Aciertos del Examen</span>
+                        <span class="title-font text-lg text-indigo-800 font-bold" id="final-score">500 / 500 Puntos</span>
+                    </div>
+                    <div>
+                        <span class="text-[9px] text-indigo-600 uppercase font-black block tracking-wider">Categoría</span>
+                        <span class="title-font text-lg text-amber-500 font-bold">Experto ⭐⭐⭐</span>
+                    </div>
+                </div>
+
+                <button onclick="restartQuiz()" class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black py-3 px-8 rounded-2xl text-xs mt-6 shadow-md uppercase tracking-wider w-full">
+                    Repetir Desafío
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-white border-t-2 border-slate-100 py-2 px-6 flex-shrink-0 text-center">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2 text-[11px] text-slate-400 font-bold">
+            <div class="flex gap-3 justify-center">
+                <span class="bg-sky-100 text-sky-800 px-3 py-1 rounded-full">Sujeto: Celeste</span>
+                <span class="bg-rose-100 text-rose-800 px-3 py-1 rounded-full">Predicado: Rosa</span>
+            </div>
+            <div>
+                Unidad Didáctica de Práctica Lingüística Digital 🚀
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- BASE DE DATOS DE PALABRAS DEL CONSTRUCTOR (TAB 1) ---
+        const sentenceKits = [
+            // Kit 0: El Espacio (Astronautas)
+            {
+                words: [
+                    { word: "La", role: "sujeto" },
+                    { word: "audaz", role: "sujeto" },
+                    { word: "astronauta", role: "sujeto" },
+                    { word: "explora", role: "predicado" },
+                    { word: "el", role: "predicado" },
+                    { word: "planeta", role: "predicado" },
+                    { word: "rojo", role: "predicado" }
+                ],
+                sentenceTarget: "La audaz astronauta explora el planeta rojo",
+                targetSujeto: ["La", "audaz", "astronauta"],
+                targetPredicado: ["explora", "el", "planeta", "rojo"]
+            },
+            // Kit 1: Mascotas y Naturaleza
+            {
+                words: [
+                    { word: "Mis", role: "sujeto" },
+                    { word: "tres", role: "sujeto" },
+                    { word: "perros", role: "sujeto" },
+                    { word: "corren", role: "predicado" },
+                    { word: "en", role: "predicado" },
+                    { word: "el", role: "predicado" },
+                    { word: "parque", role: "predicado" }
+                ],
+                sentenceTarget: "Mis tres perros corren en el parque",
+                targetSujeto: ["Mis", "tres", "perros"],
+                targetPredicado: ["corren", "en", "el", "parque"]
+            }
+        ];
+
+        // --- BASE DE DATOS DE ORACIONES DEL ANALIZADOR (TAB 2) ---
+        const analyzerSentences = [
+            {
+                text: "La intrépida astronauta explora Marte",
+                words: [
+                    { word: "La", correctRole: "Sujeto" },
+                    { word: "intrépida", correctRole: "Sujeto" },
+                    { word: "astronauta", correctRole: "NS" }, 
+                    { word: "explora", correctRole: "NP" },     
+                    { word: "Marte", correctRole: "Predicado" }
+                ],
+                explanation: "En esta oración, 'La intrépida astronauta' es el sujeto (quien realiza la acción) y su núcleo es 'astronauta'. 'explora Marte' es el predicado con el verbo 'explora' como núcleo."
+            },
+            {
+                text: "Los tiernos gatitos toman leche tibia",
+                words: [
+                    { word: "Los", correctRole: "Sujeto" },
+                    { word: "tiernos", correctRole: "Sujeto" },
+                    { word: "gatitos", correctRole: "NS" },
+                    { word: "toman", correctRole: "NP" },
+                    { word: "leche", correctRole: "Predicado" },
+                    { word: "tibia", correctRole: "Predicado" }
+                ],
+                explanation: "Aquí 'Los tiernos gatitos' representa al Sujeto y su sustantivo central es 'gatitos' (NS). El Predicado es 'toman leche tibia' con el núcleo del verbo 'toman' (NP)."
+            },
+            {
+                text: "Un árbol purifica el aire de la ciudad",
+                words: [
+                    { word: "Un", correctRole: "Sujeto" },
+                    { word: "árbol", correctRole: "NS" },
+                    { word: "purifica", correctRole: "NP" },
+                    { word: "el", correctRole: "Predicado" },
+                    { word: "aire", correctRole: "Predicado" },
+                    { word: "de", correctRole: "Predicado" },
+                    { word: "la", correctRole: "Predicado" },
+                    { word: "ciudad", correctRole: "Predicado" }
+                ],
+                explanation: "El sujeto es 'Un árbol' con 'árbol' como Núcleo del Sujeto. El predicado completo es 'purifica el aire de la ciudad', con el núcleo verbal 'purifica' (NP)."
+            }
+        ];
+
+        // --- BASE DE DATOS DEL QUIZ (TAB 3) ---
+        const quizQuestions = [
+            {
+                question: "¿Cuál es el núcleo del sujeto en: 'Los grandes barcos cruzan el inmenso mar'?",
+                options: [
+                    { text: "grandes", correct: false },
+                    { text: "barcos", correct: true },
+                    { text: "cruzan", correct: false },
+                    { text: "mar", correct: false }
+                ],
+                hint: "El núcleo del sujeto es siempre el sustantivo principal, nunca un adjetivo calificativo."
+            },
+            {
+                question: "¿Cuál es el núcleo del predicado en: 'La maestra explica la fotosíntesis'?",
+                options: [
+                    { text: "maestra", correct: false },
+                    { text: "explica", correct: true },
+                    { text: "fotosíntesis", correct: false },
+                    { text: "la", correct: false }
+                ],
+                hint: "El núcleo del predicado siempre es la palabra que expresa la acción: el verbo conjugado."
+            },
+            {
+                question: "¿Qué es el sujeto de una oración?",
+                options: [
+                    { text: "La acción realizada", correct: false },
+                    { text: "El lugar de los hechos", correct: false },
+                    { text: "La persona, animal o cosa que realiza la acción", correct: true },
+                    { text: "El final de la historia", correct: false }
+                ],
+                hint: "Pregúntale al verbo principal '¿quién o qué realiza la acción?' para identificarlo."
+            },
+            {
+                question: "¿Qué error de concordancia hay en: 'Los niños corre por el campo'?",
+                options: [
+                    { text: "Falta el punto final", correct: false },
+                    { text: "El sujeto es plural pero el verbo está en singular", correct: true },
+                    { text: "Tiene dos verbos repetidos", correct: false },
+                    { text: "No tiene sujeto", correct: false }
+                ],
+                hint: "El sujeto es 'Los niños' (plural) pero el verbo es 'corre' (singular). Tienen que coincidir."
+            },
+            {
+                question: "¿Cuál es el sujeto completo en: 'Mi perro juguetón muerde la pelota'?",
+                options: [
+                    { text: "Mi perro juguetón", correct: true },
+                    { text: "perro", correct: false },
+                    { text: "muerde la pelota", correct: false },
+                    { text: "pelota", correct: false }
+                ],
+                hint: "El sujeto abarca al núcleo sustantivo junto con todos sus determinantes y adjetivos acompañantes."
+            }
+        ];
+
+        // --- ESTADO GLOBAL DE LA APLICACIÓN ---
+        let currentScore = 0;
+        let earnedBadges = new Set();
+        let currentKitIndex = 0;
+        let currentAnalyzerIndex = 0;
+        let selectedAnalyzerWordIdx = null;
+
+        // Estado del Constructor (Pestaña 1)
+        let currentSubjectWords = [];
+        let currentPredicateWords = [];
+
+        // Estado del Quiz (Pestaña 3)
+        let currentQuizIndex = 0;
+        let quizScore = 0;
+
+        // Inicialización de audio seguro
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // --- SISTEMA DE AUDIO SINTETIZADO ---
+        function playTone(freq, type, duration, volume = 0.08) {
+            try {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {
+                console.log("Audio temporalmente bloqueado por políticas del navegador.");
+            }
+        }
+
+        function playSuccessSound() {
+            playTone(523, 'sine', 0.1, 0.06); // C5
+            setTimeout(() => playTone(659, 'sine', 0.1, 0.06), 80); // E5
+            setTimeout(() => playTone(784, 'sine', 0.15, 0.08), 160); // G5
+        }
+
+        function playFailureSound() {
+            playTone(220, 'triangle', 0.3, 0.08); // A3
+        }
+
+        // --- STREAMING_CHUNK: Programando los controladores de pestañas ---
+        function switchTab(tabId) {
+            document.getElementById('tab-assemble').classList.add('hidden');
+            document.getElementById('tab-analyzer').classList.add('hidden');
+            document.getElementById('tab-quiz').classList.add('hidden');
+            
+            document.querySelectorAll('nav button').forEach(btn => {
+                btn.className = "bg-white border-2 border-indigo-100 text-indigo-800 text-xs md:text-sm font-bold py-2.5 px-5 rounded-2xl flex items-center gap-2 hover:bg-indigo-50 transition-all";
+            });
+
+            document.getElementById(tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            activeBtn.className = "bg-indigo-600 text-white text-xs md:text-sm font-bold py-2.5 px-5 rounded-2xl flex items-center gap-2 shadow-md transition-all";
+            
+            playTone(600, 'sine', 0.05, 0.04);
+
+            if (tabId === 'tab-analyzer') {
+                loadSentenceToAnalyze(0);
+            }
+        }
+
+        // --- STREAMING_CHUNK: Sistema dinámico del Constructor (Tab 1) ---
+        function setSentenceSet(setIndex) {
+            currentKitIndex = setIndex;
+            
+            document.getElementById('set-btn-0').className = setIndex === 0 
+                ? "bg-indigo-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm"
+                : "bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-slate-200";
+            document.getElementById('set-btn-1').className = setIndex === 1 
+                ? "bg-indigo-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm"
+                : "bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-slate-200";
+
+            clearBuilder();
+            playTone(587, 'triangle', 0.08, 0.06);
+        }
+
+        // Carga de palabras con botones directos e interactivos
+        function loadWordsBank() {
+            const bank = document.getElementById('words-bank');
+            bank.innerHTML = "";
+            const kit = sentenceKits[currentKitIndex];
+
+            // Mezclar para retar el aprendizaje cognitivo
+            const shuffledWords = [...kit.words].sort(() => Math.random() - 0.5);
+
+            shuffledWords.forEach((wordObj) => {
+                // Si la palabra ya está en uso, no la renderizamos activa
+                const isUsedInSujeto = currentSubjectWords.some(w => w.word === wordObj.word);
+                const isUsedInPredicado = currentPredicateWords.some(w => w.word === wordObj.word);
+
+                if (isUsedInSujeto || isUsedInPredicado) {
+                    return; // omitir si ya fue colocada
+                }
+
+                // Crear tarjeta
+                const card = document.createElement('div');
+                card.className = "word-card bg-white border-2 border-slate-200 p-2 rounded-xl shadow-sm flex flex-col gap-1 items-center justify-between min-w-[90px]";
+                
+                const textSpan = document.createElement('span');
+                textSpan.className = "text-xs font-extrabold text-slate-800 px-1";
+                textSpan.innerText = wordObj.word;
+                card.appendChild(textSpan);
+
+                // Botonera de acción directa integrada en cada palabra
+                const actionRow = document.createElement('div');
+                actionRow.className = "flex gap-1 w-full justify-center mt-1";
+
+                // Botón Enviar a Sujeto
+                const btnS = document.createElement('button');
+                btnS.className = "bg-sky-100 hover:bg-sky-200 text-sky-700 font-extrabold text-[9px] px-1.5 py-0.5 rounded-md transition-colors flex items-center justify-center";
+                btnS.innerText = "+S";
+                btnS.onclick = (e) => {
+                    e.stopPropagation();
+                    moveWordToSlot(wordObj, 'sujeto');
+                };
+
+                // Botón Enviar a Predicado
+                const btnP = document.createElement('button');
+                btnP.className = "bg-rose-100 hover:bg-rose-200 text-rose-700 font-extrabold text-[9px] px-1.5 py-0.5 rounded-md transition-colors flex items-center justify-center";
+                btnP.innerText = "+P";
+                btnP.onclick = (e) => {
+                    e.stopPropagation();
+                    moveWordToSlot(wordObj, 'predicado');
+                };
+
+                actionRow.appendChild(btnS);
+                actionRow.appendChild(btnP);
+                card.appendChild(actionRow);
+
+                bank.appendChild(card);
+            });
+        }
+
+        function moveWordToSlot(wordObj, zone) {
+            if (zone === 'sujeto') {
+                currentSubjectWords.push(wordObj);
+                renderEdicionSlots('sujeto');
+            } else {
+                currentPredicateWords.push(wordObj);
+                renderEdicionSlots('predicado');
+            }
+            // Recargar banco de palabras para retirar la tarjeta colocada
+            loadWordsBank();
+            playTone(659, 'sine', 0.06, 0.06);
+        }
+
+        // --- STREAMING_CHUNK: Renderizando elementos del constructor ---
+        function renderEdicionSlots(zone) {
+            if (zone === 'sujeto') {
+                const container = document.getElementById('subject-slots-container');
+                const placeholder = document.getElementById('subject-placeholder');
+                
+                if (currentSubjectWords.length > 0) {
+                    placeholder.classList.add('hidden');
+                    // Vaciar contenedor excepto el placeholder original
+                    container.innerHTML = "";
+                    container.appendChild(placeholder);
+
+                    currentSubjectWords.forEach((word, idx) => {
+                        const wordBlock = document.createElement('span');
+                        wordBlock.className = "bg-sky-100 text-sky-800 px-3 py-1 rounded-lg border-2 border-sky-300 font-bold text-xs cursor-pointer hover:bg-sky-200 transition-colors shadow-sm flex items-center gap-1.5";
+                        wordBlock.innerHTML = `<span>${word.word}</span> <span class="material-icons text-xs text-sky-500">cancel</span>`;
+                        wordBlock.onclick = (e) => {
+                            e.stopPropagation();
+                            removeWordFromSlot('sujeto', idx);
+                        };
+                        container.appendChild(wordBlock);
+                    });
+                } else {
+                    placeholder.classList.remove('hidden');
+                    container.innerHTML = "";
+                    container.appendChild(placeholder);
+                }
+            } else {
+                const container = document.getElementById('predicate-slots-container');
+                const placeholder = document.getElementById('predicate-placeholder');
+                
+                if (currentPredicateWords.length > 0) {
+                    placeholder.classList.add('hidden');
+                    container.innerHTML = "";
+                    container.appendChild(placeholder);
+
+                    currentPredicateWords.forEach((word, idx) => {
+                        const wordBlock = document.createElement('span');
+                        wordBlock.className = "bg-rose-100 text-rose-800 px-3 py-1 rounded-lg border-2 border-rose-300 font-bold text-xs cursor-pointer hover:bg-rose-200 transition-colors shadow-sm flex items-center gap-1.5";
+                        wordBlock.innerHTML = `<span>${word.word}</span> <span class="material-icons text-xs text-rose-500">cancel</span>`;
+                        wordBlock.onclick = (e) => {
+                            e.stopPropagation();
+                            removeWordFromSlot('predicado', idx);
+                        };
+                        container.appendChild(wordBlock);
+                    });
+                } else {
+                    placeholder.classList.remove('hidden');
+                    container.innerHTML = "";
+                    container.appendChild(placeholder);
+                }
+            }
+        }
+
+        function removeWordFromSlot(zone, index) {
+            if (zone === 'sujeto') {
+                currentSubjectWords.splice(index, 1);
+                renderEdicionSlots('sujeto');
+            } else {
+                currentPredicateWords.splice(index, 1);
+                renderEdicionSlots('predicado');
+            }
+
+            // Recargar banco de palabras para devolver la palabra
+            loadWordsBank();
+            playTone(330, 'sine', 0.08, 0.05);
+        }
+
+        function clearBuilder() {
+            currentSubjectWords = [];
+            currentPredicateWords = [];
+            renderEdicionSlots('sujeto');
+            renderEdicionSlots('predicado');
+            loadWordsBank();
+            playTone(220, 'sawtooth', 0.1, 0.04);
+        }
+
+        function verifySentenceAssembly() {
+            const kit = sentenceKits[currentKitIndex];
+            const subjectString = currentSubjectWords.map(w => w.word).join(" ");
+            const predicateString = currentPredicateWords.map(w => w.word).join(" ");
+            const fullSentence = `${subjectString} ${predicateString}`.trim();
+
+            const tutor = document.getElementById('tutor-instructions');
+
+            if (currentSubjectWords.length === 0 || currentPredicateWords.length === 0) {
+                tutor.innerHTML = "🤖 <strong>¡Alerta espacial!</strong> Necesitamos armar tanto un Sujeto como un Predicado con sentido. Intenta asignar más palabras.";
+                playFailureSound();
+                return;
+            }
+
+            // Verificar si el sujeto y predicado formados coinciden exactamente con la meta propuesta
+            if (fullSentence === kit.sentenceTarget) {
+                tutor.innerHTML = `🌟 <strong>¡Oración Perfecta!</strong><br>• Sujeto: <em>"${subjectString}"</em><br>• Predicado: <em>"${predicateString}"</em><br><br>¡Excelente trabajo! Has ganado +100 puntos de exploración.`;
+                
+                awardPoints(100);
+                addBadge('badge-construct');
+                playSuccessSound();
+                confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
+            } else {
+                // Verificar si al menos las categorías de palabras se corresponden de manera preliminar
+                const isSujetoCorrect = currentSubjectWords.every(w => w.role === 'sujeto');
+                const isPredicadoCorrect = currentPredicateWords.every(w => w.role === 'predicado');
+
+                if (isSujetoCorrect && isPredicadoCorrect) {
+                    tutor.innerHTML = "🤖 <strong>¡Las palabras están en la caja correcta!</strong> Pero el orden no hace una oración coherente. Reordénalas de izquierda a derecha.";
+                } else {
+                    tutor.innerHTML = "🤖 <strong>¡Cuidado con la sintaxis!</strong> Algunas palabras están mezcladas. Recuerda que los artículos y adjetivos pertenecen al sujeto, y los verbos al predicado.";
+                }
+                playFailureSound();
+            }
+        }
+
+        // --- STREAMING_CHUNK: Lógica del Analizador Sintáctico (Tab 2) ---
+        function loadSentenceToAnalyze(sentIdx) {
+            currentAnalyzerIndex = sentIdx;
+            selectedAnalyzerWordIdx = null;
+
+            for (let i = 0; i < 3; i++) {
+                document.getElementById(`analyzer-sent-${i}`).className = i === sentIdx
+                    ? "bg-indigo-50 border-2 border-indigo-500 text-indigo-950 font-bold p-3 rounded-2xl text-xs transition-all text-left truncate shadow-md"
+                    : "bg-white border-2 border-slate-200 text-slate-700 font-bold p-3 rounded-2xl text-xs transition-all text-left hover:bg-slate-50 truncate shadow-sm";
+            }
+
+            const container = document.getElementById('analysis-interactive-area');
+            container.innerHTML = "";
+
+            const sentData = analyzerSentences[sentIdx];
+            
+            sentData.words.forEach((wordObj, idx) => {
+                const block = document.createElement('div');
+                block.className = "bg-slate-800 border-2 border-slate-700 hover:border-indigo-400 text-white font-extrabold px-4 py-3 rounded-2xl cursor-pointer text-sm transition-all select-none flex flex-col items-center gap-1 min-w-[75px] shadow-md";
+                block.id = `analyzer-word-${idx}`;
+                
+                const textSpan = document.createElement('span');
+                textSpan.innerText = wordObj.word;
+                block.appendChild(textSpan);
+
+                const roleSpan = document.createElement('span');
+                roleSpan.className = "text-[9px] font-black uppercase text-slate-400 tracking-wider h-3";
+                roleSpan.id = `analyzer-role-tag-${idx}`;
+                roleSpan.innerText = "";
+                block.appendChild(roleSpan);
+
+                block.onclick = () => selectAnalyzerWord(idx);
+                container.appendChild(block);
+            });
+
+            updateAnalyzerStats();
+            playTone(480, 'triangle', 0.1, 0.05);
+
+            document.getElementById('analyzer-diagnostic-icon').innerText = "🔍";
+            document.getElementById('analyzer-diagnostic-desc').innerText = "Toca un bloque negro y asígnale su rol sintáctico usando la paleta.";
+        }
+
+        function selectAnalyzerWord(wordIdx) {
+            selectedAnalyzerWordIdx = wordIdx;
+
+            const sentData = analyzerSentences[currentAnalyzerIndex];
+            sentData.words.forEach((_, idx) => {
+                const block = document.getElementById(`analyzer-word-${idx}`);
+                if (idx === wordIdx) {
+                    block.classList.add('ring-4', 'ring-indigo-500', 'border-indigo-500');
+                } else {
+                    block.classList.remove('ring-4', 'ring-indigo-500', 'border-indigo-500');
+                }
+            });
+
+            playTone(587, 'sine', 0.04, 0.08);
+        }
+
+        // --- STREAMING_CHUNK: Asignando y borrando roles del Analizador ---
+        function assignRoleToSelected(role) {
+            if (selectedAnalyzerWordIdx === null) {
+                document.getElementById('analyzer-diagnostic-icon').innerText = "⚠️";
+                document.getElementById('analyzer-diagnostic-desc').innerText = "¡Primero selecciona una palabra de la consola!";
+                playTone(220, 'square', 0.15, 0.05);
+                return;
+            }
+
+            const wordObj = analyzerSentences[currentAnalyzerIndex].words[selectedAnalyzerWordIdx];
+            wordObj.assignedRole = role;
+
+            const block = document.getElementById(`analyzer-word-${selectedAnalyzerWordIdx}`);
+            const roleTag = document.getElementById(`analyzer-role-tag-${selectedAnalyzerWordIdx}`);
+
+            block.className = "border-2 text-white font-extrabold px-4 py-3 rounded-2xl cursor-pointer text-sm transition-all select-none flex flex-col items-center gap-1 min-w-[75px] shadow-lg";
+            
+            if (role === 'Sujeto') {
+                block.classList.add('bg-sky-600', 'border-sky-400');
+                roleTag.innerText = "S";
+                roleTag.className = "text-[9px] font-black uppercase text-sky-200 h-3";
+            } else if (role === 'NS') {
+                block.classList.add('bg-indigo-700', 'border-yellow-400', 'underline', 'decoration-yellow-400', 'decoration-2');
+                roleTag.innerText = "NS";
+                roleTag.className = "text-[9px] font-black uppercase text-yellow-300 h-3";
+            } else if (role === 'Predicado') {
+                block.classList.add('bg-rose-600', 'border-rose-400');
+                roleTag.innerText = "P";
+                roleTag.className = "text-[9px] font-black uppercase text-rose-200 h-3";
+            } else if (role === 'NP') {
+                block.classList.add('bg-amber-700', 'border-amber-400', 'underline', 'decoration-amber-400', 'decoration-2');
+                roleTag.innerText = "NP";
+                roleTag.className = "text-[9px] font-black uppercase text-amber-200 h-3";
+            }
+
+            block.classList.remove('ring-4', 'ring-indigo-500');
+            selectedAnalyzerWordIdx = null;
+
+            updateAnalyzerStats();
+            playTone(784, 'sine', 0.06, 0.08);
+        }
+
+        function clearSelectedWordRole() {
+            if (selectedAnalyzerWordIdx === null) return;
+
+            const wordObj = analyzerSentences[currentAnalyzerIndex].words[selectedAnalyzerWordIdx];
+            delete wordObj.assignedRole;
+
+            const block = document.getElementById(`analyzer-word-${selectedAnalyzerWordIdx}`);
+            const roleTag = document.getElementById(`analyzer-role-tag-${selectedAnalyzerWordIdx}`);
+
+            block.className = "bg-slate-800 border-2 border-slate-700 hover:border-indigo-400 text-white font-extrabold px-4 py-3 rounded-2xl cursor-pointer text-sm transition-all select-none flex flex-col items-center gap-1 min-w-[75px]";
+            roleTag.innerText = "";
+            roleTag.className = "text-[9px] font-black uppercase text-slate-400 h-3";
+
+            block.classList.remove('ring-4', 'ring-indigo-500');
+            selectedAnalyzerWordIdx = null;
+
+            updateAnalyzerStats();
+            playTone(330, 'sine', 0.06, 0.08);
+        }
+
+        function updateAnalyzerStats() {
+            const words = analyzerSentences[currentAnalyzerIndex].words;
+            const diagnosedCount = words.filter(w => w.assignedRole !== undefined).length;
+            document.getElementById('analyzer-diagnostic-desc').innerText = `Llevas ${diagnosedCount} de ${words.length} palabras clasificadas.`;
+        }
+
+        function checkAnalysisCorrectness() {
+            const sentData = analyzerSentences[currentAnalyzerIndex];
+            let allCorrect = true;
+
+            sentData.words.forEach((wordObj) => {
+                const assigned = wordObj.assignedRole || "Ninguno";
+                if (assigned !== wordObj.correctRole) {
+                    allCorrect = false;
+                }
+            });
+
+            const diagIcon = document.getElementById('analyzer-diagnostic-icon');
+            const diagDesc = document.getElementById('analyzer-diagnostic-desc');
+
+            if (allCorrect) {
+                diagIcon.innerText = "🎉";
+                diagDesc.innerHTML = `<strong>¡Perfecto!</strong> ${sentData.explanation}`;
+                
+                awardPoints(150);
+                addBadge('badge-analyze');
+                playSuccessSound();
+                confetti({ particleCount: 50, spread: 50, origin: { y: 0.85 } });
+            } else {
+                diagIcon.innerText = "❌";
+                diagDesc.innerText = "Algunos componentes no son del todo correctos. Recuerda identificar primero la acción (NP) para deducir el sujeto.";
+                playFailureSound();
+            }
+        }
+
+        // --- STREAMING_CHUNK: Gestión de Puntuación e Insignias del Alumno ---
+        function awardPoints(pts) {
+            currentScore += pts;
+            document.getElementById('hud-score').innerText = `${currentScore} Puntos`;
+            
+            const scoreText = document.getElementById('hud-score');
+            scoreText.className = "text-xs font-black title-font text-emerald-600 animate-bounce";
+            setTimeout(() => {
+                scoreText.className = "text-xs font-black title-font text-amber-700";
+            }, 1200);
+        }
+
+        function addBadge(badgeId) {
+            if (earnedBadges.has(badgeId)) return;
+            earnedBadges.add(badgeId);
+
+            const badgesText = document.getElementById('hud-badges');
+            badgesText.innerText = `${earnedBadges.size}/3 Logros`;
+            badgesText.className = "text-xs font-black title-font text-emerald-600 animate-bounce";
+            
+            setTimeout(() => {
+                badgesText.className = "text-xs font-black title-font text-emerald-700";
+            }, 1500);
+        }
+
+        // --- STREAMING_CHUNK: Desarrollando el sistema del Quiz de Graduación ---
+        function renderQuizQuestion() {
+            const questionData = quizQuestions[currentQuizIndex];
+            
+            document.getElementById('quiz-question-number').innerText = `Pregunta ${currentQuizIndex + 1} de ${quizQuestions.length}`;
+            document.getElementById('quiz-question-text').innerText = questionData.question;
+
+            const progressPct = ((currentQuizIndex + 1) / quizQuestions.length) * 100;
+            document.getElementById('quiz-progress-bar').style.width = `${progressPct}%`;
+
+            const container = document.getElementById('quiz-options-container');
+            container.innerHTML = "";
+
+            questionData.options.forEach((opt) => {
+                const optBtn = document.createElement('button');
+                optBtn.className = "bg-white border-2 border-indigo-100 hover:border-indigo-400 active:scale-95 text-slate-800 font-bold py-3.5 px-5 rounded-2xl text-left transition-all text-xs md:text-sm shadow-sm flex items-center justify-between";
+                optBtn.innerHTML = `<span>${opt.text}</span> <span class="material-icons text-slate-300 text-base">radio_button_unchecked</span>`;
+                optBtn.onclick = () => verifyQuizAnswer(opt.correct, optBtn);
+                container.appendChild(optBtn);
+            });
+        }
+
+        function verifyQuizAnswer(isCorrect, element) {
+            const allButtons = document.getElementById('quiz-options-container').querySelectorAll('button');
+            allButtons.forEach(btn => btn.disabled = true);
+
+            if (isCorrect) {
+                element.className = "bg-emerald-500 text-white font-bold py-3.5 px-5 rounded-2xl text-left text-xs md:text-sm border-2 border-emerald-600 shadow-md flex items-center justify-between";
+                element.innerHTML = `<span>${element.innerText}</span> <span class="material-icons text-base">check_circle</span>`;
+                quizScore += 100;
+                playTone(880, 'sine', 0.2, 0.1);
+            } else {
+                element.className = "bg-rose-500 text-white font-bold py-3.5 px-5 rounded-2xl text-left text-xs md:text-sm border-2 border-rose-600 shadow-md flex items-center justify-between";
+                element.innerHTML = `<span>${element.innerText}</span> <span class="material-icons text-base">cancel</span>`;
+                playFailureSound();
+            }
+
+            setTimeout(() => {
+                if (currentQuizIndex < quizQuestions.length - 1) {
+                    currentQuizIndex++;
+                    renderQuizQuestion();
+                } else {
+                    finishQuiz();
+                }
+            }, 1500);
+        }
+
+        function showQuizHint() {
+            const questionData = quizQuestions[currentQuizIndex];
+            const questionText = document.getElementById('quiz-question-text');
+            const originalText = questionText.innerHTML;
+            questionText.innerHTML = `<span class="text-amber-600">💡 Pista: ${questionData.hint}</span>`;
+            playTone(550, 'triangle', 0.1, 0.05);
+            
+            setTimeout(() => {
+                questionText.innerHTML = originalText;
+            }, 3500);
+        }
+
+        function finishQuiz() {
+            document.getElementById('quiz-playable-area').classList.add('hidden');
+            const congratulations = document.getElementById('quiz-congratulations');
+            congratulations.classList.remove('hidden');
+            
+            document.getElementById('final-score').innerText = `${quizScore} / 500 Puntos`;
+            
+            if (quizScore >= 400) {
+                addBadge('badge-quiz');
+                awardPoints(200); 
+                confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+                playSuccessSound();
+            }
+        }
+
+        function restartQuiz() {
+            currentQuizIndex = 0;
+            quizScore = 0;
+            
+            document.getElementById('quiz-congratulations').classList.add('hidden');
+            document.getElementById('quiz-playable-area').classList.remove('hidden');
+            
+            renderQuizQuestion();
+            playTone(523, 'sine', 0.1, 0.08);
+        }
+
+        // --- INICIALIZADOR DE ARRANQUE ---
+        window.addEventListener('DOMContentLoaded', () => {
+            setSentenceSet(0);
+            renderQuizQuestion();
+        });
+    </script>
+</body>
+</html>

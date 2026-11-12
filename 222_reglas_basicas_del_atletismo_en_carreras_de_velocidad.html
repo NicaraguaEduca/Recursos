@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover" />
+    <title>🏃‍♂️ Carrera de Velocidad - Reglas del Atletismo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'Segoe UI', Roboto, 'Arial Black', sans-serif;
+            background: linear-gradient(135deg, #1b5e20 0%, #0d3b13 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.5rem;
+        }
+
+        .app-container {
+            max-width: 950px;
+            width: 100%;
+            background: #d85a38; /* Color pista de atletismo / arcilla */
+            border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), inset 0 0 0 8px #ffffff;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 8px solid #111;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            padding: 2rem;
+            flex-direction: column;
+            align-items: center;
+        }
+        .screen.active {
+            display: flex;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* ===== INTRO ===== */
+        .intro-screen {
+            text-align: center;
+            background: radial-gradient(circle, #e65100 0%, #bf360c 100%);
+            color: white;
+        }
+        .mascot {
+            font-size: 6.5rem;
+            margin-bottom: 0.5rem;
+            animation: bounce 1.8s infinite ease-in-out;
+            filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.4));
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        h1 {
+            font-size: 3.2rem;
+            color: #ffeb3b;
+            margin-bottom: 1rem;
+            text-shadow: 3px 3px 0px #000;
+            text-transform: uppercase;
+        }
+        .instruction-box {
+            background: rgba(0, 0, 0, 0.25);
+            border: 3px dashed #ffeb3b;
+            padding: 1.5rem;
+            border-radius: 20px;
+            font-size: 1.3rem;
+            color: #ffffff;
+            margin-bottom: 2rem;
+            text-align: center;
+            line-height: 1.6;
+            max-width: 700px;
+        }
+        .highlight { color: #ffeb3b; font-weight: bold; }
+
+        .btn-start {
+            background: #76ff03;
+            color: #1b5e20;
+            font-size: 1.8rem;
+            font-weight: bold;
+            padding: 15px 45px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #33691e;
+            transition: all 0.1s;
+            text-transform: uppercase;
+        }
+        .btn-start:active {
+            transform: translateY(8px);
+            box-shadow: 0 0 0 #33691e;
+        }
+
+        /* ===== JUEGO ===== */
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #212121;
+            padding: 15px 25px;
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 1.2rem;
+            border: 3px solid #ffeb3b;
+        }
+        .status-text {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #ffeb3b;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .main-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            background: rgba(0,0,0,0.15);
+            border-radius: 20px;
+            padding: 20px;
+            min-height: 380px;
+            justify-content: space-between;
+            border: 3px solid rgba(255,255,255,0.4);
+        }
+
+        /* Pista Visual */
+        .track-stage {
+            width: 100%;
+            max-width: 750px;
+            background: #bf360c;
+            border-top: 4px dashed #ffffff;
+            border-bottom: 4px dashed #ffffff;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            text-align: center;
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        .track-title {
+            color: #ffeb3b;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .stage-display {
+            font-size: 2rem;
+            color: #ffffff;
+            font-weight: bold;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.4;
+        }
+
+        /* Botones de Reglas */
+        .rule-buttons {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .rule-btn {
+            flex: 1;
+            min-width: 180px;
+            max-width: 220px;
+            background: #212121;
+            color: white;
+            border: 3px solid #76ff03;
+            padding: 15px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1.05rem;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 6px 0 #000000;
+            transition: all 0.1s;
+        }
+        .rule-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #000000;
+        }
+        .rule-icon { font-size: 2.2rem; }
+
+        /* Botones de Modos */
+        .mode-buttons {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .mode-btn {
+            background: #37474f;
+            border: 3px solid #cfd8dc;
+            padding: 10px 25px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            color: #eceff1;
+            transition: all 0.2s;
+        }
+        .mode-btn.active {
+            background: #ff6f00;
+            color: white;
+            border-color: #ffeb3b;
+            box-shadow: 0 5px 0 #b71c1c;
+        }
+
+        /* ====== MODAL INVASIVO ====== */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active {
+            display: flex;
+            animation: popInModal 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popInModal {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 2.2rem;
+            border-radius: 25px;
+            text-align: center;
+            max-width: 90%;
+            width: 530px;
+            border: 7px solid #333;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        }
+        .modal-content.info { border-color: #ff6f00; }
+        .modal-content.error { border-color: #d32f2f; }
+
+        .modal-title { font-size: 2.2rem; margin-bottom: 1rem; text-transform: uppercase; }
+        .info .modal-title { color: #e65100; }
+        .error .modal-title { color: #c62828; }
+
+        .modal-text {
+            font-size: 1.35rem;
+            margin-bottom: 1.8rem;
+            line-height: 1.5;
+            color: #212121;
+            white-space: pre-line;
+        }
+
+        .modal-close {
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            font-size: 1.3rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.1s;
+        }
+        .modal-close:active { transform: translateY(5px); box-shadow: none !important; }
+        .info .modal-close { background: #ff6f00; box-shadow: 0 5px 0 #bf360c; }
+        .error .modal-close { background: #d32f2f; box-shadow: 0 5px 0 #8e0000; }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; }
+            .mascot { font-size: 4.5rem; }
+            .stage-display { font-size: 1.3rem; }
+            .rule-buttons { flex-direction: column; align-items: center; }
+            .rule-btn { width: 100%; max-width: 100%; }
+            .modal-content { padding: 1.5rem; }
+            .modal-title { font-size: 1.7rem; }
+            .modal-text { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- ===== MODAL INVASIVO ===== -->
+        <div id="feedbackModal" class="modal-overlay">
+            <div id="modalBox" class="modal-content">
+                <h2 id="modalTitle" class="modal-title">Título</h2>
+                <p id="modalText" class="modal-text">Texto de explicación</p>
+                <button id="modalBtn" class="modal-close">¡Entendido, Juez!</button>
+            </div>
+        </div>
+
+        <!-- ===== INTRO ===== -->
+        <div id="introScreen" class="screen intro-screen active">
+            <div class="mascot">🏃‍♂️⏱️</div>
+            <h1>Carrera de Velocidad</h1>
+            <div class="instruction-box">
+                ¡Bienvenido a la pista oficial de atletismo!<br><br>
+                Aprende las reglas de los 100 metros planos:<br>
+                🚥 <span class="highlight">Comandos de Salida</span><br>
+                🛣️ <span class="highlight">Respeto del Carril</span><br>
+                🏁 <span class="highlight">Cruce de Meta</span><br>
+                ⚠️ <span class="highlight">Salida en Falso</span>
+            </div>
+            <button class="btn-start" id="startBtn">▶ ¡Entrar a la Pista!</button>
+        </div>
+
+        <!-- ===== JUEGO ===== -->
+        <div id="gameScreen" class="screen">
+            <div class="header">
+                <div class="status-text" id="statusText">👨‍🏫 Modo Explicación del Entrenador</div>
+            </div>
+
+            <div class="main-area">
+                
+                <!-- Escenario de Pista -->
+                <div class="track-stage">
+                    <div class="track-title">🏛️ PISTA OLÍMPICA DE ATLETISMO</div>
+                    <div class="stage-display" id="stageDisplay">Selecciona una regla para aprender...</div>
+                </div>
+
+                <!-- Botones de Análisis de Reglas -->
+                <div class="rule-buttons">
+                    <button class="rule-btn" data-rule="salida">
+                        <span class="rule-icon">🚥</span>
+                        <span>Comandos de Salida</span>
+                    </button>
+                    <button class="rule-btn" data-rule="carril">
+                        <span class="rule-icon">🛣️</span>
+                        <span>Uso del Carril</span>
+                    </button>
+                    <button class="rule-btn" data-rule="meta">
+                        <span class="rule-icon">🏁</span>
+                        <span>Llegada a Meta</span>
+                    </button>
+                    <button class="rule-btn" data-rule="falso">
+                        <span class="rule-icon">⚠️</span>
+                        <span>Salida en Falso</span>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Botones de Modo -->
+            <div class="mode-buttons">
+                <button class="mode-btn active" id="btnTeach">👨‍🏫 Aprender Reglas</button>
+                <button class="mode-btn" id="btnPractice">🎽 Ser Juez de Carrera</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==== DATOS MODO EXPLICACIÓN ====
+        const teachData = {
+            'salida': {
+                stage: '1️⃣ "¡En sus marcas!" ➔ 2️⃣ "¡Listos!" ➔ 3️⃣ 💥 ¡DISPARO!',
+                title: '🚥 COMANDOS DE SALIDA',
+                text: '**La salida de velocidad tiene 3 momentos obligatorios:**\n\n1. **"¡En sus marcas!":** Te colocas tras la línea sin pisarla.\n2. **"¡Listos!":** Levantas la cadera y te quedas inmóvil.\n3. **"¡Fuera!" / Disparo:** Arrancas a correr a máxima velocidad.'
+            },
+            'carril': {
+                stage: '🏃‍♂️ [Carril 1] | 🏃‍♀️ [Carril 2] | 🏃 [Carril 3]',
+                title: '🛣️ RESPETO DEL CARRIL',
+                text: '**En las carreras de velocidad (100m, 200m, 400m):**\n\nCada atleta debe correr ÚNICAMENTE por su propia línea o carril. Si pisas el carril de otro atleta o lo estorbas, ¡serás descalificado!'
+            },
+            'meta': {
+                stage: '🏁 ¡Gana el primero que cruza el PECHO por la línea!',
+                title: '🏁 CRUCE DE META',
+                text: '**¿Cómo se decide el ganador?**\n\nEl reloj se detiene cuando el **TORSO (pecho/tronco)** del atleta cruza la línea blanca de meta.\n\n⚠️ **Ojo:** No cuentan las manos, la cabeza ni las piernas. ¡No debes saltar al llegar!'
+            },
+            'falso': {
+                stage: '🟨 ❌ Moverse antes del disparo = SALIDA NULA',
+                title: '⚠️ SALIDA EN FALSO',
+                text: '**Si te mueves o salgas corriendo antes de que suene el disparo del juez:**\n\nSe sanciona como **Salida en Falso (Salida Nula)**. Se frena la carrera con un segundo disparo y el atleta que falló queda descalificado o advertido.'
+            }
+        };
+
+        // ==== CASOS MODO PRÁCTICA ====
+        let practiceCases = [
+            {
+                scenario: '🏃‍♂️ Juan salió corriendo justo cuando el juez dijo "¡Listos!", antes de que sonara el disparo.',
+                correctRule: 'falso',
+                errorTitle: '🎽 ¡Decisión Incorrecta de Juez!',
+                hint: 'Juan no esperó la señal final de disparo para arrancar.\n\n**Regla:** Salir antes del disparo es una **Salida en Falso / Nula**.'
+            },
+            {
+                scenario: '🏃‍♀️ María iba ganando la carrera, pero se cruzó al carril de la pista de al lado para estorbar.',
+                correctRule: 'carril',
+                errorTitle: '🎽 ¡Decisión Incorrecta de Juez!',
+                hint: 'María no se mantuvo en la calle que le fue asignada.\n\n**Regla:** En carreras de velocidad es obligatorio **Respetar el Carril** propio.'
+            },
+            {
+                scenario: '🏁 En una llegada muy apretada, el pecho de Lucas cruzó la línea antes que la cabeza de Mateo.',
+                correctRule: 'meta',
+                errorTitle: '🎽 ¡Revisa el reglamento de llegada!',
+                hint: 'Recuerda qué parte del cuerpo determina quién gana la carrera.\n\n**Regla:** Gana el atleta cuyo **Pecho/Torso** cruza primero la **Meta**.'
+            },
+            {
+                scenario: '🚥 Los atletas se colocaron con las manos apoyadas detrás de la línea blanca al oír "¡En sus marcas!".',
+                correctRule: 'salida',
+                errorTitle: '🎽 ¡Revisa los comandos!',
+                hint: 'Esta es la posición inicial de atención antes de elevar la cadera.\n\n**Regla:** Corresponde al primer paso de los **Comandos de Salida**.'
+            },
+            {
+                scenario: '⚠️ Pedro escuchó un ruido en el público y se levantó corriendo antes del pitazo de salida.',
+                correctRule: 'falso',
+                errorTitle: '🎽 ¡Análisis erróneo!',
+                hint: 'Cualquier movimiento anticipado antes de la señal oficial es una falta.\n\n**Regla:** Incurrió en una **Salida en Falso**.'
+            },
+            {
+                scenario: '🏁 Sofía saltó con los dos pies hacia adelante para intentar tocar la cinta con la mano.',
+                correctRule: 'meta',
+                errorTitle: '🎽 ¡Atención al cruce de meta!',
+                hint: 'Las manos no cuentan para registrar la llegada y saltar es peligroso.\n\n**Regla:** La **Llegada a Meta** se hace corriendo y pasando el pecho.'
+            }
+        ];
+
+        let mode = 'teach';
+        let currentCaseIndex = 0;
+
+        // Elementos DOM
+        const screens = { intro: document.getElementById('introScreen'), game: document.getElementById('gameScreen') };
+        const statusText = document.getElementById('statusText');
+        const stageDisplay = document.getElementById('stageDisplay');
+        
+        // Modal Elements
+        const modalOverlay = document.getElementById('feedbackModal');
+        const modalBox = document.getElementById('modalBox');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalText = document.getElementById('modalText');
+        const modalBtn = document.getElementById('modalBtn');
+
+        // ==== AUDIO (Web Audio API) ====
+        let audioCtx;
+        function playSound(type) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'whistle') { 
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(2200, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1800, audioCtx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(160, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.25);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.25);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+            } else if (type === 'win') {
+                [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+                    const oscN = audioCtx.createOscillator();
+                    const gainN = audioCtx.createGain();
+                    oscN.connect(gainN); gainN.connect(audioCtx.destination);
+                    oscN.frequency.value = f;
+                    gainN.gain.setValueAtTime(0.08, audioCtx.currentTime + i * 0.08);
+                    gainN.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.08 + 0.3);
+                    oscN.start(audioCtx.currentTime + i * 0.08);
+                    oscN.stop(audioCtx.currentTime + i * 0.08 + 0.3);
+                });
+            }
+        }
+
+        // ==== MOSTRAR MODAL INVASIVO ====
+        function showModal(title, text, type) {
+            modalBox.className = `modal-content ${type}`;
+            modalTitle.textContent = title;
+            modalText.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            modalOverlay.classList.add('active');
+        }
+
+        modalBtn.addEventListener('click', () => {
+            playSound('whistle');
+            modalOverlay.classList.remove('active');
+        });
+
+        // ==== BOTONES DE REGLAS / RESPUESTAS ====
+        document.querySelectorAll('.rule-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const rule = e.currentTarget.dataset.rule;
+
+                if (mode === 'teach') {
+                    playSound('whistle');
+                    const data = teachData[rule];
+                    stageDisplay.innerHTML = data.stage;
+                    showModal(data.title, data.text, 'info');
+                } else if (mode === 'practice') {
+                    checkAnswer(rule);
+                }
+            });
+        });
+
+        // ==== LÓGICA MODO PRÁCTICA ====
+        function loadCase() {
+            if (currentCaseIndex >= practiceCases.length) {
+                statusText.textContent = "🏆 ¡EXCELENTE TRABAJO! Eres un Juez de Atletismo Oficial.";
+                stageDisplay.innerHTML = "🥇 ¡Torneo Completado!<br><small>Has aplicado las reglas de velocidad a la perfección.</small>";
+                playSound('win');
+                return;
+            }
+
+            const currentCase = practiceCases[currentCaseIndex];
+            statusText.textContent = `Situación #${currentCaseIndex + 1}: ¿Qué regla aplica este Juez?`;
+            stageDisplay.textContent = currentCase.scenario;
+        }
+
+        function checkAnswer(selectedRule) {
+            if (currentCaseIndex >= practiceCases.length) return;
+
+            const currentCase = practiceCases[currentCaseIndex];
+
+            if (selectedRule === currentCase.correctRule) {
+                playSound('win');
+                statusText.textContent = "¡Correcto! Decisión arbitral acertada.";
+                stageDisplay.innerHTML = "✅ ¡Regla Aplicada Correctamente!";
+
+                setTimeout(() => {
+                    currentCaseIndex++;
+                    loadCase();
+                }, 1400);
+            } else {
+                playSound('error');
+                showModal(currentCase.errorTitle, currentCase.hint, 'error');
+            }
+        }
+
+        // ==== CAMBIO DE MODO ====
+        function setMode(newMode) {
+            mode = newMode;
+            if (mode === 'teach') {
+                statusText.textContent = "👨‍🏫 Toca un botón para aprender la regla del atletismo";
+                document.getElementById('btnTeach').classList.add('active');
+                document.getElementById('btnPractice').classList.remove('active');
+                stageDisplay.innerHTML = "Selecciona una regla para aprender...";
+            } else {
+                document.getElementById('btnPractice').classList.add('active');
+                document.getElementById('btnTeach').classList.remove('active');
+                // Mezclar situaciones
+                practiceCases = practiceCases.sort(() => Math.random() - 0.5);
+                currentCaseIndex = 0;
+                loadCase();
+            }
+        }
+
+        // ==== INICIALIZACIÓN ====
+        document.getElementById('startBtn').addEventListener('click', () => {
+            if (!audioCtx) playSound('whistle');
+            screens.intro.classList.remove('active');
+            screens.game.classList.add('active');
+            setMode('teach');
+        });
+
+        document.getElementById('btnTeach').addEventListener('click', () => setMode('teach'));
+        document.getElementById('btnPractice').addEventListener('click', () => setMode('practice'));
+
+    </script>
+</body>
+</html>

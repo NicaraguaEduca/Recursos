@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover" />
+    <title>🎭 Creador de Guiones Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #000000 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.5rem;
+        }
+
+        .app-container {
+            max-width: 950px;
+            width: 100%;
+            background: #f4f1ea;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), inset 0 0 0 10px #8b0000;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 8px solid #1a1a1a;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            padding: 2rem;
+            flex-direction: column;
+            align-items: center;
+        }
+        .screen.active {
+            display: flex;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== PANTALLA INTRO ===== */
+        .intro-screen {
+            text-align: center;
+            background: radial-gradient(circle, #3e2723 0%, #1b0000 100%);
+            color: white;
+            border-radius: 10px;
+        }
+        .mascot {
+            font-size: 7rem;
+            margin-bottom: 0;
+            animation: pulse 2s infinite;
+            text-shadow: 0 0 20px rgba(255,215,0,0.5);
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        h1 {
+            font-size: 3.5rem;
+            color: #ffd700;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px #000;
+            font-family: 'Georgia', serif;
+        }
+        .instruction-box {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #ffd700;
+            padding: 1.5rem;
+            border-radius: 15px;
+            font-size: 1.3rem;
+            color: #ecf0f1;
+            margin-bottom: 2rem;
+            text-align: center;
+            line-height: 1.6;
+            max-width: 700px;
+        }
+        .highlight { color: #ff9800; font-weight: bold; }
+        
+        .btn-start {
+            background: #d32f2f;
+            color: white;
+            font-size: 1.8rem;
+            font-weight: bold;
+            padding: 15px 50px;
+            border: 2px solid #ff5252;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #b71c1c;
+            transition: all 0.1s;
+            text-transform: uppercase;
+        }
+        .btn-start:active {
+            transform: translateY(8px);
+            box-shadow: 0 0 0 #b71c1c;
+        }
+
+        /* ===== JUEGO ===== */
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #8b0000;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            margin-bottom: 1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border: 2px solid #ffd700;
+        }
+        .status-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-align: center;
+            flex-grow: 1;
+            font-family: 'Georgia', serif;
+        }
+
+        .main-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        /* Controles Profesor */
+        .teacher-controls {
+            display: none;
+            background: #2c3e50;
+            border: 2px solid #34495e;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+            width: 100%;
+            max-width: 800px;
+        }
+        .teacher-controls.active {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .btn-tool {
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.3);
+        }
+        .btn-tool:active { transform: translateY(4px); box-shadow: none; }
+        .btn-personaje { background: #1976D2; }
+        .btn-acotacion { background: #D32F2F; }
+        .btn-dialogo { background: #388E3C; }
+
+        /* ====== EL GUION (Papel) ====== */
+        .script-paper {
+            width: 100%;
+            max-width: 750px;
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 5px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.3rem;
+            line-height: 1.8;
+            color: #333;
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        .script-paper::before {
+            content: '';
+            position: absolute;
+            left: 15px; top: 0; bottom: 0; width: 2px;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .scene-heading { font-weight: bold; text-decoration: underline; margin-bottom: 1.5rem; text-transform: uppercase; }
+        .script-line { margin-bottom: 1rem; display: block; }
+        
+        .personaje { font-weight: bold; text-transform: uppercase; transition: all 0.3s; padding: 2px 5px; border-radius: 4px; }
+        .acotacion { font-style: italic; transition: all 0.3s; padding: 2px 5px; border-radius: 4px; }
+        .dialogo { transition: all 0.3s; padding: 2px 5px; border-radius: 4px; }
+
+        .show-personajes .personaje { background: #BBDEFB; color: #0D47A1; box-shadow: 0 0 0 2px #1976D2; }
+        .show-acotaciones .acotacion { background: #FFCDD2; color: #B71C1C; box-shadow: 0 0 0 2px #D32F2F; }
+        .show-dialogos .dialogo { background: #C8E6C9; color: #1B5E20; box-shadow: 0 0 0 2px #388E3C; }
+
+        /* Zona de Práctica */
+        .drop-zone {
+            display: inline-block;
+            min-width: 150px;
+            height: 35px;
+            border-bottom: 3px dashed #7f8c8d;
+            vertical-align: middle;
+            background: #ecf0f1;
+            text-align: center;
+            font-family: 'Courier New', Courier, monospace;
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        .drop-zone.filled { border-bottom: 3px solid #27ae60; background: #e8f8f5; color: #27ae60; font-weight: bold; }
+
+        /* Opciones de Práctica */
+        .options-container { display: none; gap: 15px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
+        .options-container.active { display: flex; }
+        .option-btn {
+            font-family: 'Courier New', Courier, monospace; background: #fff; border: 2px solid #34495e;
+            padding: 10px 20px; font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer;
+            box-shadow: 0 4px 0 #34495e; transition: transform 0.1s;
+        }
+        .option-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        /* Botones de Modos */
+        .mode-buttons { display: flex; gap: 20px; margin-top: 15px; }
+        .mode-btn {
+            background: #ecf0f1; border: 3px solid #bdc3c7; padding: 10px 25px; font-size: 1.2rem;
+            font-weight: bold; border-radius: 30px; cursor: pointer; color: #7f8c8d; transition: all 0.2s;
+        }
+        .mode-btn.active { background: #f39c12; color: white; border-color: #e67e22; box-shadow: 0 4px 0 #d35400; }
+
+        /* ====== MODAL INVASIVO ====== */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(3px);
+        }
+        .modal-overlay.active {
+            display: flex;
+            animation: popInModal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popInModal {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-content {
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 80%;
+            width: 500px;
+            border: 6px solid #333;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .modal-content.info { border-color: #1976D2; }
+        .modal-content.error { border-color: #D32F2F; }
+        .modal-title { font-size: 2.2rem; margin-bottom: 1rem; font-family: 'Georgia', serif; }
+        .info .modal-title { color: #1976D2; }
+        .error .modal-title { color: #D32F2F; }
+        .modal-text { font-size: 1.4rem; margin-bottom: 2rem; line-height: 1.5; color: #333; white-space: pre-line;}
+        .modal-close {
+            background: #333; color: white; border: none; padding: 15px 40px;
+            font-size: 1.3rem; border-radius: 40px; cursor: pointer; font-weight: bold;
+            box-shadow: 0 6px 0 #000; transition: transform 0.1s;
+        }
+        .modal-close:active { transform: translateY(6px); box-shadow: none; }
+        .info .modal-close { background: #1976D2; box-shadow: 0 6px 0 #0D47A1; }
+        .error .modal-close { background: #D32F2F; box-shadow: 0 6px 0 #B71C1C; }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .script-paper { font-size: 1rem; padding: 1.5rem; }
+            .header { flex-direction: column; gap: 10px; }
+            .status-text { font-size: 1.2rem; }
+            .mode-buttons { flex-direction: row; gap: 10px; }
+            .mode-btn { font-size: 1rem; padding: 8px 15px; }
+            .btn-tool { font-size: 0.9rem; padding: 8px 10px; }
+            .modal-content { padding: 1.5rem; }
+            .modal-title { font-size: 1.8rem; }
+            .modal-text { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- ===== MODAL INVASIVO ===== -->
+        <div id="feedbackModal" class="modal-overlay">
+            <div id="modalBox" class="modal-content">
+                <h2 id="modalTitle" class="modal-title">Título</h2>
+                <p id="modalText" class="modal-text">Texto de explicación</p>
+                <button id="modalBtn" class="modal-close">¡Entendido!</button>
+            </div>
+        </div>
+
+        <!-- ===== INTRO ===== -->
+        <div id="introScreen" class="screen intro-screen active">
+            <div class="mascot">🎬🎭</div>
+            <h1>Creador de Guiones</h1>
+            <div class="instruction-box">
+                ¡Conviértete en director de teatro!<br><br>
+                Aprende a identificar los <span class="highlight">Personajes</span> (quién habla), <br>
+                las <span class="highlight">Acotaciones</span> (acciones entre paréntesis) <br>
+                y los <span class="highlight">Diálogos</span> (lo que dicen).
+            </div>
+            <button class="btn-start" id="startBtn">▶ ¡Acción!</button>
+        </div>
+
+        <!-- ===== JUEGO ===== -->
+        <div id="gameScreen" class="screen">
+            <div class="header">
+                <div class="status-text" id="statusText">👨‍🏫 Análisis de Guion</div>
+            </div>
+
+            <div class="main-area">
+                <!-- Panel del Profesor -->
+                <div class="teacher-controls active" id="teacherControls">
+                    <button class="btn-tool btn-personaje" id="btnPersonaje">👤 Marcar Personajes</button>
+                    <button class="btn-tool btn-acotacion" id="btnAcotacion">🎬 Marcar Acotaciones ( )</button>
+                    <button class="btn-tool btn-dialogo" id="btnDialogo">💬 Marcar Diálogos</button>
+                    <button class="btn-tool" style="background:#607D8B;" id="btnReset">🧹 Limpiar</button>
+                </div>
+
+                <!-- Papel del Guion -->
+                <div class="script-paper" id="scriptPaper"></div>
+
+                <!-- Opciones (Modo práctica) -->
+                <div class="options-container" id="optionsContainer"></div>
+
+                <!-- Botones de modo -->
+                <div class="mode-buttons">
+                    <button class="mode-btn active" id="btnTeach">👨‍🏫 Explicar</button>
+                    <button class="mode-btn" id="btnPractice">🎬 ¡A Dirigir!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==== TEXTOS DE LOS GUIONES ====
+        const teachScript = `
+            <div class="scene-heading">ESCENA 1: EL PARQUE. DÍA.</div>
+            <div class="script-line">
+                <span class="personaje">LUCÍA:</span> 
+                <span class="acotacion">(Buscando debajo de un banco)</span> 
+                <span class="dialogo">¡Toby! ¡Toby! ¿Dónde te metiste?</span>
+            </div>
+            <div class="script-line">
+                <span class="personaje">MATEO:</span> 
+                <span class="acotacion">(Entra corriendo, agitado)</span> 
+                <span class="dialogo">¡Lucía! Creo que vi a tu perro.</span>
+            </div>
+            <div class="script-line">
+                <span class="personaje">LUCÍA:</span> 
+                <span class="acotacion">(Da un salto de alegría)</span> 
+                <span class="dialogo">¿De verdad? ¿Hacia dónde fue?</span>
+            </div>
+            <div class="script-line">
+                <span class="personaje">MATEO:</span> 
+                <span class="dialogo">Corrió hacia la fuente.</span> 
+                <span class="acotacion">(Señala con la mano derecha).</span>
+            </div>
+        `;
+
+        const practiceScenes = [
+            {
+                html: `
+                    <div class="scene-heading">ESCENA 2: EL MISTERIO</div>
+                    <div class="script-line">
+                        <span class="drop-zone" id="drop1">...</span> 
+                        <span class="acotacion">(Abre la puerta con cuidado)</span> 
+                        <span class="dialogo">¿Hay alguien aquí adentro?</span>
+                    </div>
+                `,
+                id: 'drop1', type: 'personaje',
+                options: ['DETECTIVE:', '(Llorando a gritos)', '¡No toques eso!'],
+                correct: 'DETECTIVE:',
+                errorTitle: '🎬 ¡Corte! Te equivocaste de elemento.',
+                hint: 'En este hueco hace falta un **PERSONAJE**.\n\nFíjate bien: los personajes siempre se escriben con LETRAS MAYÚSCULAS y terminan con dos puntos ( : ) para indicar que van a hablar.'
+            },
+            {
+                html: `
+                    <div class="scene-heading">ESCENA 2: EL MISTERIO</div>
+                    <div class="script-line">
+                        <span class="personaje">DETECTIVE:</span> 
+                        <span class="drop-zone" id="drop2">...</span> 
+                        <span class="dialogo">¿Hay alguien aquí adentro?</span>
+                    </div>
+                `,
+                id: 'drop2', type: 'acotacion',
+                options: ['AYUDANTE:', '(Enciende su linterna)', '¡Está todo oscuro!'],
+                correct: '(Enciende su linterna)',
+                errorTitle: '🎬 ¡Corte! Esa no es la instrucción.',
+                hint: 'Aquí falta una **ACOTACIÓN**.\n\nRecuerda que el guionista usa los (paréntesis) para decirle al actor lo que tiene que hacer, cómo debe moverse o qué emoción debe sentir, ¡pero NO se dice en voz alta!'
+            },
+            {
+                html: `
+                    <div class="scene-heading">ESCENA 2: EL MISTERIO</div>
+                    <div class="script-line">
+                        <span class="personaje">DETECTIVE:</span> 
+                        <span class="acotacion">(Mirando con lupa)</span> 
+                        <span class="drop-zone" id="drop3">...</span>
+                    </div>
+                `,
+                id: 'drop3', type: 'dialogo',
+                options: ['VILLANO:', '(Se asusta)', '¡Aja! Aquí hay una huella digital.'],
+                correct: '¡Aja! Aquí hay una huella digital.',
+                errorTitle: '🎬 ¡Corte! Falta la voz del actor.',
+                hint: 'Lo que falta aquí es el **DIÁLOGO**.\n\nEs el texto normal, sin paréntesis, que el actor debe aprenderse de memoria para decirlo en voz alta frente al público.'
+            }
+        ];
+
+        let mode = 'teach';
+        let currentPracticeIndex = 0;
+
+        // Elementos DOM
+        const screens = { intro: document.getElementById('introScreen'), game: document.getElementById('gameScreen') };
+        const statusText = document.getElementById('statusText');
+        const scriptPaper = document.getElementById('scriptPaper');
+        const teacherControls = document.getElementById('teacherControls');
+        const optionsContainer = document.getElementById('optionsContainer');
+        
+        // Modal Elements
+        const modalOverlay = document.getElementById('feedbackModal');
+        const modalBox = document.getElementById('modalBox');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalText = document.getElementById('modalText');
+        const modalBtn = document.getElementById('modalBtn');
+
+        // ==== AUDIO ====
+        let audioCtx;
+        function playSound(type) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'typewriter') { 
+                osc.type = 'square'; osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(150, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.2);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+            } else if (type === 'win') {
+                [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+                    const oscN = audioCtx.createOscillator(); const gainN = audioCtx.createGain();
+                    oscN.connect(gainN); gainN.connect(audioCtx.destination);
+                    oscN.frequency.value = f; gainN.gain.setValueAtTime(0.1, audioCtx.currentTime + i * 0.1);
+                    gainN.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.1 + 0.3);
+                    oscN.start(audioCtx.currentTime + i * 0.1); oscN.stop(audioCtx.currentTime + i * 0.1 + 0.3);
+                });
+            }
+        }
+
+        // ==== LÓGICA MODAL INVASIVO ====
+        function showModal(title, text, type) {
+            modalBox.className = `modal-content ${type}`;
+            modalTitle.textContent = title;
+            // Parsear bold markdown simple para el modal
+            modalText.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            modalOverlay.classList.add('active');
+        }
+
+        modalBtn.addEventListener('click', () => {
+            playSound('typewriter');
+            modalOverlay.classList.remove('active');
+        });
+
+        // ==== LÓGICA MODO PROFESOR ====
+        function clearHighlights() {
+            scriptPaper.classList.remove('show-personajes', 'show-acotaciones', 'show-dialogos');
+        }
+
+        document.getElementById('btnPersonaje').addEventListener('click', () => {
+            playSound('typewriter'); clearHighlights(); scriptPaper.classList.add('show-personajes');
+            showModal("👤 LOS PERSONAJES", "Miran cómo se resaltaron en azul.\n\nSon los nombres de quienes participan en la escena. ¡SIEMPRE se escriben en MAYÚSCULAS y terminan con dos puntos (:) para que el actor sepa exactamente cuándo le toca hablar!", "info");
+        });
+        document.getElementById('btnAcotacion').addEventListener('click', () => {
+            playSound('typewriter'); clearHighlights(); scriptPaper.classList.add('show-acotaciones');
+            showModal("🎬 LAS ACOTACIONES", "Se han resaltado en rojo.\n\n¡Ojo! Las acotaciones NO se leen en voz alta durante la obra. Van siempre entre (paréntesis) o en cursiva. Son instrucciones del director que dicen cómo deben moverse los actores o qué deben sentir.", "info");
+        });
+        document.getElementById('btnDialogo').addEventListener('click', () => {
+            playSound('typewriter'); clearHighlights(); scriptPaper.classList.add('show-dialogos');
+            showModal("💬 LOS DIÁLOGOS", "Se han resaltado en verde.\n\nEs la acción de la obra. Es exactamente lo que los actores tienen que decir en voz alta al público. No lleva mayúsculas sostenidas ni paréntesis.", "info");
+        });
+        document.getElementById('btnReset').addEventListener('click', () => {
+            playSound('typewriter'); clearHighlights();
+        });
+
+        // ==== LÓGICA MODO PRÁCTICA ====
+        function loadPracticeScene() {
+            if (currentPracticeIndex >= practiceScenes.length) {
+                statusText.textContent = "🌟 ¡Corte y queda! Eres un gran director de teatro.";
+                optionsContainer.innerHTML = '';
+                playSound('win');
+                return;
+            }
+
+            const scene = practiceScenes[currentPracticeIndex];
+            scriptPaper.innerHTML = scene.html;
+            statusText.textContent = "¿Qué elemento le falta al guion para tener sentido?";
+            optionsContainer.innerHTML = '';
+            
+            const shuffledOptions = [...scene.options].sort(() => Math.random() - 0.5);
+            shuffledOptions.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.addEventListener('click', () => checkAnswer(opt, scene));
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedOpt, scene) {
+            if (selectedOpt === scene.correct) {
+                playSound('typewriter');
+                setTimeout(() => playSound('win'), 100);
+                const dropZone = document.getElementById(scene.id);
+                dropZone.textContent = selectedOpt;
+                dropZone.classList.add('filled');
+                
+                optionsContainer.innerHTML = '';
+                statusText.textContent = "¡Perfecto! El guion está completo.";
+                
+                setTimeout(() => {
+                    currentPracticeIndex++;
+                    loadPracticeScene();
+                }, 2000);
+            } else {
+                playSound('error');
+                // Llamar a la alerta invasiva por error
+                showModal(scene.errorTitle, scene.hint, 'error');
+            }
+        }
+
+        // ==== CAMBIO DE MODOS ====
+        function setMode(newMode) {
+            mode = newMode;
+            if (mode === 'teach') {
+                teacherControls.classList.add('active');
+                optionsContainer.classList.remove('active');
+                scriptPaper.innerHTML = teachScript;
+                statusText.textContent = "👨‍🏫 Toca los botones y lee las instrucciones del director.";
+                document.getElementById('btnTeach').classList.add('active');
+                document.getElementById('btnPractice').classList.remove('active');
+                clearHighlights();
+            } else {
+                teacherControls.classList.remove('active');
+                optionsContainer.classList.add('active');
+                document.getElementById('btnPractice').classList.add('active');
+                document.getElementById('btnTeach').classList.remove('active');
+                scriptPaper.className = 'script-paper';
+                currentPracticeIndex = 0;
+                loadPracticeScene();
+            }
+        }
+
+        // ==== INICIALIZACIÓN ====
+        document.getElementById('startBtn').addEventListener('click', () => {
+            if (!audioCtx) playSound('typewriter'); 
+            screens.intro.classList.remove('active');
+            screens.game.classList.add('active');
+            setMode('teach');
+        });
+
+        document.getElementById('btnTeach').addEventListener('click', () => setMode('teach'));
+        document.getElementById('btnPractice').addEventListener('click', () => setMode('practice'));
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>¡Aprendamos la Hora!</title>
+  <style>
+    /* ==========================================================================
+       VARIABLES Y PALETA DE COLORES
+       ========================================================================== */
+    :root {
+      --azul-inst: #0059A6;
+      --celeste: #00A8E8;
+      --verde-lima: #A5C83F;
+      --amarillo: #FFEC01;
+      --fucsia: #E32085;
+      --morado: #833189;
+      --bg-grad-1: #E0F7FA;
+      --bg-grad-2: #E1F5FE;
+    }
+
+    /* ==========================================================================
+       RESET Y ESTILOS DE LAYOUT (RESPONSIVE SIN SCROLL)
+       ========================================================================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden; /* Evita totalmente el scroll */
+      font-family: 'Segoe UI', Roboto, 'Nunito', 'Comic Sans MS', sans-serif;
+      background: linear-gradient(135deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 100%);
+      color: #222;
+    }
+
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      height: 100vh;
+      padding: 0.8rem 1rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* ==========================================================================
+       ENCABEZADO Y INSTRUCCIONES
+       ========================================================================== */
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      gap: 0.4rem;
+    }
+
+    h1 {
+      font-size: clamp(1.4rem, 3.2vw, 2.2rem);
+      color: var(--azul-inst);
+      text-shadow: 2px 2px 0px var(--amarillo);
+      font-weight: 900;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+
+    .instruction-box {
+      background: white;
+      padding: 0.35rem 1.2rem;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      border: 2px solid var(--celeste);
+      font-size: clamp(0.85rem, 1.6vw, 1.05rem);
+      font-weight: 700;
+      color: var(--morado);
+      text-align: center;
+    }
+
+    /* BARRA DE PROGRESO */
+    .progress-wrapper {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 20px;
+      background: #E0E0E0;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid var(--azul-inst);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--celeste), var(--verde-lima));
+      border-radius: 10px;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .progress-text {
+      font-weight: 800;
+      font-size: clamp(0.85rem, 1.5vw, 1rem);
+      color: var(--azul-inst);
+    }
+
+    /* ==========================================================================
+       SECCIÓN DE RELOJES (5 RELOJES HORIZONTALES)
+       ========================================================================== */
+    .clocks-container {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      gap: 0.8rem;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .clock-card {
+      background: white;
+      border-radius: 20px;
+      padding: 0.5rem;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      flex: 1 1 0;
+      min-width: 0;
+      max-width: 210px;
+      height: 100%;
+      max-height: 275px;
+      border: 4px solid var(--celeste);
+      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+      position: relative;
+    }
+
+    .target-time-badge {
+      background: var(--amarillo);
+      color: #111;
+      font-weight: 900;
+      font-size: clamp(0.9rem, 1.8vw, 1.25rem);
+      padding: 0.2rem 0.6rem;
+      border-radius: 12px;
+      border: 2px solid var(--morado);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      letter-spacing: 1px;
+      font-family: monospace, sans-serif;
+    }
+
+    .clock-status-icon {
+      position: absolute;
+      top: -12px;
+      right: -10px;
+      font-size: 1.8rem;
+      z-index: 10;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    }
+
+    .clock-svg {
+      width: 100%;
+      height: auto;
+      max-height: 185px;
+      touch-action: none; /* Arrastre fluido en pantallas táctiles */
+    }
+
+    /* ESTILOS DE AGUJAS INTERACTIVAS */
+    .hand-group {
+      cursor: grab;
+      transition: filter 0.15s;
+    }
+
+    .hand-group:hover {
+      filter: drop-shadow(0 0 5px var(--fucsia));
+    }
+
+    .hand-group:active {
+      cursor: grabbing;
+    }
+
+    /* ESTADOS DE RETROALIMENTACIÓN */
+    .clock-card.correct {
+      border-color: var(--verde-lima) !important;
+      animation: bounce 0.6s ease;
+    }
+
+    .clock-card.incorrect {
+      border-color: var(--fucsia) !important;
+      animation: shake 0.5s ease;
+    }
+
+    .clock-card.locked {
+      pointer-events: none;
+      opacity: 0.95;
+    }
+
+    /* ANIMACIONES */
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-12px) scale(1.02); }
+      60% { transform: translateY(-4px); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-7px); }
+      40%, 80% { transform: translateX(7px); }
+    }
+
+    /* ==========================================================================
+       CONTROLES INFERIORES Y BOTONES
+       ========================================================================== */
+    .footer-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      width: 100%;
+    }
+
+    .score-board {
+      font-size: clamp(0.95rem, 1.8vw, 1.2rem);
+      font-weight: 800;
+      color: var(--azul-inst);
+      background: white;
+      padding: 0.25rem 1.2rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      border: 2px solid var(--celeste);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      width: 100%;
+      max-width: 550px;
+    }
+
+    .btn {
+      border: none;
+      padding: 0.65rem 1.4rem;
+      font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+      font-weight: 800;
+      border-radius: 25px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      transition: transform 0.15s, box-shadow 0.15s, background-color 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.2);
+    }
+
+    .btn:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    .btn-check {
+      background: var(--verde-lima);
+      flex: 2;
+      border: 2px solid #8cb02e;
+    }
+
+    .btn-reset {
+      background: var(--azul-inst);
+      flex: 1;
+      border: 2px solid #00427c;
+    }
+
+    /* ==========================================================================
+       MODAL DE CELEBRACIÓN Y CONFETI
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: white;
+      padding: 2rem;
+      border-radius: 24px;
+      text-align: center;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+      border: 6px solid var(--amarillo);
+      transform: scale(0.7);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      max-width: 90%;
+      width: 380px;
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    .trophy-icon {
+      font-size: 4.5rem;
+      animation: prizeBounce 1s infinite alternate ease-in-out;
+      display: inline-block;
+    }
+
+    @keyframes prizeBounce {
+      0% { transform: translateY(0) rotate(-5deg); }
+      100% { transform: translateY(-12px) rotate(5deg); }
+    }
+
+    .modal-card h2 {
+      color: var(--azul-inst);
+      font-size: 1.8rem;
+      margin: 0.5rem 0;
+    }
+
+    .modal-card p {
+      color: var(--morado);
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-play-again {
+      background: var(--fucsia);
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1.15rem;
+      border: 2px solid #b51768;
+    }
+
+    /* PARTÍCULAS DE CONFETI DOM */
+    .confetti-piece {
+      position: fixed;
+      width: 10px;
+      height: 14px;
+      top: -20px;
+      z-index: 999;
+      pointer-events: none;
+      animation: confettiFall linear forwards;
+    }
+
+    @keyframes confettiFall {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(105vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- ENCABEZADO -->
+    <header>
+      <h1>¡Aprendamos la Hora!</h1>
+      <div class="instruction-box">Mueve las agujas hasta representar la hora indicada.</div>
+      <div class="progress-wrapper">
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progressBar"></div>
+        </div>
+        <span class="progress-text" id="progressText">Progreso: 0%</span>
+      </div>
+    </header>
+
+    <!-- CONTENEDOR DE RELOJES -->
+    <main class="clocks-container" id="clocksContainer">
+      <!-- Los 5 relojes se generan dinámicamente -->
+    </main>
+
+    <!-- CONTROLES Y PUNTUACIÓN -->
+    <footer class="footer-controls">
+      <div class="score-board" id="scoreBoard">Relojes correctos: 0 de 5</div>
+      <div class="button-group">
+        <button class="btn btn-check" id="btnCheck">Comprobar respuestas</button>
+        <button class="btn btn-reset" id="btnReset">Reiniciar</button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- MODAL DE VICTORIA -->
+  <div class="modal-overlay" id="victoryModal">
+    <div class="modal-card">
+      <div class="trophy-icon">🏆</div>
+      <h2>¡Felicidades!</h2>
+      <p>Has completado el desafío.</p>
+      <button class="btn btn-play-again" id="btnPlayAgain">Jugar otra vez</button>
+    </div>
+  </div>
+
+  <!-- CONTENEDOR PARA CONFETI -->
+  <div id="confettiContainer"></div>
+
+  <!-- LÓGICA DEL JUEGO -->
+  <script>
+    /* ==========================================================================
+       ESTADO GLOBAL Y VARIABLES DEL JUEGO
+       ========================================================================== */
+    const TOTAL_CLOCKS = 5;
+    let clockData = [];
+    let activeClockIndex = null;
+    let activeHandType = null;
+    let audioCtx = null;
+
+    /* ==========================================================================
+       SINTETIZADOR DE AUDIO CON WEB AUDIO API (100% OFFLINE)
+       ========================================================================== */
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playSuccessSound() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + i * 0.08);
+          gain.gain.setValueAtTime(0.2, now + i * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.25);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + i * 0.08);
+          osc.stop(now + i * 0.08 + 0.25);
+        });
+      } catch (e) {}
+    }
+
+    function playErrorSound() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(160, now);
+        osc.frequency.linearRampToValueAtTime(90, now + 0.25);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.25);
+      } catch (e) {}
+    }
+
+    function playVictorySound() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const notes = [
+          {f: 523.25, d: 0.12, t: 0},
+          {f: 659.25, d: 0.12, t: 0.12},
+          {f: 783.99, d: 0.12, t: 0.24},
+          {f: 1046.50, d: 0.35, t: 0.36},
+          {f: 880.00, d: 0.12, t: 0.72},
+          {f: 1046.50, d: 0.50, t: 0.84}
+        ];
+        notes.forEach(note => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(note.f, now + note.t);
+          gain.gain.setValueAtTime(0.25, now + note.t);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + note.t + note.d);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + note.t);
+          osc.stop(now + note.t + note.d);
+        });
+
+        // Aplausos sintéticos
+        for (let i = 0; i < 20; i++) {
+          const noiseTime = now + 0.2 + Math.random() * 1.2;
+          const bufferSize = ctx.sampleRate * 0.03;
+          const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let j = 0; j < bufferSize; j++) {
+            data[j] = Math.random() * 2 - 1;
+          }
+          const noise = ctx.createBufferSource();
+          noise.buffer = buffer;
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'bandpass';
+          filter.frequency.value = 1000 + Math.random() * 800;
+          const gain = ctx.createGain();
+          gain.gain.setValueAtTime(0.08, noiseTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, noiseTime + 0.03);
+          noise.connect(filter);
+          filter.connect(gain);
+          gain.connect(ctx.destination);
+          noise.start(noiseTime);
+        }
+      } catch (e) {}
+    }
+
+    /* ==========================================================================
+       CONSTRUCCIÓN Y DIBUJO DE RELOJES SVG
+       ========================================================================== */
+    function populateClockFace(idx) {
+      const ticksGroup = document.getElementById(`ticks-${idx}`);
+      const numbersGroup = document.getElementById(`numbers-${idx}`);
+
+      for (let i = 0; i < 60; i++) {
+        const angle = i * 6;
+        const rad = (angle - 90) * Math.PI / 180;
+        const isHour = (i % 5 === 0);
+        const r1 = isHour ? 78 : 83;
+        const r2 = 86;
+        const x1 = 100 + r1 * Math.cos(rad);
+        const y1 = 100 + r1 * Math.sin(rad);
+        const x2 = 100 + r2 * Math.cos(rad);
+        const y2 = 100 + r2 * Math.sin(rad);
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x1);
+        line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+        line.setAttribute('stroke', isHour ? '#0059A6' : '#999');
+        line.setAttribute('stroke-width', isHour ? '2.5' : '1');
+        ticksGroup.appendChild(line);
+      }
+
+      for (let n = 1; n <= 12; n++) {
+        const angle = n * 30;
+        const rad = (angle - 90) * Math.PI / 180;
+        const radius = 66;
+        const x = 100 + radius * Math.cos(rad);
+        const y = 100 + radius * Math.sin(rad);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', x);
+        text.setAttribute('y', y);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'central');
+        text.setAttribute('fill', '#0059A6');
+        text.setAttribute('font-weight', 'bold');
+        text.setAttribute('font-size', '13');
+        text.textContent = n;
+        numbersGroup.appendChild(text);
+      }
+    }
+
+    /* ==========================================================================
+       ACTUALIZACIÓN VISUAL Y RENDERIZADO
+       ========================================================================== */
+    function updateClockVisuals(idx) {
+      const data = clockData[idx];
+      const handH = document.getElementById(`hand-h-${idx}`);
+      const handM = document.getElementById(`hand-m-${idx}`);
+      const handS = document.getElementById(`hand-s-${idx}`);
+
+      if (handH) handH.setAttribute('transform', `rotate(${data.currentHAngle} 100 100)`);
+      if (handM) handM.setAttribute('transform', `rotate(${data.currentMAngle} 100 100)`);
+      if (handS) handS.setAttribute('transform', `rotate(${data.currentSAngle} 100 100)`);
+    }
+
+    /* ==========================================================================
+       LÓGICA DE ARRASTRE DIRECTO DE AGUJAS
+       ========================================================================== */
+    function handlePointerMove(e) {
+      if (activeClockIndex === null || activeHandType === null) return;
+
+      const svg = document.getElementById(`svg-${activeClockIndex}`);
+      const rect = svg.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+
+      const dx = e.clientX - cx;
+      const dy = e.clientY - cy;
+
+      // Calcular ángulo en grados respecto a las 12 (0°)
+      let deg = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+      if (deg < 0) deg += 360;
+
+      const data = clockData[activeClockIndex];
+
+      // Asignación directa 1:1 de ángulo a la aguja seleccionada
+      if (activeHandType === 's') {
+        data.currentSAngle = deg;
+      } else if (activeHandType === 'm') {
+        data.currentMAngle = deg;
+      } else if (activeHandType === 'h') {
+        data.currentHAngle = deg;
+      }
+
+      updateClockVisuals(activeClockIndex);
+    }
+
+    /* ==========================================================================
+       DIFERENCIA ANGULAR Y VERIFICACIÓN DE RESPUESTAS
+       ========================================================================== */
+    function getAngleDiff(a1, a2) {
+      let diff = Math.abs(a1 - a2) % 360;
+      if (diff > 180) diff = 360 - diff;
+      return diff;
+    }
+
+    function checkAnswers() {
+      let correctCount = 0;
+      let hasError = false;
+      // Tolerancia amplia y amigable para niños (±8.5 grados)
+      const TOLERANCE = 8.5; 
+
+      clockData.forEach((data, i) => {
+        if (data.isLocked) {
+          correctCount++;
+          return;
+        }
+
+        const diffS = getAngleDiff(data.currentSAngle, data.targetSAngle);
+        const diffM = getAngleDiff(data.currentMAngle, data.targetMAngle);
+        const diffH = getAngleDiff(data.currentHAngle, data.targetHAngle);
+
+        const card = document.getElementById(`clock-card-${i}`);
+        const statusIcon = document.getElementById(`status-${i}`);
+
+        if (diffS <= TOLERANCE && diffM <= TOLERANCE && diffH <= TOLERANCE) {
+          data.isLocked = true;
+          correctCount++;
+          card.classList.remove('incorrect');
+          card.classList.add('correct', 'locked');
+          statusIcon.innerHTML = '😊⭐';
+        } else {
+          hasError = true;
+          card.classList.remove('correct');
+          card.classList.add('incorrect');
+          statusIcon.innerHTML = '😢';
+        }
+      });
+
+      updateProgressAndScore(correctCount);
+
+      if (hasError) {
+        playErrorSound();
+      } else if (correctCount > 0 && correctCount < TOTAL_CLOCKS) {
+        playSuccessSound();
+      }
+
+      if (correctCount === TOTAL_CLOCKS) {
+        playVictorySound();
+        triggerConfetti();
+        document.getElementById('progressText').innerHTML = '🎉 ¡Excelente trabajo!';
+        setTimeout(() => {
+          document.getElementById('victoryModal').classList.add('active');
+        }, 400);
+      }
+    }
+
+    function updateProgressAndScore(correctCount) {
+      const percentage = (correctCount / TOTAL_CLOCKS) * 100;
+      document.getElementById('progressBar').style.width = percentage + '%';
+      
+      if (correctCount < TOTAL_CLOCKS) {
+        document.getElementById('progressText').innerHTML = `Progreso: ${percentage}%`;
+      }
+      
+      document.getElementById('scoreBoard').innerHTML = `Relojes correctos: ${correctCount} de ${TOTAL_CLOCKS}`;
+    }
+
+    /* ==========================================================================
+       EFECTO DE CONFETI DOM
+       ========================================================================== */
+    function triggerConfetti() {
+      const container = document.getElementById('confettiContainer');
+      container.innerHTML = '';
+      const colors = ['#0059A6', '#00A8E8', '#A5C83F', '#FFEC01', '#E32085', '#833189'];
+      
+      for (let i = 0; i < 70; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + 'vw';
+        piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDuration = (2 + Math.random() * 2.5) + 's';
+        piece.style.animationDelay = (Math.random() * 0.4) + 's';
+        piece.style.width = (8 + Math.random() * 8) + 'px';
+        piece.style.height = (12 + Math.random() * 8) + 'px';
+        container.appendChild(piece);
+      }
+    }
+
+    /* ==========================================================================
+       INICIALIZACIÓN Y REINICIO
+       ========================================================================== */
+    function resetGame() {
+      document.getElementById('confettiContainer').innerHTML = '';
+      document.getElementById('victoryModal').classList.remove('active');
+
+      clockData = [];
+      const container = document.getElementById('clocksContainer');
+      container.innerHTML = '';
+
+      for (let i = 0; i < TOTAL_CLOCKS; i++) {
+        // Generar horas educativas (minutos y segundos en múltiplos de 5)
+        const targetH = Math.floor(Math.random() * 12) + 1;
+        const targetM = Math.floor(Math.random() * 12) * 5; // 0, 5, 10, ..., 55
+        const targetS = Math.floor(Math.random() * 12) * 5; // 0, 5, 10, ..., 55
+
+        const targetStr = 
+          String(targetH).padStart(2, '0') + ':' +
+          String(targetM).padStart(2, '0') + ':' +
+          String(targetS).padStart(2, '0');
+
+        // Cálculo exacto de ángulos matemáticos de destino
+        const targetSAngle = (targetS * 6) % 360;
+        const targetMAngle = (targetM * 6 + (targetS / 60) * 6) % 360;
+        const targetHAngle = ((targetH % 12) * 30 + (targetM / 60) * 30 + (targetS / 3600) * 30) % 360;
+
+        const obj = {
+          targetH, targetM, targetS, targetStr,
+          targetSAngle, targetMAngle, targetHAngle,
+          currentHAngle: 0, currentMAngle: 0, currentSAngle: 0, // Posición inicial 12:00:00
+          isLocked: false
+        };
+        clockData.push(obj);
+
+        const card = document.createElement('div');
+        card.className = 'clock-card';
+        card.id = `clock-card-${i}`;
+
+        card.innerHTML = `
+          <div class="target-time-badge" id="target-${i}">${targetStr}</div>
+          <div class="clock-status-icon" id="status-${i}"></div>
+          <svg class="clock-svg" id="svg-${i}" viewBox="0 0 200 200">
+            <!-- Esfera del reloj -->
+            <circle cx="100" cy="100" r="95" fill="#ffffff" stroke="#0059A6" stroke-width="5"/>
+            <circle cx="100" cy="100" r="88" fill="#F8FDFF" stroke="#00A8E8" stroke-width="1.5"/>
+            <g id="ticks-${i}"></g>
+            <g id="numbers-${i}"></g>
+
+            <!-- Aguja de Horas (Morada, corta y gruesa) -->
+            <g class="hand-group" id="hand-h-${i}" data-clock="${i}" data-hand="h">
+              <line x1="100" y1="100" x2="100" y2="48" stroke="#833189" stroke-width="8" stroke-linecap="round"/>
+              <line x1="100" y1="105" x2="100" y2="30" stroke="transparent" stroke-width="26"/>
+            </g>
+
+            <!-- Aguja de Minutos (Azul, larga y mediana) -->
+            <g class="hand-group" id="hand-m-${i}" data-clock="${i}" data-hand="m">
+              <line x1="100" y1="100" x2="100" y2="28" stroke="#0059A6" stroke-width="5" stroke-linecap="round"/>
+              <line x1="100" y1="105" x2="100" y2="18" stroke="transparent" stroke-width="22"/>
+            </g>
+
+            <!-- Aguja de Segundos (Fucsia, delgada) -->
+            <g class="hand-group" id="hand-s-${i}" data-clock="${i}" data-hand="s">
+              <line x1="100" y1="115" x2="100" y2="18" stroke="#E32085" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="100" y1="115" x2="100" y2="10" stroke="transparent" stroke-width="18"/>
+            </g>
+
+            <!-- Centro del Reloj -->
+            <circle cx="100" cy="100" r="6" fill="#FFEC01" stroke="#0059A6" stroke-width="2"/>
+          </svg>
+        `;
+
+        container.appendChild(card);
+        populateClockFace(i);
+        updateClockVisuals(i);
+      }
+
+      updateProgressAndScore(0);
+    }
+
+    /* ==========================================================================
+       EVENT LISTENERS
+       ========================================================================== */
+    document.addEventListener('pointerdown', (e) => {
+      const handGroup = e.target.closest('.hand-group');
+      if (handGroup) {
+        const clockIdx = parseInt(handGroup.getAttribute('data-clock'));
+        const handType = handGroup.getAttribute('data-hand');
+        if (!clockData[clockIdx].isLocked) {
+          activeClockIndex = clockIdx;
+          activeHandType = handType;
+          handGroup.setPointerCapture(e.pointerId);
+          e.preventDefault();
+        }
+      }
+    });
+
+    document.addEventListener('pointermove', (e) => {
+      if (activeClockIndex !== null && activeHandType !== null) {
+        handlePointerMove(e);
+      }
+    });
+
+    document.addEventListener('pointerup', () => {
+      activeClockIndex = null;
+      activeHandType = null;
+    });
+
+    document.addEventListener('pointercancel', () => {
+      activeClockIndex = null;
+      activeHandType = null;
+    });
+
+    document.getElementById('btnCheck').addEventListener('click', checkAnswers);
+    document.getElementById('btnReset').addEventListener('click', resetGame);
+    document.getElementById('btnPlayAgain').addEventListener('click', resetGame);
+
+    // Iniciar al cargar
+    window.addEventListener('DOMContentLoaded', resetGame);
+  </script>
+</body>
+</html>

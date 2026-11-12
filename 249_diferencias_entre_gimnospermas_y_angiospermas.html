@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌱 Detectives de Semillas</title>
+    <style>
+        /* Paleta de Colores Divertida */
+        :root {
+            --color-angio: #FF6289; /* Rosa fuerte para flores */
+            --color-gimno: #D35400; /* Naranja/Marrón para piñas */
+            --color-fondo: #E0F7FA;
+            --color-texto: #2C3E50;
+            --color-acierto: #2ECC71;
+            --color-error: #E74C3C;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Verdana', sans-serif;
+            background-color: var(--color-fondo);
+            color: var(--color-texto);
+            margin: 0;
+            padding: clamp(10px, 3vw, 20px);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 900px;
+            background-color: white;
+            padding: clamp(15px, 4vw, 30px);
+            border-radius: 25px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            border: 5px solid #B2EBF2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Menú de Navegación */
+        .top-nav {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 4px dashed #81D4FA;
+        }
+
+        .nav-button {
+            background-color: #29B6F6;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-size: 1.1em;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 5px 0px #0288D1;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .nav-button:hover {
+            transform: translateY(2px);
+            box-shadow: 0 3px 0px #0288D1;
+        }
+
+        .nav-button.active {
+            background-color: #FFCA28;
+            color: #5D4037;
+            box-shadow: 0 5px 0px #FF8F00;
+            pointer-events: none;
+        }
+
+        h1 { text-align: center; color: #0277BD; font-size: clamp(1.8em, 5vw, 2.5em); margin-top: 0; }
+        p { font-size: 1.15em; line-height: 1.6; }
+
+        /* PANTALLA DE GUÍA (Tarjetas Mágicas) */
+        #screen-guide { animation: popIn 0.5s ease-out; }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .plant-card {
+            padding: 25px;
+            border-radius: 25px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plant-card:hover {
+            transform: scale(1.05);
+        }
+
+        .card-gimno {
+            background: linear-gradient(135deg, #FFE0B2 0%, #FFCC80 100%);
+            border: 4px solid var(--color-gimno);
+            box-shadow: 0 8px 15px rgba(211, 84, 0, 0.2);
+        }
+
+        .card-angio {
+            background: linear-gradient(135deg, #FCE4EC 0%, #F8BBD0 100%);
+            border: 4px solid var(--color-angio);
+            box-shadow: 0 8px 15px rgba(255, 98, 137, 0.2);
+        }
+
+        .emoji-big {
+            font-size: 4em;
+            margin: 10px 0;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .plant-card h2 {
+            margin: 10px 0;
+            font-size: 1.6em;
+        }
+        .card-gimno h2 { color: var(--color-gimno); }
+        .card-angio h2 { color: var(--color-angio); }
+
+        .plant-card ul {
+            text-align: left;
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+
+        .plant-card li { margin-bottom: 10px; font-weight: bold; color: #444; }
+
+        /* PANTALLA DEL JUEGO (Clasificador) */
+        #screen-game { display: none; animation: popIn 0.5s ease-out; text-align: center; }
+
+        .game-area {
+            background-color: #FFF9C4;
+            border: 4px dashed #FBC02D;
+            border-radius: 25px;
+            padding: 30px 20px;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        #item-display {
+            background-color: white;
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 30px auto;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 5px solid #FFF;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        #item-emoji { font-size: 5em; margin-bottom: 5px; }
+        #item-name { font-weight: bold; font-size: 1.2em; color: #555; }
+
+        .baskets-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .basket-btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 20px;
+            border-radius: 20px;
+            border: none;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .basket-gimno { background-color: var(--color-gimno); box-shadow: 0 6px 0px #A04000; }
+        .basket-gimno:hover { transform: translateY(3px); box-shadow: 0 3px 0px #A04000; }
+
+        .basket-angio { background-color: var(--color-angio); box-shadow: 0 6px 0px #D81B60; }
+        .basket-angio:hover { transform: translateY(3px); box-shadow: 0 3px 0px #D81B60; }
+
+        .feedback-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            font-weight: bold;
+            opacity: 0;
+            pointer-events: none;
+            text-shadow: 2px 2px 0px white;
+        }
+
+        .feedback-correct { color: var(--color-acierto); animation: zoomInOut 1s ease; }
+        .feedback-wrong { color: var(--color-error); animation: shake 0.5s ease; }
+
+        #game-end { display: none; margin-top: 20px; }
+        #game-end h3 { font-size: 2em; color: var(--color-acierto); }
+        
+        .play-again-btn {
+            background-color: #9C27B0;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 0px #6A1B9A;
+            margin-top: 15px;
+            font-family: inherit;
+        }
+        .play-again-btn:hover { transform: translateY(2px); box-shadow: 0 3px 0px #6A1B9A; }
+
+        /* Animaciones */
+        @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes zoomInOut { 0% { transform: translate(-50%, -50%) scale(0); opacity: 1; } 50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 0; } }
+        @keyframes shake { 0%, 100% { transform: translate(-50%, -50%) translateX(0); opacity: 1; } 25% { transform: translate(-50%, -50%) translateX(-10px); } 75% { transform: translate(-50%, -50%) translateX(10px); } 99% { opacity: 0;} }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        
+        <!-- Navegación -->
+        <div class="top-nav">
+            <button class="nav-button active" id="btn-nav-guide">📖 Guía de Detectives</button>
+            <button class="nav-button" id="btn-nav-game">🎮 El Clasificador Mágico</button>
+        </div>
+
+        <!-- PANTALLA 1: GUÍA -->
+        <div id="screen-guide">
+            <h1>El Secreto de las Semillas 🤫</h1>
+            <p style="text-align: center;">¡Hola, Detective de la Naturaleza! Todas las plantas con semillas se dividen en dos equipos secretos. Tu misión es aprender a reconocerlos.</p>
+
+            <div class="cards-container">
+                <!-- Tarjeta Gimnospermas -->
+                <div class="plant-card card-gimno">
+                    <div class="emoji-big">🌲</div>
+                    <h2>Gimnospermas</h2>
+                    <p><em>"Las del abrigo olvidado"</em></p>
+                    <ul>
+                        <li><strong>Semilla Desnuda:</strong> ¡Sus semillas no tienen la protección de un fruto!</li>
+                        <li><strong>Su Casita:</strong> Viven en conos o piñas duritas.</li>
+                        <li><strong>Apariencia:</strong> No tienen flores de colores. Sus hojas parecen agujitas.</li>
+                        <li><strong>Ejemplos:</strong> Los pinos, los abetos y los cipreses.</li>
+                    </ul>
+                </div>
+
+                <!-- Tarjeta Angiospermas -->
+                <div class="plant-card card-angio">
+                    <div class="emoji-big">🌸</div>
+                    <h2>Angiospermas</h2>
+                    <p><em>"Las más coquetas"</em></p>
+                    <ul>
+                        <li><strong>Semilla Protegida:</strong> ¡Guardan su semilla dentro de un rico fruto!</li>
+                        <li><strong>Su Magia:</strong> Tienen flores de colores hermosos para atraer a las abejas.</li>
+                        <li><strong>Apariencia:</strong> Hojas anchas y formas muy diferentes.</li>
+                        <li><strong>Ejemplos:</strong> Manzanos, rosas, naranjos y casi todo lo que comemos.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA 2: JUEGO -->
+        <div id="screen-game">
+            <h1>¡El Clasificador Mágico! 🧺</h1>
+            <p>Observa la imagen que aparece en el círculo y decide a qué equipo pertenece. ¡Lánzala a la canasta correcta!</p>
+
+            <div class="game-area">
+                <div id="item-display">
+                    <div id="item-emoji">🍎</div>
+                    <div id="item-name">Manzana</div>
+                </div>
+
+                <div class="baskets-container" id="baskets">
+                    <button class="basket-btn basket-gimno" onclick="checkAnswer('gimnosperma')">
+                        <span>🌲 Canasta de</span>
+                        <span>Gimnospermas</span>
+                    </button>
+                    <button class="basket-btn basket-angio" onclick="checkAnswer('angiosperma')">
+                        <span>🌸 Canasta de</span>
+                        <span>Angiospermas</span>
+                    </button>
+                </div>
+
+                <!-- Mensajes de Retroalimentación -->
+                <div id="feedback" class="feedback-message"></div>
+
+                <!-- Fin del Juego -->
+                <div id="game-end">
+                    <h3>¡Misión Cumplida, Detective! 🌟</h3>
+                    <p>Has clasificado todas las plantas correctamente.</p>
+                    <button class="play-again-btn" onclick="startGame()">🔄 Jugar Otra Vez</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- NAVEGACIÓN ---
+        const btnGuide = document.getElementById('btn-nav-guide');
+        const btnGame = document.getElementById('btn-nav-game');
+        const screenGuide = document.getElementById('screen-guide');
+        const screenGame = document.getElementById('screen-game');
+
+        btnGuide.addEventListener('click', () => {
+            btnGuide.classList.add('active');
+            btnGame.classList.remove('active');
+            screenGuide.style.display = 'block';
+            screenGame.style.display = 'none';
+        });
+
+        btnGame.addEventListener('click', () => {
+            btnGame.classList.add('active');
+            btnGuide.classList.remove('active');
+            screenGame.style.display = 'block';
+            screenGuide.style.display = 'none';
+            startGame(); // Reinicia el juego al entrar a la pestaña
+        });
+
+        // --- LÓGICA DEL JUEGO ---
+        const plantsData = [
+            { name: "Manzano", emoji: "🍎", type: "angiosperma" },
+            { name: "Piña de Pino", emoji: "🌰", type: "gimnosperma" },
+            { name: "Girasol", emoji: "🌻", type: "angiosperma" },
+            { name: "Árbol de Navidad", emoji: "🎄", type: "gimnosperma" },
+            { name: "Naranja", emoji: "🍊", type: "angiosperma" },
+            { name: "Ciprés", emoji: "🌲", type: "gimnosperma" },
+            { name: "Rosa", emoji: "🌹", type: "angiosperma" }
+        ];
+
+        let currentPlants = [];
+        let currentIndex = 0;
+
+        const itemEmoji = document.getElementById('item-emoji');
+        const itemName = document.getElementById('item-name');
+        const itemDisplay = document.getElementById('item-display');
+        const feedback = document.getElementById('feedback');
+        const baskets = document.getElementById('baskets');
+        const gameEnd = document.getElementById('game-end');
+
+        // Desordenar las plantas (Fisher-Yates)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function startGame() {
+            currentPlants = [...plantsData];
+            shuffleArray(currentPlants);
+            currentIndex = 0;
+            
+            baskets.style.display = 'flex';
+            gameEnd.style.display = 'none';
+            itemDisplay.style.display = 'flex';
+            
+            showNextPlant();
+        }
+
+        function showNextPlant() {
+            if (currentIndex >= currentPlants.length) {
+                // Ganó el juego
+                baskets.style.display = 'none';
+                itemDisplay.style.display = 'none';
+                gameEnd.style.display = 'block';
+                return;
+            }
+
+            const plant = currentPlants[currentIndex];
+            itemEmoji.textContent = plant.emoji;
+            itemName.textContent = plant.name;
+            itemDisplay.style.transform = 'scale(1)';
+        }
+
+        window.checkAnswer = function(selectedType) {
+            const correctType = currentPlants[currentIndex].type;
+            
+            // Quitar clases de animación anteriores
+            feedback.classList.remove('feedback-correct', 'feedback-wrong');
+            // Forzar reflow para reiniciar animación
+            void feedback.offsetWidth;
+
+            if (selectedType === correctType) {
+                // ¡Correcto!
+                feedback.textContent = '¡Genial! ⭐️';
+                feedback.classList.add('feedback-correct');
+                itemDisplay.style.transform = 'scale(0)'; // Efecto de que se va a la canasta
+                
+                setTimeout(() => {
+                    currentIndex++;
+                    showNextPlant();
+                }, 800);
+            } else {
+                // Incorrecto
+                feedback.textContent = '¡Ups! Intenta de nuevo ❌';
+                feedback.classList.add('feedback-wrong');
+                itemDisplay.style.transform = 'translate(-10px, 0)';
+                setTimeout(() => { itemDisplay.style.transform = 'translate(0, 0)'; }, 300);
+            }
+        }
+    </script>
+</body>
+</html>

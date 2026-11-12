@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>El Castillo del Ajedrez - Nombra las Piezas</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght=400;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome (Para las formas EXACTAS de las piezas de ajedrez) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        html {
+            font-size: 85%;
+        }
+        @media (min-width: 768px) {
+            html { font-size: 90%; }
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #fef3c7;
+            background-image: 
+                linear-gradient(45deg, #fde68a 25%, transparent 25%, transparent 75%, #fde68a 75%, #fde68a),
+                linear-gradient(45deg, #fde68a 25%, #fef3c7 25%, #fef3c7 75%, #fde68a 75%, #fde68a);
+            background-size: 60px 60px;
+            background-position: 0 0, 30px 30px;
+            margin: 0;
+            padding: 0;
+            touch-action: pan-y;
+            overflow-x: hidden;
+        }
+
+        /* --- Animaciones Infantiles --- */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-8px) scale(1.03); }
+        }
+        .floating { animation: float 3s ease-in-out infinite; }
+
+        @keyframes spinCheck {
+            0% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0 rgba(245,158,11,0)); }
+            50% { transform: scale(1.2) rotate(180deg); filter: drop-shadow(0 0 20px #f59e0b); }
+            100% { transform: scale(1) rotate(360deg); filter: drop-shadow(0 0 0 rgba(245,158,11,0)); }
+        }
+        .spin-success { animation: spinCheck 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+        .shake { animation: shake 0.4s ease-in-out; }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            80% { transform: scale(1.08); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop-in { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        @keyframes pulseSquare { 
+            0%, 100% { background-color: rgba(251, 191, 36, 0.2); } 
+            50% { background-color: rgba(251, 191, 36, 0.6); } 
+        }
+        .highlight-move { animation: pulseSquare 1.5s infinite; }
+
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Tablero de entrenamiento interactivo */
+        .chess-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            width: 250px;
+            height: 250px;
+            border: 4px solid #92400e;
+        }
+        @media (min-width: 768px) { 
+            .chess-grid { width: 350px; height: 350px; } 
+        }
+
+        .chess-cell {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            position: relative;
+        }
+        @media (min-width: 768px) { 
+            .chess-cell { font-size: 3rem; } 
+        }
+
+        .cell-dark { background-color: #d97706; }
+        .cell-light { background-color: #fef3c7; }
+
+        /* Pieza animada en el tablero de muestra */
+        #pieza-demo {
+            position: absolute;
+            transition: all 1s ease-in-out;
+            z-index: 10;
+        }
+
+        /* Partículas mágicas */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            animation: flyUp 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            z-index: 100;
+        }
+        @keyframes flyUp {
+            0% { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-120px) scale(1.5) rotate(180deg); opacity: 0; }
+        }
+
+        /* Estilo para los botones de opción */
+        .btn-opcion {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Color exacto para las piezas de ajedrez (Gris Oscuro) */
+        .pieza-ajedrez {
+            color: #1e293b;
+        }
+    </style>
+</head>
+<body class="flex flex-col relative text-slate-800 select-none min-h-screen lg:h-screen lg:overflow-hidden pb-56 lg:pb-0">
+
+    <!-- ================= AUDIO ENGINE INTEGRADO (Web Audio API) ================= -->
+    <script>
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) {
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) audioCtx = new AudioContext();
+                } catch (e) { console.warn("Audio no soportado."); }
+            }
+        }
+
+        function playSound(tipo) {
+            if (!audioCtx) return;
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (tipo === 'click' || tipo === 'boop') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.12);
+                    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.12);
+                } else if (tipo === 'success') {
+                    const notas = [293.66, 349.23, 440.00, 587.33]; 
+                    notas.forEach((freq, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g); g.connect(audioCtx.destination);
+                        o.type = 'triangle';
+                        o.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.08);
+                        g.gain.setValueAtTime(0.15, audioCtx.currentTime + idx * 0.08);
+                        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.08 + 0.4);
+                        o.start(audioCtx.currentTime + idx * 0.08);
+                        o.stop(audioCtx.currentTime + idx * 0.08 + 0.4);
+                    });
+                } else if (tipo === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(160, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(90, audioCtx.currentTime + 0.25);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+                }
+            } catch(e) {}
+        }
+    </script>
+
+    <!-- ================= PANTALLA DE INICIO (Completa y Restaurada) ================= -->
+    <div id="pantalla-inicio" class="absolute inset-0 z-50 flex flex-col items-center justify-start lg:justify-center p-4 text-center bg-amber-50/95 backdrop-blur-md transition-all duration-500 overflow-y-auto">
+        
+        <div class="bg-amber-200 text-amber-900 rounded-full px-5 py-2 mb-4 font-bold tracking-widest border-2 border-amber-300 text-xs md:text-sm uppercase shrink-0 mt-8 lg:mt-0 shadow-sm">
+            🎯 EDUCACIÓN FÍSICA • I UP (1º/2º GRADO)
+        </div>
+        
+        <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight flex flex-col items-center justify-center shrink-0">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-700 via-orange-600 to-amber-800 py-1">El Castillo del</span>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-700 via-orange-600 to-amber-800 py-1 flex items-center justify-center gap-3">Ajedrez <i class="fa-solid fa-chess-rook text-amber-600 pop-in inline-block floating drop-shadow-md text-5xl"></i></span>
+        </h1>
+        
+        <div class="w-full max-w-2xl bg-white p-6 sm:p-8 rounded-[2.5rem] shadow-2xl border-4 border-amber-400 mb-8 transform hover:scale-[1.01] transition-all relative overflow-hidden">
+            <h2 class="text-xl md:text-2xl font-black text-amber-700 mb-3 flex items-center justify-center gap-2">
+                <span>🦉👑</span> ¡Hola, Pequeño Gran Maestro!
+            </h2>
+            <p class="text-sm sm:text-base md:text-lg text-slate-600 leading-relaxed font-bold">
+                ¡Las piezas mágicas del tablero se han escondido en mi castillo!<br><br>
+                Míralas muy bien. Ayúdame a llamarlas por su nombre correcto. Si las reconoces a todas, abriremos el gran cofre de los trofeos.<br><br>
+                <span class="text-amber-600 font-black">¡Comencemos la aventura del ajedrez! ⚡♟️</span>
+            </p>
+        </div>
+
+        <button onclick="initAudio(); playSound('click'); iniciarJuego();" class="relative inline-flex items-center justify-center px-10 py-5 text-xl font-black text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full shadow-[0_6px_0_#b45309] active:translate-y-1 active:shadow-[0_2px_0_#b45309] transition-all shrink-0 mb-8">
+            ¡Entrar al Castillo! 🚀
+        </button>
+    </div>
+
+    <!-- ================= PANTALLA PRINCIPAL DEL JUEGO ================= -->
+    <div id="pantalla-juego" class="hidden flex-1 flex flex-col lg:h-full lg:overflow-hidden">
+        
+        <!-- Cabecera de Progreso -->
+        <div class="w-full flex justify-between items-center bg-white p-3 shadow-sm border-b-4 border-amber-200 z-30 shrink-0 sticky top-0">
+            <div class="flex items-center gap-2.5">
+                <span class="text-2xl bg-amber-100 p-1.5 rounded-2xl border border-amber-200 shadow-inner text-amber-800"><i class="fa-solid fa-chess-board"></i></span>
+                <div>
+                    <h2 class="text-sm sm:text-lg font-black text-slate-800 leading-tight">Reino del Ajedrez</h2>
+                    <p class="hidden sm:block text-[9px] font-bold text-amber-600 uppercase tracking-widest leading-none">Reconocimiento de Piezas</p>
+                </div>
+            </div>
+            
+            <div class="flex flex-col items-end">
+                <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider leading-none mb-0.5">Piezas Encontradas</span>
+                <span id="contador-progreso" class="bg-amber-100 px-3.5 py-0.5 rounded-full text-amber-800 font-black border-2 border-amber-300 text-xs sm:text-base shadow-sm">0 / 6 🏰</span>
+            </div>
+        </div>
+
+        <!-- Layout Adaptativo -->
+        <div class="flex-1 flex flex-col lg:grid lg:grid-cols-2 gap-4 p-4 md:p-6 overflow-visible lg:overflow-hidden max-w-6xl mx-auto w-full">
+            
+            <!-- PANEL IZQUIERDO: La Carta Mágica de la Pieza Oculta -->
+            <div class="w-full bg-white rounded-[2rem] border-4 border-amber-200 p-4 flex flex-col justify-between items-center relative overflow-hidden min-h-[260px] lg:h-full shadow-sm shrink-0">
+                
+                <div class="bg-amber-50 border-2 border-amber-200 px-4 py-1 rounded-full text-xs font-black text-amber-800 tracking-wider uppercase z-10 shadow-sm shrink-0">
+                    ¿Quién es esta pieza? 🤔
+                </div>
+
+                <!-- Marco de exhibición de la pieza -->
+                <div class="flex-1 w-full flex items-center justify-center relative my-4">
+                    <div id="circulo-pieza" class="w-32 h-32 sm:w-44 sm:h-44 rounded-full bg-slate-100 border-4 border-slate-300 shadow-inner flex items-center justify-center relative transition-all duration-300">
+                        <span id="icono-pregunta" class="text-7xl sm:text-[8rem] filter drop-shadow-md floating block select-none pieza-ajedrez">
+                            <!-- Icono inyectado -->
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Pista ligera inferior -->
+                <div class="w-full max-w-[240px] bg-amber-50 rounded-xl p-2 border-2 border-amber-200 text-center shrink-0 z-10 shadow-inner">
+                    <span id="pista-visual" class="text-xs font-black text-amber-700 uppercase tracking-wide leading-none">Pista visual...</span>
+                </div>
+
+            </div>
+
+            <!-- PANEL DERECHO: Botones de Selección Gigantes -->
+            <div class="w-full bg-white rounded-[2rem] border-4 border-amber-100 p-4 md:p-6 flex flex-col justify-center gap-3 shadow-xl relative min-h-[280px] lg:h-full shrink-0">
+                
+                <h3 class="text-xs sm:text-base font-black text-amber-900 text-center uppercase tracking-wide border-b-2 border-slate-100 pb-2 mb-2 shrink-0">
+                    Toca el cartel con el nombre correcto:
+                </h3>
+
+                <!-- Contenedor de Opciones -->
+                <div id="contenedor-opciones" class="flex flex-col gap-3.5 flex-1 justify-center">
+                    <!-- Inyectados por JS -->
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= MODAL: ANIMACIÓN DE MOVIMIENTO DE LA PIEZA ================= -->
+    <div id="modal-movimiento" class="hidden fixed inset-0 z-[100] modal-overlay flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] w-full max-w-2xl p-6 shadow-2xl border-8 border-amber-500 flex flex-col items-center gap-6 pop-in">
+            <h3 id="titulo-movimiento" class="text-2xl md:text-3xl font-black text-amber-700 uppercase">¡Movimiento de la Torre!</h3>
+            
+            <!-- Mini Tablero de Muestra -->
+            <div class="chess-grid rounded-lg shadow-lg overflow-hidden" id="board-demo">
+                <!-- Se inyectan 25 celdas (5x5) -->
+            </div>
+
+            <div class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-200 flex gap-4 items-center w-full">
+                <span class="text-5xl">🦉</span>
+                <p id="explicacion-owl" class="text-sm md:text-lg font-bold text-slate-700 leading-tight">El peón solo avanza un paso...</p>
+            </div>
+
+            <button onclick="cerrarMovimiento()" class="w-full py-4 bg-green-500 hover:bg-green-400 text-white font-black text-xl rounded-2xl shadow-[0_6px_0_#15803d] active:translate-y-1 transition-all">
+                ¡Entendido, Búho! ➡️
+            </button>
+        </div>
+    </div>
+
+    <!-- ================= PANEL DE RETROALIMENTACIÓN (BÚHO-GRAN MAESTRO) ================= -->
+    <div id="burbuja-pedagogica" class="fixed bottom-0 left-0 w-full bg-white border-t-[10px] border-amber-400 shadow-[0_-15px_40px_rgba(0,0,0,0.2)] z-[100] transform translate-y-full transition-transform duration-500 flex flex-col md:flex-row items-center justify-between p-5 md:px-8 md:py-6 rounded-t-3xl">
+        <div class="flex items-center gap-4 w-full md:w-3/4 mb-4 md:mb-0">
+            <!-- Avatar Búho -->
+            <div class="relative w-16 h-16 md:w-20 md:h-20 bg-amber-50 rounded-full border-4 border-amber-200 flex items-center justify-center shrink-0 shadow-inner">
+                <span id="burbuja-icono" class="text-4xl md:text-5xl select-none font-bold block floating">🦉</span>
+            </div>
+            <div>
+                <h3 id="burbuja-titulo" class="text-xl md:text-3xl font-black text-amber-700 mb-1 select-none leading-none">Búho Gran Maestro</h3>
+                <p id="burbuja-mensaje" class="text-sm md:text-lg font-bold text-slate-600 leading-snug select-none">Explicación...</p>
+            </div>
+        </div>
+        <div id="burbuja-boton-container" class="w-full md:w-auto shrink-0 flex justify-end">
+            <!-- Botón se inyecta dinámicamente -->
+        </div>
+    </div>
+
+    <!-- ================= PANTALLA FINAL ================= -->
+    <div id="pantalla-final" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-white/95 backdrop-blur-md transition-opacity duration-500 overflow-y-auto">
+        <div class="flex gap-4 justify-center text-7xl md:text-9xl mb-8 floating select-none drop-shadow-md text-amber-600">
+            <i class="fa-solid fa-chess-king"></i>
+            <span>🏆</span>
+            <i class="fa-solid fa-chess-knight"></i>
+        </div>
+
+        <h1 class="text-4xl sm:text-6xl md:text-7xl font-black mb-6 leading-tight text-slate-800 drop-shadow-sm">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-600">¡GRAN MAESTRO</span><br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-600">DEL AJEDREZ!</span>
+        </h1>
+        <p class="text-lg sm:text-xl md:text-3xl text-slate-600 max-w-3xl mb-10 font-bold leading-relaxed bg-amber-50 p-6 rounded-3xl border border-amber-200">
+            ¡Increíble! Reconociste por su forma exacta al Rey, la Reina, la Torre, el Alfil, el Caballo y el valiente Peón.<br>
+            Las puertas del castillo se han abierto de par en par. ¡Eres un campeón! 🏆✨
+        </p>
+        
+        <button onclick="reiniciarJuego()" class="group relative inline-flex items-center justify-center px-10 py-5 text-xl font-black text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full overflow-hidden shadow-[0_8px_0_#9a3412] active:shadow-[0_0px_0_transparent] active:translate-y-2 transition-all shrink-0">
+            <span class="relative flex items-center gap-2">Jugar de nuevo <span class="text-2xl transition-transform duration-500 group-hover:rotate-180">🔄</span></span>
+        </button>
+    </div>
+
+    <!-- ================= LÓGICA DEL JUEGO ================= -->
+    <script>
+        // --- BASE DE DATOS DE PIEZAS (Usando formas exactas FontAwesome) ---
+        const piezas = [
+            {
+                id: "rey",
+                nombre: "El Rey",
+                iconoHtml: '<i class="fa-solid fa-chess-king"></i>',
+                pistaSilenciosa: "Tiene una cruz en la parte de arriba ✝️",
+                desc: "El **Rey** es la pieza más importante. Su forma clásica siempre lleva una cruz arriba. Se mueve con mucha calma: ¡solo un pasito en cualquier dirección!",
+                pistaError: "¡Busquemos otra opción! Esta pieza es el jefe del castillo y tiene una pequeña cruz arriba en su cabeza.",
+                moves: [[1,1], [1,2], [1,3], [2,1], [2,3], [3,1], [3,2], [3,3]],
+                anim: [[2,2], [3,3]]
+            },
+            {
+                id: "reina",
+                nombre: "La Reina / Dama",
+                iconoHtml: '<i class="fa-solid fa-chess-queen"></i>',
+                pistaSilenciosa: "Su corona tiene puntas y bolitas ✨",
+                desc: "¡La **Reina** (o Dama) tiene una corona de muchas puntas. Es la más poderosa del juego. Puede viajar todas las casillas que quiera en línea recta o diagonal. ⚡",
+                pistaError: "¡Casi! Su forma tiene una hermosa corona con puntas. Es la pieza que más rápido corre por todo el tablero.",
+                moves: [[2,0], [2,4], [0,2], [4,2], [0,0], [4,4], [0,4], [4,0]],
+                anim: [[2,2], [0,4]]
+            },
+            {
+                id: "torre",
+                nombre: "La Torre",
+                iconoHtml: '<i class="fa-solid fa-chess-rook"></i>',
+                pistaSilenciosa: "Parece el muro de un castillo 🧱",
+                desc: "La **Torre** tiene la forma exacta de la parte superior de un castillo fuerte de piedra. Se mueve siempre en líneas rectas: hacia adelante, atrás o los lados. 🏰",
+                pistaError: "¡Oh! Recuerda que esta pieza protege las esquinas y su forma es cuadradita arriba, igual a la torre de un muro de piedra.",
+                moves: [[2,0], [2,1], [2,3], [2,4], [0,2], [1,2], [3,2], [4,2]],
+                anim: [[2,2], [2,4]]
+            },
+            {
+                id: "alfil",
+                nombre: "El Alfil",
+                iconoHtml: '<i class="fa-solid fa-chess-bishop"></i>',
+                pistaSilenciosa: "Tiene un sombrero alargado con una ranura 🎯",
+                desc: "El **Alfil** tiene la forma de un sombrero puntiagudo con un corte en el medio. Su magia consiste en moverse únicamente en líneas diagonales (como una equis 'X').",
+                pistaError: "¡Miremos bien su silueta! Esta pieza es alta, delgada y tiene una ranura o cortecito en la parte superior.",
+                moves: [[0,0], [1,1], [3,3], [4,4], [4,0], [3,1], [1,3], [0,4]],
+                anim: [[2,2], [4,4]]
+            },
+            {
+                id: "caballo",
+                nombre: "El Caballo",
+                iconoHtml: '<i class="fa-solid fa-chess-knight"></i>',
+                pistaSilenciosa: "¡Tiene forma de animal! 🐴",
+                desc: "El **Caballo** tiene la forma exacta de la cabeza de este animal. Es único: ¡es la única pieza que puede saltar por encima de las demás haciendo la forma de una **L**!",
+                pistaError: "¡Inténtalo de nuevo! Esta pieza es muy fácil de reconocer por su silueta de animalito con orejas y hocico.",
+                moves: [[0,1], [0,3], [1,0], [1,4], [3,0], [3,4], [4,1], [4,3]],
+                anim: [[2,2], [4,3]]
+            },
+            {
+                id: "peon",
+                nombre: "El Peón",
+                iconoHtml: '<i class="fa-solid fa-chess-pawn"></i>',
+                pistaSilenciosa: "Es redondito arriba y es el más bajito 👶",
+                desc: "El **Peón** tiene una cabeza redonda simple. Es el soldadito más pequeño y valiente. Camina siempre un pasito hacia adelante y nunca retrocede.",
+                pistaError: "¡Fíjate bien en la figura! Es pequeñito, redondito en la punta y hay muchos de ellos cuidando la fila de adelante.",
+                moves: [[1,2]],
+                anim: [[2,2], [1,2]]
+            }
+        ];
+
+        let piezaActualIdx = 0;
+        let listaMezclada = [];
+        let bloqueandoAccion = false;
+        let callbackContinuar = null;
+        let intervalAnim = null;
+
+        const getEl = (id) => document.getElementById(id);
+        const pantallaInicio = getEl('pantalla-inicio');
+        const pantallaJuego = getEl('pantalla-juego');
+        const pantallaFinal = getEl('pantalla-final');
+        const contadorProgreso = getEl('contador-progreso');
+        const iconoPieza = getEl('icono-pregunta');
+        const textoPistaSilenciosa = getEl('pista-visual');
+        const contenedorOpciones = getEl('contenedor-opciones');
+        const burbujaPedagogica = getEl('burbuja-pedagogica');
+        const circuloAnimacion = getEl('circulo-pieza');
+
+        // --- INICIALIZACIÓN ---
+        function iniciarJuego() {
+            if (pantallaInicio) {
+                pantallaInicio.classList.add('opacity-0');
+                setTimeout(() => {
+                    pantallaInicio.classList.add('hidden');
+                    if (pantallaJuego) pantallaJuego.classList.remove('hidden');
+                    
+                    piezaActualIdx = 0;
+                    bloqueandoAccion = false;
+                    callbackContinuar = null;
+
+                    listaMezclada = [...piezas].sort(() => Math.random() - 0.5);
+
+                    actualizarProgreso();
+                    cargarPieza();
+                }, 500);
+            }
+        }
+
+        function reiniciarJuego() {
+            if (pantallaFinal) {
+                pantallaFinal.classList.add('opacity-0');
+                setTimeout(() => window.location.reload(), 300);
+            }
+        }
+
+        function actualizarProgreso() {
+            if (contadorProgreso) {
+                contadorProgreso.innerText = `${piezaActualIdx} / ${piezas.length} 🏰`;
+            }
+        }
+
+        // --- CARGAR NUEVA PIEZA ---
+        function cargarPieza() {
+            if (piezaActualIdx >= listaMezclada.length) {
+                finalizarJuego();
+                return;
+            }
+
+            bloqueandoAccion = false;
+            ocultarBurbujaPedagogica();
+            actualizarProgreso();
+
+            if (circuloAnimacion) {
+                circuloAnimacion.className = "w-32 h-32 sm:w-44 sm:h-44 rounded-full bg-slate-100 border-4 border-slate-300 shadow-inner flex items-center justify-center relative transition-all duration-300";
+            }
+
+            const p = listaMezclada[piezaActualIdx];
+            
+            // Inyectar la forma exacta HTML (FontAwesome)
+            if (iconoPieza) {
+                iconoPieza.innerHTML = p.iconoHtml;
+                iconoPieza.className = "text-7xl sm:text-[8rem] filter drop-shadow-md floating block select-none pieza-ajedrez";
+            }
+            
+            if (textoPistaSilenciosa) {
+                textoPistaSilenciosa.innerText = p.pistaSilenciosa;
+            }
+
+            const distractores = piezas
+                .filter(item => item.id !== p.id)
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 2);
+
+            const opcionesAMostrar = [p, ...distractores].sort(() => Math.random() - 0.5);
+
+            if (contenedorOpciones) {
+                contenedorOpciones.innerHTML = "";
+                const paletaEstilos = [
+                    { bg: "bg-amber-100 hover:bg-amber-200 border-amber-400 text-amber-900 shadow-[0_5px_0_#b45309]" },
+                    { bg: "bg-orange-100 hover:bg-orange-200 border-orange-400 text-orange-900 shadow-[0_5px_0_#c2410c]" },
+                    { bg: "bg-yellow-100 hover:bg-yellow-200 border-yellow-400 text-yellow-900 shadow-[0_5px_0_#a16207]" }
+                ];
+
+                opcionesAMostrar.forEach((opc, index) => {
+                    const estilo = paletaEstilos[index] || paletaEstilos[0];
+                    const btn = document.createElement('button');
+                    btn.className = `btn-opcion w-full py-4 ${estilo.bg} border-4 rounded-2xl text-xl sm:text-2xl font-black transition-all active:translate-y-1 active:shadow-none pop-in`;
+                    btn.style.animationDelay = `${index * 0.1}s`;
+                    btn.innerText = opc.nombre;
+                    btn.onclick = () => verificarRespuesta(opc.id, btn);
+                    contenedorOpciones.appendChild(btn);
+                });
+            }
+        }
+
+        // --- VERIFICAR RESPUESTA ---
+        function verificarRespuesta(idSeleccionado, botonDOM) {
+            if (bloqueandoAccion) return;
+            bloqueandoAccion = true;
+
+            const p = listaMezclada[piezaActualIdx];
+
+            if (idSeleccionado === p.id) {
+                playSound('success');
+                
+                if (circuloAnimacion) {
+                    circuloAnimacion.className = "w-32 h-32 sm:w-44 sm:h-44 rounded-full bg-amber-400 border-4 border-solid border-amber-600 flex items-center justify-center relative spin-success";
+                    // Resaltar icono del centro
+                    iconoPieza.className = "text-7xl sm:text-[8rem] filter drop-shadow-md block select-none text-white";
+                }
+
+                document.querySelectorAll('.btn-opcion').forEach(b => {
+                    if (b !== botonDOM) b.style.opacity = "0.4";
+                });
+
+                if (circuloAnimacion) {
+                    crearParticulasMágicas(circuloAnimacion.getBoundingClientRect());
+                }
+
+                // Esperamos un instante corto para disfrutar del éxito y abrimos el popup interactivo
+                setTimeout(() => {
+                    abrirMovimiento(p);
+                }, 1000);
+
+            } else {
+                playSound('error');
+                if (circuloAnimacion) {
+                    circuloAnimacion.classList.add('shake', 'border-red-500');
+                    setTimeout(() => circuloAnimacion.classList.remove('shake', 'border-red-500'), 500);
+                }
+
+                if (botonDOM) {
+                    botonDOM.className = "btn-opcion w-full py-4 bg-red-100 border-4 border-red-400 text-red-700 rounded-2xl text-xl font-black shadow-[0_5px_0_#991b1b] shake";
+                }
+
+                let _pistaError = p.pistaError.replace(/\*\*(.*?)\*\*/g, '<b class="text-orange-600">$1</b>');
+
+                lanzarBurbujaPedagogica(
+                    false,
+                    "🦉💡",
+                    "¡Casi lo tienes!",
+                    _pistaError,
+                    "border-orange-400 text-orange-600"
+                );
+            }
+        }
+
+        // --- MANEJO DEL TABLERO DE ENTRENAMIENTO MÁGICO (POPUP) ---
+        function abrirMovimiento(p) {
+            document.getElementById('modal-movimiento').classList.remove('hidden');
+            document.getElementById('titulo-movimiento').innerText = `¡Movimiento de ${p.nombre}!`;
+            document.getElementById('explicacion-owl').innerHTML = p.desc.replace(/\*\*(.*?)\*\*/g, '<b class="text-amber-600">$1</b>');
+            
+            const board = document.getElementById('board-demo');
+            board.innerHTML = "";
+            
+            // Corrección del bucle let i en vez de r para evitar crash de variables nulas
+            for (let i = 0; i < 25; i++) {
+                const row = Math.floor(i / 5);
+                const col = i % 5;
+                const cell = document.createElement('div');
+                cell.className = `chess-cell ${(row + col) % 2 === 0 ? 'cell-light' : 'cell-dark'}`;
+                cell.id = `cell-${row}-${col}`;
+                
+                if (p.moves.some(m => m[0] === row && m[1] === col)) {
+                    cell.classList.add('highlight-move');
+                }
+                board.appendChild(cell);
+            }
+
+            const piece = document.createElement('i');
+            piece.className = `fa-solid ${p.iconoHtml.match(/fa-[a-z-]+/)[0]} text-slate-900`;
+            piece.id = "pieza-demo";
+            board.appendChild(piece);
+
+            const targetPos = p.anim; // [inicio, fin]
+
+            function move() {
+                const startCell = document.getElementById(`cell-${targetPos[0][0]}-${targetPos[0][1]}`);
+                const endCell = document.getElementById(`cell-${targetPos[1][0]}-${targetPos[1][1]}`);
+                
+                if (startCell && endCell) {
+                    piece.style.top = startCell.offsetTop + "px";
+                    piece.style.left = startCell.offsetLeft + "px";
+
+                    setTimeout(() => {
+                        piece.style.top = endCell.offsetTop + "px";
+                        piece.style.left = endCell.offsetLeft + "px";
+                    }, 1200);
+                }
+            }
+
+            move();
+            intervalAnim = setInterval(move, 2500);
+        }
+
+        function cerrarMovimiento() {
+            if (intervalAnim) {
+                clearInterval(intervalAnim);
+            }
+            document.getElementById('modal-movimiento').classList.add('hidden');
+            piezaActualIdx++;
+            cargarPieza();
+        }
+
+        // --- CONTROL DE BURBUJA PEDAGÓGICA ---
+        function lanzarBurbujaPedagogica(esExito, icono, titulo, mensaje, clasesColor, callback = null) {
+            if (!burbujaPedagogica) return;
+            const colorBorde = clasesColor.split(' ')[0];
+            const colorTexto = clasesColor.split(' ')[1];
+
+            burbujaPedagogica.className = `fixed bottom-0 left-0 w-full bg-white border-t-[10px] ${colorBorde} shadow-[0_-15px_40px_rgba(0,0,0,0.2)] z-[100] transform translate-y-0 transition-transform duration-500 flex flex-col md:flex-row items-center justify-between p-5 md:px-8 md:py-6 rounded-t-3xl`;
+            
+            const bIcono = getEl('burbuja-icono');
+            const bTitulo = getEl('burbuja-titulo');
+            const bMensaje = getEl('burbuja-mensaje');
+            const btnContainer = getEl('burbuja-boton-container');
+
+            if (bIcono) bIcono.innerText = icono;
+            if (bTitulo) {
+                bTitulo.className = `text-xl md:text-3xl font-black ${colorTexto} mb-1 select-none leading-none`;
+                bTitulo.innerText = titulo;
+            }
+            if (bMensaje) bMensaje.innerHTML = mensaje;
+
+            if (!btnContainer) return;
+
+            if (esExito) {
+                callbackContinuar = callback;
+                btnContainer.innerHTML = `
+                    <button onclick="ejecutarContinuar()" class="px-8 py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black text-base md:text-xl rounded-full shadow-[0_4px_0_#b45309] active:translate-y-1.5 active:shadow-[0_0px_0_transparent] transition-all animate-bounce select-none w-full md:w-auto mt-3 md:mt-0 flex items-center justify-center gap-2">
+                        Siguiente Pieza ➡️
+                    </button>
+                `;
+            } else {
+                callbackContinuar = () => {
+                    bloqueandoAccion = false;
+                    cargarPieza();
+                };
+                btnContainer.innerHTML = `
+                    <button onclick="ejecutarContinuar()" class="px-8 py-3 bg-slate-100 hover:bg-slate-200 border-2 border-orange-200 text-orange-600 font-black text-base rounded-full shadow-sm active:translate-y-1 transition-all select-none w-full md:w-auto mt-3 md:mt-0">
+                        ¡Volver a intentar! 👍
+                    </button>
+                `;
+            }
+        }
+
+        function ocultarBurbujaPedagogica() {
+            if (burbujaPedagogica) {
+                burbujaPedagogica.classList.remove('translate-y-0');
+                burbujaPedagogica.classList.add('translate-y-full');
+            }
+        }
+
+        function ejecutarContinuar() {
+            ocultarBurbujaPedagogica();
+            if (callbackContinuar) {
+                const cb = callbackContinuar;
+                callbackContinuar = null; 
+                cb();
+            }
+        }
+
+        // --- EFECTOS DE CELEBRACIÓN ---
+        function crearParticulasMágicas(rect) {
+            const iconos = ['✨', '🌟', '👑', '🏰', '🛡️'];
+            const container = document.body;
+
+            for (let i = 0; i < 12; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.innerText = iconos[Math.floor(Math.random() * iconos.length)];
+                
+                const posX = rect.left + (rect.width / 2) + (Math.random() * 100 - 50);
+                const posY = rect.top + (rect.height / 2) + (Math.random() * 40 - 20);
+                
+                p.style.left = `${posX}px`;
+                p.style.top = `${posY}px`;
+                p.style.fontSize = `${Math.random() * 12 + 18}px`;
+                p.style.animationDelay = `${Math.random() * 0.1}s`;
+                
+                container.appendChild(p);
+                setTimeout(() => p.remove(), 1200);
+            }
+        }
+
+        function finalizarJuego() {
+            if (pantallaJuego) pantallaJuego.classList.add('opacity-0');
+            setTimeout(() => {
+                if (pantallaJuego) pantallaJuego.classList.add('hidden');
+                if (pantallaFinal) {
+                    pantallaFinal.classList.remove('hidden');
+                    setTimeout(() => pantallaFinal.classList.remove('opacity-0'), 50);
+                }
+                
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        const fakeRect = { left: window.innerWidth / 2 - 50, width: 100, top: window.innerHeight / 2 - 100, height: 100 };
+                        crearParticulasMágicas(fakeRect);
+                    }, i * 200);
+                }
+            }, 500);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (pantallaInicio) {
+                pantallaInicio.classList.remove('hidden');
+                setTimeout(() => pantallaInicio.classList.remove('opacity-0'), 50);
+            }
+        });
+    </script>
+</body>
+</html>

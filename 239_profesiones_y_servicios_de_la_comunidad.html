@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Los Héroes de Mi Comunidad</title>
+    <style>
+        /* === VARIABLES DE COLOR (MINED) === */
+        :root {
+            --azul: #0059A6;
+            --celeste: #00A8E8;
+            --verde: #A5C83F;
+            --amarillo: #FFEC01;
+            --fucsia: #E32085;
+            --morado: #833189;
+            --blanco: #ffffff;
+            --negro: #333333;
+            --fuente: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            --sombra: 0 8px 15px rgba(0,0,0,0.2);
+            --borde-radio: 25px;
+        }
+
+        /* === ESTILOS BASE === */
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            font-family: var(--fuente); background-color: var(--celeste); color: var(--negro);
+            width: 100vw; height: 100vh; overflow: hidden; display: flex; flex-direction: column;
+        }
+        
+        /* === FONDO ANIMADO === */
+        .escenario {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background: linear-gradient(to bottom, var(--celeste) 60%, var(--verde) 60%);
+            overflow: hidden; pointer-events: none;
+        }
+        .sol { position: absolute; top: 20px; left: 20px; font-size: 80px; animation: girar 20s linear infinite; }
+        .nube { position: absolute; font-size: 60px; animation: flotarX linear infinite; opacity: 0.8; }
+        .pajaro { position: absolute; font-size: 30px; animation: flotarPajaro linear infinite; }
+        .arbol, .casa, .flor { position: absolute; bottom: 40%; font-size: 70px; }
+        .flor { bottom: 35%; font-size: 40px; }
+
+        @keyframes girar { 100% { transform: rotate(360deg); } }
+        @keyframes flotarX { from { transform: translateX(110vw); } to { transform: translateX(-20vw); } }
+        @keyframes flotarPajaro { 
+            0% { transform: translate(110vw, 0) scaleX(-1); } 
+            50% { transform: translate(40vw, -30px) scaleX(-1); }
+            100% { transform: translate(-20vw, 0) scaleX(-1); }
+        }
+
+        /* === HUD (ENCABEZADO) === */
+        header {
+            display: flex; justify-content: space-between; align-items: center; padding: 10px 20px;
+            background: rgba(255,255,255,0.9); border-bottom-left-radius: var(--borde-radio); border-bottom-right-radius: var(--borde-radio);
+            box-shadow: var(--sombra); z-index: 10;
+        }
+        .hud-stats { display: flex; gap: 15px; font-size: 1.5rem; font-weight: bold; }
+        .hud-controles button {
+            background: none; border: none; font-size: 2rem; cursor: pointer; transition: transform 0.2s;
+        }
+        .hud-controles button:active { transform: scale(0.9); }
+        .barra-progreso-contenedor { width: 100%; height: 15px; background: #eee; border-radius: 10px; margin-top: 5px; overflow: hidden; }
+        .barra-progreso { width: 0%; height: 100%; background: var(--fucsia); transition: width 0.5s ease; }
+
+        /* === CONTENEDOR DE PANTALLAS === */
+        #game-container {
+            flex: 1; position: relative; display: flex; justify-content: center; align-items: center; padding: 20px;
+        }
+        .pantalla {
+            display: none; flex-direction: column; align-items: center; text-align: center;
+            background: rgba(255,255,255,0.95); padding: 30px; border-radius: var(--borde-radio);
+            box-shadow: var(--sombra); width: 95%; max-width: 900px; max-height: 95%; overflow-y: auto;
+            animation: aparecer 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .pantalla.activa { display: flex; }
+        @keyframes aparecer { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        /* === TIPOGRAFÍA Y BOTONES === */
+        h1 { font-size: 2.8rem; color: var(--azul); margin-bottom: 15px; line-height: 1.2; text-shadow: 2px 2px 0px #fff; }
+        h2 { font-size: 2.2rem; color: var(--morado); margin-bottom: 15px; }
+        p { font-size: 1.6rem; margin-bottom: 15px; }
+        
+        .btn {
+            background: var(--verde); color: white; border: none; border-radius: var(--borde-radio);
+            padding: 15px 35px; font-size: 1.8rem; font-weight: bold; font-family: var(--fuente);
+            cursor: pointer; box-shadow: 0 6px 0px #7d9a2b, var(--sombra); transition: all 0.1s; margin: 10px;
+        }
+        .btn:active { transform: translateY(6px); box-shadow: 0 0px 0px #7d9a2b; }
+        .btn-azul { background: var(--azul); box-shadow: 0 6px 0px #003d73; }
+        .btn-fucsia { background: var(--fucsia); box-shadow: 0 6px 0px #b01865; }
+        .btn-amarillo { background: var(--amarillo); color: var(--negro); box-shadow: 0 6px 0px #c9bb00; }
+        .btn-chico { padding: 10px 20px; font-size: 1.4rem; }
+
+        /* === PERSONAJE LUNA === */
+        .luna { font-size: 6rem; animation: saltito 2s ease-in-out infinite; }
+        @keyframes saltito { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+
+        /* === COMPONENTES DE ACTIVIDADES === */
+        .grid-opciones { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; width: 100%; margin-bottom: 20px; }
+        .tarjeta {
+            background: var(--blanco); border: 5px solid var(--amarillo); border-radius: 20px;
+            padding: 20px; font-size: 4rem; cursor: pointer; transition: transform 0.2s;
+            display: flex; flex-direction: column; align-items: center; min-width: 120px;
+        }
+        .tarjeta span { font-size: 1.2rem; margin-top: 10px; font-weight: bold; color: var(--azul); }
+        .tarjeta:active { transform: scale(0.9); }
+        .tarjeta.seleccionada { border-color: var(--fucsia); background: #ffeeff; transform: scale(1.05); }
+
+        /* Memorama */
+        .carta {
+            width: 100px; height: 100px; background: var(--azul); border-radius: 15px; display: flex;
+            align-items: center; justify-content: center; font-size: 3rem; cursor: pointer; color: transparent;
+            transition: all 0.3s; border: 3px solid #fff;
+        }
+        .carta.volteada { background: white; color: black; border-color: var(--amarillo); }
+        .carta.resuelta { background: var(--verde); color: black; border-color: white; pointer-events: none; }
+
+        /* Ruleta */
+        .ruleta-container { position: relative; width: 250px; height: 250px; margin: 20px auto; }
+        .ruleta {
+            width: 100%; height: 100%; border-radius: 50%; border: 10px solid var(--azul);
+            background: conic-gradient(var(--celeste) 25%, var(--verde) 25% 50%, var(--amarillo) 50% 75%, var(--fucsia) 75%);
+            transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1); display: flex; align-items: center; justify-content: center;
+        }
+        .ruleta-flecha {
+            position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
+            width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent;
+            border-top: 40px solid var(--morado); z-index: 2;
+        }
+        .ruleta-emoji { position: absolute; font-size: 3rem; }
+
+        /* Caída libre */
+        #caja-caida { position: relative; width: 100%; height: 350px; background: #e0f7fa; border-radius: 20px; overflow: hidden; border: 4px solid var(--celeste); margin-bottom: 20px; }
+        .item-caida { position: absolute; font-size: 4rem; cursor: pointer; padding: 10px; }
+
+        /* Feedback y Confeti */
+        #feedback {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 5rem; font-weight: bold; display: none; z-index: 100; text-align: center;
+            text-shadow: 4px 4px 0 #fff, -4px -4px 0 #fff, 4px -4px 0 #fff, -4px 4px 0 #fff;
+        }
+        .particula { position: absolute; pointer-events: none; z-index: 99; border-radius: 50%; }
+
+        /* Ocultar scroll */
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- FONDO DE LA COMUNIDAD -->
+    <div class="escenario" id="escenario">
+        <div class="sol">🌞</div>
+        <div class="nube" style="top:10%; animation-duration: 25s;">☁️</div>
+        <div class="nube" style="top:25%; animation-duration: 35s; animation-delay: 5s;">☁️</div>
+        <div class="pajaro" style="top:15%; animation-duration: 18s;">🐦</div>
+        <div class="arbol" style="left:10%;">🌳</div>
+        <div class="casa" style="left:30%;">🏡</div>
+        <div class="arbol" style="left:55%;">🌳</div>
+        <div class="casa" style="left:75%;">🏥</div>
+        <div class="flor" style="left:20%;">🌸</div>
+        <div class="flor" style="left:45%;">🌼</div>
+        <div class="flor" style="left:70%;">🌺</div>
+    </div>
+
+    <!-- HUD -->
+    <header>
+        <div style="width:100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width:100%;">
+                <div class="hud-stats">
+                    <span id="hud-vidas" title="Vidas">❤️❤️❤️</span>
+                    <span id="hud-estrellas" style="color: var(--amarillo);" title="Estrellas">⭐ 0</span>
+                    <span id="hud-monedas" style="color: var(--celeste);" title="Monedas">💎 0</span>
+                    <span id="hud-tiempo" style="color: var(--morado);" title="Tiempo">⏱️ 00:00</span>
+                </div>
+                <div class="hud-controles">
+                    <button onclick="leerInstruccion()" title="Leer instrucción">🗣️</button>
+                    <button id="btn-sonido" onclick="toggleSonido()" title="Sonido On/Off">🔊</button>
+                    <button onclick="volverMenu()" title="Menú Principal">🏠</button>
+                </div>
+            </div>
+            <div class="barra-progreso-contenedor"><div class="barra-progreso" id="barra-progreso"></div></div>
+        </div>
+    </header>
+
+    <!-- CONTENEDOR DE JUEGO -->
+    <div id="game-container">
+        
+        <!-- INICIO -->
+        <div id="pantalla-inicio" class="pantalla activa">
+            <h1>Los Héroes de Mi Comunidad</h1>
+            <div class="luna">👧🏽</div>
+            <p>¡Hola! Soy Luna.</p>
+            <p>Quiero conocer a todas las personas increíbles que ayudan en nuestra comunidad.</p>
+            <p>¿Me acompañas en esta aventura?</p>
+            <button class="btn btn-fucsia" onclick="iniciarJuego()">▶ Comenzar aventura</button>
+            <button class="btn btn-amarillo btn-chico" id="btn-continuar" style="display:none;" onclick="cargarPartida()">Continuar partida guardada</button>
+        </div>
+
+        <!-- EXPLICACIÓN -->
+        <div id="pantalla-explicacion" class="pantalla">
+            <h2>¿Qué es un oficio o profesión?</h2>
+            <p>Son los trabajos que hacen las personas para ayudarnos a todos y hacer que nuestra comunidad sea un lugar mejor.</p>
+            <div class="grid-opciones" style="font-size: 3rem;">
+                <span title="Maestra">👩‍🏫</span> <span title="Médico">👨‍⚕️</span> <span title="Policía">👮</span> 
+                <span title="Bombero">👨‍🚒</span> <span title="Agricultora">👩‍🌾</span> <span title="Constructor">👷</span>
+            </div>
+            <button class="btn btn-azul" onclick="completarExplicacion()">¡Entendido!</button>
+        </div>
+
+        <!-- ACTIVIDADES (DINÁMICO) -->
+        <div id="pantalla-actividad" class="pantalla">
+            <h2 id="act-titulo">Misión</h2>
+            <p id="act-instruccion"></p>
+            <div id="act-contenido" style="width: 100%; display: flex; flex-direction: column; align-items: center; margin-bottom: 20px;"></div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-chico" style="background:#bbb;" onclick="cargarNivel(estado.nivelActual)">🔄 Reiniciar Misión</button>
+            </div>
+        </div>
+
+        <!-- FINAL -->
+        <div id="pantalla-final" class="pantalla">
+            <div style="border: 8px solid var(--amarillo); padding: 30px; border-radius: 20px; background: #fffdf0; width: 100%;">
+                <h1>¡Felicitaciones!</h1>
+                <div class="luna">👧🏽🏆</div>
+                <h2>Eres un "Pequeño Ciudadano Ejemplar"</h2>
+                <p>Ahora conoces a todos los héroes que ayudan en nuestra comunidad.</p>
+                <div style="font-size: 2rem; margin: 20px 0; color: var(--morado);">
+                    <p id="stats-finales"></p>
+                </div>
+                <button class="btn btn-verde" onclick="location.reload()">Volver a Jugar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FEEDBACK FLOTANTE -->
+    <div id="feedback"></div>
+
+<script>
+    /* === DATOS Y ESTADO === */
+    const oficios = [
+        { id:'medico', emoji:'👨‍⚕️', nombre:'Médico', lugar:'🏥', nombreLugar:'Hospital', herram:'🩺', nombreHerram:'Estetoscopio', desc:'Ayuda a las personas enfermas.' },
+        { id:'bombero', emoji:'👨‍🚒', nombre:'Bombero', lugar:'🚒', nombreLugar:'Estación', herram:'🧯', nombreHerram:'Extintor', desc:'Apaga incendios y rescata personas.' },
+        { id:'maestra', emoji:'👩‍🏫', nombre:'Maestra', lugar:'🏫', nombreLugar:'Escuela', herram:'📚', nombreHerram:'Libros', desc:'Enseña a los niños a leer y escribir.' },
+        { id:'policia', emoji:'👮', nombre:'Policía', lugar:'🚓', nombreLugar:'Comisaría', herram:'哨', nombreHerram:'Silbato', desc:'Mantiene la seguridad de todos.' },
+        { id:'agricultor',emoji:'👩‍🌾', nombre:'Agricultora', lugar:'🌾', nombreLugar:'Granja', herram:'🚜', nombreHerram:'Tractor', desc:'Siembra alimentos.' },
+        { id:'constructor',emoji:'👷', nombre:'Constructor', lugar:'🏗️', nombreLugar:'Construcción', herram:'🔨', nombreHerram:'Martillo', desc:'Construye casas y edificios.' },
+        { id:'cocinero', emoji:'👨‍🍳', nombre:'Cocinero', lugar:'🍞', nombreLugar:'Restaurante', herram:'🥘', nombreHerram:'Olla', desc:'Prepara comida deliciosa.' }
+    ];
+
+    let estado = {
+        nivelActual: 0, vidas: 3, estrellas: 0, monedas: 0, tiempo: 0, jugando: false
+    };
+    
+    let timerInterv;
+    let sonidoActivo = true;
+    let fallbackText = ""; 
+
+    const niveles = [
+        { tipo: 'explicacion' },
+        { tipo: 'relacionar', id: 'lugar', titulo: 'Misión 1: ¿Dónde trabajan?', instr: 'Toca al trabajador y luego toca su lugar de trabajo.' },
+        { tipo: 'relacionar', id: 'herramienta', titulo: 'Misión 2: Sus herramientas', instr: 'Toca al trabajador y luego la herramienta que utiliza.' },
+        { tipo: 'memoria', titulo: 'Misión 3: Memorama Comunitario', instr: 'Encuentra las parejas de cada trabajador y su lugar.' },
+        { tipo: 'situacion', titulo: 'Misión 4: ¿Quién ayuda aquí?', instr: 'Lee la situación y elige al héroe correcto.' },
+        { tipo: 'caida', titulo: 'Misión 5: Carrera de los Héroes', instr: 'Atrapa SOLAMENTE a los trabajadores que te piden.' },
+        { tipo: 'puzzle', titulo: 'Misión 6: Rompecabezas', instr: 'Toca las piezas para girarlas y armar la imagen del héroe.' },
+        { tipo: 'tf', titulo: 'Misión 7: ¿Verdadero o Falso?', instr: 'Responde si lo que hace el trabajador es correcto.' },
+        { tipo: 'ruleta', titulo: 'Misión 8: La Ruleta de la Comunidad', instr: 'Gira la ruleta y responde la pregunta sobre el trabajador.' }
+    ];
+
+    /* === MOTOR DE AUDIO === */
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playTone(freq, type, dur) {
+        if(!sonidoActivo) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type; osc.frequency.value = freq;
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start();
+        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + dur);
+        osc.stop(audioCtx.currentTime + dur);
+    }
+    const sfx = {
+        click: () => playTone(600, 'sine', 0.1),
+        bien: () => { playTone(500, 'sine', 0.1); setTimeout(()=>playTone(800, 'sine', 0.2), 100); },
+        mal: () => playTone(200, 'sawtooth', 0.3),
+        ganarNivel: () => { [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => setTimeout(() => playTone(f, 'square', 0.2), i*150)); }
+    };
+
+    function leerTexto(texto) {
+        if(!sonidoActivo) return;
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(texto);
+        u.lang = 'es-ES'; u.rate = 0.9; u.pitch = 1.2;
+        window.speechSynthesis.speak(u);
+    }
+
+    function leerInstruccion() { leerTexto(fallbackText); }
+    function toggleSonido() {
+        sonidoActivo = !sonidoActivo;
+        document.getElementById('btn-sonido').innerText = sonidoActivo ? '🔊' : '🔇';
+    }
+
+    /* === LÓGICA GENERAL === */
+    function actualizarHUD() {
+        document.getElementById('hud-vidas').innerText = '❤️'.repeat(estado.vidas);
+        document.getElementById('hud-estrellas').innerText = `⭐ ${estado.estrellas}`;
+        document.getElementById('hud-monedas').innerText = `💎 ${estado.monedas}`;
+        let porc = (estado.nivelActual / (niveles.length)) * 100;
+        document.getElementById('barra-progreso').style.width = `${porc}%`;
+    }
+
+    function iniciarTimer() {
+        if(timerInterv) clearInterval(timerInterv);
+        timerInterv = setInterval(() => {
+            if(estado.jugando) {
+                estado.tiempo++;
+                let m = String(Math.floor(estado.tiempo/60)).padStart(2,'0');
+                let s = String(estado.tiempo%60).padStart(2,'0');
+                document.getElementById('hud-tiempo').innerText = `⏱️ ${m}:${s}`;
+                guardarPartida();
+            }
+        }, 1000);
+    }
+
+    function guardarPartida() { sessionStorage.setItem('heroesComunidadSave', JSON.stringify(estado)); }
+    function cargarPartida() {
+        let saved = sessionStorage.getItem('heroesComunidadSave');
+        if(saved) {
+            estado = JSON.parse(saved);
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            estado.jugando = true; actualizarHUD(); iniciarTimer();
+            cargarNivel(estado.nivelActual);
+        }
+    }
+
+    window.onload = () => {
+        if(sessionStorage.getItem('heroesComunidadSave')) document.getElementById('btn-continuar').style.display = 'inline-block';
+    }
+
+    function mostrarPantalla(id) {
+        document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+        document.getElementById(id).classList.add('activa');
+    }
+
+    function iniciarJuego() {
+        sfx.click(); if(audioCtx.state === 'suspended') audioCtx.resume();
+        estado = { nivelActual: 0, vidas: 3, estrellas: 0, monedas: 0, tiempo: 0, jugando: true };
+        actualizarHUD(); iniciarTimer();
+        cargarNivel(0);
+    }
+
+    function volverMenu() { estado.jugando = false; clearInterval(timerInterv); mostrarPantalla('pantalla-inicio'); }
+
+    function mostrarFeedback(msg, esCorrecto) {
+        const fb = document.getElementById('feedback');
+        fb.innerText = msg;
+        fb.style.color = esCorrecto ? 'var(--verde)' : 'var(--fucsia)';
+        fb.style.display = 'block';
+        fb.style.animation = 'aparecer 0.3s ease forwards';
+        
+        if(esCorrecto) { sfx.bien(); estado.monedas += 10; }
+        else { 
+            sfx.mal(); estado.vidas--; 
+            if(estado.vidas <= 0) {
+                setTimeout(()=> { alert("¡Luna te regala una vida extra para seguir intentando!"); estado.vidas = 1; actualizarHUD(); }, 500);
+            }
+        }
+        actualizarHUD();
+        setTimeout(() => { fb.style.display = 'none'; }, 1500);
+    }
+
+    function lanzarConfeti() {
+        sfx.ganarNivel();
+        const colores = ['#0059A6', '#00A8E8', '#A5C83F', '#FFEC01', '#E32085', '#833189'];
+        for(let i=0; i<40; i++) {
+            let p = document.createElement('div');
+            p.className = 'particula';
+            p.style.backgroundColor = colores[Math.floor(Math.random()*colores.length)];
+            p.style.width = '15px'; p.style.height = '15px';
+            p.style.left = '50%'; p.style.top = '50%';
+            document.body.appendChild(p);
+            let ang = Math.random() * Math.PI * 2;
+            let vel = Math.random() * 15 + 5;
+            let dx = Math.cos(ang) * vel * 10;
+            let dy = Math.sin(ang) * vel * 10 - 50;
+            p.animate([
+                { transform: `translate(0,0) rotate(0)`, opacity: 1 },
+                { transform: `translate(${dx}px, ${dy + 200}px) rotate(720deg)`, opacity: 0 }
+            ], { duration: 1500 + Math.random()*1000, easing: 'ease-out' });
+            setTimeout(() => p.remove(), 2500);
+        }
+    }
+
+    function nivelCompletado() {
+        estado.estrellas++; actualizarHUD(); lanzarConfeti(); estado.nivelActual++; guardarPartida();
+        setTimeout(() => {
+            if(estado.nivelActual < niveles.length) cargarNivel(estado.nivelActual);
+            else finalizarJuego();
+        }, 2500);
+    }
+
+    function finalizarJuego() {
+        estado.jugando = false; clearInterval(timerInterv);
+        mostrarPantalla('pantalla-final');
+        let m = String(Math.floor(estado.tiempo/60)).padStart(2,'0');
+        let s = String(estado.tiempo%60).padStart(2,'0');
+        document.getElementById('stats-finales').innerHTML = `⭐ Estrellas: ${estado.estrellas} <br> 💎 Monedas: ${estado.monedas} <br> ⏱️ Tiempo: ${m}:${s}`;
+        leerTexto("¡Felicitaciones! Eres un Pequeño Ciudadano Ejemplar.");
+        sessionStorage.removeItem('heroesComunidadSave');
+        lanzarConfeti(); setTimeout(lanzarConfeti, 1000);
+    }
+
+    /* === GESTOR DE ACTIVIDADES === */
+    function cargarNivel(idx) {
+        const nivel = niveles[idx];
+        if(nivel.tipo === 'explicacion') {
+            mostrarPantalla('pantalla-explicacion');
+            fallbackText = "Los oficios y profesiones son los trabajos que hacen las personas para ayudarnos. Conoce al médico, bombero, maestra, policía, agricultora y constructor.";
+            setTimeout(() => leerInstruccion(), 500);
+            return;
+        }
+
+        mostrarPantalla('pantalla-actividad');
+        document.getElementById('act-titulo').innerText = nivel.titulo;
+        document.getElementById('act-instruccion').innerText = nivel.instr;
+        fallbackText = nivel.titulo + ". " + nivel.instr;
+        setTimeout(() => leerInstruccion(), 500);
+        
+        const cont = document.getElementById('act-contenido');
+        cont.innerHTML = ''; 
+        
+        switch(nivel.tipo) {
+            case 'relacionar': renderRelacionar(cont, nivel.id); break;
+            case 'memoria': renderMemoria(cont); break;
+            case 'situacion': renderSituacion(cont); break;
+            case 'caida': renderCaida(cont); break;
+            case 'puzzle': renderPuzzle(cont); break;
+            case 'tf': renderTF(cont); break;
+            case 'ruleta': renderRuleta(cont); break;
+        }
+    }
+
+    function completarExplicacion() { sfx.click(); nivelCompletado(); }
+
+    /* === ACT 1 y 2: RELACIONAR === */
+    function renderRelacionar(cont, tipoId) {
+        let items = [...oficios].sort(()=>Math.random()-0.5).slice(0,3);
+        let trabs = [...items].sort(()=>Math.random()-0.5);
+        let dests = [...items].sort(()=>Math.random()-0.5);
+        
+        let html = `<div style="display:flex; width:100%; justify-content:space-around; gap:20px;">`;
+        html += `<div style="display:flex; flex-direction:column; gap:10px;" id="col-trabs">`;
+        trabs.forEach(t => html += `<div class="tarjeta trab" data-id="${t.id}">${t.emoji}<span>${t.nombre}</span></div>`);
+        html += `</div><div style="display:flex; flex-direction:column; gap:10px;" id="col-dests">`;
+        dests.forEach(d => {
+            let info = tipoId==='lugar' ? {e:d.lugar, n:d.nombreLugar} : {e:d.herram, n:d.nombreHerram};
+            html += `<div class="tarjeta dest" data-id="${d.id}">${info.e}<span>${info.n}</span></div>`;
+        });
+        html += `</div></div>`;
+        cont.innerHTML = html;
+
+        let selTrab = null;
+        let aciertos = 0;
+        
+        cont.querySelectorAll('.trab').forEach(el => {
+            el.onclick = () => {
+                sfx.click();
+                cont.querySelectorAll('.trab').forEach(x=>x.classList.remove('seleccionada'));
+                el.classList.add('seleccionada'); selTrab = el;
+            }
+        });
+        cont.querySelectorAll('.dest').forEach(el => {
+            el.onclick = () => {
+                if(!selTrab) return;
+                if(selTrab.dataset.id === el.dataset.id) {
+                    mostrarFeedback("¡Correcto! ✔️", true);
+                    el.style.visibility = 'hidden'; selTrab.style.visibility = 'hidden';
+                    selTrab = null; aciertos++;
+                    if(aciertos === 3) setTimeout(nivelCompletado, 1000);
+                } else {
+                    mostrarFeedback("Intenta de nuevo ❌", false);
+                    selTrab.classList.remove('seleccionada'); selTrab = null;
+                }
+            }
+        });
+    }
+
+    /* === ACT 3: MEMORAMA === */
+    function renderMemoria(cont) {
+        let items = [...oficios].sort(()=>Math.random()-0.5).slice(0,3);
+        let cartas = [];
+        items.forEach(i => {
+            cartas.push({id: i.id, val: i.emoji, txt: i.nombre});
+            cartas.push({id: i.id, val: i.lugar, txt: i.nombreLugar});
+        });
+        cartas.sort(()=>Math.random()-0.5);
+
+        let grid = `<div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:15px; margin:auto;">`;
+        cartas.forEach((c, i) => { grid += `<div class="carta" data-id="${c.id}" data-val="${c.val}" data-idx="${i}">❓</div>`; });
+        grid += `</div>`;
+        cont.innerHTML = grid;
+
+        let volteadas = [], aciertos = 0;
+        cont.querySelectorAll('.carta').forEach(el => {
+            el.onclick = () => {
+                if(volteadas.length < 2 && !el.classList.contains('resuelta') && !volteadas.includes(el)) {
+                    sfx.click();
+                    el.innerText = el.dataset.val; el.classList.add('volteada');
+                    volteadas.push(el);
+                    if(volteadas.length === 2) {
+                        setTimeout(() => {
+                            if(volteadas[0].dataset.id === volteadas[1].dataset.id) {
+                                mostrarFeedback("¡Pareja! ✨", true);
+                                volteadas.forEach(v => { v.classList.add('resuelta'); v.classList.remove('volteada'); });
+                                aciertos++;
+                                if(aciertos === 3) setTimeout(nivelCompletado, 1000);
+                            } else {
+                                sfx.mal();
+                                volteadas.forEach(v => { v.innerText = '❓'; v.classList.remove('volteada'); });
+                            }
+                            volteadas = [];
+                        }, 1000);
+                    }
+                }
+            }
+        });
+    }
+
+    /* === ACT 4: SITUACIONES === */
+    function renderSituacion(cont) {
+        const sits = [
+            {q: "Hay un incendio en la ciudad 🔥", a: 'bombero'}, {q: "Un niño se siente muy enfermo 🤒", a: 'medico'},
+            {q: "Quiero aprender a leer un libro 📖", a: 'maestra'}
+        ];
+        let actual = sits[Math.floor(Math.random()*sits.length)];
+        fallbackText = actual.q + ". ¿Quién ayuda aquí?"; leerInstruccion();
+
+        let opciones = [...oficios].sort(()=>Math.random()-0.5).slice(0,3);
+        if(!opciones.find(o=>o.id === actual.a)) { opciones[0] = oficios.find(o=>o.id === actual.a); opciones.sort(()=>Math.random()-0.5); }
+
+        let html = `<h2 style="font-size:2.5rem; margin: 30px 0;">${actual.q}</h2><div class="grid-opciones">`;
+        opciones.forEach(o => { html += `<div class="tarjeta opc" data-id="${o.id}">${o.emoji}<span>${o.nombre}</span></div>`; });
+        html += `</div>`;
+        cont.innerHTML = html;
+
+        cont.querySelectorAll('.opc').forEach(el => {
+            el.onclick = () => {
+                if(el.dataset.id === actual.a) { mostrarFeedback("¡Muy bien! ⭐", true); setTimeout(nivelCompletado, 1000); }
+                else { mostrarFeedback("Ese no es. ❌", false); }
+            }
+        });
+    }
+
+    /* === ACT 5: CAÍDA === */
+    function renderCaida(cont) {
+        let target = oficios[Math.floor(Math.random()*oficios.length)];
+        fallbackText = `Encuentra solamente al ${target.nombre}. Toca los ${target.emoji} cuando caigan.`; leerInstruccion();
+        
+        cont.innerHTML = `<h2 style="color:var(--fucsia);">Atrapa al: <b>${target.nombre} ${target.emoji}</b></h2>
+                          <div id="caja-caida"></div>`;
+        let caja = document.getElementById('caja-caida');
+        let atrapados = 0, generados = 0;
+        let intv = setInterval(() => {
+            if(!document.getElementById('caja-caida')) { clearInterval(intv); return; } 
+            generados++;
+            let isTarget = Math.random() > 0.5;
+            let obj = isTarget ? target : oficios[Math.floor(Math.random()*oficios.length)];
+            
+            let el = document.createElement('div');
+            el.className = 'item-caida'; el.innerText = obj.emoji;
+            el.style.left = Math.random() * 80 + '%'; el.style.top = '-60px';
+            el.style.transition = 'top 4s linear';
+            
+            el.onclick = () => {
+                if(obj.id === target.id) {
+                    mostrarFeedback("¡Genial! ✔️", true); el.style.display = 'none'; atrapados++;
+                    if(atrapados >= 3) { clearInterval(intv); setTimeout(nivelCompletado, 500); }
+                } else { mostrarFeedback("¡Cuidado! ❌", false); el.style.display = 'none'; }
+            };
+            caja.appendChild(el);
+            setTimeout(() => { if(el) el.style.top = '400px'; }, 50); 
+            setTimeout(() => { if(el.parentNode) el.remove(); }, 4000);
+            
+            if(generados > 20 && atrapados < 3) { 
+                clearInterval(intv); setTimeout(nivelCompletado, 1000);
+            }
+        }, 1200);
+    }
+
+    /* === ACT 6: PUZZLE ROTATORIO (NUEVA VERSIÓN CSS GRID) === */
+    function renderPuzzle(cont) {
+        let hero = oficios[Math.floor(Math.random()*oficios.length)];
+        fallbackText = "Toca las piezas para girarlas hasta armar al " + hero.nombre; leerInstruccion();
+        
+        // Posiciones de los recortes (Arriba-Izquierda, Arriba-Derecha, Abajo-Izquierda, Abajo-Derecha)
+        let offsets = [
+            { x: 0, y: 0 },
+            { x: -100, y: 0 },
+            { x: 0, y: -100 },
+            { x: -100, y: -100 }
+        ];
+
+        // Garantizamos desorden al inicio
+        let rotaciones = [90, 180, 270].sort(()=>Math.random()-0.5).concat([0]); 
+        rotaciones.sort(()=>Math.random()-0.5);
+        
+        let html = `
+        <div style="display: grid; grid-template-columns: 100px 100px; gap: 4px; width: 204px; margin: auto; background: #ccc; padding: 4px; border-radius: 10px; border: 3px solid var(--amarillo);">`;
+        
+        offsets.forEach((off, i) => {
+            html += `
+            <div class="puzzle-pieza" data-rot="${rotaciones[i]}" style="
+                width: 100px; height: 100px; overflow: hidden; position: relative; 
+                background: white; transform: rotate(${rotaciones[i]}deg); 
+                transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+                cursor: pointer; border-radius: 5px; box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+            ">
+                <div style="
+                    position: absolute; width: 200px; height: 200px; 
+                    left: ${off.x}px; top: ${off.y}px; 
+                    font-size: 150px; line-height: 200px; text-align: center;
+                ">${hero.emoji}</div>
+            </div>`;
+        });
+        
+        html += `</div>`;
+        cont.innerHTML = html;
+
+        let resueltos = 0;
+        
+        cont.querySelectorAll('.puzzle-pieza').forEach(el => {
+            // Contamos los que ya están resueltos por suerte (múltiplos de 360)
+            if(parseInt(el.dataset.rot) % 360 === 0) resueltos++;
+            
+            el.onclick = () => {
+                sfx.click();
+                let actual = parseInt(el.dataset.rot);
+                
+                // Si estaba resuelto y lo mueve, restamos
+                if(actual % 360 === 0 && resueltos > 0) resueltos--; 
+                
+                actual += 90;
+                el.dataset.rot = actual;
+                el.style.transform = `rotate(${actual}deg)`;
+                
+                // Si ahora está resuelto, sumamos
+                if(actual % 360 === 0) resueltos++;
+                
+                if(resueltos === 4) {
+                    mostrarFeedback(`¡Es el ${hero.nombre}! ⭐`, true);
+                    cont.innerHTML += `<p style="margin-top:20px; font-weight:bold; color:var(--morado); background:white; padding:10px; border-radius:15px;">${hero.desc}</p>`;
+                    setTimeout(nivelCompletado, 3000);
+                }
+            };
+        });
+    }
+
+    /* === ACT 7: VERDADERO O FALSO === */
+    function renderTF(cont) {
+        const pregs = [
+            {q: "La maestra enseña en la escuela.", a: true, hero: '👩‍🏫'},
+            {q: "El bombero cocina en un restaurante.", a: false, hero: '👨‍🚒'},
+            {q: "El médico ayuda a las personas enfermas.", a: true, hero: '👨‍⚕️'}
+        ];
+        let actual = pregs[Math.floor(Math.random()*pregs.length)];
+        fallbackText = actual.q + " ¿Verdadero o Falso?"; leerInstruccion();
+
+        cont.innerHTML = `
+            <div style="font-size: 5rem;">${actual.hero}</div>
+            <h2 style="margin:20px 0;">"${actual.q}"</h2>
+            <div style="display:flex; gap: 20px;">
+                <button class="btn btn-azul" onclick="evaluarTF(${actual.a}, true)">✔️ Verdadero</button>
+                <button class="btn btn-fucsia" onclick="evaluarTF(${actual.a}, false)">❌ Falso</button>
+            </div>
+        `;
+        
+        window.evaluarTF = (correcta, respuesta) => {
+            if(correcta === respuesta) { mostrarFeedback("¡Excelente! ⭐", true); setTimeout(nivelCompletado, 1000); }
+            else { mostrarFeedback("Piénsalo bien... ❌", false); }
+        };
+    }
+
+    /* === ACT 8: RULETA === */
+    function renderRuleta(cont) {
+        fallbackText = "Gira la ruleta y responde."; leerInstruccion();
+        let ruletaHtml = `
+            <div class="ruleta-container">
+                <div class="ruleta-flecha"></div>
+                <div class="ruleta" id="ruleta-ui">`;
+        oficios.slice(0,4).forEach((o, i) => { 
+            let ang = (i * 90) + 45; 
+            ruletaHtml += `<div class="ruleta-emoji" style="transform: rotate(${ang}deg) translate(80px) rotate(-${ang}deg);">${o.emoji}</div>`;
+        });
+        ruletaHtml += `</div></div>
+            <button class="btn btn-amarillo" id="btn-girar" onclick="girarRuleta()">🎰 Girar Ruleta</button>
+            <div id="ruleta-pregunta" style="display:none; margin-top:20px; width:100%;"></div>
+        `;
+        cont.innerHTML = ruletaHtml;
+        
+        let subItems = oficios.slice(0,4);
+        
+        window.girarRuleta = () => {
+            sfx.click();
+            let btn = document.getElementById('btn-girar');
+            btn.style.display = 'none';
+            let r = document.getElementById('ruleta-ui');
+            let giros = 360 * 4;
+            let randomIdx = Math.floor(Math.random() * 4);
+            let offset = (360 - (randomIdx * 90)) - 45; 
+            r.style.transform = `rotate(${giros + offset}deg)`;
+            
+            setTimeout(() => {
+                let hero = subItems[randomIdx];
+                let isPlace = Math.random() > 0.5;
+                let qText = `¿${isPlace ? 'Dónde trabaja' : 'Qué herramienta usa'} el ${hero.nombre}?`;
+                fallbackText = qText; leerInstruccion();
+                
+                let correctOpt = isPlace ? {e: hero.lugar, n: hero.nombreLugar} : {e: hero.herram, n: hero.nombreHerram};
+                let wrongOpt = isPlace ? {e: oficios[(randomIdx+1)%4].lugar, n: oficios[(randomIdx+1)%4].nombreLugar} : {e: oficios[(randomIdx+1)%4].herram, n: oficios[(randomIdx+1)%4].nombreHerram};
+                let opts = [correctOpt, wrongOpt].sort(()=>Math.random()-0.5);
+
+                let pContainer = document.getElementById('ruleta-pregunta');
+                pContainer.style.display = 'block';
+                pContainer.innerHTML = `
+                    <h3>${qText}</h3>
+                    <div class="grid-opciones" style="margin-top:15px;">
+                        <div class="tarjeta opc-ruleta" onclick="evalRul('${opts[0].n}', '${correctOpt.n}')">${opts[0].e}<span>${opts[0].n}</span></div>
+                        <div class="tarjeta opc-ruleta" onclick="evalRul('${opts[1].n}', '${correctOpt.n}')">${opts[1].e}<span>${opts[1].n}</span></div>
+                    </div>
+                `;
+            }, 3000);
+        };
+
+        window.evalRul = (seleccionada, correcta) => {
+            if(seleccionada === correcta) { mostrarFeedback("¡Muy bien! ⭐", true); setTimeout(nivelCompletado, 1000); }
+            else { mostrarFeedback("Intenta de nuevo ❌", false); }
+        };
+    }
+</script>
+</body>
+</html>

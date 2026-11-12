@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Nicaragua Símbolos Quiz - Edición Patriótica</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Paleta de colores Patriótica */
+      --azul-nica: #0033A0;
+      --blanco: #FFFFFF;
+      --oro: #FFD700;
+      --rojo: #ef4444;
+      --verde: #10b981;
+      --gris-fondo: #f8fafc;
+      --gris-borde: #e2e8f0;
+      --texto: #1e293b;
+      
+      --sombra: 0 10px 30px rgba(0, 0, 0, 0.3);
+      --radio: 16px;
+      --fuente: 'Poppins', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--fuente); }
+
+    body {
+      background-color: var(--azul-nica);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--texto);
+      overflow-x: hidden;
+      padding: 20px;
+    }
+
+    /* Fondo con franjas sutiles para dar textura */
+    .bg-stripes {
+      position: absolute;
+      width: 100vw; height: 100vh;
+      z-index: -1;
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.03),
+        rgba(255, 255, 255, 0.03) 20px,
+        transparent 20px,
+        transparent 40px
+      );
+    }
+
+    .contenedor {
+      width: 100%;
+      max-width: 800px;
+      background: var(--blanco);
+      border-radius: var(--radio);
+      box-shadow: var(--sombra);
+      padding: 40px;
+      animation: fadeIn 0.5s ease;
+      position: relative;
+    }
+
+    .oculto { display: none !important; }
+
+    h1 { font-size: 2.5rem; text-align: center; margin-bottom: 10px; color: var(--azul-nica); }
+    h2 { font-size: 1.6rem; text-align: center; margin-bottom: 25px; line-height: 1.4; color: var(--texto); }
+    p.subtitulo { text-align: center; font-size: 1.1rem; color: #64748b; margin-bottom: 30px; }
+
+    .centro { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 15px; }
+
+    /* Botones Principales */
+    .btn {
+      padding: 15px 30px;
+      border: none; border-radius: 50px;
+      font-size: 1.2rem; font-weight: 600;
+      cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-jugar { 
+      background: var(--azul-nica); 
+      color: var(--blanco); 
+      font-size: 1.5rem; 
+      padding: 15px 50px; 
+      box-shadow: 0 4px 15px rgba(0, 51, 160, 0.3);
+    }
+    .btn-jugar:hover { 
+      transform: translateY(-3px); 
+      background: #002277;
+      box-shadow: 0 8px 20px rgba(0, 51, 160, 0.4); 
+    }
+
+    /* Power-ups */
+    .power-ups { display: flex; gap: 15px; justify-content: center; margin-bottom: 25px; flex-wrap: wrap; }
+    .btn-power {
+      background: var(--blanco); 
+      border: 2px solid var(--azul-nica);
+      color: var(--azul-nica); 
+      padding: 10px 20px; 
+      border-radius: 12px;
+      display: flex; align-items: center; gap: 8px; font-size: 1rem; font-weight: 600;
+      transition: all 0.2s; cursor: pointer;
+    }
+    .btn-power:hover:not(:disabled) { background: var(--azul-nica); color: var(--blanco); transform: translateY(-2px); }
+    .btn-power:disabled { opacity: 0.4; cursor: not-allowed; border-color: #cbd5e1; color: #cbd5e1; }
+
+    /* HUD (Vidas, Puntos, Progreso) */
+    .hud { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 1.2rem; font-weight: 600; color: #475569; }
+    .puntos-texto { color: var(--azul-nica); font-size: 1.4rem; }
+    
+    .vidas { display: flex; gap: 8px; }
+    .vidas svg { width: 30px; height: 30px; fill: var(--rojo); transition: transform 0.3s; }
+    .vidas svg.perdida { fill: #cbd5e1; transform: scale(0.8); }
+
+    .barra-progreso {
+      height: 12px; background: var(--gris-borde); border-radius: 10px; overflow: hidden; margin: 20px 0;
+    }
+    .barra-progreso > div { height: 100%; background: var(--azul-nica); width: 0%; transition: width 0.5s ease-out; }
+
+    /* Imagen / SVG Area */
+    .svg-container {
+      width: 100%; max-width: 200px; height: 200px; margin: 0 auto 20px auto;
+      display: flex; justify-content: center; align-items: center;
+      background: var(--gris-fondo); border: 2px solid var(--gris-borde); border-radius: var(--radio); padding: 15px;
+      animation: floatItem 4s infinite ease-in-out;
+    }
+    .svg-container svg { width: 100%; height: 100%; }
+
+    /* Opciones */
+    .opciones { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    @media(max-width: 600px) { .opciones { grid-template-columns: 1fr; } }
+    
+    .opcion {
+      background: var(--gris-fondo); border: 2px solid var(--gris-borde);
+      border-radius: 12px; padding: 18px; font-size: 1.1rem; text-align: center;
+      cursor: pointer; transition: all 0.2s; font-weight: 600; color: var(--texto);
+    }
+    .opcion:hover { background: #e0e7ff; border-color: var(--azul-nica); transform: scale(1.02); color: var(--azul-nica); }
+    .opcion.correcta { background: var(--verde); border-color: #059669; color: white; animation: pulse 0.5s; }
+    .opcion.incorrecta { background: var(--rojo); border-color: #b91c1c; color: white; animation: shake 0.5s; }
+
+    /* Animaciones */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+    @keyframes floatItem { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+    /* Toast (Notificaciones) */
+    .toast {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: var(--azul-nica); color: white; 
+      padding: 15px 25px; border-radius: 10px; font-size: 1.1rem; font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4); opacity: 0; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      z-index: 1000; border-left: 6px solid var(--oro);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* Resumen Final */
+    .score-board {
+      background: var(--gris-fondo); padding: 30px; border-radius: var(--radio); border: 2px solid var(--gris-borde);
+      margin-bottom: 30px; text-align: center;
+    }
+    .score-board span { display: block; font-size: 1.2rem; color: #64748b; margin-bottom: 10px; }
+    .score-board b { font-size: 3.5rem; color: var(--azul-nica); display: block; line-height: 1; margin-bottom: 15px; }
+    .detalle-aciertos { font-size: 1.3rem; color: var(--texto); font-weight: 600; }
+
+  </style>
+</head>
+<body>
+
+<div class="bg-stripes"></div>
+
+<!-- PANTALLA INICIO -->
+<section id="pantallaInicio" class="contenedor">
+  <h1>🇳🇮 Nicaragua Trivia</h1>
+  <p class="subtitulo">¡Pon a prueba tus conocimientos sobre nuestros símbolos patrios en 9 preguntas!</p>
+  <div class="centro">
+    <button class="btn btn-jugar" onclick="iniciarJuego()">¡Jugar Ahora!</button>
+  </div>
+</section>
+
+<!-- PANTALLA JUEGO -->
+<section id="pantallaJuego" class="contenedor oculto">
+  
+  <div class="hud">
+    <div>Puntos: <span id="puntos" class="puntos-texto">0</span></div>
+    <div>Pregunta <span id="numPreg" style="color:var(--azul-nica);">1</span>/9</div>
+    <div class="vidas" id="vidas"></div>
+  </div>
+
+  <div class="power-ups">
+    <button class="btn-power" id="btn5050" onclick="usar5050()"><span>⚖️</span> 50:50</button>
+    <button class="btn-power" id="btnDoble" onclick="usarDobleChance()"><span>🎲</span> Doble Chance</button>
+    <button class="btn-power" id="btnPasar" onclick="usarPasar()"><span>⏭️</span> Pasar</button>
+  </div>
+
+  <div class="svg-container" id="preguntaSvg">
+    <!-- SVG inyectado aquí -->
+  </div>
+
+  <h2 id="preguntaTxt"></h2>
+
+  <div id="opciones" class="opciones"></div>
+
+  <div class="barra-progreso"><div id="prog"></div></div>
+</section>
+
+<!-- PANTALLA RESULTADOS -->
+<section id="pantallaResultados" class="contenedor oculto">
+  <h1>¡Juego Terminado! 🎉</h1>
+  <p class="subtitulo">Aquí está tu resultado final:</p>
+  
+  <div class="score-board">
+    <span>Tu Puntuación Total</span>
+    <b id="scoreFinal">0</b>
+    <div class="detalle-aciertos">Aciertos: <span style="display:inline; color:var(--verde);" id="aciertos">0</span> / 9</div>
+  </div>
+
+  <div class="centro">
+    <button class="btn btn-jugar" onclick="recargar()">Volver a Jugar 🔄</button>
+  </div>
+</section>
+
+<!-- Elemento Toast -->
+<div id="toast" class="toast"></div>
+
+<script>
+/* ----------------------------------------------------------
+   DIBUJOS SVG MEJORADOS
+-----------------------------------------------------------*/
+// Volcán y Lago
+const svgVolcan = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10,80 L50,20 L90,80 Z" fill="#64748b"/>
+  <path d="M30,80 L50,35 L70,80 Z" fill="#94a3b8"/>
+  <path d="M50,20 Q45,35 35,45 L65,45 Q55,35 50,20 Z" fill="#22c55e"/>
+  <rect x="0" y="80" width="100" height="20" fill="#00B7D6"/>
+</svg>`;
+
+// Bandera
+const svgBandera = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <rect x="5" y="25" width="90" height="16" fill="#0033A0"/>
+  <rect x="5" y="41" width="90" height="16" fill="#FFFFFF" stroke="#e2e8f0" stroke-width="0.5"/>
+  <rect x="5" y="57" width="90" height="16" fill="#0033A0"/>
+  <circle cx="50" cy="49" r="6" fill="#0033A0"/>
+</svg>`;
+
+// Ave (Guardabarranco Mejorado - Colas de raqueta y antifaz)
+const svgAve = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Rama -->
+  <path d="M10,70 Q50,80 90,60" fill="none" stroke="#8B4513" stroke-width="4" stroke-linecap="round"/>
+  <!-- Colas largas (Raquetas) -->
+  <path d="M50,60 L40,90" fill="none" stroke="#0033A0" stroke-width="2"/>
+  <path d="M52,60 L50,95" fill="none" stroke="#0033A0" stroke-width="2"/>
+  <ellipse cx="40" cy="90" rx="4" ry="7" fill="#00B7D6"/>
+  <ellipse cx="50" cy="95" rx="4" ry="7" fill="#00B7D6"/>
+  <!-- Cuerpo Verde -->
+  <ellipse cx="50" cy="45" rx="14" ry="22" fill="#4CAF50"/>
+  <!-- Pecho Naranja -->
+  <ellipse cx="46" cy="48" rx="8" ry="14" fill="#FFA500"/>
+  <!-- Cabeza Celeste -->
+  <circle cx="50" cy="25" r="11" fill="#00B7D6"/>
+  <!-- Antifaz negro -->
+  <path d="M37,25 Q45,20 52,25 Q45,30 37,25 Z" fill="#222"/>
+  <!-- Ojo -->
+  <circle cx="44" cy="24" r="2" fill="#fff"/>
+  <circle cx="43" cy="24" r="1" fill="#000"/>
+  <!-- Pico -->
+  <polygon points="39,25 24,28 39,27" fill="#444"/>
+  <!-- Ala Verde Oscuro -->
+  <path d="M50,40 C62,40 66,55 56,65 C53,65 50,50 50,40 Z" fill="#059669"/>
+</svg>`;
+
+// Flor (Sacuanjoche Mejorado - 5 pétalos y centro amarillo)
+const svgFlor = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(50, 50)">
+    <g id="petalo">
+      <!-- Pétalo blanco -->
+      <path d="M0,0 C-22,-22 -16,-48 0,-48 C16,-48 22,-22 0,0" fill="#FFFFFF" stroke="#cbd5e1" stroke-width="1.5"/>
+      <!-- Difuminado amarillo interno -->
+      <path d="M0,0 C-8,-12 -5,-25 0,-25 C5,-25 8,-12 0,0" fill="#FFD700"/>
+    </g>
+    <use href="#petalo" transform="rotate(72)" />
+    <use href="#petalo" transform="rotate(144)" />
+    <use href="#petalo" transform="rotate(216)" />
+    <use href="#petalo" transform="rotate(288)" />
+  </g>
+  <!-- Centro floral -->
+  <circle cx="50" cy="50" r="4" fill="#d97706"/>
+</svg>`;
+
+// Escudo Minimalista
+const svgEscudo = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <polygon points="50,10 90,40 50,90 10,40" fill="#FFD700"/>
+  <polygon points="50,15 84,42 50,84 16,42" fill="#FFFFFF"/>
+  <path d="M25,55 L50,25 L75,55 Z" fill="#0033A0"/>
+</svg>`;
+
+// Música (Himno)
+const svgMusica = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <path d="M35,65 A15,12 0 1,1 50,53 L50,15 L80,10 L80,45 A15,12 0 1,1 95,33 L95,5 L40,12 L40,65 Z" fill="#0033A0"/>
+</svg>`;
+
+
+/* ----------------------------------------------------------
+   BANCO DE PREGUNTAS (Pregunta del ave corregida)
+-----------------------------------------------------------*/
+const BANCO=[
+  {q:"¿Cuántos volcanes aparecen en el escudo de Nicaragua?", svg:svgVolcan, opts:["Cinco","Tres","Uno","Ninguno"], ok:0, exp:"El escudo muestra cinco volcanes representando a los países centroamericanos."},
+  {q:"¿Qué colores tiene la bandera de Nicaragua?", svg:svgBandera, opts:["Azul y blanco","Azul celeste y blanco","Verde y blanco","Azul y amarillo"], ok:0, exp:"Sus colores oficiales son Azul y Blanco."},
+  {q:"¿Cuál es el ave nacional de Nicaragua?", svg:svgAve, opts:["Guardabarranco","Quetzal","Cenzontle","Trogón"], ok:0, exp:"El Guardabarranco es el ave nacional de Nicaragua."},
+  {q:"¿Cuál es la flor nacional?", svg:svgFlor, opts:["Sacuanjoche","Rosa","Clavel","Orquídea"], ok:0, exp:"La flor de Sacuanjoche es la flor nacional."},
+  {q:"¿Qué lema rodea el escudo?", svg:svgEscudo, opts:["República de Nicaragua – América Central","Libre soberana e independiente","Patria y libertad","Viva Nicaragua"], ok:0, exp:"El lema es 'República de Nicaragua – América Central'."},
+  {q:"¿En qué año se adoptó oficialmente la bandera actual?", svg:svgBandera, opts:["1971","1821","1893","1908"], ok:0, exp:"La bandera y el escudo actuales se oficializaron en 1971."},
+  {q:"¿Qué color representa la pureza en la bandera?", svg:svgBandera, opts:["Blanco","Azul","Rojo","Amarillo"], ok:0, exp:"La franja blanca simboliza la pureza, integridad y bondad."},
+  {q:"¿Qué escritor es autor de la letra del Himno Nacional?", svg:svgMusica, opts:["Salomón Ibarra Mayorga","Rubén Darío","Alfonso Cortés","José Coronel Urtecho"], ok:0, exp:"Salomón Ibarra Mayorga escribió la letra ganadora en 1918."},
+  {q:"¿En qué fecha se celebra el día de la bandera?", svg:svgBandera, opts:["14 de julio","1 de mayo","4 de septiembre","15 de septiembre"], ok:0, exp:"Se celebra cada 14 de julio."}
+];
+
+/* ----------------------------------------------------------
+   VARIABLES GLOBALES
+-----------------------------------------------------------*/
+let preguntas=[], idxPreg=0, puntos=0, vidas=3, totalPreg=9, aciertos=0;
+let dobleChance=false, usado5050=false;
+const puntosOK=100, puntosMAL=-50, bonusVelocidad=5;
+const nombresPower=["btn5050","btnDoble","btnPasar"];
+let tiempoInicio=0;
+
+/* ----------------------------------------------------------
+   INICIAR JUEGO
+-----------------------------------------------------------*/
+function iniciarJuego(){
+  idxPreg=0; puntos=0; aciertos=0; vidas=3; dobleChance=false; usado5050=false;
+  preguntas=[...BANCO].sort(()=>Math.random()-0.5);
+  mostrarPantalla("pantallaJuego");
+  pintarVidas();
+  cargarPregunta();
+  nombresPower.forEach(id=>document.getElementById(id).disabled=false);
+}
+
+function mostrarPantalla(id){
+  document.querySelectorAll("section").forEach(s=>s.classList.add("oculto"));
+  document.getElementById(id).classList.remove("oculto");
+}
+
+function pintarVidas(){
+  const div=document.getElementById("vidas");
+  div.innerHTML="";
+  for(let i=0; i<3; i++){
+    const svgCorazon = `<svg viewBox="0 0 24 24" class="${i >= vidas ? 'perdida' : ''}"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+    div.innerHTML += svgCorazon;
+  }
+}
+
+function cargarPregunta(){
+  if(idxPreg>=totalPreg){finJuego();return;}
+  const p=preguntas[idxPreg];
+  document.getElementById("numPreg").textContent=idxPreg+1;
+  document.getElementById("preguntaTxt").textContent=p.q;
+  document.getElementById("preguntaSvg").innerHTML=p.svg;
+
+  const divOpts=document.getElementById("opciones");
+  divOpts.innerHTML="";
+  
+  p.opts.forEach((opt,i)=>{
+    const btn=document.createElement("div");
+    btn.className="opcion";
+    btn.textContent=opt;
+    btn.dataset.idx=i;
+    btn.onclick=()=>seleccionar(i);
+    divOpts.appendChild(btn);
+  });
+
+  usado5050=false;
+  tiempoInicio=Date.now();
+  actualizarProg();
+}
+
+function actualizarProg(){
+  const porc=(idxPreg/totalPreg)*100;
+  document.getElementById("prog").style.width=porc+"%";
+  
+  const pElem = document.getElementById("puntos");
+  let start = parseInt(pElem.textContent);
+  let end = puntos;
+  if(start === end) return;
+  let dur = 500; let steps = 20; let stepTime = dur/steps;
+  let inc = (end - start) / steps;
+  let timer = setInterval(()=>{
+    start += inc;
+    pElem.textContent = Math.round(start);
+    if((inc > 0 && start >= end) || (inc < 0 && start <= end)){
+      clearInterval(timer);
+      pElem.textContent = end;
+    }
+  }, stepTime);
+}
+
+function seleccionar(idx){
+  const p=preguntas[idxPreg];
+  const opts=document.querySelectorAll(".opcion");
+  const correcto=idx===p.ok;
+  const tiempoResp=(Date.now()-tiempoInicio)/1000;
+
+  if(correcto){
+    aciertos++;
+    let pts=puntosOK;
+    if(tiempoResp<3) pts+=Math.floor((3-tiempoResp)*bonusVelocidad);
+    puntos+=pts;
+    opts[idx].classList.add("correcta");
+    mostrarToast("✅ ¡Correcto! " + p.exp, "verde");
+  } else {
+    puntos+=puntosMAL;
+    opts[idx].classList.add("incorrecta");
+    if(!dobleChance){
+      vidas--;
+      pintarVidas();
+      if(vidas<=0){
+        mostrarToast("❌ Sin vidas restantes.", "rojo");
+        setTimeout(finJuego, 1500);
+        return;
+      }
+    } else {
+      dobleChance=false;
+      mostrarToast("🎲 Fallaste, ¡pero tienes doble chance! Intenta de nuevo.", "oro");
+      opts[idx].style.opacity = "0.5";
+      opts[idx].style.pointerEvents="none";
+      return;
+    }
+    mostrarToast("❌ Incorrecto. " + p.exp, "rojo");
+    opts[p.ok].classList.add("correcta");
+  }
+
+  opts.forEach(o=>o.style.pointerEvents="none");
+  actualizarProg();
+  setTimeout(()=>{idxPreg++;cargarPregunta();}, 2500); 
+}
+
+function mostrarToast(msg, color){
+  const t=document.getElementById("toast");
+  t.textContent=msg;
+  
+  if(color === "verde") t.style.borderLeftColor = "var(--verde)";
+  else if(color === "rojo") t.style.borderLeftColor = "var(--rojo)";
+  else t.style.borderLeftColor = "var(--oro)";
+
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 2300);
+}
+
+/* ----------------------------------------------------------
+   POWER UPS
+-----------------------------------------------------------*/
+function usar5050(){
+  if(usado5050)return;
+  const p=preguntas[idxPreg];
+  const opts=document.querySelectorAll(".opcion");
+  let borrados=0;
+  for(let i=0; i<opts.length && borrados<2; i++){
+    if(i!==p.ok){
+      opts[i].style.opacity="0.2"; 
+      opts[i].style.pointerEvents="none"; 
+      borrados++;
+    }
+  }
+  usado5050=true;
+  document.getElementById("btn5050").disabled=true;
+  mostrarToast("⚖️ 50:50 Activado.", "oro");
+}
+
+function usarDobleChance(){
+  if(dobleChance)return;
+  dobleChance=true;
+  document.getElementById("btnDoble").disabled=true;
+  mostrarToast("🎲 Doble Chance Activado.", "oro");
+}
+
+function usarPasar(){
+  idxPreg++;
+  document.getElementById("btnPasar").disabled=true;
+  mostrarToast("⏭️ Pregunta omitida.", "oro");
+  cargarPregunta();
+}
+
+/* ----------------------------------------------------------
+   FIN DEL JUEGO
+-----------------------------------------------------------*/
+function finJuego(){
+  mostrarPantalla("pantallaResultados");
+  document.getElementById("scoreFinal").textContent=puntos;
+  document.getElementById("aciertos").textContent=aciertos;
+}
+
+function recargar(){ location.reload(); }
+</script>
+</body>
+</html>

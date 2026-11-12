@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viaje Increíble al Sistema Digestivo</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Quicksand:wght@400;500;700&family=Material+Icons&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --primary-digestive: #FF7043;
+            --primary-dark: #D84315;
+            --acid-green: #8BC34A;
+            --blue-sub: #00ACC1;
+            --ff-sans: 'Quicksand', sans-serif;
+            --ff-title: 'Fredoka', sans-serif;
+        }
+
+        body {
+            font-family: var(--ff-sans);
+            background-color: #FFF9C4; /* Fondo amarillo cálido ultra alegre */
+            background-image: radial-gradient(#FFF176 1.5px, transparent 1.5px), radial-gradient(#FFF176 1.5px, #FFF9C4 1.5px);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+            overflow-x: hidden;
+        }
+
+        .title-font {
+            font-family: var(--ff-title);
+        }
+
+        /* Botones estilo caricatura / Arcade 3D */
+        .btn-arcade {
+            font-family: var(--ff-title);
+            transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-bottom: 6px solid rgba(0,0,0,0.3);
+            text-shadow: 1px 1.5px 0px rgba(0,0,0,0.2);
+            pointer-events: auto;
+        }
+
+        .btn-arcade:active {
+            transform: translateY(4px);
+            border-bottom-width: 2px;
+        }
+
+        /* Animaciones divertidas y fluidas */
+        @keyframes float-capsule {
+            0%, 100% { transform: translateY(0) rotate(-1deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        .floating-capsule {
+            animation: float-capsule 3.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse-light {
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(255,235,59,0.5)); }
+            50% { filter: drop-shadow(0 0 20px rgba(255,112,67,0.9)); }
+        }
+
+        .pulsing-organ {
+            animation: pulse-light 2s infinite ease-in-out;
+        }
+
+        .custom-card {
+            box-shadow: 0 8px 0px #FFE082;
+            border: 4px solid #FFB300;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <div class="flex-grow flex flex-col max-w-5xl w-full mx-auto p-4 justify-between relative z-10">
+        
+        <!-- HEADER: HUD de puntuación súper infantil y llamativo -->
+        <header class="bg-white rounded-3xl p-4 mb-4 flex flex-col sm:flex-row justify-between items-center gap-3 border-4 border-amber-400 shadow-[0_6px_0_#FFB300] relative z-20">
+            <div class="flex items-center gap-3">
+                <div class="bg-amber-100 p-2.5 rounded-2xl border-2 border-amber-300 floating-capsule">
+                    <span class="material-icons text-4xl text-orange-500">rocket_launch</span>
+                </div>
+                <div class="text-center sm:text-left">
+                    <h1 class="title-font text-2xl md:text-3xl text-orange-600 tracking-wide font-bold">¡Viaje de Micro-Navegación!</h1>
+                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Explora el Cuerpo Humano en 3 Misiones</p>
+                </div>
+            </div>
+            
+            <!-- Dashboard de estadísticas arcade -->
+            <div class="flex gap-3 items-center w-full sm:w-auto justify-center">
+                <div class="bg-orange-100 px-4 py-2 rounded-2xl border-4 border-orange-300 flex items-center gap-2 shadow-[0_3px_0_#E65100]">
+                    <span class="material-icons text-orange-600 animate-pulse">stars</span>
+                    <span class="font-bold text-orange-900 title-font" id="hud-score">Puntos: 0</span>
+                </div>
+                <div class="bg-cyan-100 px-4 py-2 rounded-2xl border-4 border-cyan-300 flex items-center gap-2 shadow-[0_3px_0_#006064]">
+                    <span class="material-icons text-cyan-600">shield</span>
+                    <span class="font-bold text-cyan-900 title-font" id="hud-level">Nave: 100%</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-grow bg-[#FFFDE7] rounded-[2.5rem] shadow-[0_12px_0_#FFF59D] overflow-hidden border-8 border-white flex flex-col relative min-h-[620px] p-4 md:p-6 z-10">
+            
+            <!-- PANTALLA 1: Bienvenida y Personalización de la Nave -->
+            <section id="screen-welcome" class="absolute inset-0 flex flex-col justify-between items-center p-6 bg-gradient-to-b from-orange-50 to-white text-center z-20 pointer-events-auto">
+                <div class="mt-4">
+                    <h2 class="title-font text-4xl md:text-6xl text-orange-600 mb-2 drop-shadow-[0_2px_0_#FFE082] tracking-wider">¡SUPER DIGESTIÓN!</h2>
+                    <p class="text-gray-600 max-w-lg text-sm md:text-base font-medium">
+                        Pilota la micro-nave <span class="text-cyan-600 font-extrabold">Bio-Explorer</span> para defender tu salud y descubrir la asombrosa transformación de los alimentos.
+                    </p>
+                </div>
+
+                <!-- Customizador de Micro-nave con SVG de nave real -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl items-center my-4 bg-orange-100/50 p-4 rounded-3xl border-2 border-dashed border-orange-300 pointer-events-auto">
+                    <div class="flex flex-col items-center">
+                        <div class="relative w-36 h-36 flex items-center justify-center bg-white rounded-full border-4 border-amber-300 shadow-inner floating-capsule overflow-hidden">
+                            <!-- SVG personalizado de la micro-nave submarina de exploración -->
+                            <svg id="ship-preview-svg" class="w-24 h-24 transition-all duration-300" viewBox="0 0 100 100">
+                                <!-- Estructura y alerones -->
+                                <path d="M15,50 L25,40 L15,30 Z" fill="#FF5722" stroke="#1c2d3d" stroke-width="3"/>
+                                <path d="M15,50 L25,60 L15,70 Z" fill="#FF5722" stroke="#1c2d3d" stroke-width="3"/>
+                                <!-- Cuerpo del submarino -->
+                                <path id="ship-body-path" d="M22,50 C22,32 40,24 72,28 C88,30 92,42 92,50 C92,58 88,70 72,72 C40,76 22,68 22,50 Z" fill="#00ACC1" stroke="#1c2d3d" stroke-width="3"/>
+                                <!-- Cúpula y Ventana -->
+                                <circle cx="58" cy="46" r="11" fill="#E0F7FA" stroke="#1c2d3d" stroke-width="3"/>
+                                <circle cx="58" cy="46" r="6" fill="#80DEEA"/>
+                                <!-- Periscopio -->
+                                <rect x="36" y="14" width="8" height="16" rx="3" fill="#90A4AE" stroke="#1c2d3d" stroke-width="3"/>
+                                <circle cx="40" cy="12" r="3.5" fill="#FFEB3B"/>
+                            </svg>
+                        </div>
+                        <p class="text-xs font-bold text-orange-800 mt-2 uppercase tracking-wide">Tu Micro-Nave de Exploración</p>
+                    </div>
+
+                    <!-- Input con capas fijadas y pointer events habilitados explícitamente -->
+                    <div class="space-y-4 relative z-30">
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border-2 border-orange-200">
+                            <label for="player-name" class="block text-gray-700 font-bold text-xs mb-1.5 text-left uppercase">🚀 Tu Nombre de Piloto:</label>
+                            <input type="text" id="player-name" placeholder="Ej. Dr. Lucas, Dra. Sofía..." class="w-full px-4 py-2.5 rounded-xl border-2 border-orange-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-300 focus:outline-none font-bold text-center text-lg text-gray-700 bg-amber-50/50 pointer-events-auto relative z-30">
+                        </div>
+                        
+                        <div>
+                            <span class="block text-gray-700 font-bold text-xs mb-1.5 text-left uppercase">🎨 Pintar Carrocería de la Nave:</span>
+                            <div class="flex justify-start gap-2.5 pointer-events-auto">
+                                <button onclick="setShipColor('#00ACC1')" class="w-8 h-8 rounded-full bg-cyan-500 border-2 border-white focus:ring-4 focus:ring-cyan-300 transition-transform active:scale-95"></button>
+                                <button onclick="setShipColor('#EC407A')" class="w-8 h-8 rounded-full bg-pink-500 border-2 border-white focus:ring-4 focus:ring-pink-300 transition-transform active:scale-95"></button>
+                                <button onclick="setShipColor('#AB47BC')" class="w-8 h-8 rounded-full bg-purple-500 border-2 border-white focus:ring-4 focus:ring-purple-300 transition-transform active:scale-95"></button>
+                                <button onclick="setShipColor('#26A69A')" class="w-8 h-8 rounded-full bg-teal-500 border-2 border-white focus:ring-4 focus:ring-teal-300 transition-transform active:scale-95"></button>
+                                <button onclick="setShipColor('#FFA726')" class="w-8 h-8 rounded-full bg-orange-500 border-2 border-white focus:ring-4 focus:ring-orange-300 transition-transform active:scale-95"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="startGame()" class="btn-arcade bg-orange-500 hover:bg-orange-600 text-white text-2xl px-12 py-4 rounded-3xl shadow-lg transform hover:scale-105 transition-all uppercase tracking-wider mb-2 relative z-30 pointer-events-auto">
+                    ¡Encender Motores!
+                </button>
+            </section>
+
+            <section id="screen-intro" class="absolute inset-0 hidden flex flex-col justify-between p-4 bg-orange-50/40 pointer-events-auto">
+                <div class="text-center">
+                    <span class="bg-cyan-500 text-white text-xs px-4 py-1.5 rounded-full font-bold uppercase tracking-wider shadow-md">Fase 1: Mapeo de Sistemas</span>
+                    <h3 class="title-font text-2xl md:text-3xl text-orange-800 mt-1">El Mapa del Viaje Digestivo 3D</h3>
+                    <p class="text-xs text-gray-600 font-semibold">Usa el simulador 3D para inspeccionar el cuerpo y activa los escaneos de diagnóstico.</p>
+                </div>
+
+                <!-- Grid interactivo con el Visualizador de Sketchfab -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-2 items-center flex-grow">
+                    <!-- Integración del Modelo 3D Interactivo desde Sketchfab -->
+                    <div class="bg-white p-2 rounded-3xl border-4 border-amber-300 flex flex-col justify-between shadow-inner h-[320px] relative overflow-hidden">
+                        <div class="w-full h-[65%] rounded-2xl overflow-hidden bg-slate-900 border-2 border-amber-200">
+                            <!-- Iframe de Sketchfab pedido por el usuario -->
+                            <iframe title="El sistema digestivo" class="w-full h-full" frameborder="0" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true" allow="autoplay; fullscreen; xr-spatial-tracking" xr-spatial-tracking execution-while-out-of-viewport execution-while-not-rendered web-share src="https://sketchfab.com/models/56f1b38d4b8a4615ae8e893e8615127c/embed?autostart=1&preload=1"></iframe>
+                        </div>
+                        
+                        <!-- Panel de Control y Escaneo del Alumno -->
+                        <div class="h-[32%] flex flex-col justify-center">
+                            <span class="text-[9px] font-bold text-center block text-gray-500 uppercase tracking-widest mb-1">📟 Comando de Escaneo de Órganos:</span>
+                            <div class="grid grid-cols-3 gap-1 px-1">
+                                <button onclick="showOrganInfo('mouth')" class="bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold py-1 px-0.5 rounded-lg border-b-2 border-rose-700 transition">Boca</button>
+                                <button onclick="showOrganInfo('esophagus')" class="bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-bold py-1 px-0.5 rounded-lg border-b-2 border-orange-700 transition">Esófago</button>
+                                <button onclick="showOrganInfo('stomach')" class="bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold py-1 px-0.5 rounded-lg border-b-2 border-red-700 transition">Estómago</button>
+                                <button onclick="showOrganInfo('liver')" class="bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold py-1 px-0.5 rounded-lg border-b-2 border-amber-800 transition">Hígado</button>
+                                <button onclick="showOrganInfo('small_intestine')" class="bg-orange-400 hover:bg-orange-500 text-white text-[10px] font-bold py-1 px-0.5 rounded-lg border-b-2 border-orange-600 transition">Intestino Delg.</button>
+                                <button onclick="showOrganInfo('large_intestine')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold py-1 px-0.5 rounded-lg border-b-2 border-emerald-800 transition">Intestino Gru.</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cuadro de diálogo interactivo del Robot Guía -->
+                    <div class="bg-white p-4 rounded-3xl border-4 border-cyan-300 flex flex-col justify-between h-[320px] relative">
+                        <div id="organ-details-box" class="overflow-y-auto">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="bg-cyan-100 p-1.5 rounded-full flex items-center justify-center">
+                                    <span class="material-icons text-cyan-600 text-2xl" id="organ-icon">smart_toy</span>
+                                </div>
+                                <h4 class="title-font text-lg text-cyan-800 font-bold" id="organ-name">¡Inicia el Escaneo!</h4>
+                            </div>
+                            <p class="text-xs text-gray-600 leading-relaxed font-semibold" id="organ-desc">
+                                Selecciona un elemento del panel de control de escaneo para que tu nave analice cómo ayuda a tu cuerpo a asimilar la energía de tus alimentos.
+                            </p>
+                        </div>
+                        <div class="bg-amber-100 p-2.5 rounded-2xl border border-amber-300 mt-2">
+                            <span class="text-[10px] font-bold text-amber-800 uppercase block mb-0.5">Dato Curioso de Bobi:</span>
+                            <span class="text-xs text-amber-950 font-semibold italic" id="organ-trivia">Usa el ratón dentro del simulador digestivo para rotar el cuerpo humano en 360 grados. ¡Es asombroso!</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end mt-2">
+                    <button onclick="nextMission()" class="btn-arcade bg-orange-500 hover:bg-orange-600 text-white text-lg px-8 py-3 rounded-2xl shadow-md uppercase tracking-wider">
+                        Siguiente Misión 🚀
+                    </button>
+                </div>
+            </section>
+
+            <section id="screen-mission-sequence" class="absolute inset-0 hidden flex flex-col p-4 bg-gradient-to-b from-orange-50 to-amber-50 justify-between pointer-events-auto">
+                <div class="text-center">
+                    <span class="bg-orange-500 text-white text-xs px-4 py-1.5 rounded-full font-bold uppercase tracking-wider shadow-md">Misión 1: Mapeador de Ruta</span>
+                    <h3 class="title-font text-2xl text-orange-800 mt-1">Organiza el Viaje del Alimento</h3>
+                    <p class="text-xs text-gray-600 font-semibold">¿Qué camino recorre una manzana de principio a fin? Ordénalos correctamente.</p>
+                </div>
+
+                <!-- Casillas del Orden Digestivo -->
+                <div class="my-2 flex-grow flex flex-col justify-center items-center">
+                    <div class="grid grid-cols-5 gap-2 w-full max-w-3xl mb-4">
+                        <div class="bg-amber-100/60 p-2 rounded-2xl border-4 border-dashed border-amber-400 text-center h-24 flex flex-col items-center justify-center relative shadow-inner cursor-pointer" id="seq-slot-0" onclick="clearSlot(0)">
+                            <span class="text-[9px] font-bold text-amber-800 uppercase absolute top-1">1. Entrada</span>
+                            <span class="font-extrabold text-[10px] text-amber-900 slot-text">---</span>
+                        </div>
+                        <div class="bg-amber-100/60 p-2 rounded-2xl border-4 border-dashed border-amber-400 text-center h-24 flex flex-col items-center justify-center relative shadow-inner cursor-pointer" id="seq-slot-1" onclick="clearSlot(1)">
+                            <span class="text-[9px] font-bold text-amber-800 uppercase absolute top-1">2. Conducto</span>
+                            <span class="font-extrabold text-[10px] text-amber-900 slot-text">---</span>
+                        </div>
+                        <div class="bg-amber-100/60 p-2 rounded-2xl border-4 border-dashed border-amber-400 text-center h-24 flex flex-col items-center justify-center relative shadow-inner cursor-pointer" id="seq-slot-2" onclick="clearSlot(2)">
+                            <span class="text-[9px] font-bold text-amber-800 uppercase absolute top-1">3. Mezclador</span>
+                            <span class="font-extrabold text-[10px] text-amber-900 slot-text">---</span>
+                        </div>
+                        <div class="bg-amber-100/60 p-2 rounded-2xl border-4 border-dashed border-amber-400 text-center h-24 flex flex-col items-center justify-center relative shadow-inner cursor-pointer" id="seq-slot-3" onclick="clearSlot(3)">
+                            <span class="text-[9px] font-bold text-amber-800 uppercase absolute top-1">4. Absorción</span>
+                            <span class="font-extrabold text-[10px] text-amber-900 slot-text">---</span>
+                        </div>
+                        <div class="bg-amber-100/60 p-2 rounded-2xl border-4 border-dashed border-amber-400 text-center h-24 flex flex-col items-center justify-center relative shadow-inner cursor-pointer" id="seq-slot-4" onclick="clearSlot(4)">
+                            <span class="text-[9px] font-bold text-amber-800 uppercase absolute top-1">5. Salida</span>
+                            <span class="font-extrabold text-[10px] text-amber-900 slot-text">---</span>
+                        </div>
+                    </div>
+
+                    <!-- Caja de opciones interactivas para ordenar -->
+                    <div class="bg-white p-4 rounded-3xl border-4 border-orange-200 shadow-md w-full max-w-3xl">
+                        <div class="text-xs text-orange-700 font-extrabold mb-3 text-center uppercase tracking-wide">Toca para ponerlos en orden secuencial:</div>
+                        <div class="flex flex-wrap justify-center gap-2.5" id="organ-pool">
+                            <!-- Generado dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mt-2">
+                    <button onclick="clearAllSequenceSlots()" class="text-orange-600 hover:text-orange-800 font-bold text-sm underline">Limpiar Ruta</button>
+                    <button onclick="verifySequence()" class="btn-arcade bg-amber-500 hover:bg-amber-600 text-white px-8 py-3 rounded-2xl shadow-md flex items-center gap-2">
+                        <span>Verificar Sistema</span>
+                        <span class="material-icons">task_alt</span>
+                    </button>
+                </div>
+            </section>
+
+            <section id="screen-mission-chemistry" class="absolute inset-0 hidden flex flex-col p-4 bg-gradient-to-b from-cyan-50 via-cyan-100 to-white justify-between pointer-events-auto">
+                <div class="text-center">
+                    <span class="bg-cyan-500 text-white text-xs px-4 py-1.5 rounded-full font-bold uppercase tracking-wider shadow-md">Misión 2: Laboratorio de Reacciones</span>
+                    <h3 class="title-font text-2xl text-cyan-800 mt-1">El Alquimista Digestivo</h3>
+                    <p class="text-xs text-gray-600 font-semibold">Une cada zona u órgano con el compuesto químico ideal para disolver la comida.</p>
+                </div>
+
+                <!-- Desafío Químico Estilizado -->
+                <div class="my-2 bg-white p-4 rounded-3xl border-4 border-cyan-300 shadow-md text-center max-w-xl mx-auto w-full relative">
+                    <div class="absolute -top-3 -right-3 bg-cyan-500 text-white p-2 rounded-full shadow-lg">
+                        <span class="material-icons text-xl animate-spin">science</span>
+                    </div>
+                    <div class="text-xs font-bold text-cyan-500 uppercase tracking-widest mb-1">Reactivo Activo:</div>
+                    <div class="title-font text-2xl text-cyan-900 mb-1" id="chem-organ-name">---</div>
+                    <p class="text-xs text-gray-600 font-medium italic" id="chem-organ-hint">Pista sobre su compuesto...</p>
+                </div>
+
+                <!-- Vías químicas de respuesta -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto w-full" id="chem-options-area">
+                    <!-- Botones de opciones cargados dinámicamente -->
+                </div>
+
+                <div class="flex justify-between items-center mt-2">
+                    <span class="text-xs text-cyan-600 font-bold bg-cyan-100 px-3 py-1.5 rounded-full" id="chem-progress">Pregunta 1 de 4</span>
+                    <button onclick="verifyChemAnswer()" class="btn-arcade bg-cyan-500 hover:bg-cyan-600 text-white px-8 py-3 rounded-2xl shadow-md flex items-center gap-2">
+                        <span>Dosificar Compuesto</span>
+                        <span class="material-icons">liquor</span>
+                    </button>
+                </div>
+            </section>
+
+            <section id="screen-mission-absorption" class="absolute inset-0 hidden flex flex-col p-4 bg-gradient-to-b from-emerald-50 to-amber-50 justify-between pointer-events-auto">
+                <div class="text-center">
+                    <span class="bg-emerald-500 text-white text-xs px-4 py-1.5 rounded-full font-bold uppercase tracking-wider shadow-md">Misión 3: El Gran Portal</span>
+                    <h3 class="title-font text-2xl text-emerald-800 mt-1">Vellosidades Intestinales</h3>
+                    <p class="text-xs text-gray-600 font-semibold">¡El alimento se ha convertido en quilo! Absorbe nutrientes sanos y esquiva los gérmenes.</p>
+                </div>
+
+                <!-- Leyenda interactiva para niños -->
+                <div class="grid grid-cols-3 gap-2 my-2 text-center text-[10px]">
+                    <div class="bg-emerald-100 p-2 rounded-2xl border border-emerald-300">
+                        <span class="font-bold text-emerald-800 block">Agua y Vitaminas</span>
+                        <p class="text-gray-500">¡Absorber! (+50 pts)</p>
+                    </div>
+                    <div class="bg-blue-100 p-2 rounded-2xl border border-blue-300">
+                        <span class="font-bold text-blue-800 block">Proteínas y Azúcar</span>
+                        <p class="text-gray-500">¡Absorber! (+50 pts)</p>
+                    </div>
+                    <div class="bg-rose-100 p-2 rounded-2xl border border-rose-300">
+                        <span class="font-bold text-rose-800 block">Toxinas y Virus</span>
+                        <p class="text-gray-500">¡Evitar! (Quita Salud)</p>
+                    </div>
+                </div>
+
+                <!-- INTERFAZ DE VELOCIDAD: Control de juego -->
+                <div class="bg-white px-4 py-2 rounded-2xl border-2 border-emerald-200 flex flex-col sm:flex-row justify-between items-center gap-2 mb-2 shadow-sm">
+                    <div class="flex items-center gap-1.5">
+                        <span class="material-icons text-emerald-600">speed</span>
+                        <span class="text-xs font-bold text-emerald-800 uppercase tracking-wider">Ajuste de Velocidad de la Misión:</span>
+                    </div>
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <span class="text-[10px] font-bold text-gray-400">LENTO</span>
+                        <input type="range" id="absorption-speed-range" min="1" max="3" value="1.5" step="0.5" class="w-24 sm:w-32 accent-emerald-500" onchange="adjustMissionSpeed(this.value)">
+                        <span class="text-[10px] font-bold text-emerald-600">VELOZ</span>
+                    </div>
+                </div>
+
+                <!-- Arena biológica de absorción -->
+                <div class="flex-grow bg-white border-4 border-emerald-300 rounded-3xl relative overflow-hidden h-40 flex flex-col justify-center items-center shadow-inner" id="absorption-arena">
+                    <div id="particle-emitter" class="absolute inset-0 pointer-events-auto">
+                        <!-- Las partículas se generarán aquí de forma interactiva -->
+                    </div>
+                    <div class="z-10 text-center select-none p-4" id="absorb-instructions">
+                        <span class="material-icons text-6xl text-emerald-500 pulsing-organ">touch_app</span>
+                        <p class="text-sm font-extrabold text-gray-700 mt-1">¡Toca los nutrientes para alimentar tus células!</p>
+                        <p class="text-xs text-gray-400">Ten cuidado de no tocar los virus</p>
+                        <button onclick="startAbsorptionChallenge()" class="btn-arcade mt-3 bg-emerald-500 hover:bg-emerald-600 text-white text-xs px-6 py-2.5 rounded-full">
+                            Iniciar Escaneo de Nutrientes
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mt-2">
+                    <span class="text-xs text-emerald-600 font-bold bg-emerald-100 px-3 py-1 rounded-full" id="absorption-progress">Asimilados: 0/6</span>
+                    <span class="text-xs text-red-600 font-bold bg-red-100 px-3 py-1 rounded-full" id="health-progress">Salud Nave: 100%</span>
+                </div>
+            </section>
+
+            <section id="screen-diploma" class="absolute inset-0 hidden flex flex-col justify-center items-center p-4 bg-gradient-to-br from-orange-50 to-cyan-50 text-center overflow-y-auto pointer-events-auto">
+                <div class="w-full max-w-lg bg-[#FFFDF0] p-6 rounded-[2rem] shadow-2xl border-8 border-orange-400 relative m-auto my-2">
+                    <!-- Diseños esquineros del diploma -->
+                    <div class="absolute top-3 left-3 w-8 h-8 border-t-4 border-l-4 border-orange-500 rounded-tl-xl"></div>
+                    <div class="absolute top-3 right-3 w-8 h-8 border-t-4 border-r-4 border-orange-500 rounded-tr-xl"></div>
+                    <div class="absolute bottom-3 left-3 w-8 h-8 border-b-4 border-l-4 border-orange-500 rounded-bl-xl"></div>
+                    <div class="absolute bottom-3 right-3 w-8 h-8 border-b-4 border-r-4 border-orange-500 rounded-br-xl"></div>
+
+                    <span class="material-icons text-6xl text-amber-500 drop-shadow-md mb-2">workspace_premium</span>
+                    
+                    <h3 class="title-font text-2xl md:text-3xl text-orange-800 tracking-wide font-extrabold">DIPLOMA DE MICRONAVEGACIÓN</h3>
+                    <p class="text-xs text-orange-600 font-bold uppercase tracking-widest mb-4">Otorgado por Bobi, el Bio-Guía</p>
+                    
+                    <p class="text-xs text-gray-500 uppercase tracking-wider font-bold">Por navegar con valentía el aparato digestivo:</p>
+                    <h4 class="title-font text-3xl text-cyan-600 my-2 font-bold" id="diploma-name">Viajero Estelar</h4>
+                    
+                    <p class="text-xs md:text-sm text-gray-600 max-w-sm mx-auto leading-relaxed font-semibold">
+                        Comprendió cómo la masticación, el ácido del estómago, la bilis y la absorción en las <span class="text-orange-600 font-bold">vellosidades</span> del intestino delgado permiten dar vida y energía a todo el cuerpo.
+                    </p>
+
+                    <!-- Resumen de logros -->
+                    <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t-2 border-dashed border-orange-200">
+                        <div>
+                            <span class="text-[10px] text-gray-500 uppercase font-bold block">Energía Total</span>
+                            <span class="title-font text-xl text-orange-800" id="diploma-score">1000 Pts</span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-gray-500 uppercase font-bold block">Insignias Logradas</span>
+                            <span class="title-font text-xl text-cyan-800">5 de 5 ⭐</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones finales de recompensa -->
+                <div class="flex gap-4 mt-3 w-full justify-center">
+                    <button onclick="window.print()" class="btn-arcade bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-2.5 rounded-2xl flex items-center gap-2 transition text-sm">
+                        <span class="material-icons text-lg">print</span>
+                        <span>Imprimir</span>
+                    </button>
+                    <button onclick="resetGame()" class="btn-arcade bg-cyan-500 hover:bg-cyan-600 text-white font-bold px-6 py-2.5 rounded-2xl flex items-center gap-2 transition text-sm">
+                        <span class="material-icons text-lg">replay</span>
+                        <span>Siguiente Alimento</span>
+                    </button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Sistema de Diálogo Integrado para Alertas infantiles -->
+    <div id="modal-dialog" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-[2.5rem] p-6 max-w-md w-full text-center shadow-2xl border-8 border-orange-400 transform scale-95 transition-transform duration-300" id="modal-content">
+            <div class="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-orange-200" id="modal-icon-bg">
+                <span class="material-icons text-4xl text-orange-600" id="modal-icon">smart_toy</span>
+            </div>
+            <h4 class="title-font text-2xl text-orange-800 mb-1" id="modal-title">Mensaje de Bobi</h4>
+            <p class="text-gray-600 mb-6 text-sm md:text-base font-semibold leading-relaxed" id="modal-message">¡Cargando datos del viaje digestivo humano!</p>
+            <button onclick="closeModal()" class="btn-arcade bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-2xl w-full text-lg uppercase tracking-wider" id="modal-btn">
+                ¡Entendido!
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const atlasOrgans = {
+            mouth: {
+                name: "BOCA Y DIENTES (¡Donde todo inicia!)",
+                desc: "Aquí los dientes muelen la comida físicamente. Al mismo tiempo, la saliva mezcla compuestos especiales que descomponen los carbohidratos, creando el 'Bolo Alimenticio'.",
+                trivia: "La amilasa en la saliva empieza a digerir la manzana desde tu primer mordisco. ¡Por eso masticar bien es súper útil!",
+                icon: "sentiment_very_satisfied"
+            },
+            esophagus: {
+                name: "EL TOBOGÁN DEL ESÓFAGO",
+                desc: "Un tubo musculoso largo por donde viaja la comida a gran velocidad. Usa movimientos peristálticos (como ondas mecánicas) para empujar el bolo hacia el estómago.",
+                trivia: "¡Los músculos del esófago son tan fuertes que podrían transportar comida incluso si estuvieras de cabeza!",
+                icon: "transit_enterexit"
+            },
+            stomach: {
+                name: "EL ESTÓMAGO DE REACCIÓN",
+                desc: "Una bolsa musculosa y ácida. Aquí la comida se mezcla con jugos gástricos de alta potencia química que matan gérmenes y disuelven proteínas, convirtiéndola en un caldo llamado 'Quimo'.",
+                trivia: "La mucosa gástrica protege al estómago de su propio ácido. ¡El ácido es tan fuerte que podría disolver pequeños metales!",
+                icon: "fireplace"
+            },
+            liver: {
+                name: "EL LABORATORIO DEL HÍGADO",
+                desc: "Produce un líquido amargo verde llamado Bilis, que se almacena en la vesícula biliar y se vierte en el intestino delgado para digerir y disolver las grasas de tu comida.",
+                trivia: "El hígado realiza más de 500 funciones químicas vitales diferentes cada segundo para mantenerte con vida.",
+                icon: "science"
+            },
+            small_intestine: {
+                name: "INTESTINO DELGADO (Vellosidades)",
+                desc: "¡Es un largo portal donde el Quimo se convierte en Quilo! Aquí las paredes están cubiertas de millones de diminutas vellosidades intestinales que absorben el agua y nutrientes para enviarlos a la sangre.",
+                trivia: "Si extendiéramos todas las vellosidades intestinales que tienes, ¡ocuparían el área de una cancha de tenis completa!",
+                icon: "spa"
+            },
+            large_intestine: {
+                name: "EL INTESTINO GRUESO (Estación de Reciclaje)",
+                desc: "Aquí se reabsorbe el agua que queda en los residuos y las sales minerales, ayudando a compactar y preparar los desechos finales que serán expulsados del cuerpo.",
+                trivia: "Es el hogar de millones de bacterias amigables que cuidan tus defensas y te protegen de enfermedades.",
+                icon: "recycling"
+            }
+        };
+
+        const chemistryMissions = [
+            {
+                organ: "BOCA / SALIVA",
+                hint: "Sustancia activa en la saliva que rompe el pan o la manzana en azúcares pequeños.",
+                correct: "Amilasa Salival",
+                options: ["Amilasa Salival", "Bilis", "Ácido Clorhídrico", "Pepsina"]
+            },
+            {
+                organ: "ESTÓMAGO / JUGOS GÁSTRICOS",
+                hint: "Compuesto altamente ácido del estómago que disuelve proteínas y aniquila bacterias.",
+                correct: "Ácido Clorhídrico",
+                options: ["Insulina", "Bilis", "Ácido Clorhídrico", "Saliva"]
+            },
+            {
+                organ: "HÍGADO / VESÍCULA BILIAR",
+                hint: "Líquido verde que disuelve grasas como si fuera un jabón de platos biológico.",
+                correct: "Bilis",
+                options: ["Bilis", "Jugo Pancreático", "Ácido Clorhídrico", "Glucagón"]
+            },
+            {
+                organ: "INTESTINO DELGADO / VELLOSIDADES",
+                hint: "Resultado final asimilado que viaja por la sangre dando energía celular.",
+                correct: "Nutrientes Básicos",
+                options: ["Quimo Ácido", "Bolo Alimenticio", "Nutrientes Básicos", "Heces"]
+            }
+        ];
+
+        const gameState = {
+            playerName: '',
+            shipColor: '#00ACC1',
+            score: 0,
+            health: 100,
+            activeScreen: 'welcome',
+            m1Sequence: [],
+            m2Index: 0,
+            m3NutrientsAbsorbed: 0,
+            badges: 0,
+            shuffledChemOptions: [],
+            missionSpeed: 1.5 // velocidad de partículas
+        };
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.12);
+                    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.12);
+                } else if (type === 'success') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(350, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(500, audioCtx.currentTime + 0.08);
+                    osc.frequency.setValueAtTime(700, audioCtx.currentTime + 0.16);
+                    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } else if (type === 'fail') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(50, audioCtx.currentTime + 0.25);
+                    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.25);
+                }
+            } catch (e) {
+                console.log("Sintetizador inactivo por permisos.");
+            }
+        }
+
+        function setShipColor(color) {
+            playSound('click');
+            gameState.shipColor = color;
+            document.getElementById('ship-body-path').setAttribute('fill', color);
+        }
+
+        // Modales de Alerta Educativa
+        function showModal(title, msg, type = 'info', onConfirm = null) {
+            const modal = document.getElementById('modal-dialog');
+            const mTitle = document.getElementById('modal-title');
+            const mMsg = document.getElementById('modal-message');
+            const mIcon = document.getElementById('modal-icon');
+            const mIconBg = document.getElementById('modal-icon-bg');
+            const mBtn = document.getElementById('modal-btn');
+
+            mTitle.innerText = title;
+            mMsg.innerText = msg;
+            
+            if (type === 'success') {
+                mIcon.innerText = 'verified';
+                mIcon.className = 'material-icons text-4xl text-green-600 animate-bounce';
+                mIconBg.className = 'w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-green-200';
+                mBtn.className = 'btn-arcade bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-2xl w-full text-lg uppercase tracking-wider';
+                playSound('success');
+            } else if (type === 'error') {
+                mIcon.innerText = 'warning';
+                mIcon.className = 'material-icons text-4xl text-red-600';
+                mIconBg.className = 'w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-red-200';
+                mBtn.className = 'btn-arcade bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-2xl w-full text-lg uppercase tracking-wider';
+                playSound('fail');
+            } else {
+                mIcon.innerText = 'smart_toy';
+                mIcon.className = 'material-icons text-4xl text-cyan-600';
+                mIconBg.className = 'w-20 h-20 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-cyan-200';
+                mBtn.className = 'btn-arcade bg-cyan-500 hover:bg-cyan-600 text-white px-8 py-3 rounded-2xl w-full text-lg uppercase tracking-wider';
+                playSound('click');
+            }
+
+            modal.classList.remove('hidden');
+            mBtn.onclick = () => {
+                modal.classList.add('hidden');
+                if (onConfirm) onConfirm();
+            };
+        }
+
+        function closeModal() {
+            document.getElementById('modal-dialog').classList.add('hidden');
+        }
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('main > section').forEach(sec => {
+                sec.classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+
+        function showOrganInfo(key) {
+            playSound('click');
+            const data = atlasOrgans[key];
+            if (data) {
+                document.getElementById('organ-name').innerText = data.name;
+                document.getElementById('organ-desc').innerText = data.desc;
+                document.getElementById('organ-icon').innerText = data.icon;
+                document.getElementById('organ-trivia').innerText = data.trivia;
+            }
+        }
+
+        function startGame() {
+            const nameInput = document.getElementById('player-name');
+            const name = nameInput.value.trim();
+            gameState.playerName = name || "Capitán del Viaje";
+            document.getElementById('diploma-name').innerText = gameState.playerName;
+            playSound('click');
+            switchScreen('screen-intro');
+        }
+
+        function nextMission() {
+            playSound('click');
+            if (gameState.m1Sequence.length === 0 && document.getElementById('screen-mission-sequence').classList.contains('hidden')) {
+                setupMissionSequence();
+                switchScreen('screen-mission-sequence');
+            } else if (gameState.m2Index < chemistryMissions.length) {
+                setupMissionChemistry();
+                switchScreen('screen-mission-chemistry');
+            } else if (gameState.m3NutrientsAbsorbed < 6) {
+                switchScreen('screen-mission-absorption');
+            } else {
+                playSound('success');
+                document.getElementById('diploma-score').innerText = `${gameState.score} Pts`;
+                confetti({
+                    particleCount: 150,
+                    spread: 85,
+                    origin: { y: 0.6 }
+                });
+                switchScreen('screen-diploma');
+            }
+        }
+
+        // Mapeador del Camino Digestivo
+        const sequenceCorrectAnswers = ["BOCA", "ESÓFAGO", "ESTÓMAGO", "INTESTINO DELGADO", "INTESTINO GRUESO"];
+        const poolOrgans = ["ESTÓMAGO", "BOCA", "INTESTINO GRUESO", "ESÓFAGO", "INTESTINO DELGADO"];
+
+        function setupMissionSequence() {
+            gameState.m1Sequence = [];
+            clearAllSequenceSlots();
+            
+            const poolArea = document.getElementById('organ-pool');
+            poolArea.innerHTML = '';
+            
+            const shuffledOrgans = [...poolOrgans].sort(() => Math.random() - 0.5);
+            shuffledOrgans.forEach(org => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-arcade px-4 py-2 bg-amber-100 hover:bg-amber-200 border-2 border-amber-400 text-amber-900 rounded-2xl font-bold transition text-xs md:text-sm';
+                btn.innerText = org;
+                btn.onclick = () => selectOrganForSequence(org, btn);
+                poolArea.appendChild(btn);
+            });
+        }
+
+        function selectOrganForSequence(organ, btn) {
+            if (gameState.m1Sequence.length < 5) {
+                playSound('click');
+                gameState.m1Sequence.push(organ);
+                btn.classList.add('opacity-40', 'pointer-events-none');
+                updateSequenceSlots();
+            }
+        }
+
+        function updateSequenceSlots() {
+            for (let i = 0; i < 5; i++) {
+                const slot = document.getElementById(`seq-slot-${i}`);
+                const textEl = slot.querySelector('.slot-text');
+                if (gameState.m1Sequence[i]) {
+                    textEl.innerText = gameState.m1Sequence[i];
+                    slot.classList.add('bg-orange-500', 'text-white', 'border-orange-600');
+                    slot.classList.remove('bg-amber-100/60', 'text-amber-900');
+                } else {
+                    textEl.innerText = "---";
+                    slot.classList.remove('bg-orange-500', 'text-white', 'border-orange-600');
+                    slot.classList.add('bg-amber-100/60', 'text-amber-900');
+                }
+            }
+        }
+
+        function clearSlot(idx) {
+            if (gameState.m1Sequence[idx]) {
+                playSound('click');
+                const removedOrgan = gameState.m1Sequence[idx];
+                gameState.m1Sequence.splice(idx, 1);
+                
+                const poolButtons = document.querySelectorAll('#organ-pool button');
+                poolButtons.forEach(btn => {
+                    if (btn.innerText === removedOrgan && btn.classList.contains('opacity-40')) {
+                        btn.classList.remove('opacity-40', 'pointer-events-none');
+                    }
+                });
+                updateSequenceSlots();
+            }
+        }
+
+        function clearAllSequenceSlots() {
+            gameState.m1Sequence = [];
+            updateSequenceSlots();
+            const poolButtons = document.querySelectorAll('#organ-pool button');
+            poolButtons.forEach(btn => {
+                btn.classList.remove('opacity-40', 'pointer-events-none');
+            });
+        }
+
+        function verifySequence() {
+            if (gameState.m1Sequence.length < 5) {
+                showModal("Falta Explorar", "Ordena los 5 órganos del tracto digestivo antes de iniciar el mapeo.", "info");
+                return;
+            }
+
+            let perfect = true;
+            for (let i = 0; i < 5; i++) {
+                if (gameState.m1Sequence[i] !== sequenceCorrectAnswers[i]) {
+                    perfect = false;
+                }
+            }
+
+            if (perfect) {
+                gameState.score += 300;
+                gameState.badges++;
+                updateHUD();
+                showModal("¡Ruta Sincronizada!", "¡Bobi ha verificado la ruta! El bolo viaja perfecto hacia las fases metabólicas.", "success", () => {
+                    nextMission();
+                });
+            } else {
+                showModal("Choque en la Ruta", "Tu nave se ha salido del tubo digestivo. Recuerda: inicia en la Boca y concluye en el Intestino Grueso.", "error");
+            }
+        }
+
+        // Laboratorio de Reacciones Químicas
+        let chemistrySelectedAnswer = null;
+
+        function setupMissionChemistry() {
+            chemistrySelectedAnswer = null;
+            const currentQuest = chemistryMissions[gameState.m2Index];
+            
+            document.getElementById('chem-organ-name').innerText = currentQuest.organ;
+            document.getElementById('chem-organ-hint').innerText = currentQuest.hint;
+            document.getElementById('chem-progress').innerText = `Reactivo ${gameState.m2Index + 1} de ${chemistryMissions.length}`;
+
+            gameState.shuffledChemOptions = [...currentQuest.options].sort(() => Math.random() - 0.5);
+
+            const optionsContainer = document.getElementById('chem-options-area');
+            optionsContainer.innerHTML = '';
+
+            gameState.shuffledChemOptions.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-arcade py-3 px-4 bg-white hover:bg-cyan-50 border-4 border-cyan-300 text-cyan-900 rounded-2xl font-bold text-center text-xs sm:text-sm shadow-sm';
+                btn.innerText = opt;
+                btn.onclick = () => selectChemOption(opt, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectChemOption(opt, btn) {
+            playSound('click');
+            chemistrySelectedAnswer = opt;
+
+            const buttons = document.querySelectorAll('#chem-options-area button');
+            buttons.forEach(b => {
+                b.className = 'btn-arcade py-3 px-4 bg-white hover:bg-cyan-50 border-4 border-cyan-300 text-cyan-900 rounded-2xl font-bold text-center text-xs sm:text-sm shadow-sm';
+            });
+
+            btn.className = 'btn-arcade py-3 px-4 bg-cyan-400 text-white border-4 border-cyan-600 rounded-2xl font-bold text-center text-xs sm:text-sm shadow-md';
+        }
+
+        function verifyChemAnswer() {
+            if (!chemistrySelectedAnswer) {
+                showModal("Dosificador Vacío", "Selecciona una sustancia química para iniciar el test de laboratorio.", "info");
+                return;
+            }
+
+            const currentQuest = chemistryMissions[gameState.m2Index];
+            if (chemistrySelectedAnswer === currentQuest.correct) {
+                gameState.score += 200;
+                updateHUD();
+                showModal("¡Reacción Lograda!", `¡Excelente! El compuesto ${chemistrySelectedAnswer} descompuso el alimento de forma óptima.`, "success", () => {
+                    gameState.m2Index++;
+                    if (gameState.m2Index < chemistryMissions.length) {
+                        setupMissionChemistry();
+                    } else {
+                        nextMission();
+                    }
+                });
+            } else {
+                showModal("Compuesto Inestable", "Esta fórmula química no produce efecto de digestión sobre el órgano activo.", "error");
+            }
+        }
+
+        let particleInterval = null;
+
+        function adjustMissionSpeed(val) {
+            playSound('click');
+            gameState.missionSpeed = parseFloat(val);
+        }
+
+        function startAbsorptionChallenge() {
+            playSound('click');
+            document.getElementById('absorb-instructions').classList.add('hidden');
+            gameState.m3NutrientsAbsorbed = 0;
+            gameState.health = 100;
+            updateHUD();
+            updateAbsorptionHUD();
+
+            const arena = document.getElementById('particle-emitter');
+            arena.innerHTML = '';
+
+            const elements = [
+                { type: 'nutrient', name: 'Agua', icon: 'water_drop', color: 'bg-emerald-400 text-white border-emerald-600' },
+                { type: 'nutrient', name: 'Proteínas', icon: 'thumb_up_alt', color: 'bg-emerald-400 text-white border-emerald-600' },
+                { type: 'nutrient', name: 'Vitamina C', icon: 'spa', color: 'bg-blue-400 text-white border-blue-600' },
+                { type: 'nutrient', name: 'Azúcar', icon: 'cookie', color: 'bg-blue-400 text-white border-blue-600' },
+                { type: 'nutrient', name: 'Lípidos', icon: 'opacity', color: 'bg-blue-400 text-white border-blue-600' },
+                { type: 'nutrient', name: 'Calcio', icon: 'diamond', color: 'bg-emerald-400 text-white border-emerald-600' },
+                { type: 'toxic', name: 'Toxina', icon: 'bug_report', color: 'bg-rose-400 text-white border-rose-600 animate-bounce' },
+                { type: 'toxic', name: 'Virus', icon: 'coronavirus', color: 'bg-rose-400 text-white border-rose-600' }
+            ];
+
+            // Generador dinámico de partículas con velocidad física interactiva
+            for (let i = 0; i < 18; i++) {
+                const el = elements[Math.floor(Math.random() * elements.length)];
+                const particle = document.createElement('div');
+                particle.className = `absolute px-3 py-2 border-2 rounded-full flex items-center gap-1 cursor-pointer shadow-lg transform active:scale-90 transition duration-150 ${el.color}`;
+                
+                // Distribución aleatoria inicial
+                const x = Math.random() * 85;
+                const y = Math.random() * 70;
+                particle.style.left = `${x}%`;
+                particle.style.top = `${y}%`;
+
+                particle.innerHTML = `<span class="material-icons text-sm">${el.icon}</span><span class="text-[10px] font-bold">${el.name}</span>`;
+                
+                particle.onclick = () => handleParticleTap(el.type, particle);
+                arena.appendChild(particle);
+
+                // Aplicar movimiento físico según velocidad controlada
+                let posX = x;
+                let posY = y;
+                let speedX = (Math.random() - 0.5) * gameState.missionSpeed;
+                let speedY = (Math.random() - 0.5) * gameState.missionSpeed;
+
+                function move() {
+                    if (!particle.parentNode) return;
+                    posX += speedX;
+                    posY += speedY;
+
+                    // Rebotes en los bordes de la arena biológica
+                    if (posX < 0 || posX > 88) speedX *= -1;
+                    if (posY < 0 || posY > 82) speedY *= -1;
+
+                    particle.style.left = `${posX}%`;
+                    particle.style.top = `${posY}%`;
+                    requestAnimationFrame(move);
+                }
+                requestAnimationFrame(move);
+            }
+        }
+
+        function handleParticleTap(type, element) {
+            if (type === 'nutrient') {
+                playSound('click');
+                gameState.m3NutrientsAbsorbed++;
+                gameState.score += 50;
+                element.remove();
+                updateHUD();
+                updateAbsorptionHUD();
+
+                if (gameState.m3NutrientsAbsorbed >= 6) {
+                    gameState.score += 200;
+                    updateHUD();
+                    showModal("¡Absorción Completa!", "¡Súper! Las vellosidades del intestino delgado han absorbido todos los nutrientes y tu cuerpo tiene energía.", "success", () => {
+                        nextMission();
+                    });
+                }
+            } else {
+                playSound('fail');
+                gameState.health -= 25;
+                element.remove();
+                updateAbsorptionHUD();
+
+                if (gameState.health <= 0) {
+                    showModal("Nave en Peligro", "¡Los virus han atacado tu Bio-Explorer! Ajusta la velocidad si lo necesitas y vuelve a escanear.", "error", () => {
+                        resetAbsorptionArena();
+                    });
+                }
+            }
+        }
+
+        function updateAbsorptionHUD() {
+            document.getElementById('absorption-progress').innerText = `Asimilados: ${gameState.m3NutrientsAbsorbed}/6`;
+            document.getElementById('health-progress').innerText = `Salud Nave: ${gameState.health}%`;
+        }
+
+        function resetAbsorptionArena() {
+            document.getElementById('absorb-instructions').classList.remove('hidden');
+            document.getElementById('particle-emitter').innerHTML = '';
+            gameState.health = 100;
+            gameState.m3NutrientsAbsorbed = 0;
+            updateAbsorptionHUD();
+        }
+
+        function updateHUD() {
+            document.getElementById('hud-score').innerText = `Puntos: ${gameState.score}`;
+            document.getElementById('hud-level').innerText = `Nave: ${gameState.health}%`;
+        }
+
+        function resetGame() {
+            gameState.playerName = '';
+            gameState.score = 0;
+            gameState.health = 100;
+            gameState.m1Sequence = [];
+            gameState.m2Index = 0;
+            gameState.m3NutrientsAbsorbed = 0;
+
+            document.getElementById('player-name').value = '';
+            updateHUD();
+            resetAbsorptionArena();
+            switchScreen('screen-welcome');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateHUD();
+            // Cargar color por defecto en el SVG
+            setShipColor('#00ACC1');
+        });
+    </script>
+</body>
+</html>

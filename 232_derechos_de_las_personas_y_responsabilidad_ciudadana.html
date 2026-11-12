@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardianes de los Derechos</title>
+    <style>
+        /* ==========================================================================
+           1. CORE VARIABLES, RESETS & BASE STYLES
+           ========================================================================== */
+        :root {
+            --mined-blue: #0056A3;
+            --mined-celeste: #4BB4E6;
+            --mined-yellow: #FFD000;
+            --mined-green: #2ECC71;
+            --mined-white: #FFFFFF;
+            --text-dark: #2C3E50;
+            --bg-light: #F4F9FD;
+            --shadow-soft: 0 8px 24px rgba(0, 86, 163, 0.12);
+            --shadow-btn: 0 6px 0px rgba(0, 0, 0, 0.2);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ==========================================================================
+           2. GLOBAL APPS LAYOUT & UTILITIES
+           ========================================================================== */
+        .app-container {
+            width: 100%;
+            max-width: 1024px;
+            margin: 0 auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            padding: 15px;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            animation: fadeIn 0.5s ease-in-out forwards;
+            background: var(--mined-white);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            box-shadow: var(--shadow-soft);
+            min-height: 75vh;
+            border: 4px solid rgba(0, 86, 163, 0.05);
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* Buttons Framework */
+        .btn-giant {
+            background: linear-gradient(135deg, var(--mined-yellow), #E6B800);
+            color: #000;
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 18px 45px;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            box-shadow: var(--shadow-btn);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-giant:hover { transform: translateY(-3px); box-shadow: 0 9px 0px rgba(0, 0, 0, 0.15); filter: brightness(1.05); }
+        .btn-giant:active { transform: translateY(3px); box-shadow: 0 2px 0px rgba(0, 0, 0, 0.2); }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--mined-blue), #003F7A);
+            color: var(--mined-white);
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 14px 30px;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            box-shadow: var(--shadow-btn);
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        .btn-primary:active { transform: translateY(2px); }
+        .btn-primary:disabled { background: #BDC3C7; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        h1, h2, h3 { text-align: center; color: var(--mined-blue); margin-bottom: 15px; }
+        p { font-size: 1.1rem; line-height: 1.5; text-align: center; margin-bottom: 20px; }
+
+        /* ==========================================================================
+           3. FLOATING DASHBOARD & GAMIFICATION HEADERS
+           ========================================================================== */
+        .game-header {
+            width: 100%;
+            background: var(--mined-white);
+            border-radius: var(--radius-md);
+            padding: 12px 25px;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            border-left: 6px solid var(--mined-blue);
+        }
+
+        .user-welcome-tag { font-weight: bold; color: var(--mined-blue); font-size: 1.1rem; }
+        .stats-rack { display: flex; align-items: center; gap: 20px; }
+        .stat-item { display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 1.1rem; background: #F0F4F8; padding: 6px 14px; border-radius: 50px; }
+        .progress-block { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 250px; }
+        .bar-outer { flex: 1; height: 16px; background: #E2E8F0; border-radius: 50px; overflow: hidden; position: relative; }
+        .bar-inner { height: 100%; width: 0%; background: linear-gradient(90deg, var(--mined-celeste), var(--mined-blue)); border-radius: 50px; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .progress-pct { font-weight: bold; font-size: 0.95rem; min-width: 45px; }
+
+        .utility-bar { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px; }
+        .util-btn { background: var(--mined-white); border: 2px solid #E2E8F0; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; }
+        .util-btn.active-toggle { background: var(--mined-blue); color: var(--mined-white); border-color: var(--mined-blue); }
+
+        /* ==========================================================================
+           4. SCREEN 1: WELCOME SCREEN ANIMATIONS
+           ========================================================================== */
+        .welcome-stage {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            overflow: hidden;
+            background: linear-gradient(180deg, #EBF6FF 0%, var(--mined-white) 100%);
+            border-radius: var(--radius-md);
+            margin: 20px 0;
+        }
+        .vector-cloud { position: absolute; background: var(--mined-white); width: 80px; height: 30px; border-radius: 50px; opacity: 0.85; animation: driftClouds 12s linear infinite; }
+        .cloud-1 { top: 20px; left: -10%; animation-delay: 0s; }
+        .cloud-2 { top: 60px; left: -10%; animation-delay: 4s; animation-duration: 16s; }
+        .cloud-3 { top: 15px; left: -10%; animation-delay: 8s; animation-duration: 10s; }
+        .scenery-floor { position: absolute; bottom: 0; width: 100%; height: 40px; background: var(--mined-green); border-radius: 40px 40px 0 0; }
+        .vector-tree { position: absolute; bottom: 35px; width: 30px; height: 45px; }
+        .vector-tree::before { content: ''; position: absolute; bottom: 0; left: 11px; width: 8px; height: 15px; background: #8B5A2B; }
+        .vector-tree::after { content: ''; position: absolute; top: 0; left: 0; width: 30px; height: 32px; background: #27AE60; border-radius: 50%; }
+        .tree-1 { left: 15%; }
+        .tree-2 { right: 15%; }
+        .animated-shield-hero { font-size: 5.5rem; margin-bottom: 10px; animation: pulseShield 2.5s ease-in-out infinite; filter: drop-shadow(0 10px 15px rgba(0,86,163,0.3)); z-index: 5; }
+        .kids-row { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 40px; font-size: 2.2rem; z-index: 4; }
+        .kid-avatar-anim { animation: kidsBob 1.2s ease-in-out infinite alternate; }
+
+        /* ==========================================================================
+           5. SCREEN 2: REGISTRATION
+           ========================================================================== */
+        .input-card { width: 100%; max-width: 450px; background: #F8FAFC; border: 3px solid #E2E8F0; border-radius: var(--radius-md); padding: 25px; display: flex; flex-direction: column; gap: 15px; }
+        .input-card label { font-weight: bold; font-size: 1.2rem; color: var(--mined-blue); }
+        .student-input { width: 100%; padding: 14px 20px; font-size: 1.2rem; border: 3px solid #CBD5E1; border-radius: 12px; outline: none; transition: border-color 0.2s ease; }
+        .student-input:focus { border-color: var(--mined-blue); background-color: #FFF; }
+
+        /* ==========================================================================
+           6. SCREEN 3: MAPA
+           ========================================================================== */
+        .map-wrapper { position: relative; width: 100%; max-width: 850px; background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%); border: 6px solid var(--mined-white); border-radius: var(--radius-lg); padding: 40px; min-height: 480px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 40px; }
+        .map-wrapper::before { content: ''; position: absolute; top: 20%; left: 10%; right: 10%; bottom: 20%; border: 6px dashed rgba(0, 86, 163, 0.2); border-radius: 50px; pointer-events: none; z-index: 1; }
+        .map-node { position: relative; background: var(--mined-white); border: 4px solid #BDC3C7; border-radius: var(--radius-md); padding: 15px; width: 140px; height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: not-allowed; opacity: 0.6; z-index: 2; transition: all 0.3s ease; box-shadow: 0 6px 12px rgba(0,0,0,0.06); }
+        .map-node.unlocked { border-color: var(--mined-celeste); cursor: pointer; opacity: 1; }
+        .map-node.unlocked:hover { transform: scale(1.08) translateY(-5px); box-shadow: 0 12px 20px rgba(0, 86, 163, 0.15); border-color: var(--mined-blue); }
+        .map-node.completed { border-color: var(--mined-green); background: #E8F5E9; }
+        .map-node.completed::after { content: '✅'; position: absolute; top: -12px; right: -12px; font-size: 1.5rem; background: var(--mined-white); border-radius: 50%; padding: 2px; }
+        .node-icon { font-size: 3rem; margin-bottom: 8px; }
+        .node-title { font-weight: bold; font-size: 0.9rem; text-align: center; color: var(--text-dark); }
+        .node-status-tag { position: absolute; bottom: -12px; background: #7F8C8D; color: var(--mined-white); font-size: 0.75rem; padding: 3px 8px; border-radius: 20px; font-weight: bold; }
+        .map-node.unlocked .node-status-tag { background: var(--mined-blue); }
+        .map-node.completed .node-status-tag { background: var(--mined-green); }
+
+        /* ==========================================================================
+           7. MISSION 1: PUZZLE DEL DERECHO A LA EDUCACIÓN
+           ========================================================================== */
+        .puzzle-layout { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; align-items: center; width: 100%; margin-top: 20px; }
+        .puzzle-board { width: 300px; height: 300px; background: #E2E8F0; border: 4px solid var(--mined-blue); border-radius: var(--radius-md); display: grid; grid-template-columns: repeat(3, 100px); grid-template-rows: repeat(3, 100px); position: relative; }
+        .puzzle-slot { width: 100px; height: 100px; border: 1px dashed rgba(0,0,0,0.15); box-sizing: border-box; position: relative; }
+        .puzzle-slot.slot-hover { background-color: #CBD5E1; }
+        .puzzle-bank { width: 320px; min-height: 120px; background: #F8FAFC; border: 2px dashed #CBD5E1; border-radius: var(--radius-md); padding: 10px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; }
+        
+        .puzzle-piece {
+            width: 100px;
+            height: 100px;
+            cursor: grab;
+            background-color: var(--mined-white);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%23E0F7FA'/%3E%3Crect x='20' y='20' width='80' height='100' fill='%23B3E5FC' stroke='%2381D4FA' stroke-width='4'/%3E%3Cline x1='60' y1='20' x2='60' y2='120' stroke='%2381D4FA' stroke-width='4'/%3E%3Cline x1='20' y1='70' x2='100' y2='70' stroke='%2381D4FA' stroke-width='4'/%3E%3Crect x='120' y='20' width='160' height='100' fill='%232E7D32' rx='5'/%3E%3Crect x='115' y='120' width='170' height='5' fill='%23795548'/%3E%3Ctext x='200' y='60' font-family='sans-serif' font-size='22' fill='%23FFF' text-anchor='middle' font-weight='bold'%3EA B C%3C/text%3E%3Ctext x='200' y='90' font-family='sans-serif' font-size='20' fill='%23FFF' text-anchor='middle'%3E1 2 3%3C/text%3E%3Crect x='10' y='220' width='280' height='30' fill='%238D6E63' rx='5'/%3E%3Crect x='30' y='250' width='15' height='50' fill='%235D4037'/%3E%3Crect x='255' y='250' width='15' height='50' fill='%235D4037'/%3E%3Cpath d='M60 220 L90 130 L130 130 L160 220 Z' fill='%23FF4081'/%3E%3Ccircle cx='110' cy='110' r='28' fill='%23FFCCBC'/%3E%3Cpath d='M75 110 Q110 60 145 110 Q150 140 160 160 Q120 130 75 110 Z' fill='%234E342E'/%3E%3Crect x='85' y='200' width='50' height='20' fill='%23FFF' rx='2' transform='rotate(-10 110 210)'/%3E%3Crect x='110' y='200' width='2' height='20' fill='%23BDBDBD' transform='rotate(-10 110 210)'/%3E%3Cpath d='M150 220 L180 140 L220 140 L250 220 Z' fill='%231E88E5'/%3E%3Ccircle cx='200' cy='115' r='28' fill='%23FFE082'/%3E%3Cpath d='M170 110 Q200 70 230 110 Q200 90 170 110 Z' fill='%23212121'/%3E%3Crect x='175' y='205' width='50' height='20' fill='%23FFF' rx='2'/%3E%3Crect x='200' y='205' width='2' height='20' fill='%23BDBDBD'/%3E%3C/svg%3E");
+            background-size: 300px 300px;
+            border: 1px solid var(--mined-white);
+            box-sizing: border-box;
+            transition: transform 0.1s ease;
+        }
+
+        .puzzle-piece:active { cursor: grabbing; }
+
+        /* Posiciones del fondo de la imagen global (3x3 grid) */
+        .p-0 { background-position: 0px 0px; }
+        .p-1 { background-position: -100px 0px; }
+        .p-2 { background-position: -200px 0px; }
+        .p-3 { background-position: 0px -100px; }
+        .p-4 { background-position: -100px -100px; }
+        .p-5 { background-position: -200px -100px; }
+        .p-6 { background-position: 0px -200px; }
+        .p-7 { background-position: -100px -200px; }
+        .p-8 { background-position: -200px -200px; }
+
+        /* ==========================================================================
+           RESTO DE ESTILOS (MISIONES 2 A 5, DIPLOMA, ETC)
+           ========================================================================== */
+        .drag-game-container { display: flex; flex-direction: column; width: 100%; gap: 20px; }
+        .sorting-pool { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; background: #F1F5F9; padding: 20px; border-radius: var(--radius-md); min-height: 80px; }
+        .drag-card { background: var(--mined-white); border: 3px solid var(--mined-blue); padding: 12px 20px; border-radius: 12px; cursor: grab; font-weight: bold; box-shadow: 0 4px 0px var(--mined-blue); transition: transform 0.2s, box-shadow 0.2s; }
+        .drag-card:active { cursor: grabbing; }
+        .sorting-columns-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; width: 100%; }
+        .drop-bucket { background: #F8FAFC; border: 4px dashed #CBD5E1; border-radius: var(--radius-md); padding: 20px; min-height: 250px; display: flex; flex-direction: column; gap: 12px; transition: background-color 0.2s, border-color 0.2s; }
+        .drop-bucket.bucket-hover { background: #E0F2FE; border-color: var(--mined-celeste); }
+        .bucket-title { text-align: center; font-size: 1.25rem; font-weight: bold; padding-bottom: 10px; border-bottom: 2px solid #E2E8F0; margin-bottom: 5px; }
+        .bucket-rights .bucket-title { color: var(--mined-blue); }
+        .bucket-deberes .bucket-title { color: #D35400; }
+
+        .story-box { width: 100%; max-width: 650px; background: #FFFBF2; border: 3px solid var(--mined-yellow); border-radius: var(--radius-lg); padding: 25px; box-shadow: var(--shadow-soft); }
+        .story-graphic-placeholder { width: 100%; height: 200px; background: #EBF5FF; border-radius: var(--radius-md); margin-bottom: 20px; display: flex; align-items: center; justify-content: center; font-size: 4rem; border: 2px solid rgba(0,0,0,0.05); }
+        .story-text { font-size: 1.2rem; line-height: 1.6; margin-bottom: 25px; text-align: left; color: #34495E; }
+        .story-choices-stack { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+        .choice-btn { background: var(--mined-white); border: 2px solid var(--mined-blue); padding: 14px 20px; border-radius: 12px; text-align: left; font-size: 1.05rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .choice-btn:hover { background: #EDF7FF; transform: translateX(4px); }
+
+        .cards-deck-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 20px; width: 100%; margin-top: 15px; }
+        .profession-card { background: var(--mined-white); border: 3px solid #E2E8F0; border-radius: var(--radius-md); padding: 20px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.03); }
+        .profession-card:hover { transform: translateY(-5px); border-color: var(--mined-celeste); box-shadow: 0 8px 15px rgba(75,180,230,0.2); }
+        .profession-card.passed { border-color: var(--mined-green); background: #F0FBF4; }
+        .prof-avatar { font-size: 3.5rem; margin-bottom: 10px; }
+        .prof-label { font-weight: bold; font-size: 1rem; text-align: center; }
+
+        .challenge-board { width: 100%; max-width: 650px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .shield-energy-meter { width: 100%; background: #E2E8F0; border-radius: 50px; height: 24px; overflow: hidden; border: 2px solid var(--mined-blue); position: relative; }
+        .shield-energy-fill { height: 100%; width: 20%; background: linear-gradient(90deg, var(--mined-yellow), #FF6B6B); transition: width 0.3s ease; }
+        .shield-visual-container { font-size: 6rem; margin: 15px 0; transition: transform 0.3s ease; }
+        .shield-pulsing { animation: finalShieldGlow 1.5s infinite alternate; }
+        .quiz-scenario-box { background: #F4F9FD; border-left: 5px solid var(--mined-blue); padding: 15px 20px; border-radius: 8px; font-size: 1.15rem; font-weight: 600; width: 100%; text-align: center; }
+        .binary-options-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; }
+        .binary-btn { padding: 16px; font-size: 1.1rem; font-weight: bold; border: 3px solid #CBD5E1; border-radius: var(--radius-md); cursor: pointer; background: var(--mined-white); transition: all 0.2s ease; }
+        .binary-btn:hover { transform: translateY(-2px); }
+        .btn-success-choice:hover { border-color: var(--mined-green); background: #E8F5E9; color: var(--mined-green); }
+        .btn-danger-choice:hover { border-color: #E74C3C; background: #FDEDEC; color: #E74C3C; }
+
+        .badges-rack-title { font-weight: bold; color: var(--mined-blue); margin-top: 25px; font-size: 1.1rem; text-align: center; width: 100%; }
+        .badges-showcase { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 10px; width: 100%; }
+        .badge-pill { display: flex; align-items: center; gap: 6px; background: var(--mined-white); border: 2px solid #E2E8F0; padding: 6px 14px; border-radius: 50px; font-size: 0.9rem; font-weight: bold; opacity: 0.3; transition: all 0.4s ease; }
+        .badge-pill.unlocked-badge { opacity: 1; border-color: var(--mined-yellow); box-shadow: 0 4px 10px rgba(255,208,0,0.2); animation: badgePop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        .victory-scroll { width: 100%; display: flex; flex-direction: column; align-items: center; animation: celebratePop 0.6s ease-out; }
+        .diploma-frame { width: 100%; max-width: 750px; background: #FFF; border: 12px double var(--mined-blue); padding: 40px; margin: 25px 0; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.1); background-image: radial-gradient(circle, #FFFDF9 0%, #FFF9F0 100%); }
+        .diploma-main-title { font-size: 2.5rem; color: var(--mined-blue); text-align: center; margin-bottom: 10px; font-weight: 800; padding-top: 15px; }
+        .diploma-recipient { font-size: 2.2rem; color: #2C3E50; text-align: center; margin: 20px 0; font-weight: bold; border-bottom: 3px solid var(--mined-yellow); display: inline-block; padding: 0 30px 5px 30px; }
+        .diploma-text { font-size: 1.25rem; line-height: 1.6; text-align: center; color: #34495E; max-width: 600px; margin: 0 auto 35px auto; }
+        .diploma-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; border-top: 1px dashed #BDC3C7; padding-top: 20px; }
+        .diploma-date { font-weight: bold; color: #7F8C8D; }
+        .diploma-seal { font-size: 3.5rem; }
+        .diploma-actions-row { display: flex; gap: 15px; flex-wrap: wrap; }
+        .confetti-particle { position: fixed; width: 10px; height: 10px; z-index: 2000; pointer-events: none; animation: fall linear forwards; }
+
+        .custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .custom-modal-overlay.active-modal { display: flex; }
+        .modal-content-card { background: var(--mined-white); border-radius: var(--radius-lg); width: 100%; max-width: 500px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: modalScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; border: 4px solid var(--mined-blue); }
+        .modal-body { margin: 20px 0; }
+        .modal-quiz-options { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes driftClouds { from { left: -15%; } to { left: 115%; } }
+        @keyframes kidsBob { from { transform: translateY(0); } to { transform: translateY(-8px); } }
+        @keyframes pulseShield { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        @keyframes modalScale { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes finalShieldGlow { from { filter: drop-shadow(0 0 4px var(--mined-yellow)); } to { filter: drop-shadow(0 0 20px var(--mined-yellow)); } }
+        @keyframes badgePop { 0% { transform: scale(0.5); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        @keyframes celebratePop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes fall { to { transform: translateY(105vh) rotate(360deg); } }
+
+        @media print { body * { visibility: hidden; } .diploma-frame, .diploma-frame * { visibility: visible; } .diploma-frame { position: absolute; left: 0; top: 0; width: 100%; border: none; } }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div class="utility-bar">
+            <button class="util-btn" id="audioToggleBtn" onclick="toggleAudioSystem()">🔊 Sonido: Activo</button>
+            <button class="util-btn" id="chronoToggleBtn" onclick="toggleChronometerSystem()">⏱️ Cronómetro</button>
+            <div class="util-btn" id="chronoDisplay" style="display:none; font-family:monospace;">00:00</div>
+        </div>
+
+        <div class="game-header" id="globalGameHeader" style="display: none;">
+            <div class="user-welcome-tag">👋 ¡Hola, <span id="lblHeaderStudentName">Guardián</span>!</div>
+            <div class="progress-block">
+                <span class="progress-pct" id="lblProgressPct">0%</span>
+                <div class="bar-outer">
+                    <div class="bar-inner" id="progressFillBar"></div>
+                </div>
+            </div>
+            <div class="stats-rack">
+                <div class="stat-item">⭐ <span id="lblStatStars">0</span></div>
+                <div class="stat-item">🪙 <span id="lblStatCoins">0</span></div>
+                <div class="stat-item">⚡ <span id="lblStatXp">0 XP</span></div>
+            </div>
+        </div>
+
+        <!-- PANTALLA 1: BIENVENIDA -->
+        <div class="screen active" id="screen-welcome">
+            <div class="animated-shield-hero">🛡️</div>
+            <h1>GUARDIANES DE LOS DERECHOS</h1>
+            <p>Protege los derechos de todos los niños y niñas. ¡Conviértete en un héroe de la comunidad!</p>
+            
+            <div class="welcome-stage">
+                <div class="vector-cloud cloud-1"></div>
+                <div class="vector-cloud cloud-2"></div>
+                <div class="vector-cloud cloud-3"></div>
+                <div class="scenery-floor"></div>
+                <div class="vector-tree tree-1"></div>
+                <div class="vector-tree tree-2"></div>
+                <div class="kids-row">
+                    <div class="kid-avatar-anim">👦</div>
+                    <div class="kid-avatar-anim">👧</div>
+                    <div class="kid-avatar-anim">🧒</div>
+                </div>
+            </div>
+
+            <button class="btn-giant" onclick="navigateToScreen('screen-register')">Comenzar Misión 🚀</button>
+        </div>
+
+        <!-- PANTALLA 2: REGISTRO -->
+        <div class="screen" id="screen-register">
+            <h2>Crea tu Perfil de Guardián</h2>
+            <p>Introduce tu nombre para empezar la academia de defensores.</p>
+            
+            <div class="input-card">
+                <label for="txtStudentName">Tu Nombre:</label>
+                <input type="text" id="txtStudentName" class="student-input" placeholder="Escribe aquí tu nombre..." maxlength="25" autocomplete="off">
+                <button class="btn-primary" id="btnSubmitRegistration" onclick="processRegistration()">Continuar ➡️</button>
+            </div>
+        </div>
+
+        <!-- PANTALLA 3: MAPA -->
+        <div class="screen" id="screen-map">
+            <h2>Mapa de Misiones de la Ciudad</h2>
+            <p>Visita cada edificio para resolver los problemas de derechos y deberes.</p>
+            
+            <div class="map-wrapper">
+                <div class="map-node unlocked" id="node-m1" onclick="launchMission(1)"><span class="node-icon">🏫</span><span class="node-title">Escuela</span><span class="node-status-tag">Misión 1</span></div>
+                <div class="map-node" id="node-m2" onclick="launchMission(2)"><span class="node-icon">🏥</span><span class="node-title">Centro de Salud</span><span class="node-status-tag">Bloqueado</span></div>
+                <div class="map-node" id="node-m3" onclick="launchMission(3)"><span class="node-icon">🏠</span><span class="node-title">Hogar</span><span class="node-status-tag">Bloqueado</span></div>
+                <div class="map-node" id="node-m4" onclick="launchMission(4)"><span class="node-icon">🌳</span><span class="node-title">Parque</span><span class="node-status-tag">Bloqueado</span></div>
+                <div class="map-node" id="node-m5" onclick="launchMission(5)"><span class="node-icon">🛡️</span><span class="node-title">Castillo Escudo</span><span class="node-status-tag">Bloqueado</span></div>
+            </div>
+
+            <div class="badges-rack-title">🏆 Tus Insignias Ganadas</div>
+            <div class="badges-showcase">
+                <div class="badge-pill" id="badge-slot-1">🥉 Defensor Novato</div>
+                <div class="badge-pill" id="badge-slot-2">🥈 Protector Escolar</div>
+                <div class="badge-pill" id="badge-slot-3">🥇 Guardián Igualdad</div>
+                <div class="badge-pill" id="badge-slot-4">🏅 Héroe Derechos</div>
+                <div class="badge-pill" id="badge-slot-5">👑 Gran Guardián</div>
+            </div>
+        </div>
+
+        <!-- PANTALLA: MISIÓN 1 - ROMPECABEZAS (DERECHO A LA EDUCACIÓN) -->
+        <div class="screen" id="screen-mission-1">
+            <h2>Misión 1: El Derecho a la Educación</h2>
+            <p><strong>¿Cómo jugar?</strong> Arrastra las piezas con el mouse a su casilla correcta, o bien haz un clic en la pieza y luego un clic en el espacio gris del tablero.</p>
+            
+            <div class="puzzle-layout">
+                <div class="puzzle-board" id="m1-puzzleGrid"></div>
+                <div class="puzzle-bank" id="m1-pieceBank" ondragover="e=>e.preventDefault()" ondrop="handlePuzzleBankDrop(event)"></div>
+            </div>
+            
+            <button class="btn-primary" style="margin-top:25px;" onclick="returnToMap()">Volver al Mapa 🗺️</button>
+        </div>
+
+        <!-- PANTALLA: MISIÓN 2 - CLASIFICACIÓN -->
+        <div class="screen" id="screen-mission-2">
+            <h2>Misión 2: Derechos y Deberes</h2>
+            <p>Clasifica cada tarjeta correctamente. Puedes arrastrarlas o hacer clic en la tarjeta y luego en la columna.</p>
+            
+            <div class="drag-game-container">
+                <div class="sorting-pool" id="m2-cardsPool" ondragover="allowContainerDrop(event)" ondrop="returnToPoolDrop(event)"></div>
+                
+                <div class="sorting-columns-grid">
+                    <div class="drop-bucket bucket-rights" id="bucket-rights" ondragover="handleBucketDragOver(event)" ondragleave="handleBucketDragLeave(event)" ondrop="handleBucketDrop(event, 'derecho')">
+                        <div class="bucket-title">⚖️ DERECHOS</div>
+                    </div>
+                    <div class="drop-bucket bucket-deberes" id="bucket-deberes" ondragover="handleBucketDragOver(event)" ondragleave="handleBucketDragLeave(event)" ondrop="handleBucketDrop(event, 'deber')">
+                        <div class="bucket-title">📝 DEBERES</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-primary" style="margin-top:25px;" id="btnEvaluateMission2" onclick="evaluateMission2Answers()">Comprobar Clasificación ✅</button>
+        </div>
+
+        <!-- PANTALLA: MISIÓN 3 - CUENTO -->
+        <div class="screen" id="screen-mission-3">
+            <h2>Misión 3: El Camino de Ana</h2>
+            <p>Lee la historia de Ana y toma las decisiones correctas para proteger la armonía familiar y escolar.</p>
+            
+            <div class="story-box">
+                <div class="story-graphic-placeholder" id="storyGraphicNode">👧</div>
+                <div class="story-text" id="storyTextBody">Cargando escena...</div>
+                <div class="story-choices-stack" id="storyChoicesContainer"></div>
+            </div>
+        </div>
+
+        <!-- PANTALLA: MISIÓN 4 - TARJETAS -->
+        <div class="screen" id="screen-mission-4">
+            <h2>Misión 4: Mujeres Profesionales e Igualdad</h2>
+            <p>Haz clic en cada profesión para conocer el increíble trabajo que hacen las mujeres. ¡Responde la pregunta de cada una!</p>
+            
+            <div class="cards-deck-layout" id="m4-deckLayout"></div>
+            <button class="btn-primary" style="margin-top:30px;" id="btnFinishMission4" onclick="evaluateMission4Completion()" disabled>Completar Misión 🌳</button>
+        </div>
+
+        <!-- PANTALLA: MISIÓN 5 - DESAFÍO FINAL -->
+        <div class="screen" id="screen-mission-5">
+            <h2>Misión 5: El Desafío del Escudo Defensor</h2>
+            <p>Analiza las situaciones reales de la comunidad. ¡Decide si se está respetando o violando un derecho para cargar el escudo final!</p>
+            
+            <div class="challenge-board">
+                <div class="shield-energy-meter"><div class="shield-energy-fill" id="m5-shieldBar"></div></div>
+                <div class="shield-visual-container shield-pulsing" id="m5-shieldVisual">🛡️</div>
+                <div class="quiz-scenario-box" id="m5-scenarioText">Cargando situación final...</div>
+                <div class="binary-options-row">
+                    <button class="binary-btn btn-success-choice" onclick="submitMission5Choice('respeto')">💚 Se respeta un derecho</button>
+                    <button class="binary-btn btn-danger-choice" onclick="submitMission5Choice('viola')">❤️ Se viola un derecho</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA 6: CELEBRACIÓN -->
+        <div class="screen" id="screen-victory">
+            <div class="victory-scroll">
+                <h2>🎉 ¡Felicidades, Gran Guardián! 🎉</h2>
+                <p>Has completado con éxito la academia y defendido la ciudad entera.</p>
+                
+                <div class="diploma-frame" id="printTargetDiploma">
+                    <div class="diploma-main-title">GUARDIÁN DE LOS DERECHOS</div>
+                    <div style="text-align:center; font-size:1.2rem; color:#7F8C8D;">Otorgado con honor a:</div>
+                    <div style="text-align:center;"><div class="diploma-recipient" id="diplomaStudentName">Estudiante</div></div>
+                    <div class="diploma-text">Por completar exitosamente todas las misiones y demostrar que conoce los derechos de la niñez, los deberes ciudadanos y la importancia del respeto hacia las mujeres.</div>
+                    <div class="diploma-footer">
+                        <div class="diploma-date" id="diplomaAutomatedDate">Fecha: 00/00/2026</div>
+                        <div class="diploma-seal">🏅</div>
+                    </div>
+                </div>
+
+                <div class="diploma-actions-row">
+                    <button class="btn-primary" onclick="window.print()">🖨️ Imprimir Diploma</button>
+                    <button class="btn-giant" style="margin-top:0;" onclick="resetWholeGameEngine()">🔄 Jugar de Nuevo</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL COMMON COMPONENT -->
+    <div class="custom-modal-overlay" id="appCommonModal">
+        <div class="modal-content-card">
+            <h3 id="modalTitle">Información</h3>
+            <div class="modal-body" id="modalBodyText">Contenido...</div>
+            <div class="modal-quiz-options" id="modalQuizContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        const gameState = {
+            studentName: "Guardián", currentScreen: "screen-welcome", stars: 0, coins: 0, xp: 0, progressPct: 0, unlockedMissions: [1], completedMissions: [], audioActive: true, chronoActive: false, secondsElapsed: 0, chronoTimer: null, m2Data: [], m3CurrentScene: "inicio", m4States: {}, m5Index: 0, m5Score: 0
+        };
+
+        function playTone(type) {
+            if (!gameState.audioActive) return;
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+                if (type === 'success') {
+                    const now = ctx.currentTime; const freqs = [523.25, 659.25, 783.99, 1046.50];
+                    freqs.forEach((f, i) => {
+                        const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(f, now + (i * 0.1)); gain.gain.setValueAtTime(0.2, now + (i * 0.1));
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + (i * 0.1) + 0.3); osc.connect(gain); gain.connect(ctx.destination); osc.start(now + (i * 0.1)); osc.stop(now + (i * 0.1) + 0.35);
+                    });
+                } else if (type === 'error') {
+                    const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(120, ctx.currentTime); gain.gain.setValueAtTime(0.2, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.4); osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.4);
+                } else if (type === 'level') {
+                    const now = ctx.currentTime; const rootFreqs = [392.00, 523.25, 659.25];
+                    rootFreqs.forEach((f) => {
+                        const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = 'sine'; osc.frequency.setValueAtTime(f, now); osc.frequency.exponentialRampToValueAtTime(f * 2, now + 0.5); gain.gain.setValueAtTime(0.15, now); gain.gain.linearRampToValueAtTime(0.001, now + 0.6); osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(now + 0.6);
+                    });
+                }
+            } catch (e) { console.log("Audio no disponible.", e); }
+        }
+
+        function navigateToScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const target = document.getElementById(screenId);
+            if (target) { target.classList.add('active'); gameState.currentScreen = screenId; }
+            const globalHeader = document.getElementById('globalGameHeader');
+            if (screenId === 'screen-welcome' || screenId === 'screen-register') { globalHeader.style.display = 'none'; } 
+            else { globalHeader.style.display = 'flex'; updateHeaderDashboard(); }
+            window.scrollTo(0,0);
+        }
+
+        function returnToMap() { navigateToScreen('screen-map'); renderMissionMapNodes(); }
+
+        function toggleAudioSystem() {
+            gameState.audioActive = !gameState.audioActive; const btn = document.getElementById('audioToggleBtn');
+            btn.innerText = gameState.audioActive ? "🔊 Sonido: Activo" : "🔇 Sonido: Mutado"; btn.classList.toggle('active-toggle', !gameState.audioActive);
+        }
+
+        function toggleChronometerSystem() {
+            gameState.chronoActive = !gameState.chronoActive; const btn = document.getElementById('chronoToggleBtn'); const display = document.getElementById('chronoDisplay');
+            if (gameState.chronoActive) {
+                btn.classList.add('active-toggle'); display.style.display = "block";
+                if (!gameState.chronoTimer) {
+                    gameState.chronoTimer = setInterval(() => { gameState.secondsElapsed++; const mins = String(Math.floor(gameState.secondsElapsed / 60)).padStart(2, '0'); const secs = String(gameState.secondsElapsed % 60).padStart(2, '0'); display.innerText = `${mins}:${secs}`; }, 1000);
+                }
+            } else { btn.classList.remove('active-toggle'); display.style.display = "none"; clearInterval(gameState.chronoTimer); gameState.chronoTimer = null; }
+        }
+
+        function processRegistration() {
+            const inputField = document.getElementById('txtStudentName'); const nameValue = inputField.value.trim();
+            if (nameValue.length < 2) { playTone('error'); alert("Por favor introduce un nombre válido."); return; }
+            gameState.studentName = nameValue; document.getElementById('lblHeaderStudentName').innerText = nameValue; document.getElementById('diplomaStudentName').innerText = nameValue;
+            document.getElementById('diplomaAutomatedDate').innerText = "Fecha: " + new Date().toLocaleDateString();
+            playTone('success'); navigateToScreen('screen-map'); renderMissionMapNodes();
+        }
+
+        function rewardPlayer(starsEarned, coinsEarned, xpEarned) {
+            gameState.stars += starsEarned; gameState.coins += coinsEarned; gameState.xp += xpEarned;
+            gameState.progressPct = Math.min(Math.round((gameState.completedMissions.length / 5) * 100), 100); updateHeaderDashboard();
+        }
+
+        function updateHeaderDashboard() {
+            document.getElementById('lblProgressPct').innerText = gameState.progressPct + "%"; document.getElementById('progressFillBar').style.width = gameState.progressPct + "%";
+            document.getElementById('lblStatStars').innerText = gameState.stars; document.getElementById('lblStatCoins').innerText = gameState.coins; document.getElementById('lblStatXp').innerText = gameState.xp + " XP";
+            for(let i=1; i<=5; i++){ const badgeSlot = document.getElementById(`badge-slot-${i}`); if (badgeSlot && gameState.completedMissions.includes(i)) { badgeSlot.classList.add('unlocked-badge'); } }
+        }
+
+        function unlockNextMissionNode(completedId) {
+            if (!gameState.completedMissions.includes(completedId)) { gameState.completedMissions.push(completedId); }
+            const nextId = completedId + 1; if (nextId <= 5 && !gameState.unlockedMissions.includes(nextId)) { gameState.unlockedMissions.push(nextId); }
+            rewardPlayer(1, 10, 50);
+        }
+
+        function renderMissionMapNodes() {
+            for (let i = 1; i <= 5; i++) {
+                const node = document.getElementById(`node-m${i}`); const statusTag = node.querySelector('.node-status-tag'); node.className = "map-node";
+                if (gameState.completedMissions.includes(i)) { node.classList.add('completed', 'unlocked'); statusTag.innerText = "¡Completado!"; } 
+                else if (gameState.unlockedMissions.includes(i)) { node.classList.add('unlocked'); statusTag.innerText = "¡Disponible!"; } 
+                else { statusTag.innerText = "Bloqueado"; }
+            }
+        }
+
+        function launchMission(missionId) {
+            if (!gameState.unlockedMissions.includes(missionId)) { playTone('error'); return; }
+            playTone('success');
+            if (missionId === 1) { initMission1Puzzle(); navigateToScreen('screen-mission-1'); }
+            else if (missionId === 2) { initMission2Classification(); navigateToScreen('screen-mission-2'); }
+            else if (missionId === 3) { initMission3Story(); navigateToScreen('screen-mission-3'); }
+            else if (missionId === 4) { initMission4Professions(); navigateToScreen('screen-mission-4'); }
+            else if (missionId === 5) { initMission5Challenge(); navigateToScreen('screen-mission-5'); }
+        }
+
+        // --- MISIÓN 1: ROMPECABEZAS ---
+        let m1SelectedPiece = null;
+
+        function initMission1Puzzle() {
+            const grid = document.getElementById('m1-puzzleGrid'); const bank = document.getElementById('m1-pieceBank');
+            grid.innerHTML = ""; bank.innerHTML = ""; m1SelectedPiece = null;
+
+            for (let i = 0; i < 9; i++) {
+                const slot = document.createElement('div'); slot.className = "puzzle-slot"; slot.dataset.slotIndex = i;
+                slot.ondragover = (e) => { e.preventDefault(); slot.classList.add('slot-hover'); };
+                slot.ondragleave = () => { slot.classList.remove('slot-hover'); };
+                slot.ondrop = (e) => {
+                    e.preventDefault();
+                    slot.classList.remove('slot-hover');
+                    const pieceId = e.dataTransfer.getData("text/plain");
+                    const targetPiece = document.getElementById(pieceId);
+                    if (targetPiece && slot.children.length === 0) {
+                        slot.appendChild(targetPiece);
+                        playTone('success');
+                        checkPuzzleCompletionCondition();
+                    }
+                };
+                slot.onclick = (e) => handlePuzzleSlotClick(slot);
+                grid.appendChild(slot);
+            }
+
+            const indices = [0, 1, 2, 3, 4, 5, 6, 7, 8].sort(() => Math.random() - 0.5);
+            indices.forEach(idx => {
+                const piece = document.createElement('div'); 
+                piece.className = `puzzle-piece p-${idx}`; 
+                piece.dataset.pieceIndex = idx;
+                piece.id = `m1-piece-${idx}`;
+                piece.draggable = true;
+                piece.ondragstart = (e) => {
+                    e.dataTransfer.setData("text/plain", piece.id);
+                    if(m1SelectedPiece) m1SelectedPiece.style.outline = "none";
+                    m1SelectedPiece = piece;
+                };
+                piece.onclick = (e) => { 
+                    e.stopPropagation(); 
+                    handlePuzzlePieceClick(piece); 
+                };
+                bank.appendChild(piece);
+            });
+        }
+
+        function handlePuzzlePieceClick(piece) {
+            if (m1SelectedPiece) m1SelectedPiece.style.outline = "none"; 
+            m1SelectedPiece = piece; 
+            m1SelectedPiece.style.outline = "3px solid var(--mined-yellow)"; 
+            playTone('success');
+        }
+
+        function handlePuzzleSlotClick(slot) {
+            if (!m1SelectedPiece) return;
+            if (slot.children.length === 0) { 
+                m1SelectedPiece.style.outline = "none"; 
+                slot.appendChild(m1SelectedPiece); 
+                m1SelectedPiece = null; 
+                playTone('success'); 
+                checkPuzzleCompletionCondition(); 
+            }
+        }
+
+        function handlePuzzleBankDrop(e) {
+            e.preventDefault();
+            const pieceId = e.dataTransfer.getData("text/plain");
+            const targetPiece = document.getElementById(pieceId);
+            if (targetPiece) {
+                document.getElementById('m1-pieceBank').appendChild(targetPiece);
+            }
+        }
+
+        function checkPuzzleCompletionCondition() {
+            const slots = document.querySelectorAll('.puzzle-slot'); let correctCount = 0;
+            slots.forEach(slot => { if (slot.children.length > 0) { const piece = slot.children[0]; if (slot.dataset.slotIndex === piece.dataset.pieceIndex) { correctCount++; } } });
+            if (correctCount === 9) {
+                unlockNextMissionNode(1); playTone('level');
+                openGlobalModal("🥉 ¡Excelente Trabajo!", "Has armado la imagen que representa el Derecho a la Educación. ¡Todos los niños y niñas merecen aprender y estudiar! Ganaste tu primera insignia: Defensor Novato.", () => { returnToMap(); });
+            }
+        }
+
+        // --- MISIÓN 2: CLASIFICACIÓN ---
+        const m2ItemsDataset = [
+            { id: "i1", text: "Ir a la escuela", type: "derecho" }, { id: "i2", text: "Respetar a los demás", type: "deber" },
+            { id: "i3", text: "Jugar en el parque", type: "derecho" }, { id: "i4", text: "Cuidar los útiles escolares", type: "deber" },
+            { id: "i5", text: "Recibir atención médica", type: "derecho" }, { id: "i6", text: "Ayudar en casa", type: "deber" }
+        ];
+        let m2SelectedCard = null;
+
+        function initMission2Classification() {
+            const pool = document.getElementById('m2-cardsPool'); const rightBucket = document.getElementById('bucket-rights'); const dutiesBucket = document.getElementById('bucket-deberes');
+            Array.from(rightBucket.children).forEach(c => { if(!c.classList.contains('bucket-title')) c.remove(); }); Array.from(dutiesBucket.children).forEach(c => { if(!c.classList.contains('bucket-title')) c.remove(); });
+            pool.innerHTML = ""; m2SelectedCard = null;
+
+            const shuffledItems = [...m2ItemsDataset].sort(() => Math.random() - 0.5);
+            shuffledItems.forEach(item => {
+                const card = document.createElement('div'); card.className = "drag-card"; card.innerText = item.text; card.dataset.itemId = item.id; card.dataset.itemType = item.type; card.draggable = true;
+                card.id = `m2-card-${item.id}`;
+                card.ondragstart = (e) => { e.dataTransfer.setData("text/plain", card.id); card.style.opacity = "0.5"; m2SelectedCard = card; }; 
+                card.ondragend = () => { card.style.opacity = "1"; };
+                card.onclick = (e) => { e.stopPropagation(); if (m2SelectedCard) m2SelectedCard.style.background = "var(--mined-white)"; m2SelectedCard = card; card.style.background = "var(--mined-celeste)"; playTone('success'); };
+                pool.appendChild(card);
+            });
+
+            rightBucket.onclick = () => { handleBucketTargetAssignment(rightBucket); }; dutiesBucket.onclick = () => { handleBucketTargetAssignment(dutiesBucket); };
+        }
+
+        function handleBucketDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('bucket-hover'); }
+        function handleBucketDragLeave(e) { e.currentTarget.classList.remove('bucket-hover'); }
+        function allowContainerDrop(e) { e.preventDefault(); }
+        function handleBucketDrop(e, targetExpected) { e.preventDefault(); const id = e.dataTransfer.getData("text/plain"); const card = document.getElementById(id); const bucket = e.currentTarget; bucket.classList.remove('bucket-hover'); if (card) { bucket.appendChild(card); m2SelectedCard = null; playTone('success'); } }
+        function returnToPoolDrop(e) { e.preventDefault(); const id = e.dataTransfer.getData("text/plain"); const card = document.getElementById(id); if (card) { document.getElementById('m2-cardsPool').appendChild(card); m2SelectedCard = null; } }
+
+        function handleBucketTargetAssignment(bucketElement) { if (!m2SelectedCard) return; m2SelectedCard.style.background = "var(--mined-white)"; bucketElement.appendChild(m2SelectedCard); m2SelectedCard = null; playTone('success'); }
+
+        function evaluateMission2Answers() {
+            const rightsBucket = document.getElementById('bucket-rights'); const dutiesBucket = document.getElementById('bucket-deberes'); const remainingPool = document.getElementById('m2-cardsPool').children.length;
+            if (remainingPool > 0) { playTone('error'); alert("Debes clasificar todas las tarjetas antes de comprobar."); return; }
+            let perfectAssignment = true;
+            Array.from(rightsBucket.children).forEach(c => { if (c.classList.contains('drag-card') && c.dataset.itemType !== 'derecho') perfectAssignment = false; });
+            Array.from(dutiesBucket.children).forEach(c => { if (c.classList.contains('drag-card') && c.dataset.itemType !== 'deber') perfectAssignment = false; });
+            if (perfectAssignment) { unlockNextMissionNode(2); playTone('level'); openGlobalModal("🥈 ¡Misión Cumplida!", "Has organizado correctamente las responsabilidades y garantías de los ciudadanos de manera impecable.", () => { returnToMap(); }); } 
+            else { playTone('error'); openGlobalModal("❌ Algunas tarjetas están equivocadas", "Revisa con atención tus respuestas. Recuerda que los deberes son responsabilidades y los derechos atenciones que debes recibir.", () => { initMission2Classification(); }); }
+        }
+
+        // --- MISIÓN 3: CUENTO ---
+        const m3StoryTree = {
+            inicio: { text: "Ana es una niña muy alegre que sueña con ser ingeniera. Hoy su hermano mayor le dice que ella no necesita estudiar matemáticas porque eso es cosa de hombres. ¿Qué debería hacer Ana?", graphic: "🎒", choices: [ { text: "Sentirse triste y dejar de estudiar matemáticas.", nextNode: "triste" }, { text: "Hablar con sus padres sobre lo importante que es estudiar para cumplir sus sueños.", nextNode: "hablar" } ] },
+            triste: { text: "Ana se siente desmotivada y sus notas bajan. En clase, su maestra nota su tristeza y le recuerda que las mujeres tienen el mismo derecho a aprender y destacar. ¿Qué decide Ana ahora?", graphic: "😢", choices: [ { text: "Aceptarlo y pedirle ayuda a la maestra para organizar un club de ciencias de niñas.", nextNode: "club" }, { text: "Seguir pensando que no es capaz.", nextNode: "inicio" } ] },
+            hablar: { text: "Sus padres la escuchan con amor. Le explican a su hermano que mujeres y hombres son igual de capaces. Al día siguiente, Ana ve que a un compañero nuevo no lo dejan jugar fútbol por tener un zapato roto. ¿Cómo actúa?", graphic: "🗣️", choices: [ { text: "Ignorar la situación y seguir con sus cosas.", nextNode: "triste" }, { text: "Defenderlo y proponer un juego donde todos jueguen sin importar su calzado.", nextNode: "inclusion" } ] },
+            club: { text: "¡El club de ciencias es un éxito total! Todas las niñas descubren que la ingeniería es asombrosa y que su comunidad las apoya con entusiasmo.", graphic: "🔬", choices: [ { text: "¡Celebrar y terminar la aventura!", nextNode: "WIN" } ] },
+            inclusion: { text: "El maestro de educación física felicita a Ana por su gran liderazgo. Toda la escuela aprende la importancia de la inclusión y la igualdad de oportunidades cotidianas.", graphic: "⚽", choices: [ { text: "¡Reclamar la insignia de la misión!", nextNode: "WIN" } ] }
+        };
+
+        function initMission3Story() { renderStoryNode("inicio"); }
+
+        function renderStoryNode(nodeId) {
+            if (nodeId === "WIN") { unlockNextMissionNode(3); playTone('level'); openGlobalModal("🥇 ¡Espectacular, Defensor!", "Has guiado a Ana a tomar decisiones justas, fomentando la igualdad de las mujeres y la inclusión escolar.", () => { returnToMap(); }); return; }
+            gameState.m3CurrentScene = nodeId; const node = m3StoryTree[nodeId]; document.getElementById('storyGraphicNode').innerText = node.graphic; document.getElementById('storyTextBody').innerText = node.text;
+            const container = document.getElementById('storyChoicesContainer'); container.innerHTML = "";
+            node.choices.forEach(c => { const btn = document.createElement('button'); btn.className = "choice-btn"; btn.innerText = c.text; btn.onclick = () => { playTone('success'); renderStoryNode(c.nextNode); }; container.appendChild(btn); });
+        }
+
+        // --- MISIÓN 4: PROFESIONES ---
+        const m4Dataset = [
+            { id: "p1", title: "Doctora", icon: "👩‍⚕️", info: "Las mujeres doctoras salvan vidas cada día operando y descubriendo medicinas.", q: "¿Pueden las mujeres realizar cirugías complejas igual que los hombres?", a: ["Sí, la capacidad intelectual y médica no depende del género.", "No, solo los hombres tienen esa fuerza."], correct: 0 },
+            { id: "p2", title: "Ingeniera", icon: "👩‍💻", info: "Las ingenieras construyen puentes gigantescos, programan aplicaciones y diseñan satélites.", q: "¿Qué estudia una mujer interesada en construir caminos o crear software?", a: ["Cosas de la cocina únicamente.", "Ingeniería, porque tiene derecho y talento para crear."], correct: 1 },
+            { id: "p3", title: "Maestra", icon: "👩‍🏫", info: "Las maestras educan a los futuros ciudadanos, sembrando valores de paz.", q: "¿Cuál es el rol principal de una educadora en la sociedad?", a: ["Garantizar el derecho a la educación de calidad.", "Limitar lo que los estudiantes pueden opinar."], correct: 0 },
+            { id: "p4", title: "Policía", icon: "👩‍✈️", info: "Las mujeres policías organizan la seguridad y protegen a las personas en peligro.", q: "¿Es correcto afirmar que las mujeres pueden proteger el orden público y la seguridad?", a: ["Sí, las mujeres tienen la valentía y autoridad para proteger.", "No, el trabajo de policía es exclusivo para varones."], correct: 0 },
+            { id: "p5", title: "Astronauta", icon: "👩‍🚀", info: "Las astronautas investigan el espacio exterior y expanden los conocimientos humanos.", q: "¿Cuál de estas mujeres puede llegar al espacio exterior?", a: ["Cualquier mujer determinada, porque el espacio es para todos.", "Ninguna, el espacio es peligroso para ellas."], correct: 0 },
+            { id: "p6", title: "Bombera", icon: "👩‍🚒", info: "Las bomberas rescatan personas de grandes incendios y atienden desastres naturales.", q: "¿Tienen las mujeres la capacidad física y técnica para extinguir incendios?", a: ["Sí, entrenando duro igual que los hombres.", "No, los incendios solo los apagan los niños."], correct: 0 }
+        ];
+
+        function initMission4Professions() {
+            const container = document.getElementById('m4-deckLayout'); container.innerHTML = ""; document.getElementById('btnFinishMission4').disabled = true;
+            m4Dataset.forEach(p => {
+                if (gameState.m4States[p.id] === undefined) { gameState.m4States[p.id] = false; }
+                const card = document.createElement('div'); card.className = "profession-card" + (gameState.m4States[p.id] ? " passed" : ""); card.id = `prof-node-${p.id}`;
+                card.innerHTML = `<div class="prof-avatar">${p.icon}</div><div class="prof-label">${p.title}</div>`;
+                card.onclick = () => launchProfessionQuizModal(p); container.appendChild(card);
+            });
+            evaluateMission4DeckProgress();
+        }
+
+        function launchProfessionQuizModal(p) {
+            const modalTitle = document.getElementById('modalTitle'); const modalBody = document.getElementById('modalBodyText'); const quizContainer = document.getElementById('modalQuizContainer');
+            modalTitle.innerText = `${p.icon} Profesión: ${p.title}`; modalBody.innerHTML = `<p style="text-align:left; font-size:1.1rem; margin-bottom:15px;">${p.info}</p><strong style="color:var(--mined-blue); display:block; margin-bottom:10px;">Pregunta: ${p.q}</strong>`;
+            quizContainer.innerHTML = "";
+            p.a.forEach((opt, idx) => {
+                const optBtn = document.createElement('button'); optBtn.className = "choice-btn"; optBtn.innerText = opt;
+                optBtn.onclick = () => {
+                    if (idx === p.correct) { playTone('success'); gameState.m4States[p.id] = true; document.getElementById(`prof-node-${p.id}`).classList.add('passed'); closeGlobalModal(); evaluateMission4DeckProgress(); } 
+                    else { playTone('error'); alert("Esa opción no promueve la igualdad. ¡Inténtalo otra vez!"); }
+                };
+                quizContainer.appendChild(optBtn);
+            });
+            document.getElementById('appCommonModal').classList.add('active-modal');
+        }
+
+        function evaluateMission4DeckProgress() {
+            let totalPassed = 0; m4Dataset.forEach(p => { if (gameState.m4States[p.id]) totalPassed++; });
+            if (totalPassed === m4Dataset.length) { document.getElementById('btnFinishMission4').disabled = false; }
+        }
+
+        function evaluateMission4Completion() {
+            unlockNextMissionNode(4); playTone('level'); openGlobalModal("🏅 ¡Maravilloso!", "Has comprobado que las mujeres y los hombres tienen las mismas capacidades y derechos profesionales.", () => { returnToMap(); });
+        }
+
+        // --- MISIÓN 5: DESAFÍO ---
+        const m5Scenarios = [
+            { text: "A un niño con discapacidad no lo dejaron entrar al salón de clases.", ans: "viola" }, { text: "Una niña asiste puntualmente a su centro de salud para recibir sus vacunas gratis.", ans: "respeto" },
+            { text: "Unos padres escuchan las opiniones de su hija sobre qué juego prefiere para su cumpleaños.", ans: "respeto" }, { text: "Ponen a trabajar todo el día a un niño de 9 años cargando bultos pesados sin ir a la escuela.", ans: "viola" },
+            { text: "En el parque comunitario, las niñas juegan voleibol en la misma cancha limpia que los varones.", ans: "respeto" }
+        ];
+
+        function initMission5Challenge() { gameState.m5Index = 0; gameState.m5Score = 0; renderMission5Scenario(); }
+
+        function renderMission5Scenario() {
+            const pctFill = ((gameState.m5Index) / m5Scenarios.length) * 100; document.getElementById('m5-shieldBar').style.width = (pctFill === 0 ? 15 : pctFill) + "%";
+            if (gameState.m5Index >= m5Scenarios.length) { unlockNextMissionNode(5); playTone('level'); triggerFullVictorySequence(); return; }
+            document.getElementById('m5-scenarioText').innerText = `Situación ${gameState.m5Index + 1}: "${m5Scenarios[gameState.m5Index].text}"`;
+        }
+
+        function submitMission5Choice(playerChoice) {
+            const currentItem = m5Scenarios[gameState.m5Index]; const shieldVisual = document.getElementById('m5-shieldVisual');
+            if (playerChoice === currentItem.ans) { playTone('success'); gameState.m5Score++; shieldVisual.style.transform = "scale(1.3) rotate(10deg)"; setTimeout(() => shieldVisual.style.transform = "scale(1) rotate(0deg)", 300); } 
+            else { playTone('error'); shieldVisual.style.transform = "translateX(-20px)"; setTimeout(() => shieldVisual.style.transform = "translateX(0)", 300); }
+            gameState.m5Index++; setTimeout(renderMission5Scenario, 400);
+        }
+
+        // --- FINAL Y MODAL ---
+        function triggerFullVictorySequence() { navigateToScreen('screen-victory'); spawnConfettiSystemRain(); }
+
+        function spawnConfettiSystemRain() {
+            const colors = ['#0056A3', '#4BB4E6', '#FFD000', '#2ECC71', '#FF6B6B'];
+            for (let i = 0; i < 100; i++) {
+                const p = document.createElement('div'); p.className = "confetti-particle"; p.style.left = Math.random() * 100 + "vw"; p.style.top = "-20px";
+                p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)]; p.style.transform = `scale(${Math.random() * 0.8 + 0.4})`; p.style.animationDuration = (Math.random() * 2 + 1.5) + "s"; p.style.borderRadius = Math.random() > 0.5 ? "50%" : "0";
+                document.body.appendChild(p); setTimeout(() => p.remove(), 3500);
+            }
+        }
+
+        function openGlobalModal(title, bodyText, onCloseCallback = null) {
+            document.getElementById('modalTitle').innerText = title; document.getElementById('modalBodyText').innerHTML = `<p>${bodyText}</p>`;
+            const qContainer = document.getElementById('modalQuizContainer'); qContainer.innerHTML = "";
+            const closeBtn = document.createElement('button'); closeBtn.className = "btn-primary"; closeBtn.style.alignSelf = "center"; closeBtn.innerText = "Entendido 👍";
+            closeBtn.onclick = () => { closeGlobalModal(); if (onCloseCallback) onCloseCallback(); }; qContainer.appendChild(closeBtn);
+            document.getElementById('appCommonModal').classList.add('active-modal');
+        }
+        function closeGlobalModal() { document.getElementById('appCommonModal').classList.remove('active-modal'); }
+
+        function resetWholeGameEngine() {
+            gameState.stars = 0; gameState.coins = 0; gameState.xp = 0; gameState.progressPct = 0; gameState.unlockedMissions = [1]; gameState.completedMissions = []; gameState.m4States = {}; gameState.secondsElapsed = 0;
+            document.querySelectorAll('.badge-pill').forEach(b => b.className = "badge-pill"); navigateToScreen('screen-welcome'); document.getElementById('txtStudentName').value = "";
+        }
+    </script>
+</body>
+</html>

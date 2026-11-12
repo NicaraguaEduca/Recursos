@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Línea de Tiempo Interactiva - Historia de Nicaragua</title>
+    <style>
+        :root {
+            --mined-blue: #0056A3;
+            --mined-light: #4BB4E6;
+            --success-color: #2ECC71;
+            --error-color: #E74C3C;
+            --bg-color: #F4F7FA;
+            --card-bg: #FFFFFF;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --border-radius: 16px;
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* Encabezado Institucional */
+        header {
+            width: 100%;
+            max-width: 1100px;
+            background: linear-gradient(135deg, var(--mined-blue), #003F7A);
+            color: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -30%;
+            width: 200% ;
+            height: 200%;
+            background: radial-gradient(circle, rgba(75,180,230,0.15) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        header p {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 700px;
+            margin: 0 auto 20px auto;
+        }
+
+        /* Panel de Control y Progreso */
+        .dashboard {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 30px;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .progress-container {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .progress-label {
+            font-weight: 600;
+            color: var(--mined-blue);
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 14px;
+            background-color: #E0E6ED;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--mined-light), var(--mined-blue));
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .stat-badge {
+            background-color: #EDF4FA;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            color: var(--mined-blue);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            border: 1px solid rgba(0, 86, 163, 0.1);
+        }
+
+        /* Contenedor Principal del Juego */
+        .game-container {
+            display: grid;
+            grid-template-columns: 1fr 280px;
+            gap: 30px;
+            width: 100%;
+            max-width: 1100px;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .game-container {
+                grid-template-columns: 1fr;
+            }
+            .dates-sidebar {
+                position: sticky;
+                top: 10px;
+                z-index: 100;
+            }
+        }
+
+        /* Columna de la Línea de Tiempo */
+        .timeline-column {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            padding-left: 20px;
+        }
+
+        .timeline-column::before {
+            content: '';
+            position: absolute;
+            left: 70px;
+            top: 20px;
+            bottom: 20px;
+            width: 6px;
+            background: linear-gradient(to bottom, var(--mined-light), var(--mined-blue));
+            border-radius: 3px;
+            z-index: 1;
+        }
+
+        @media (max-width: 600px) {
+            .timeline-column {
+                padding-left: 0;
+            }
+            .timeline-column::before {
+                left: 25px;
+            }
+        }
+
+        /* Tarjeta de Evento */
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+            z-index: 2;
+            animation: slideIn 0.5s ease backwards;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Zona de Soltar (Dropzone) */
+        .dropzone-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .dropzone {
+            width: 100px;
+            height: 60px;
+            background-color: #FFFFFF;
+            border: 3px dashed #CBD5E1;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            z-index: 10;
+        }
+
+        .dropzone.drag-over {
+            border-color: var(--mined-light);
+            background-color: #EDF8FD;
+            transform: scale(1.05);
+        }
+
+        .dropzone.occupied {
+            border-style: solid;
+            border-color: var(--mined-blue);
+            box-shadow: var(--shadow);
+        }
+
+        .dropzone.correct {
+            border-color: var(--success-color) !important;
+            background-color: #E8F8F0 !important;
+            animation: pop 0.3s ease;
+        }
+
+        .dropzone.incorrect {
+            border-color: var(--error-color) !important;
+            background-color: #FCE8E6 !important;
+            animation: shake 0.4s ease;
+        }
+
+        @media (max-width: 600px) {
+            .dropzone {
+                width: 75px;
+                height: 50px;
+                font-size: 0.9rem;
+            }
+            .timeline-column::before {
+                left: 37px;
+            }
+        }
+
+        /* Tarjeta de Contenido del Evento */
+        .event-card {
+            flex: 1;
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0,0,0,0.03);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .event-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.09);
+        }
+
+        .event-illustration {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #F0F4F8, #E2E8F0);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: var(--mined-blue);
+        }
+
+        .event-illustration svg {
+            width: 40px;
+            height: 40px;
+        }
+
+        .event-details h3 {
+            font-size: 1.15rem;
+            color: var(--text-dark);
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .feedback-marker {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .event-card {
+                padding: 15px;
+                gap: 12px;
+            }
+            .event-illustration {
+                width: 50px;
+                height: 50px;
+            }
+            .event-illustration svg {
+                width: 28px;
+                height: 28px;
+            }
+            .event-details h3 {
+                font-size: 0.95rem;
+            }
+        }
+
+        /* Columna / Banco de Fechas */
+        .dates-sidebar {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0,0,0,0.03);
+            text-align: center;
+        }
+
+        .dates-sidebar h2 {
+            font-size: 1.2rem;
+            color: var(--mined-blue);
+            margin-bottom: 15px;
+            font-weight: 700;
+            border-bottom: 2px solid #EDF2F7;
+            padding-bottom: 10px;
+        }
+
+        .dates-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        @media (max-width: 900px) {
+            .dates-sidebar {
+                padding: 15px;
+            }
+            .dates-container {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+            }
+        }
+
+        /* Elemento Arrastrable (Fecha) */
+        .date-badge {
+            background: linear-gradient(135deg, #FFFFFF, #F8FAFC);
+            color: var(--mined-blue);
+            border: 2px solid var(--mined-blue);
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: grab;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+            display: inline-block;
+            width: 100%;
+        }
+
+        @media (max-width: 900px) {
+            .date-badge {
+                width: auto;
+                padding: 8px 16px;
+                font-size: 1rem;
+            }
+        }
+
+        .date-badge:active {
+            cursor: grabbing;
+        }
+
+        .date-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 86, 163, 0.15);
+            background-color: #EDF5FC;
+        }
+
+        .date-badge.dragging {
+            opacity: 0.4;
+            transform: scale(0.95);
+        }
+
+        .date-badge.selected-for-move {
+            background: var(--mined-light) !important;
+            color: white !important;
+            border-color: var(--mined-light) !important;
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Secciones de Botones de Acción */
+        .actions-panel {
+            margin-top: 35px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2ECC71, #27AE60);
+            color: white;
+            flex: 2;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #27AE60, #219653);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(46, 204, 113, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #95A5A6, #7F8C8D);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #7F8C8D, #717D7E);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(149, 165, 166, 0.3);
+        }
+
+        .btn:disabled {
+            background: #BDC3C7 !important;
+            color: #ECF0F1 !important;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Mensajes de Retroalimentación Global */
+        .toast-message {
+            margin-top: 20px;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            text-align: center;
+            max-width: 600px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .toast-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast-success {
+            background-color: #E8F8F0;
+            color: #1E7E34;
+            border: 1px solid #C3E6CB;
+        }
+
+        .toast-error {
+            background-color: #FCE8E6;
+            color: #C82333;
+            border: 1px solid #F5C6CB;
+        }
+
+        /* Animaciones */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.12); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(75, 180, 230, 0.5); }
+            70% { box-shadow: 0 0 0 12px rgba(75, 180, 230, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(75, 180, 230, 0); }
+        }
+
+        /* Sistema de partículas / Confeti */
+        .confetti-piece {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #000;
+            opacity: 0.8;
+            top: -10px;
+            z-index: 9999;
+            pointer-events: none;
+            border-radius: 2px;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(105vh) rotate(360deg);
+            }
+        }
+
+        /* Instrucciones de Soporte Móvil */
+        .mobile-hint {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Línea de Tiempo Interactiva</h1>
+        <p>Pon a prueba tus conocimientos sobre la Historia de Nicaragua. Ordena cronológicamente los acontecimientos arrastrando los años correspondientes a cada tarjeta.</p>
+        <div class="mobile-hint">💡 Tip: En tablets o celulares, también puedes tocar el año y luego tocar el espacio en blanco.</div>
+    </header>
+
+    <div class="dashboard">
+        <div class="progress-container">
+            <span class="progress-label">Progreso general:</span>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+        </div>
+        <div class="stats-container">
+            <div class="stat-badge">
+                🎯 Intentos: <span id="attemptCounter">0</span>
+            </div>
+            <div class="stat-badge">
+                ⭐ Aciertos: <span id="successCounter">0/6</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <!-- Columna de la Línea de Tiempo -->
+        <div class="timeline-column" id="timelineColumn">
+            <!-- Los elementos se renderizan dinámicamente con JavaScript -->
+        </div>
+
+        <!-- Banco de Fechas Separado -->
+        <div class="dates-sidebar">
+            <h2>Años</h2>
+            <div class="dates-container" id="datesContainer">
+                <!-- Las fechas desordenadas se renderizan aquí -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel de Botones -->
+    <div class="actions-panel">
+        <button class="btn btn-secondary" id="btnReset" onclick="resetGame()">
+            🔄 Reiniciar
+        </button>
+        <button class="btn btn-primary" id="btnCheck" onclick="checkAnswers()" disabled>
+            ✔ Comprobar respuestas
+        </button>
+    </div>
+
+    <!-- Toast Informativo / Feedback -->
+    <div class="toast-message" id="toastFeedback"></div>
+
+    <script>
+        // Datos Oficiales de los Eventos Históricos
+        const historicalEvents = [
+            {
+                id: "e1",
+                year: "1821",
+                title: "Acta de Independencia de Centroamérica",
+                description: "Firma del documento que declara la emancipación de la Capitanía General de Guatemala de la monarquía española.",
+                svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`
+            },
+            {
+                id: "e2",
+                year: "1823",
+                title: "Provincias Unidas de Centroamérica",
+                description: "Asamblea Nacional Constituyente que proclama la independencia absoluta frente a España, México o cualquier otra potencia.",
+                svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`
+            },
+            {
+                id: "e3",
+                year: "1838",
+                title: "Nicaragua se separa de la Federación",
+                description: "Nicaragua declara formalmente ser un Estado soberano e independiente, rompiendo la Federación Centroamericana.",
+                svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"></path><path d="M9 21H3v-6"></path><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>`
+            },
+            {
+                id: "e4",
+                year: "1856",
+                title: "Batalla de San Jacinto",
+                description: "Gesta heroica donde los patriotas nicaragüenses, liderados por José Dolores Estrada, derrotan a los filibusteros de William Walker.",
+                svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>`
+            },
+            {
+                id: "e5",
+                year: "1893",
+                title: "Revolución Liberal de José Santos Zelaya",
+                description: "Movimiento político-militar que inicia un proceso profundo de modernización institucional, vial y educativa del Estado de Nicaragua.",
+                svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3z"></path><path d="M6 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3z"></path><line x1="9" y1="6" x2="15" y2="6"></line><line x1="9" y1="12" x2="15" y2="12"></line></svg>`
+            },
+            {
+                id: "e6",
+                year: "1979",
+                title: "Triunfo de la Revolución Popular Sandinista",
+                description: "Culminación de la lucha popular armada que derroca a la dictadura de la familia Somoza, abriendo una nueva etapa social e institucional.",
+                svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 22l1-1c2.5-2.5 2.5-6.5 0-9l11-11 7 7-11 11c-2.5-2.5-6.5-2.5-9 0l-1 1"></path><line x1="11.5" y1="6.5" x2="17.5" y2="12.5"></line></svg>`
+            }
+        ];
+
+        let selectedBadge = null; // Para la compatibilidad con móviles/clics alternativos
+        let totalAttempts = 0;
+
+        // Función para barajar elementos (Fisher-Yates Algorithm)
+        function shuffleArray(array) {
+            let shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // Inicialización y Construcción de la App Educativa
+        function initGame() {
+            const timelineColumn = document.getElementById('timelineColumn');
+            const datesContainer = document.getElementById('datesContainer');
+            
+            // Limpiar vistas previas
+            timelineColumn.innerHTML = '';
+            datesContainer.innerHTML = '';
+            selectedBadge = null;
+            document.getElementById('btnCheck').disabled = true;
+            hideToast();
+
+            // Renderizar la Línea de Tiempo ordenada cronológicamente por lógica histórica del evento
+            historicalEvents.forEach((event, index) => {
+                const item = document.createElement('div');
+                item.className = 'timeline-item';
+                item.style.animationDelay = `${index * 0.1}s`;
+                item.innerHTML = `
+                    <div class="dropzone-wrapper">
+                        <div class="dropzone" data-event-id="${event.id}" ondragover="allowDrop(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" onclick="handleDropzoneClick(event)">
+                            <span style="color:#A0AEC0; font-size:0.8rem; font-weight:600; text-align:center; padding:5px; pointer-events:none;">Suelta aquí</span>
+                        </div>
+                    </div>
+                    <div class="event-card">
+                        <div class="event-illustration">
+                            ${event.svg}
+                        </div>
+                        <div class="event-details">
+                            <h3>${event.title}</h3>
+                            <p style="color:var(--text-muted); font-size:0.9rem; margin-top:4px;">${event.description}</p>
+                        </div>
+                        <div class="feedback-marker" id="marker-${event.id}"></div>
+                    </div>
+                `;
+                timelineColumn.appendChild(item);
+            });
+
+            // Obtener años desordenados y renderizarlos en el panel lateral
+            const shuffledYears = shuffleArray(historicalEvents.map(e => ({ id: e.id, year: e.year })));
+            shuffledYears.forEach(item => {
+                const badge = document.createElement('div');
+                badge.className = 'date-badge';
+                badge.id = `badge-${item.id}`;
+                badge.innerText = item.year;
+                badge.setAttribute('draggable', 'true');
+                badge.setAttribute('data-event-id', item.id);
+                
+                // Eventos nativos Drag & Drop (PC/Moodle)
+                badge.addEventListener('dragstart', handleDragStart);
+                badge.addEventListener('dragend', handleDragEnd);
+                
+                // Soporte híbrido / Accesibilidad Táctil (Móviles / Tablets)
+                badge.addEventListener('click', handleBadgeClick);
+
+                datesContainer.appendChild(badge);
+            });
+
+            updateProgress();
+        }
+
+        /* --- MECÁNICA DRAG AND DROP (ESCRITORIO) --- */
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.id);
+            e.target.classList.add('dragging');
+            clearSelectionStyles();
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function allowDrop(e) {
+            e.preventDefault();
+            const dropzone = e.target.closest('.dropzone');
+            if (dropzone && !dropzone.classList.contains('correct')) {
+                dropzone.classList.add('drag-over');
+            }
+        }
+
+        function handleDragLeave(e) {
+            const dropzone = e.target.closest('.dropzone');
+            if (dropzone) {
+                dropzone.classList.remove('drag-over');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const dropzone = e.target.closest('.dropzone');
+            if (!dropzone || dropzone.classList.contains('correct')) return;
+
+            dropzone.classList.remove('drag-over');
+            const badgeId = e.dataTransfer.getData('text/plain');
+            const badge = document.getElementById(badgeId);
+
+            if (badge) {
+                placeBadgeInDropzone(badge, dropzone);
+            }
+        }
+
+        /* --- MECÁNICA CLICK COGNITIVO / COMPATIBILIDAD TÁCTIL --- */
+        function handleBadgeClick(e) {
+            e.stopPropagation();
+            const badge = e.target;
+            
+            // Si la fecha ya está validada como correcta, no se puede mover
+            if (badge.parentElement.classList.contains('correct')) return;
+
+            if (selectedBadge === badge) {
+                badge.classList.remove('selected-for-move');
+                selectedBadge = null;
+            } else {
+                clearSelectionStyles();
+                selectedBadge = badge;
+                badge.classList.add('selected-for-move');
+            }
+        }
+
+        function handleDropzoneClick(e) {
+            const dropzone = e.target.closest('.dropzone');
+            if (!dropzone || dropzone.classList.contains('correct')) return;
+
+            if (selectedBadge) {
+                placeBadgeInDropzone(selectedBadge, dropzone);
+                clearSelectionStyles();
+                selectedBadge = null;
+            } else if (dropzone.classList.contains('occupied')) {
+                // Si se toca una zona ocupada sin haber seleccionado otra ficha, se regresa al banco original
+                const badge = dropzone.querySelector('.date-badge');
+                if (badge) {
+                    document.getElementById('datesContainer').appendChild(badge);
+                    resetDropzoneStyles(dropzone);
+                    updateProgress();
+                }
+            }
+        }
+
+        function clearSelectionStyles() {
+            document.querySelectorAll('.date-badge').forEach(b => b.classList.remove('selected-for-move'));
+        }
+
+        /* --- LÓGICA DE ACOPLAMIENTO --- */
+        function placeBadgeInDropzone(badge, dropzone) {
+            // Si la zona de destino ya tiene una fecha colocada, regresarla al banco lateral
+            if (dropzone.classList.contains('occupied') && dropzone !== badge.parentElement) {
+                const existingBadge = dropzone.querySelector('.date-badge');
+                document.getElementById('datesContainer').appendChild(existingBadge);
+            }
+
+            // Mover la ficha a la zona
+            dropzone.innerHTML = '';
+            dropzone.appendChild(badge);
+            dropzone.classList.add('occupied');
+
+            // Quitar estilos incorrectos previos si se cambia de ficha
+            dropzone.classList.remove('incorrect');
+            const eventId = dropzone.getAttribute('data-event-id');
+            document.getElementById(`marker-${eventId}`).style.display = 'none';
+
+            updateProgress();
+        }
+
+        function resetDropzoneStyles(dropzone) {
+            dropzone.classList.remove('occupied', 'incorrect', 'correct');
+            dropzone.innerHTML = `<span style="color:#A0AEC0; font-size:0.8rem; font-weight:600; text-align:center; padding:5px; pointer-events:none;">Suelta aquí</span>`;
+            const eventId = dropzone.getAttribute('data-event-id');
+            document.getElementById(`marker-${eventId}`).style.display = 'none';
+        }
+
+        /* --- BARRA DE PROGRESO Y CONTROL --- */
+        function updateProgress() {
+            const totalDropzones = historicalEvents.length;
+            const occupiedDropzones = document.querySelectorAll('.dropzone.occupied').length;
+            
+            const percentage = (occupiedDropzones / totalDropzones) * 100;
+            document.getElementById('progressBar').style.width = `${percentage}%`;
+
+            // Habilitar botón de comprobar únicamente si el alumno rellenó todos los campos vacíos
+            document.getElementById('btnCheck').disabled = (occupiedDropzones < totalDropzones);
+        }
+
+        /* --- VALIDACIÓN Y COMPROBACIÓN GENERAL --- */
+        function checkAnswers() {
+            let correctCount = 0;
+            totalAttempts++;
+            document.getElementById('attemptCounter').innerText = totalAttempts;
+
+            historicalEvents.forEach(event => {
+                const dropzone = document.querySelector(`.dropzone[data-event-id="${event.id}"]`);
+                const badge = dropzone.querySelector('.date-badge');
+                const marker = document.getElementById(`marker-${event.id}`);
+
+                if (badge) {
+                    const assignedEventId = badge.getAttribute('data-event-id');
+
+                    if (assignedEventId === event.id) {
+                        // Respuesta Correcta
+                        correctCount++;
+                        dropzone.classList.remove('incorrect');
+                        dropzone.classList.add('correct');
+                        badge.setAttribute('draggable', 'false');
+                        badge.style.cursor = 'default';
+                        marker.innerHTML = '🟢';
+                        marker.style.display = 'block';
+                    } else {
+                        // Respuesta Incorrecta
+                        dropzone.classList.remove('correct');
+                        dropzone.classList.add('incorrect');
+                        marker.innerHTML = '🔴';
+                        marker.style.display = 'block';
+                        
+                        // Añadir pequeña vibración visual al fallar
+                        dropzone.style.animation = 'none';
+                        setTimeout(() => dropzone.style.animation = 'shake 0.4s ease', 10);
+                    }
+                }
+            });
+
+            document.getElementById('successCounter').innerText = `${correctCount}/${historicalEvents.length}`;
+
+            if (correctCount === historicalEvents.length) {
+                showToast("toast-success", "🎉 ¡Excelente trabajo! Has ordenado la historia de Nicaragua a la perfección 🇳🇮");
+                triggerConfettiCelebration();
+            } else {
+                showToast("toast-error", `❌ Tienes algunas fechas incorrectas (${correctCount} correctas). ¡Revisa las marcas rojas e inténtalo de nuevo!`);
+            }
+        }
+
+        function showToast(type, message) {
+            const toast = document.getElementById('toastFeedback');
+            toast.className = `toast-message show ${type}`;
+            toast.innerText = message;
+        }
+
+        function hideToast() {
+            document.getElementById('toastFeedback').classList.remove('show');
+        }
+
+        function resetGame() {
+            totalAttempts = 0;
+            document.getElementById('attemptCounter').innerText = '0';
+            document.getElementById('successCounter').innerText = '0/6';
+            initGame();
+        }
+
+        /* --- CELEBRACIÓN DE CONFETI PURO (CSS/JS) --- */
+        function triggerConfettiCelebration() {
+            const colors = ['#0056A3', '#4BB4E6', '#2ECC71', '#F1C40F', '#E74C3C', '#9B59B6'];
+            for (let i = 0; i < 120; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti-piece';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.transform = `scale(${Math.random() * 0.8 + 0.5})`;
+                confetti.style.animationDuration = Math.random() * 2 + 1.5 + 's';
+                confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                
+                // Formas aleatorias cuadradas y circulares
+                if(Math.random() > 0.5) {
+                    confetti.style.borderRadius = '50%';
+                }
+
+                document.body.appendChild(confetti);
+
+                // Limpieza del árbol DOM
+                setTimeout(() => confetti.remove(), 4000);
+            }
+        }
+
+        // Ejecutar juego al cargar la página por primera vez
+        window.onload = initGame;
+    </script>
+</body>
+</html>

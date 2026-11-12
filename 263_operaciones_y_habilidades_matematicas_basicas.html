@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trivia Competitiva de Matemáticas Básicas</title>
+    <style>
+        /* Estilos CSS */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f8ff; /* Fondo azul claro para tema educativo */
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 20px 0;
+            padding: 0 10px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            width: 95%;
+            max-width: 650px;
+            border: 2px solid #007bff;
+        }
+
+        h1 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+
+        .question, .leaderboard-title {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #34495e;
+        }
+
+        .options label {
+            display: block;
+            margin: 10px 0;
+            padding: 12px;
+            border: 1px solid #cce5ff;
+            background-color: #e9f5ff;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .options label:hover {
+            background-color: #d6eaff;
+            transform: translateY(-2px);
+        }
+
+        input[type="radio"] {
+            margin-right: 10px;
+            transform: scale(1.2); /* Botones de radio más visibles en móvil */
+        }
+
+        .player-input, .quiz-section, .results-section, .leaderboard-section {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+
+        #nameInput {
+            padding: 12px;
+            width: calc(100% - 24px);
+            margin-bottom: 15px;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            font-size: 1.1em;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px #1e7e34;
+        }
+
+        button:active {
+            box-shadow: 0 1px #1e7e34;
+            transform: translateY(3px);
+        }
+
+        .start-btn {
+            background-color: #007bff;
+            box-shadow: 0 4px #0056b3;
+        }
+        .start-btn:active {
+            box-shadow: 0 1px #0056b3;
+            transform: translateY(3px);
+        }
+        
+        #resultMessage {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.4em;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        /* Tabla de Clasificación */
+        .leaderboard {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .leaderboard th, .leaderboard td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .leaderboard th {
+            background-color: #f2f2f2;
+            color: #007bff;
+        }
+        .medal {
+            font-size: 1.5em;
+            margin-right: 5px;
+        }
+
+        /* Estilos del Certificado (Simulado) */
+        #certificate {
+            display: none;
+            border: 5px solid #ffc107;
+            padding: 40px;
+            margin-top: 30px;
+            background-color: #fffacd;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(255,193,7,0.5);
+            border-radius: 10px;
+        }
+        #certificate h2 {
+            color: #8b4513;
+            font-family: 'Georgia', serif;
+            font-size: 2.8em;
+            margin-bottom: 5px;
+        }
+        #certificate p {
+            font-size: 1.3em;
+            margin: 10px 0;
+        }
+        #certificate .winner-name {
+            font-size: 2.2em;
+            color: #dc3545; /* Rojo para destacar el nombre */
+            font-weight: bold;
+            margin: 20px 0;
+            border-bottom: 2px dashed #dc3545;
+            padding-bottom: 5px;
+            display: inline-block;
+        }
+        #certificate .date {
+            font-style: italic;
+            font-size: 1em;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🔢 Trivia: Habilidad Matemática Básica</h1>
+
+    <!-- 1. Registro de Nombre -->
+    <div id="playerRegistration" class="player-input">
+        <label for="nameInput">Ingresa tu Nombre para Jugar:</label>
+        <input type="text" id="nameInput" placeholder="Ej: Albert Einstein" required>
+        <button id="startBtn" class="start-btn">Comenzar Trivia</button>
+    </div>
+
+    <!-- 2. Sección del Quiz -->
+    <div id="quizSection" class="quiz-section" style="display: none;">
+        <p>Selecciona la respuesta correcta para cada operación:</p>
+        <div id="quiz">
+            <!-- Las preguntas se inyectarán aquí por JavaScript -->
+        </div>
+        <button id="submitBtn">Finalizar y Registrar Puntuación</button>
+    </div>
+
+    <!-- 3. Sección de Resultados y Puntuación -->
+    <div id="resultsSection" class="results-section" style="display: none;">
+        <div id="resultMessage"></div>
+    </div>
+    
+    <!-- 4. Clasificación -->
+    <div id="leaderboardSection" class="leaderboard-section">
+        <h2 class="leaderboard-title">Tabla de Clasificación (Top 3)</h2>
+        <table class="leaderboard">
+            <thead>
+                <tr><th>Posición</th><th>Jugador</th><th>Puntuación</th></tr>
+            </thead>
+            <tbody id="leaderboardBody">
+                <!-- Se llenará con JavaScript -->
+            </tbody>
+        </table>
+        <button onclick="location.reload()" style="background-color: #6c757d; box-shadow: 0 4px #5a6268;">Jugar de Nuevo</button>
+    </div>
+
+    <!-- 5. Certificado (Visible solo para el Top 3) -->
+    <div id="certificate">
+        <h2>Certificado de Excelencia Matemática</h2>
+        <p>Se otorga a:</p>
+        <div class="winner-name" id="certificateName"></div>
+        <p>Por haber alcanzado una de las mejores puntuaciones en la **Trivia de Habilidad Matemática Básica**, demostrando una destreza numérica superior.</p>
+        <p class="date">Fecha: <span id="certificateDate"></span></p>
+        <p>¡Sigue calculando el éxito!</p>
+    </div>
+</div>
+
+<script>
+    // Lógica JavaScript
+    
+    let playerName = "";
+    const QUIZ_KEY = 'mathTriviaScores';
+    const NUM_QUESTIONS = 10; // Número de preguntas a generar
+
+    // --- Referencias del DOM ---
+    const playerRegistrationDiv = document.getElementById('playerRegistration');
+    const nameInput = document.getElementById('nameInput');
+    const startBtn = document.getElementById('startBtn');
+    const quizSection = document.getElementById('quizSection');
+    const quizDiv = document.getElementById('quiz');
+    const submitBtn = document.getElementById('submitBtn');
+    const resultsSection = document.getElementById('resultsSection');
+    const resultMessage = document.getElementById('resultMessage');
+    const leaderboardBody = document.getElementById('leaderboardBody');
+    const certificateDiv = document.getElementById('certificate');
+    const certificateName = document.getElementById('certificateName');
+    const certificateDate = document.getElementById('certificateDate');
+    
+    // Array global para guardar las preguntas generadas en este juego
+    let generatedQuestions = []; 
+
+    // --- Funciones de Matemáticas ---
+
+    // Función para generar una pregunta aleatoria de suma, resta o multiplicación
+    function generateMathQuestion() {
+        // Generar dos números enteros entre 1 y 20
+        const num1 = Math.floor(Math.random() * 20) + 1;
+        const num2 = Math.floor(Math.random() * 20) + 1;
+        
+        // Seleccionar una operación (0=Suma, 1=Resta, 2=Multiplicación)
+        const operationType = Math.floor(Math.random() * 3);
+        
+        let questionText;
+        let correctAnswer;
+
+        if (operationType === 0) { // Suma
+            questionText = `${num1} + ${num2} = ?`;
+            correctAnswer = num1 + num2;
+        } else if (operationType === 1) { // Resta
+            // Asegurarse de que el resultado no sea negativo (para matemáticas básicas)
+            const a = Math.max(num1, num2);
+            const b = Math.min(num1, num2);
+            questionText = `${a} - ${b} = ?`;
+            correctAnswer = a - b;
+        } else { // Multiplicación
+            // Usar números más pequeños para multiplicación para mantener opciones razonables
+            const m1 = Math.floor(Math.random() * 10) + 1;
+            const m2 = Math.floor(Math.random() * 10) + 1;
+            questionText = `${m1} x ${m2} = ?`;
+            correctAnswer = m1 * m2;
+        }
+        
+        // Generar opciones de respuesta
+        const options = generateOptions(correctAnswer);
+
+        return {
+            question: questionText,
+            options: options,
+            answer: correctAnswer.toString()
+        };
+    }
+
+    // Genera 3 opciones incorrectas y la correcta
+    function generateOptions(correctAnswer) {
+        let options = new Set();
+        options.add(correctAnswer);
+
+        while (options.size < 4) {
+            // Generar una respuesta falsa cerca de la correcta
+            let deviation = Math.floor(Math.random() * 10) - 5; // Desviación entre -5 y 4
+            let fakeAnswer = correctAnswer + deviation;
+            
+            // Asegurarse de que la respuesta falsa sea positiva y diferente
+            if (fakeAnswer > 0 && fakeAnswer !== correctAnswer) {
+                options.add(fakeAnswer);
+            }
+        }
+        
+        // Convertir el set a array de strings y mezclarlos
+        let optionsArray = Array.from(options).map(String);
+        optionsArray.sort(() => Math.random() - 0.5); // Mezclar
+        return optionsArray;
+    }
+
+
+    // 1. Inicializa el Quiz
+    function buildQuiz() {
+        generatedQuestions = []; // Reiniciar la lista de preguntas
+        const output = [];
+
+        for (let i = 0; i < NUM_QUESTIONS; i++) {
+            const q = generateMathQuestion();
+            generatedQuestions.push(q); // Guardar la pregunta generada
+
+            const optionsHtml = q.options.map(option =>
+                `<label><input type="radio" name="question${i}" value="${option}">${option}</label>`
+            ).join('');
+            output.push(`<div class="question">${i + 1}. ${q.question}</div><div class="options">${optionsHtml}</div>`);
+        }
+        quizDiv.innerHTML = output.join('');
+    }
+
+    // 2. Calcula y Muestra los Resultados
+    function showResults() {
+        const optionsContainers = quizDiv.querySelectorAll('.options');
+        let numCorrect = 0;
+        let totalQuestions = generatedQuestions.length;
+
+        // Si no se generaron preguntas (error), salir
+        if (totalQuestions === 0) return; 
+
+        generatedQuestions.forEach((currentQuestion, questionNumber) => {
+            const optionsContainer = optionsContainers[questionNumber];
+            const selector = `input[name=question${questionNumber}]:checked`;
+            const userAnswerElement = (optionsContainer.querySelector(selector) || {}).value;
+
+            // La respuesta correcta en el objeto es un String (por la función generateOptions)
+            if (userAnswerElement === currentQuestion.answer) {
+                numCorrect++;
+            }
+        });
+
+        // Ocultar Quiz y mostrar Resultados
+        quizSection.style.display = 'none';
+        resultsSection.style.display = 'block';
+
+        const scorePercentage = (numCorrect / totalQuestions) * 100;
+        resultMessage.innerHTML = `¡Trivia Completada! **${playerName}**:<br>Obtuviste **${numCorrect}** de **${totalQuestions}** correctas (${scorePercentage.toFixed(0)}%).`;
+        
+        // Registrar la puntuación
+        registerScore(playerName, numCorrect, scorePercentage.toFixed(0));
+
+        // Actualizar y Mostrar el Top 3
+        displayLeaderboard();
+        
+        // Verificar si califica para certificado
+        checkCertificate(playerName, numCorrect);
+    }
+    
+    // 3. Gestión del Almacenamiento Local (Puntuaciones)
+    function getScores() {
+        try {
+            const scoresString = localStorage.getItem(QUIZ_KEY);
+            return scoresString ? JSON.parse(scoresString) : [];
+        } catch (e) {
+            console.error("Error al obtener puntuaciones de localStorage:", e);
+            return [];
+        }
+    }
+
+    function saveScores(scores) {
+        try {
+            localStorage.setItem(QUIZ_KEY, JSON.stringify(scores));
+        } catch (e) {
+            console.error("Error al guardar puntuaciones en localStorage:", e);
+        }
+    }
+
+    function registerScore(name, score, percentage) {
+        const scores = getScores();
+        // Usar un identificador único para el registro actual
+        const newScore = { name, score, percentage: parseInt(percentage), date: new Date().toLocaleDateString(), id: Date.now() }; 
+        scores.push(newScore);
+        
+        // Ordenar por puntuación descendente, luego por porcentaje (para desempate)
+        scores.sort((a, b) => {
+            if (b.score !== a.score) {
+                return b.score - a.score;
+            }
+            return b.percentage - a.percentage;
+        });
+
+        // Guardar solo las mejores 10 puntuaciones
+        saveScores(scores.slice(0, 10)); 
+    }
+
+    // 4. Mostrar la Clasificación
+    function displayLeaderboard() {
+        const scores = getScores();
+        leaderboardBody.innerHTML = '';
+        
+        if (scores.length === 0) {
+             leaderboardBody.innerHTML = '<tr><td colspan="3">Aún no hay puntuaciones registradas. ¡Sé el primero!</td></tr>';
+             return;
+        }
+
+        const medals = ['🥇', '🥈', '🥉'];
+
+        scores.forEach((score, index) => {
+            const row = leaderboardBody.insertRow();
+            const medalHtml = index < 3 ? `<span class="medal">${medals[index]}</span>` : '';
+            
+            row.innerHTML = `
+                <td>${medalHtml} ${index + 1}</td>
+                <td>${score.name}</td>
+                <td>${score.score} / ${NUM_QUESTIONS}</td>
+            `;
+            
+            // Opcional: Resaltar la fila del jugador actual
+            if (score.name === playerName && index < 3) {
+                 row.style.fontWeight = 'bold';
+                 row.style.backgroundColor = '#fffacd';
+            }
+        });
+    }
+
+    // 5. Generar Certificado
+    function checkCertificate(pName, pScore) {
+        const scores = getScores();
+        const top3Scores = scores.slice(0, 3);
+        let qualifies = false;
+
+        // Comprobar si el jugador está entre los 3 mejores y su puntuación coincide
+        if (top3Scores.length > 0) {
+            for (let i = 0; i < top3Scores.length; i++) {
+                // Si el jugador actual tiene el mismo nombre Y la misma puntuación que un Top 3
+                if (top3Scores[i].name === pName && top3Scores[i].score === pScore) {
+                    qualifies = true;
+                    break;
+                }
+            }
+        }
+
+        if (qualifies) {
+            certificateName.textContent = pName;
+            certificateDate.textContent = new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+            certificateDiv.style.display = 'block';
+            resultMessage.style.backgroundColor = '#ffc107'; // Resaltar el mensaje si gana
+            resultMessage.style.color = '#343a40';
+        } else {
+             certificateDiv.style.display = 'none';
+        }
+    }
+
+    // --- Event Listeners ---
+    startBtn.addEventListener('click', () => {
+        playerName = nameInput.value.trim();
+        if (playerName.length > 0) {
+            playerRegistrationDiv.style.display = 'none';
+            quizSection.style.display = 'block';
+            buildQuiz(); // Generar e iniciar el quiz
+        } else {
+            // Usar un método de mensaje que no sea alert() en móvil
+            const msg = document.createElement('p');
+            msg.textContent = "¡Por favor, ingresa tu nombre para comenzar a competir!";
+            msg.style.color = 'red';
+            msg.style.marginTop = '10px';
+            playerRegistrationDiv.appendChild(msg);
+            setTimeout(() => msg.remove(), 3000);
+        }
+    });
+
+    submitBtn.addEventListener('click', showResults);
+    
+    // --- Inicialización al Cargar ---
+    displayLeaderboard();
+
+</script>
+</body>
+</html>

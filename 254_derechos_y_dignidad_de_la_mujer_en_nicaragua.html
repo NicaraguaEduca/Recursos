@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defensoras de la Dignidad - Nicaragua</title>
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <!-- Librería de Confeti para la pantalla final -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        /* Estilos base y paleta de colores vibrante */
+        body {
+            font-family: 'Poppins', sans-serif;
+            /* Degradado suave y dinámico de fondo */
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            background-attachment: fixed;
+            color: #333;
+        }
+
+        /* Contenedor principal estilo tarjeta premium */
+        .container-wrapper {
+            max-width: 600px;
+            width: 100%;
+            min-height: 85vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+
+        /* Animaciones personalizadas */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        .animate-fade-up {
+            animation: fadeUp 0.5s ease-out forwards;
+        }
+        .animate-pop {
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Estilos de botones de opciones */
+        .btn-option {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid #e2e8f0;
+            background-color: #ffffff;
+        }
+        .btn-option:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.01);
+            border-color: #9d2449; /* Color violeta/magenta representativo */
+            box-shadow: 0 10px 15px -3px rgba(157, 36, 73, 0.15);
+            color: #9d2449;
+        }
+        .btn-option:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        /* Estados de respuesta */
+        .correct {
+            background-color: #10b981 !important; /* Esmeralda */
+            border-color: #059669 !important;
+            color: white !important;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3) !important;
+        }
+        .incorrect {
+            background-color: #ef4444 !important; /* Rojo */
+            border-color: #b91c1c !important;
+            color: white !important;
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3) !important;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Botones de acción principales */
+        .btn-action {
+            background: linear-gradient(135deg, #9d2449 0%, #7a1b38 100%);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px 0 rgba(157, 36, 73, 0.39);
+        }
+        .btn-action:hover {
+            box-shadow: 0 6px 20px rgba(157, 36, 73, 0.23);
+            transform: translateY(-2px);
+        }
+        
+        .btn-next-action {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
+        }
+        .btn-next-action:hover {
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.23);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="flex justify-center items-center min-h-screen p-4">
+
+    <div id="game-container" class="container-wrapper p-8 flex flex-col justify-between">
+        
+        <!-- HEADER / Título del Juego -->
+        <header class="text-center mb-8 animate-fade-up">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-[#9d2449] tracking-tight mb-2">Defensoras de la Dignidad</h1>
+            <p class="text-sm md:text-base text-gray-500 font-medium">Conoce y defiende los derechos de la mujer nicaragüense.</p>
+            <div class="h-1 w-20 bg-[#9d2449] mx-auto mt-4 rounded-full opacity-50"></div>
+        </header>
+
+        <!-- PANTALLA DE INICIO -->
+        <div id="start-screen" class="flex flex-col items-center text-center animate-fade-up" style="animation-delay: 0.1s;">
+            <div class="bg-pink-50 p-6 rounded-full mb-6">
+                <svg class="w-20 h-20 text-[#9d2449]" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                    <path d="M16.7 13.5a1 1 0 00-.7-.2H4a1 1 0 00-.7.2 9 9 0 0013.4 0z"></path>
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">¡Bienvenida/o!</h2>
+            <p class="text-gray-600 mb-8 leading-relaxed">Este desafío consta de 15 preguntas clave sobre la Ley 779 y otros derechos fundamentales en Nicaragua. Tu misión es aprender y empoderarte con cada respuesta correcta. <br><br><span class="font-bold text-[#9d2449]">¡Que inicie la ruta de la equidad!</span></p>
+            <button id="start-button" class="btn-action text-white font-bold py-4 px-10 rounded-full text-lg w-full md:w-auto">
+                Comenzar Desafío
+            </button>
+        </div>
+
+        <!-- PANTALLA DEL QUIZ (Oculta al inicio) -->
+        <div id="quiz-screen" class="hidden flex-col h-full w-full">
+            <!-- Barra de Progreso -->
+            <div class="mb-8">
+                <div class="flex justify-between items-end mb-2">
+                    <p id="progress-text" class="text-sm font-bold text-[#9d2449] uppercase tracking-wider"></p>
+                    <span class="text-xs text-gray-400 font-medium bg-gray-100 px-2 py-1 rounded-md">15 Preguntas</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                    <div id="progress-bar" class="bg-gradient-to-r from-[#9d2449] to-[#d6336c] h-full rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Contenido de la Pregunta -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6 animate-pop">
+                <p id="question-text" class="text-xl md:text-2xl font-bold text-gray-800 leading-snug"></p>
+            </div>
+
+            <!-- Opciones de Respuesta -->
+            <div id="options-container" class="space-y-3 mb-6">
+                <!-- Generado por JS -->
+            </div>
+
+            <!-- Área de Retroalimentación -->
+            <div id="feedback-area" class="mt-auto hidden animate-fade-up">
+                <div id="feedback-box" class="p-5 rounded-2xl mb-5 shadow-sm">
+                    <div class="flex items-center mb-2">
+                        <span id="feedback-icon" class="text-2xl mr-2"></span>
+                        <p id="feedback-title" class="font-bold text-lg"></p>
+                    </div>
+                    <p id="feedback-content" class="text-gray-700 text-sm md:text-base leading-relaxed"></p>
+                </div>
+                <button id="next-button" class="btn-next-action text-white font-bold py-4 rounded-full text-lg w-full transition duration-300">
+                    Siguiente Pregunta
+                </button>
+            </div>
+        </div>
+
+        <!-- PANTALLA FINAL (Oculta al inicio) -->
+        <div id="end-screen" class="hidden flex-col items-center text-center py-6">
+            <div id="final-icon-container" class="bg-green-50 p-6 rounded-full mb-6">
+                <svg id="final-icon" class="w-20 h-20 text-[#10b981]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h2 id="final-title" class="text-3xl md:text-4xl font-extrabold mb-4 text-[#9d2449]">¡Misión Cumplida!</h2>
+            
+            <div class="bg-gray-50 px-8 py-4 rounded-2xl border border-gray-200 mb-6 w-full">
+                <p class="text-gray-500 text-sm uppercase tracking-widest font-bold mb-1">Puntuación Final</p>
+                <p id="final-score" class="text-4xl font-extrabold text-gray-800"></p>
+            </div>
+
+            <p id="final-message" class="text-gray-600 mb-8 text-lg leading-relaxed"></p>
+            <button id="restart-button" class="btn-action text-white font-bold py-4 px-10 rounded-full text-lg w-full mb-4">
+                Jugar de Nuevo
+            </button>
+            <p class="text-sm text-gray-400 font-medium">¡Comparte este conocimiento con tu comunidad!</p>
+        </div>
+    </div>
+
+    <script>
+        // Definición de las 15 Preguntas Clave sobre Derechos de la Mujer en Nicaragua
+        const questions = [
+            {
+                question: "¿Cuál es la ley nicaragüense principal que tipifica y sanciona la violencia contra la mujer?",
+                options: ["Ley 641 (Código Penal)", "Ley 779 (Ley Integral contra la Violencia hacia la Mujer)", "Ley 870 (Código de Familia)"],
+                answer: "Ley 779 (Ley Integral contra la Violencia hacia la Mujer)",
+                feedbackCorrect: "¡Correcto! La **Ley 779** es la herramienta legal fundamental para establecer medidas de prevención, protección y sanción contra toda forma de violencia hacia las mujeres en Nicaragua.",
+                feedbackIncorrect: "La respuesta correcta es la **Ley 779**. Esta ley es clave para definir y castigar los delitos de violencia de género, protegiendo a las mujeres en el país.",
+            },
+            {
+                question: "Según la legislación nicaragüense, ¿cuál de las siguientes NO es una forma de violencia tipificada?",
+                options: ["Violencia Patrimonial", "Violencia Psicológica", "Violencia Laboral por Género", "Violencia Económica por Descuido"],
+                answer: "Violencia Económica por Descuido",
+                feedbackCorrect: "¡Correcto! Aunque el abandono económico existe, la Ley 779 se centra en formas activas de violencia como la Patrimonial, Psicológica y Laboral por razón de género.",
+                feedbackIncorrect: "La respuesta incorrecta es la **Violencia Económica por Descuido**. Las otras tres son formas de violencia expresamente tipificadas en la Ley 779.",
+            },
+            {
+                question: "¿A qué edad mínima puede una mujer, según el Código de Familia, contraer matrimonio en Nicaragua con permiso paterno/materno?",
+                options: ["18 años", "16 años", "14 años"],
+                answer: "18 años",
+                feedbackCorrect: "¡Correcto! El Código de Familia establece la edad mínima de 18 años para contraer matrimonio para ambos sexos, eliminando el matrimonio infantil con permiso parental.",
+                feedbackIncorrect: "La respuesta correcta es **18 años**. El matrimonio infantil fue prohibido en Nicaragua para proteger los derechos de niñas y adolescentes.",
+            },
+            {
+                question: "¿Qué instancia estatal tiene la función principal de recibir denuncias y ofrecer protección especializada a las mujeres víctimas de violencia en el ámbito local?",
+                options: ["Juzgados de Distrito Civil", "Comisarías de la Mujer y la Niñez", "Ministerio de la Familia (MIFAM)"],
+                answer: "Comisarías de la Mujer y la Niñez",
+                feedbackCorrect: "¡Correcto! Las **Comisarías de la Mujer y la Niñez** son las unidades especializadas de la Policía Nacional para atender y dar seguimiento a los casos de violencia de género.",
+                feedbackIncorrect: "La respuesta correcta es **Comisarías de la Mujer y la Niñez**. Son el primer punto de contacto para las víctimas en busca de protección.",
+            },
+            {
+                question: "¿En qué consiste el derecho a la 'Igualdad de Oportunidades' en el ámbito laboral?",
+                options: ["Tener el mismo salario que un hombre por trabajo de igual valor", "Tener acceso a un puesto de trabajo por cuotas de género", "Tener jornadas laborales más cortas que los hombres"],
+                answer: "Tener el mismo salario que un hombre por trabajo de igual valor",
+                feedbackCorrect: "¡Correcto! La igualdad salarial por trabajo de igual valor es un derecho fundamental que busca eliminar la brecha de género en los ingresos.",
+                feedbackIncorrect: "La respuesta correcta es **Tener el mismo salario que un hombre por trabajo de igual valor**. Este principio se conoce como 'a igual trabajo, igual salario'.",
+            },
+            {
+                question: "¿Cuál es el periodo mínimo de licencia de maternidad postparto garantizado por la Ley en Nicaragua?",
+                options: ["4 semanas", "6 semanas", "8 semanas"],
+                answer: "8 semanas",
+                feedbackCorrect: "¡Correcto! La ley laboral nicaragüense establece 8 semanas (56 días) de descanso postparto remunerado, esenciales para la recuperación de la madre y el cuidado del recién nacido.",
+                feedbackIncorrect: "La respuesta correcta es **8 semanas**. Este es un derecho irrenunciable que protege la salud de la madre y el hijo.",
+            },
+            {
+                question: "¿Qué porcentaje de participación mínima de mujeres se exige para los cargos de elección popular en Nicaragua, promoviendo la equidad política?",
+                options: ["50%", "30%", "25%"],
+                answer: "50%",
+                feedbackCorrect: "¡Correcto! Nicaragua es uno de los países que exige una participación del **50% de mujeres** en cargos de elección, un avance significativo en la paridad política.",
+                feedbackIncorrect: "La respuesta correcta es **50%**. Este porcentaje garantiza la paridad de género en la representación política del país.",
+            },
+            {
+                question: "El acoso sexual en el lugar de trabajo, ¿se considera una violación a los derechos de la mujer?",
+                options: ["Solo si hay contacto físico", "Siempre, independientemente del contacto físico", "Depende si la mujer tiene un cargo superior"],
+                answer: "Siempre, independientemente del contacto físico",
+                feedbackCorrect: "¡Correcto! El acoso sexual es una forma de violencia que incluye gestos, comentarios o peticiones, constituyendo una violación de los derechos humanos y laborales.",
+                feedbackIncorrect: "La respuesta correcta es **Siempre**. La ley protege contra cualquier forma de acoso sexual, que es una manifestación de violencia de género.",
+            },
+            {
+                question: "¿Cuál es el principal objetivo del derecho a la salud reproductiva?",
+                options: ["Obligar a las mujeres a tener hijos", "Permitir a las mujeres decidir libre y responsablemente sobre el número y espaciamiento de sus hijos", "Garantizar solo el parto gratuito"],
+                answer: "Permitir a las mujeres decidir libre y responsablemente sobre el número y espaciamiento de sus hijos",
+                feedbackCorrect: "¡Correcto! La salud reproductiva se basa en la autonomía de la mujer para tomar decisiones informadas sobre su cuerpo y su vida familiar.",
+                feedbackIncorrect: "La respuesta correcta es la **autonomía reproductiva**. Este derecho es clave para el empoderamiento y planificación familiar.",
+            },
+            {
+                question: "En Nicaragua, ¿quién debe recibir la pensión de alimentos en caso de divorcio o separación si hay hijos menores de edad?",
+                options: ["El padre únicamente", "La madre únicamente", "El progenitor que ejerza la guarda y cuido, sea este padre o madre"],
+                answer: "El progenitor que ejerza la guarda y cuido, sea este padre o madre",
+                feedbackCorrect: "¡Correcto! La pensión de alimentos es un derecho de los hijos y lo administra el progenitor que se encarga de su cuido, promoviendo la corresponsabilidad.",
+                feedbackIncorrect: "La respuesta correcta es **El progenitor que ejerza la guarda y cuido**. La ley vela por el interés superior del niño, no por el género del progenitor.",
+            },
+            {
+                question: "¿Qué institución brinda acompañamiento legal y psicológico gratuito a mujeres de bajos recursos víctimas de violencia?",
+                options: ["Corte Suprema de Justicia", "Defensoría Pública o Centro de Derechos Humanos de la Mujer", "Ministerio de Educación (MINED)"],
+                answer: "Defensoría Pública o Centro de Derechos Humanos de la Mujer",
+                feedbackCorrect: "¡Correcto! La **Defensoría Pública** y las ONG especializadas ofrecen servicios esenciales para garantizar el acceso a la justicia de las mujeres.",
+                feedbackIncorrect: "La respuesta correcta es **Defensoría Pública o Centros de Derechos Humanos** que trabajan para las mujeres. Buscan garantizar el acceso a la justicia.",
+            },
+            {
+                question: "Según la Ley 779, ¿cuánto tiempo tiene una mujer para denunciar un delito de violencia que haya sufrido (sin considerar los que no prescriben)?",
+                options: ["Depende del tipo de delito", "Un mes", "Un año"],
+                answer: "Depende del tipo de delito",
+                feedbackCorrect: "¡Correcto! Los plazos de prescripción varían según la gravedad del delito. Es vital denunciar lo antes posible, especialmente para la obtención de pruebas.",
+                feedbackIncorrect: "La respuesta correcta es **Depende del tipo de delito**. Aunque siempre se recomienda denunciar inmediatamente, los tiempos varían según la acción penal.",
+            },
+            {
+                question: "¿Cuál es el concepto de 'Trata de Personas' con enfoque de género?",
+                options: ["Solo el secuestro de mujeres", "El traslado de una mujer de un país a otro", "La captación, transporte o recepción de personas, principalmente mujeres, con fines de explotación"],
+                answer: "La captación, transporte o recepción de personas, principalmente mujeres, con fines de explotación",
+                feedbackCorrect: "¡Correcto! La Trata es un grave delito de derechos humanos que explota la vulnerabilidad, siendo las mujeres y niñas las principales víctimas.",
+                feedbackIncorrect: "La respuesta correcta es la **definición completa de Trata de Personas**, que se centra en la explotación (sexual, laboral, etc.) mediante coacción o engaño.",
+            },
+            {
+                question: "El concepto de 'Patrimonio Familiar' en el Código de Familia de Nicaragua está destinado a proteger:",
+                options: ["Solo los bienes del esposo", "Los bienes muebles e inmuebles destinados al sostenimiento de la familia", "Únicamente las herencias de la esposa"],
+                answer: "Los bienes muebles e inmuebles destinados al sostenimiento de la familia",
+                feedbackCorrect: "¡Correcto! El Patrimonio Familiar busca proteger la vivienda y los bienes esenciales de la familia de embargos, asegurando la estabilidad económica, incluyendo a la mujer.",
+                feedbackIncorrect: "La respuesta correcta es **Los bienes destinados al sostenimiento de la familia**. Es una figura legal de protección económica para todos los miembros, incluyendo a la mujer.",
+            },
+            {
+                question: "¿Qué garantiza el derecho a una 'vida libre de violencia'?",
+                options: ["Solo la ausencia de agresiones físicas", "El goce de todos los derechos humanos y libertades fundamentales para la mujer", "Únicamente la protección policial en la vía pública"],
+                answer: "El goce de todos los derechos humanos y libertades fundamentales para la mujer",
+                feedbackCorrect: "¡Correcto! Una vida libre de violencia es un derecho humano que abarca la plena realización de todos los demás derechos (salud, educación, participación, etc.).",
+                feedbackIncorrect: "La respuesta correcta es **El goce de todos los derechos humanos**. Es un concepto integral que va más allá de la protección física y abarca la dignidad plena.",
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let isAnswered = false;
+
+        // Referencias a elementos del DOM
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const endScreen = document.getElementById('end-screen');
+        const startButton = document.getElementById('start-button');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const feedbackArea = document.getElementById('feedback-area');
+        const feedbackBox = document.getElementById('feedback-box');
+        const feedbackIcon = document.getElementById('feedback-icon');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackContent = document.getElementById('feedback-content');
+        const nextButton = document.getElementById('next-button');
+        const finalTitle = document.getElementById('final-title');
+        const finalScore = document.getElementById('final-score');
+        const finalMessage = document.getElementById('final-message');
+        const finalIconContainer = document.getElementById('final-icon-container');
+        const restartButton = document.getElementById('restart-button');
+
+        // --- Funciones del Juego ---
+
+        function startGame() {
+            currentQuestionIndex = 0;
+            score = 0;
+            isAnswered = false;
+            
+            // Transiciones suaves entre pantallas
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            quizScreen.classList.add('flex', 'animate-fade-up');
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                showEndScreen();
+                return;
+            }
+
+            const q = questions[currentQuestionIndex];
+            isAnswered = false;
+
+            // Limpiar y ocultar área de feedback
+            feedbackArea.classList.add('hidden');
+            feedbackArea.classList.remove('flex', 'animate-fade-up');
+            nextButton.disabled = true;
+
+            // Animación al cargar nueva pregunta
+            const questionElement = document.querySelector('.animate-pop');
+            questionElement.classList.remove('animate-pop');
+            void questionElement.offsetWidth; // Trigger reflow
+            questionElement.classList.add('animate-pop');
+
+            // Actualizar progreso
+            updateProgress();
+
+            // Insertar texto de la pregunta
+            questionText.innerHTML = q.question;
+            optionsContainer.innerHTML = '';
+
+            // Generar opciones con un ligero retraso escalonado (stagger effect CSS-like)
+            q.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                // Estilos modernos para los botones
+                button.className = 'btn-option w-full text-gray-700 font-semibold py-4 px-6 rounded-2xl text-left text-base md:text-lg opacity-0';
+                button.style.animation = `fadeUp 0.3s ease-out ${index * 0.1}s forwards`;
+                
+                button.onclick = () => handleAnswer(option, q.answer, q.feedbackCorrect, q.feedbackIncorrect);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function updateProgress() {
+            const percentage = ((currentQuestionIndex) / questions.length) * 100;
+            progressBar.style.width = `${percentage}%`;
+            progressText.textContent = `Pregunta ${currentQuestionIndex + 1}`;
+        }
+
+        function handleAnswer(selectedOption, correctAnswer, feedbackCorrect, feedbackIncorrect) {
+            if (isAnswered) return;
+            isAnswered = true;
+
+            const isCorrect = selectedOption === correctAnswer;
+            const buttons = optionsContainer.querySelectorAll('.btn-option');
+
+            // Evaluador visual de respuestas
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                if (btn.textContent === selectedOption) {
+                    btn.classList.add(isCorrect ? 'correct' : 'incorrect');
+                }
+                if (btn.textContent === correctAnswer && !isCorrect) {
+                    // Muestra cuál era la correcta
+                    btn.classList.add('correct');
+                    btn.classList.replace('text-gray-700', 'text-white');
+                    btn.style.boxShadow = "0 0 0 3px rgba(16, 185, 129, 0.5)";
+                } else if (btn.textContent !== selectedOption && btn.textContent !== correctAnswer) {
+                    btn.classList.add('opacity-40', 'bg-gray-50');
+                }
+            });
+
+            // Actualizar cuadro de retroalimentación
+            if (isCorrect) {
+                score++;
+                feedbackIcon.textContent = "✨";
+                feedbackTitle.textContent = "¡Respuesta Correcta!";
+                feedbackTitle.className = "font-extrabold text-lg text-emerald-700";
+                feedbackBox.className = "p-5 rounded-2xl mb-5 shadow-sm bg-emerald-50 border border-emerald-200";
+                
+                // Formateo de negritas básico en el texto
+                feedbackContent.innerHTML = feedbackCorrect.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                
+                // Pequeño confeti de celebración
+                confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 }, colors: ['#10b981', '#34d399', '#ffffff'] });
+            } else {
+                feedbackIcon.textContent = "💡";
+                feedbackTitle.textContent = "Respuesta Incorrecta";
+                feedbackTitle.className = "font-extrabold text-lg text-red-700";
+                feedbackBox.className = "p-5 rounded-2xl mb-5 shadow-sm bg-red-50 border border-red-200";
+                feedbackContent.innerHTML = feedbackIncorrect.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            }
+
+            // Mostrar área de retroalimentación
+            feedbackArea.classList.remove('hidden');
+            feedbackArea.classList.add('flex', 'flex-col', 'animate-fade-up');
+            nextButton.disabled = false;
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showEndScreen() {
+            quizScreen.classList.add('hidden');
+            quizScreen.classList.remove('flex');
+            endScreen.classList.remove('hidden');
+            endScreen.classList.add('flex', 'animate-fade-up');
+
+            finalScore.textContent = `${score} / ${questions.length}`;
+
+            if (score >= 12) {
+                finalIconContainer.className = "bg-emerald-50 p-6 rounded-full mb-6 border-4 border-emerald-100";
+                document.getElementById('final-icon').classList.replace('text-[#9d2449]', 'text-emerald-500');
+                finalTitle.textContent = "¡Eres una Defensora/r Ejemplar!";
+                finalTitle.className = "text-3xl md:text-4xl font-extrabold mb-4 text-emerald-600";
+                finalMessage.textContent = "Tu conocimiento sobre los derechos de la mujer nicaragüense es sobresaliente. ¡Sigue promoviendo la equidad y la dignidad!";
+                
+                // Gran confeti final
+                const duration = 3 * 1000;
+                const end = Date.now() + duration;
+                (function frame() {
+                    confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#9d2449', '#10b981', '#3b82f6'] });
+                    confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#9d2449', '#10b981', '#3b82f6'] });
+                    if (Date.now() < end) { requestAnimationFrame(frame); }
+                }());
+
+            } else if (score >= 7) {
+                finalIconContainer.className = "bg-amber-50 p-6 rounded-full mb-6 border-4 border-amber-100";
+                document.getElementById('final-icon').classList.replace('text-emerald-500', 'text-amber-500');
+                finalTitle.textContent = "¡Buen Trabajo!";
+                finalTitle.className = "text-3xl md:text-4xl font-extrabold mb-4 text-amber-500";
+                finalMessage.textContent = "Has demostrado un buen entendimiento. Repasa las respuestas incorrectas para consolidar tu rol como agente de cambio.";
+            } else {
+                finalIconContainer.className = "bg-rose-50 p-6 rounded-full mb-6 border-4 border-rose-100";
+                document.getElementById('final-icon').classList.replace('text-emerald-500', 'text-[#9d2449]');
+                finalTitle.textContent = "¡El Aprendizaje es Continuo!";
+                finalTitle.className = "text-3xl md:text-4xl font-extrabold mb-4 text-[#9d2449]";
+                finalMessage.textContent = "No te preocupes, el camino de la educación es largo. Te invitamos a jugar de nuevo para asegurar el dominio de los derechos fundamentales.";
+            }
+        }
+
+        // --- Event Listeners ---
+        startButton.addEventListener('click', startGame);
+        nextButton.addEventListener('click', nextQuestion);
+        restartButton.addEventListener('click', startGame);
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            quizScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+        });
+    </script>
+</body>
+</html>

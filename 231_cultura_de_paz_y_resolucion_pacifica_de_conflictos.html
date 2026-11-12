@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guardianes de la Paz - Creciendo en Valores</title>
+  <style>
+    /* ==========================================================================
+       VARIABLES Y PALETA DE COLORES INSTITUCIONAL
+       ========================================================================== */
+    :root {
+      --azul: #0059A6;
+      --celeste: #00A8E8;
+      --verde-lima: #A5C83F;
+      --amarillo: #FFEC01;
+      --fucsia: #E32085;
+      --morado: #833189;
+      --blanco: #FFFFFF;
+      --sombra: rgba(0, 0, 0, 0.15);
+      --fuente: 'Segoe UI', Roboto, 'Nunito', 'Comic Sans MS', sans-serif;
+    }
+
+    /* ==========================================================================
+       RESET Y LAYOUT GLOBAL (100% VIEWPORT SIN SCROLL)
+       ========================================================================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden; /* Garantiza ausencia de scroll */
+      font-family: var(--fuente);
+      background: linear-gradient(135deg, #E0F7FA 0%, #E1F5FE 50%, #F3E5F5 100%);
+      color: #222;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .app-container {
+      width: 100vw;
+      height: 100vh;
+      max-width: 1280px;
+      max-height: 800px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 0.8rem;
+      position: relative;
+    }
+
+    /* ==========================================================================
+       BARRA SUPERIOR (HEADER) & HUD
+       ========================================================================== */
+    header {
+      background: var(--blanco);
+      border-radius: 20px;
+      padding: 0.5rem 1rem;
+      box-shadow: 0 4px 15px var(--sombra);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      border: 3px solid var(--celeste);
+      z-index: 10;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .btn-icon {
+      background: var(--celeste);
+      color: var(--blanco);
+      border: none;
+      border-radius: 12px;
+      padding: 0.4rem 0.7rem;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 3px 0 var(--azul);
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .btn-icon:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.1);
+    }
+
+    .btn-icon:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 0 var(--azul);
+    }
+
+    .hud-stats {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+      font-weight: 800;
+    }
+
+    .stat-box {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      background: #F0F8FF;
+      padding: 0.3rem 0.8rem;
+      border-radius: 15px;
+      border: 2px solid var(--celeste);
+    }
+
+    .lives-box { color: var(--fucsia); }
+    .score-box { color: var(--azul); }
+    .badges-box { color: var(--morado); }
+
+    /* BARRA DE PROGRESO */
+    .progress-container {
+      flex: 1;
+      max-width: 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 16px;
+      background: #E0E0E0;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid var(--azul);
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--verde-lima), var(--amarillo));
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .progress-text {
+      font-size: 0.75rem;
+      font-weight: 900;
+      color: var(--azul);
+    }
+
+    /* ==========================================================================
+       ESCENARIOS Y PANTALLAS DE JUEGO
+       ========================================================================== */
+    main {
+      flex: 1;
+      margin: 0.6rem 0;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 0; /* Evita desbordamiento flex */
+    }
+
+    .screen {
+      width: 100%;
+      height: 100%;
+      background: var(--blanco);
+      border-radius: 24px;
+      box-shadow: 0 8px 25px var(--sombra);
+      border: 4px solid var(--azul);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .screen.active {
+      display: flex;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.98); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* PANTALLA INICIAL */
+    #startScreen {
+      background: linear-gradient(180deg, #FFFFFF 0%, #E0F7FA 100%);
+      justify-content: center;
+      gap: 1.5rem;
+      text-align: center;
+    }
+
+    .title-banner {
+      font-size: clamp(2rem, 4.5vw, 3.2rem);
+      color: var(--azul);
+      text-shadow: 3px 3px 0 var(--amarillo), -2px -2px 0 var(--celeste);
+      font-weight: 900;
+    }
+
+    .subtitle-text {
+      font-size: clamp(1.1rem, 2vw, 1.4rem);
+      color: var(--morado);
+      max-width: 650px;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    .btn-start {
+      background: linear-gradient(180deg, var(--verde-lima) 0%, #83a527 100%);
+      color: var(--blanco);
+      font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+      font-weight: 900;
+      padding: 1rem 2.8rem;
+      border: 4px solid var(--blanco);
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(165, 200, 63, 0.5);
+      transition: all 0.2s;
+    }
+
+    .btn-start:hover {
+      transform: scale(1.06) translateY(-3px);
+      box-shadow: 0 12px 25px rgba(165, 200, 63, 0.7);
+    }
+
+    /* BANNER DE NIVEL Y ESCENARIO */
+    .scenario-header {
+      width: 100%;
+      background: linear-gradient(90deg, var(--azul), var(--celeste));
+      color: var(--blanco);
+      padding: 0.5rem 1rem;
+      border-radius: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 3px 8px var(--sombra);
+    }
+
+    .scenario-title {
+      font-size: clamp(1rem, 2vw, 1.3rem);
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .activity-container {
+      width: 100%;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-top: 0.5rem;
+      min-height: 0;
+      gap: 0.6rem;
+    }
+
+    /* ==========================================================================
+       ESTILOS DE ACTIVIDADES ESPECÍFICAS (NIVELES 1 AL 5)
+       ========================================================================== */
+    
+    /* ACTIVIDAD 1: ¿QUÉ HARÍAS? */
+    .q-card {
+      background: #F4F9FF;
+      border: 3px solid var(--celeste);
+      border-radius: 18px;
+      padding: 1rem;
+      width: 100%;
+      max-width: 800px;
+      text-align: center;
+      font-size: clamp(1.05rem, 2vw, 1.3rem);
+      font-weight: 800;
+      color: var(--azul);
+      box-shadow: 0 4px 10px var(--sombra);
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .btn-option {
+      background: var(--blanco);
+      border: 3px solid var(--azul);
+      border-radius: 16px;
+      padding: 0.9rem;
+      font-size: clamp(0.95rem, 1.6vw, 1.1rem);
+      font-weight: 700;
+      color: #333;
+      cursor: pointer;
+      box-shadow: 0 4px 0 var(--azul);
+      transition: all 0.15s;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .btn-option:hover {
+      background: #E1F5FE;
+      transform: translateY(-2px);
+    }
+
+    /* ACTIVIDAD 2: MATCH / ARRASTRA LA MEJOR SOLUCIÓN */
+    .match-wrapper {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 850px;
+      gap: 1.5rem;
+      height: 100%;
+      align-items: center;
+    }
+
+    .match-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+
+    .match-item {
+      background: #FFF8E1;
+      border: 3px solid var(--amarillo);
+      border-radius: 14px;
+      padding: 0.7rem 1rem;
+      font-size: clamp(0.85rem, 1.4vw, 1rem);
+      font-weight: 700;
+      box-shadow: 0 3px 6px var(--sombra);
+      min-height: 65px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .draggable-solution {
+      background: #E8F5E9;
+      border: 3px dashed var(--verde-lima);
+      cursor: grab;
+      transition: transform 0.2s, background-color 0.2s;
+    }
+
+    .draggable-solution:hover {
+      transform: scale(1.02);
+      background: #C8E6C9;
+    }
+
+    .draggable-solution.selected {
+      border-style: solid;
+      background: var(--verde-lima);
+      color: var(--blanco);
+    }
+
+    .drop-zone {
+      border: 3px dashed var(--celeste);
+      background: #F0F8FF;
+      border-radius: 14px;
+      min-height: 65px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #777;
+      padding: 0.5rem;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .drop-zone.hover {
+      background: #E1F5FE;
+      border-color: var(--azul);
+    }
+
+    .drop-zone.matched {
+      background: #E8F5E9;
+      border: 3px solid var(--verde-lima);
+      color: var(--azul);
+    }
+
+    /* ACTIVIDAD 3: SEMÁFORO DE LA CONVIVENCIA */
+    .semaforo-container {
+      display: flex;
+      gap: 1rem;
+      width: 100%;
+      max-width: 900px;
+      height: 58%;
+    }
+
+    .zone-box {
+      flex: 1;
+      border-radius: 18px;
+      padding: 0.6rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 10px var(--sombra);
+      overflow-y: auto;
+    }
+
+    .zone-verde { background: #E8F5E9; border: 4px solid var(--verde-lima); }
+    .zone-amarillo { background: #FFFDE7; border: 4px solid var(--amarillo); }
+    .zone-rojo { background: #FFEBEE; border: 4px solid var(--fucsia); }
+
+    .zone-title {
+      font-weight: 900;
+      font-size: clamp(0.9rem, 1.4vw, 1.1rem);
+      padding: 0.3rem 0.8rem;
+      border-radius: 12px;
+      background: var(--blanco);
+      box-shadow: 0 2px 4px var(--sombra);
+    }
+
+    .cards-bank {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      width: 100%;
+      max-width: 900px;
+      padding: 0.5rem;
+      background: #F5F5F5;
+      border-radius: 16px;
+      border: 2px solid #DDD;
+    }
+
+    .chip-card {
+      background: var(--blanco);
+      border: 2.5px solid var(--azul);
+      border-radius: 12px;
+      padding: 0.4rem 0.8rem;
+      font-size: clamp(0.8rem, 1.3vw, 0.95rem);
+      font-weight: 800;
+      cursor: grab;
+      box-shadow: 0 3px 6px var(--sombra);
+      transition: transform 0.15s;
+    }
+
+    .chip-card:hover {
+      transform: translateY(-2px) scale(1.03);
+    }
+
+    .chip-card.selected {
+      background: var(--celeste);
+      color: var(--blanco);
+    }
+
+    /* ACTIVIDAD 4: DETECTIVES DE LA PAZ */
+    .detective-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.8rem;
+      width: 100%;
+      max-width: 850px;
+    }
+
+    .detective-card {
+      background: var(--blanco);
+      border: 3.5px solid var(--celeste);
+      border-radius: 18px;
+      padding: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      box-shadow: 0 4px 10px var(--sombra);
+      transition: all 0.2s;
+    }
+
+    .detective-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 16px var(--sombra);
+    }
+
+    .detective-card.found {
+      border-color: var(--verde-lima);
+      background: #E8F5E9;
+      box-shadow: 0 0 15px var(--verde-lima);
+      pointer-events: none;
+    }
+
+    .detective-icon {
+      font-size: 2.2rem;
+    }
+
+    /* ACTIVIDAD 5: ÁRBOLES DE LA PAZ */
+    .tree-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 880px;
+      gap: 1rem;
+      height: 100%;
+    }
+
+    .tree-svg-container {
+      flex: 1;
+      max-width: 380px;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .word-cloud {
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      justify-content: center;
+      align-content: center;
+    }
+
+    .word-btn {
+      background: var(--blanco);
+      border: 3px solid var(--morado);
+      color: var(--morado);
+      border-radius: 20px;
+      padding: 0.6rem 1.1rem;
+      font-size: clamp(0.85rem, 1.4vw, 1.1rem);
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 0 var(--morado);
+      transition: all 0.15s;
+    }
+
+    .word-btn:hover {
+      transform: scale(1.05);
+      background: #F3E5F5;
+    }
+
+    .word-btn.selected {
+      background: var(--morado);
+      color: var(--blanco);
+    }
+
+    /* ==========================================================================
+       MODALES, DIÁLOGOS Y CELEBRACIÓN
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: var(--blanco);
+      border-radius: 28px;
+      padding: 1.8rem;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+      border: 6px solid var(--amarillo);
+      transform: scale(0.8);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-title {
+      font-size: 1.8rem;
+      color: var(--azul);
+      font-weight: 900;
+    }
+
+    .modal-body {
+      font-size: 1.1rem;
+      color: #444;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    /* DIPLOMA Y FINAL DEL JUEGO */
+    #victoryScreen {
+      background: linear-gradient(135deg, #FFFDE7 0%, #FFF 100%);
+      justify-content: space-between;
+      padding: 1.2rem;
+    }
+
+    .diploma-card {
+      border: 8px double var(--amarillo);
+      background: #FFFFF8;
+      border-radius: 20px;
+      padding: 1.2rem;
+      width: 100%;
+      max-width: 750px;
+      text-align: center;
+      box-shadow: inset 0 0 20px rgba(255,236,1,0.2), 0 8px 20px var(--sombra);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .diploma-title {
+      font-size: clamp(1.4rem, 2.8vw, 2.2rem);
+      color: var(--azul);
+      font-weight: 900;
+    }
+
+    .diploma-name-input {
+      border: none;
+      border-bottom: 3px solid var(--fucsia);
+      font-size: clamp(1.2rem, 2.2vw, 1.6rem);
+      font-weight: 900;
+      color: var(--morado);
+      text-align: center;
+      padding: 0.2rem 0.5rem;
+      outline: none;
+      background: transparent;
+      width: 80%;
+    }
+
+    .badges-grid {
+      display: flex;
+      gap: 0.8rem;
+      justify-content: center;
+      margin: 0.4rem 0;
+    }
+
+    .badge-item {
+      background: #F0F8FF;
+      border: 2px solid var(--celeste);
+      border-radius: 12px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--azul);
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    /* PARTÍCULAS DE CONFETI DOM */
+    .confetti-piece {
+      position: fixed;
+      width: 10px;
+      height: 14px;
+      top: -20px;
+      z-index: 999;
+      pointer-events: none;
+      animation: confettiFall linear forwards;
+    }
+
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* ANIMACIONES DE RETROALIMENTACIÓN */
+    .bounce { animation: bounce 0.5s ease; }
+    .shake { animation: shake 0.4s ease; }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px) scale(1.03); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- ENCABEZADO Y HUD -->
+    <header>
+      <div class="nav-buttons">
+        <button class="btn-icon" id="btnHome" title="Inicio">🏠</button>
+        <button class="btn-icon" id="btnReset" title="Reiniciar">🔄</button>
+        <button class="btn-icon" id="btnSound" title="Sonido">🔊</button>
+        <button class="btn-icon" id="btnHelp" title="Ayuda">❓</button>
+      </div>
+
+      <div class="hud-stats">
+        <div class="stat-box lives-box">
+          <span>❤️</span> <span id="livesText">3</span>
+        </div>
+        <div class="stat-box score-box">
+          <span>⭐</span> <span id="scoreText">0</span> pts
+        </div>
+        <div class="stat-box badges-box">
+          <span>🏅</span> <span id="badgesText">0</span>/4
+        </div>
+        <div class="progress-container">
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progressBar"></div>
+          </div>
+          <span class="progress-text" id="progressText">Nivel 1 (0%)</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ÁREA PRINCIPAL DE CONTENIDO -->
+    <main>
+      <!-- PANTALLA INICIAL -->
+      <section class="screen active" id="startScreen">
+        <div style="font-size: 4rem; animation: bounce 2s infinite;">🕊️</div>
+        <h1 class="title-banner">Guardianes de la Paz</h1>
+        <p class="subtitle-text">
+          "Aprende a resolver conflictos mediante el diálogo, el respeto, la empatía y la cooperación."
+        </p>
+        <button class="btn-start" id="btnStartGame">▶ Comenzar aventura</button>
+      </section>
+
+      <!-- PANTALLA DE JUEGO (NIVELES) -->
+      <section class="screen" id="gameScreen">
+        <div class="scenario-header">
+          <div class="scenario-title" id="scenarioTitle">
+            🏫 Cargando nivel...
+          </div>
+          <div style="font-weight: 800; font-size: 0.9rem;" id="scenarioGoal">
+            Objetivo
+          </div>
+        </div>
+
+        <div class="activity-container" id="activityContainer">
+          <!-- El contenido de las actividades se inyecta dinámicamente -->
+        </div>
+      </section>
+
+      <!-- PANTALLA FINAL (VICTORIA Y DIPLOMA) -->
+      <section class="screen" id="victoryScreen">
+        <div style="font-size: 3.5rem; animation: bounce 1s infinite;">🏆</div>
+        <h1 style="color: var(--azul); font-size: 1.8rem; font-weight: 900;">¡Felicitaciones!</h1>
+        
+        <div class="diploma-card">
+          <div style="font-size: 2.5rem;">📜</div>
+          <div class="diploma-title">DIPLOMA DE HONOR</div>
+          <p style="font-size: 1rem; font-weight: 700; color: #555;">Se otorga con orgullo el título de:</p>
+          <div style="font-size: 1.3rem; font-weight: 900; color: var(--fucsia);">"Embajador Escolar de la Paz"</div>
+          <p style="font-size: 0.95rem; font-weight: 700; color: #555;">A:</p>
+          <input type="text" class="diploma-name-input" id="diplomaName" value="Estudiante Guardián" placeholder="Escribe tu nombre aquí">
+          <p style="font-size: 0.85rem; color: #666; font-weight: 700; margin-top: 0.3rem;">
+            Por demostrar excelentes habilidades para resolver conflictos mediante el diálogo y la empatía.
+          </p>
+          
+          <div class="badges-grid" id="finalBadgesGrid">
+            <!-- Insignias obtenidas -->
+          </div>
+        </div>
+
+        <button class="btn-start" id="btnPlayAgain" style="padding: 0.7rem 2rem; font-size: 1.2rem;">
+          🔄 Jugar nuevamente
+        </button>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL DE FEEDBACK / MENSAJES -->
+  <div class="modal-overlay" id="feedbackModal">
+    <div class="modal-card" id="modalCard">
+      <div id="modalIcon" style="font-size: 3.5rem;">😊</div>
+      <div class="modal-title" id="modalTitle">¡Excelente!</div>
+      <div class="modal-body" id="modalBody">Mensaje de retroalimentación...</div>
+      <button class="btn-icon" id="modalBtnNext" style="background: var(--verde-lima); font-size: 1.1rem; padding: 0.6rem 1.8rem; box-shadow: 0 4px 0 #789620;">
+        Continuar ➔
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL DE AYUDA -->
+  <div class="modal-overlay" id="helpModal">
+    <div class="modal-card" style="border-color: var(--celeste);">
+      <div style="font-size: 3rem;">❓</div>
+      <div class="modal-title">¿Cómo jugar?</div>
+      <div class="modal-body" style="text-align: left; font-size: 0.95rem;">
+        <p>• Recorre los 5 escenarios de la escuela resolviendo cada desafío.</p><br>
+        <p>• Lee atentamente cada situación y elige acciones pacíficas.</p><br>
+        <p>• Tienes 3 corazones ❤️. Cada error restará una vida.</p><br>
+        <p>• Completa las actividades para ganar puntos ⭐ e Insignias 🏅 de la Paz.</p>
+      </div>
+      <button class="btn-icon" id="btnCloseHelp" style="background: var(--azul); padding: 0.5rem 1.5rem;">Entendido</button>
+    </div>
+  </div>
+
+  <!-- CONTENEDOR DE CONFETI -->
+  <div id="confettiContainer"></div>
+
+  <!-- SCRIPT Y LÓGICA DEL JUEGO -->
+  <script>
+    /* ==========================================================================
+       ESTADO DEL JUEGO Y CONFIGURACIÓN GLOBAL
+       ========================================================================== */
+    const gameState = {
+      level: 1,
+      lives: 3,
+      score: 0,
+      badges: [],
+      soundEnabled: true,
+      selectedItem: null // Para mecánicas de arrastrar/seleccionar en pantallas táctiles
+    };
+
+    const scenarios = [
+      { name: "Aula de Clases", icon: "🏫", goal: "Resolver dilemas de convivencia" },
+      { name: "Patio Escolar", icon: "🛝", goal: "Relacionar conflictos con soluciones" },
+      { name: "Biblioteca", icon: "📚", goal: "Clasificar acciones en el semáforo" },
+      { name: "Comedor Escolar", icon: "🍎", goal: "Detectar acciones pacíficas" },
+      { name: "Cancha Deportiva", icon: "⚽", goal: "Hacer florecer el Árbol de la Paz" }
+    ];
+
+    const badgesData = [
+      { id: 1, name: "Amigo Respetuoso", icon: "🥇" },
+      { id: 2, name: "Gran Dialogante", icon: "🥈" },
+      { id: 3, name: "Constructor de Paz", icon: "🥉" },
+      { id: 4, name: "Embajador Escolar de la Paz", icon: "🏆" }
+    ];
+
+    /* ==========================================================================
+       SINTETIZADOR DE SONIDOS (WEB AUDIO API 100% OFFLINE)
+       ========================================================================== */
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playSound(type) {
+      if (!gameState.soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+
+        if (type === 'success') {
+          const notes = [523.25, 659.25, 783.99, 1046.50];
+          notes.forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.frequency.setValueAtTime(freq, now + i * 0.08);
+            gain.gain.setValueAtTime(0.15, now + i * 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.2);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + i * 0.08);
+            osc.stop(now + i * 0.08 + 0.2);
+          });
+        } else if (type === 'error') {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(180, now);
+          osc.frequency.linearRampToValueAtTime(100, now + 0.25);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.25);
+        } else if (type === 'click') {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.frequency.setValueAtTime(400, now);
+          gain.gain.setValueAtTime(0.1, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.05);
+        } else if (type === 'victory') {
+          const notes = [523.25, 659.25, 783.99, 1046.50, 880, 1046.50];
+          notes.forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.frequency.setValueAtTime(freq, now + i * 0.12);
+            gain.gain.setValueAtTime(0.2, now + i * 0.12);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.3);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + i * 0.12);
+            osc.stop(now + i * 0.12 + 0.3);
+          });
+        }
+      } catch (e) {}
+    }
+
+    /* ==========================================================================
+       ACTUALIZACIÓN DE INTERFAZ Y HUD
+       ========================================================================== */
+    function updateHUD() {
+      document.getElementById('livesText').textContent = gameState.lives;
+      document.getElementById('scoreText').textContent = gameState.score;
+      document.getElementById('badgesText').textContent = gameState.badges.length;
+
+      const progressPct = ((gameState.level - 1) / 5) * 100;
+      document.getElementById('progressBar').style.width = `${progressPct}%`;
+      document.getElementById('progressText').textContent = `Nivel ${gameState.level} (${progressPct}%)`;
+    }
+
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+    }
+
+    /* ==========================================================================
+       SISTEMA DE RETROALIMENTACIÓN Y MODALES
+       ========================================================================== */
+    function showFeedback(isCorrect, title, message, callback) {
+      const modal = document.getElementById('feedbackModal');
+      const card = document.getElementById('modalCard');
+      const icon = document.getElementById('modalIcon');
+      const titleElem = document.getElementById('modalTitle');
+      const bodyElem = document.getElementById('modalBody');
+      const btn = document.getElementById('modalBtnNext');
+
+      if (isCorrect) {
+        playSound('success');
+        icon.textContent = '😊⭐';
+        titleElem.textContent = title || '¡Excelente Trabajo!';
+        titleElem.style.color = 'var(--verde-lima)';
+        card.style.borderColor = 'var(--verde-lima)';
+        card.classList.add('bounce');
+      } else {
+        playSound('error');
+        icon.textContent = '😢';
+        titleElem.textContent = title || '¡Piénsalo bien!';
+        titleElem.style.color = 'var(--fucsia)';
+        card.style.borderColor = 'var(--fucsia)';
+        card.classList.add('shake');
+      }
+
+      bodyElem.textContent = message;
+      modal.classList.add('active');
+
+      const handleNext = () => {
+        modal.classList.remove('active');
+        card.classList.remove('bounce', 'shake');
+        btn.removeEventListener('click', handleNext);
+        if (callback) callback();
+      };
+
+      btn.addEventListener('click', handleNext);
+    }
+
+    function checkLevelCompletion() {
+      // Otorgar insignias según nivel
+      if (gameState.level <= 4 && !gameState.badges.includes(gameState.level)) {
+        gameState.badges.push(gameState.level);
+      }
+
+      if (gameState.level < 5) {
+        gameState.level++;
+        updateHUD();
+        loadLevel(gameState.level);
+      } else {
+        // Victoria Final
+        gameState.level = 5;
+        document.getElementById('progressBar').style.width = '100%';
+        document.getElementById('progressText').textContent = '¡100% Completado!';
+        playSound('victory');
+        triggerConfetti();
+        renderFinalBadges();
+        showScreen('victoryScreen');
+      }
+    }
+
+    function handleIncorrectAnswer(message) {
+      gameState.lives--;
+      updateHUD();
+
+      if (gameState.lives <= 0) {
+        showFeedback(false, "¡No te rindas!", "Has perdido tus corazones. ¡El diálogo requiere práctica! Inténtalo de nuevo.", () => {
+          resetGame();
+        });
+      } else {
+        showFeedback(false, "Respuesta Incorrecta", message || "Piensa nuevamente. El diálogo y el respeto siempre ayudan a resolver conflictos.");
+      }
+    }
+
+    /* ==========================================================================
+       CARGADOR Y LÓGICA DE NIVELES
+       ========================================================================== */
+    function loadLevel(lvl) {
+      const current = scenarios[lvl - 1];
+      document.getElementById('scenarioTitle').innerHTML = `${current.icon} Nivel ${lvl}: ${current.name}`;
+      document.getElementById('scenarioGoal').textContent = current.goal;
+
+      const container = document.getElementById('activityContainer');
+      container.innerHTML = '';
+
+      if (lvl === 1) loadLevel1(container);
+      else if (lvl === 2) loadLevel2(container);
+      else if (lvl === 3) loadLevel3(container);
+      else if (lvl === 4) loadLevel4(container);
+      else if (lvl === 5) loadLevel5(container);
+    }
+
+    /* --------------------------------------------------------------------------
+       NIVEL 1: AULA - ¿QUÉ HARÍAS? (OPCIÓN MÚLTIPLE)
+       -------------------------------------------------------------------------- */
+    function loadLevel1(container) {
+      container.innerHTML = `
+        <div class="q-card">
+          "Dos compañeros en el aula quieren utilizar el mismo juego educativo al mismo tiempo. ¿Cuál es la mejor acción pacífica?"
+        </div>
+        <div class="options-grid">
+          <button class="btn-option" data-correct="true">
+            <span>🗣️</span> Hablar con respeto y turnarse para jugar juntos.
+          </button>
+          <button class="btn-option" data-correct="false">
+            <span>💪</span> Empujar al compañero para quedarse con el juego.
+          </button>
+          <button class="btn-option" data-correct="false">
+            <span>🗣️💥</span> Insultar para que el otro se asuste y se vaya.
+          </button>
+          <button class="btn-option" data-correct="false">
+            <span>🙈</span> Quitar el juego escondido y no prestárselo a nadie.
+          </button>
+        </div>
+      `;
+
+      container.querySelectorAll('.btn-option').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          playSound('click');
+          const isCorrect = btn.getAttribute('data-correct') === 'true';
+          if (isCorrect) {
+            gameState.score += 10;
+            updateHUD();
+            showFeedback(true, "¡Excelente elección!", "Dialogar y turnarse fomenta la amistad y la justicia.", checkLevelCompletion);
+          } else {
+            handleIncorrectAnswer("Las acciones agresivas dañan la convivencia. El diálogo siempre es la mejor vía.");
+          }
+        });
+      });
+    }
+
+    /* --------------------------------------------------------------------------
+       NIVEL 2: PATIO - ARRASTRA LA MEJOR SOLUCIÓN
+       -------------------------------------------------------------------------- */
+    function loadLevel2(container) {
+      const matches = [
+        { c: "Un compañero rompió tu cuaderno sin querer.", s: "Hablar con respeto y aceptar sus disculpas.", id: 1 },
+        { c: "Nadie te incluye en el juego de fútbol.", s: "Pedir amablemente participar y proponer cooperar.", id: 2 },
+        { c: "Un estudiante se empujó en la fila.", s: "Explicarle con calma que hay un orden.", id: 3 }
+      ];
+
+      // Shuffle solutions
+      const shuffledSolutions = [...matches].sort(() => Math.random() - 0.5);
+
+      let html = `
+        <div style="font-size:0.95rem; font-weight:800; color:var(--morado); text-align:center;">
+          Haz clic o toca un conflicto y luego su solución correcta:
+        </div>
+        <div class="match-wrapper">
+          <div class="match-column" id="conflictsCol">`;
+      
+      matches.forEach(m => {
+        html += `<div class="match-item" data-id="${m.id}">
+                  <span>⚡ ${m.c}</span>
+                  <div class="drop-zone" data-target="${m.id}">Seleccionar Solución</div>
+                </div>`;
+      });
+
+      html += `</div><div class="match-column" id="solutionsCol">`;
+
+      shuffledSolutions.forEach(s => {
+        html += `<div class="match-item draggable-solution" data-id="${s.id}">
+                  💡 ${s.s}
+                </div>`;
+      });
+
+      html += `</div></div>`;
+      container.innerHTML = html;
+
+      let selectedSolution = null;
+      let matchedCount = 0;
+
+      // Lógica interactiva amigable táctil / click
+      container.querySelectorAll('.draggable-solution').forEach(sol => {
+        sol.addEventListener('click', () => {
+          playSound('click');
+          container.querySelectorAll('.draggable-solution').forEach(s => s.classList.remove('selected'));
+          selectedSolution = sol;
+          sol.classList.add('selected');
+        });
+      });
+
+      container.querySelectorAll('.drop-zone').forEach(zone => {
+        zone.addEventListener('click', () => {
+          if (!selectedSolution) {
+            alert("Primero selecciona una solución de la columna derecha.");
+            return;
+          }
+
+          const targetId = zone.getAttribute('data-target');
+          const solId = selectedSolution.getAttribute('data-id');
+
+          if (targetId === solId) {
+            playSound('success');
+            zone.classList.add('matched');
+            zone.textContent = selectedSolution.textContent;
+            selectedSolution.style.visibility = 'hidden';
+            selectedSolution.classList.remove('selected');
+            selectedSolution = null;
+            matchedCount++;
+
+            if (matchedCount === matches.length) {
+              gameState.score += 10;
+              updateHUD();
+              showFeedback(true, "¡Emparejamiento Perfecto!", "Resolviste cada problema del patio con una actitud constructiva.", checkLevelCompletion);
+            }
+          } else {
+            handleIncorrectAnswer("Esa solución no se adapta bien a este conflicto. ¡Intenta con otra!");
+          }
+        });
+      });
+    }
+
+    /* --------------------------------------------------------------------------
+       NIVEL 3: BIBLIOTECA - SEMÁFORO DE LA CONVIVENCIA
+       -------------------------------------------------------------------------- */
+    function loadLevel3(container) {
+      const items = [
+        { text: "Escuchar con atención", zone: "verde" },
+        { text: "Compartir libros", zone: "verde" },
+        { text: "Impacientarse en silencio", zone: "amarillo" },
+        { text: "Hablar muy fuerte", zone: "amarillo" },
+        { text: "Gritar e insultar", zone: "rojo" },
+        { text: "Empujar los estantes", zone: "rojo" }
+      ];
+
+      container.innerHTML = `
+        <div class="cards-bank" id="chipsBank">
+          <!-- Tarjetas a clasificar -->
+        </div>
+        <div class="semaforo-container">
+          <div class="zone-box zone-verde" data-zone="verde">
+            <div class="zone-title" style="color:#2E7D32;">🟢 Verde: Promueve Paz</div>
+          </div>
+          <div class="zone-box zone-amarillo" data-zone="amarillo">
+            <div class="zone-title" style="color:#F57F17;">🟡 Amarillo: Reflexionar</div>
+          </div>
+          <div class="zone-box zone-rojo" data-zone="rojo">
+            <div class="zone-title" style="color:#C62828;">🔴 Rojo: Violencia</div>
+          </div>
+        </div>
+      `;
+
+      const bank = document.getElementById('chipsBank');
+      const shuffled = [...items].sort(() => Math.random() - 0.5);
+
+      shuffled.forEach((item, index) => {
+        const chip = document.createElement('div');
+        chip.className = 'chip-card';
+        chip.textContent = item.text;
+        chip.setAttribute('data-zone', item.zone);
+        chip.setAttribute('id', `chip-${index}`);
+        bank.appendChild(chip);
+      });
+
+      let selectedChip = null;
+
+      container.querySelectorAll('.chip-card').forEach(chip => {
+        chip.addEventListener('click', () => {
+          playSound('click');
+          container.querySelectorAll('.chip-card').forEach(c => c.classList.remove('selected'));
+          selectedChip = chip;
+          chip.classList.add('selected');
+        });
+      });
+
+      container.querySelectorAll('.zone-box').forEach(zone => {
+        zone.addEventListener('click', () => {
+          if (!selectedChip) return;
+
+          const correctZone = selectedChip.getAttribute('data-zone');
+          const targetZone = zone.getAttribute('data-zone');
+
+          if (correctZone === targetZone) {
+            playSound('success');
+            zone.appendChild(selectedChip);
+            selectedChip.classList.remove('selected');
+            selectedChip.style.cursor = 'default';
+            selectedChip = null;
+
+            // Verificar si el banco está vacío
+            if (bank.children.length === 0) {
+              gameState.score += 10;
+              updateHUD();
+              showFeedback(true, "¡Semáforo Completado!", "Clasificaste correctamente todas las acciones para la paz.", checkLevelCompletion);
+            }
+          } else {
+            handleIncorrectAnswer("Esa acción pertenece a otro color del semáforo. Piensa cuál es el efecto de esa conducta.");
+          }
+        });
+      });
+    }
+
+    /* --------------------------------------------------------------------------
+       NIVEL 4: COMEDOR - DETECTIVES DE LA PAZ
+       -------------------------------------------------------------------------- */
+    function loadLevel4(container) {
+      const actions = [
+        { text: "Compartir la mesa y sonreír", isPeaceful: true, icon: "😊" },
+        { text: "Tirar la comida al suelo", isPeaceful: false, icon: "😡" },
+        { text: "Decir 'por favor' y 'gracias'", isPeaceful: true, icon: "🤝" },
+        { text: "Burlarse de la comida de otro", isPeaceful: false, icon: "😝" },
+        { text: "Ayudar a limpiar la mesa", isPeaceful: true, icon: "🧹" },
+        { text: "Gritar para pedir más jugo", isPeaceful: false, icon: "📢" }
+      ];
+
+      container.innerHTML = `
+        <div style="font-size:1rem; font-weight:800; color:var(--azul); text-align:center;">
+          Haz clic ÚNICAMENTE en las 3 acciones que promueven una convivencia pacífica:
+        </div>
+        <div class="detective-grid" id="detectiveGrid"></div>
+      `;
+
+      const grid = document.getElementById('detectiveGrid');
+      let foundCount = 0;
+
+      actions.forEach(act => {
+        const card = document.createElement('div');
+        card.className = 'detective-card';
+        card.innerHTML = `
+          <div class="detective-icon">${act.icon}</div>
+          <div style="font-weight:700; font-size:0.95rem;">${act.text}</div>
+        `;
+
+        card.addEventListener('click', () => {
+          if (act.isPeaceful) {
+            playSound('success');
+            card.classList.add('found');
+            foundCount++;
+
+            if (foundCount === 3) {
+              gameState.score += 10;
+              updateHUD();
+              showFeedback(true, "¡Gran Detective!", "Identificaste todas las acciones positivas en el comedor.", checkLevelCompletion);
+            }
+          } else {
+            handleIncorrectAnswer("¡Cuidado! Esa acción no demuestra respeto ni convivencia pacífica.");
+          }
+        });
+
+        grid.appendChild(card);
+      });
+    }
+
+    /* --------------------------------------------------------------------------
+       NIVEL 5: CANCHA DEPORTIVA - ÁRBOL DE LA PAZ
+       -------------------------------------------------------------------------- */
+    function loadLevel5(container) {
+      const words = [
+        { text: "Respeto", isPositive: true },
+        { text: "Empatía", isPositive: true },
+        { text: "Solidaridad", isPositive: true },
+        { text: "Diálogo", isPositive: true },
+        { text: "Cooperación", isPositive: true },
+        { text: "Violencia", isPositive: false },
+        { text: "Insultos", isPositive: false },
+        { text: "Egoísmo", isPositive: false }
+      ];
+
+      container.innerHTML = `
+        <div class="tree-wrapper">
+          <div class="tree-svg-container">
+            <svg viewBox="0 0 200 240" width="100%" height="100%">
+              <!-- Tronco -->
+              <path d="M85,220 Q95,140 70,100 Q100,110 115,220 Z" fill="#795548"/>
+              <path d="M115,220 Q105,140 130,100 Q100,110 85,220 Z" fill="#5D4037"/>
+              <!-- Copa del árbol / Flores agregadas -->
+              <circle id="treeCrown" cx="100" cy="90" r="65" fill="#C8E6C9" stroke="#A5C83F" stroke-width="4"/>
+              <g id="treeLeaves"></g>
+            </svg>
+          </div>
+          <div class="word-cloud" id="wordCloud">
+            <div style="width:100%; text-align:center; font-weight:800; color:var(--morado); margin-bottom:0.5rem;">
+              Selecciona solo los valores positivos para hacer florecer el árbol:
+            </div>
+          </div>
+        </div>
+      `;
+
+      const cloud = document.getElementById('wordCloud');
+      const leavesGroup = document.getElementById('treeLeaves');
+      const shuffled = [...words].sort(() => Math.random() - 0.5);
+      let positiveAdded = 0;
+
+      shuffled.forEach(w => {
+        const btn = document.createElement('button');
+        btn.className = 'word-btn';
+        btn.textContent = w.text;
+
+        btn.addEventListener('click', () => {
+          if (w.isPositive) {
+            playSound('success');
+            btn.style.visibility = 'hidden';
+            positiveAdded++;
+
+            // Agregar hoja/flor al SVG
+            const angle = (positiveAdded * 72) * (Math.PI / 180);
+            const cx = 100 + 40 * Math.cos(angle);
+            const cy = 90 + 40 * Math.sin(angle);
+
+            const flower = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            flower.setAttribute("cx", cx);
+            flower.setAttribute("cy", cy);
+            flower.setAttribute("r", "16");
+            flower.setAttribute("fill", positiveAdded % 2 === 0 ? "#E32085" : "#FFEC01");
+            flower.setAttribute("stroke", "#833189");
+            flower.setAttribute("stroke-width", "2");
+            leavesGroup.appendChild(flower);
+
+            if (positiveAdded === 5) {
+              gameState.score += 10;
+              updateHUD();
+              showFeedback(true, "¡El Árbol de la Paz ha Florecido!", "Llenaste nuestra escuela de valores positivos.", checkLevelCompletion);
+            }
+          } else {
+            handleIncorrectAnswer("Las palabras negativas secan el árbol de la convivencia. ¡Elige valores positivos!");
+          }
+        });
+
+        cloud.appendChild(btn);
+      });
+    }
+
+    /* ==========================================================================
+       FINAL DEL JUEGO: DIPLOMA E INSIGNIAS
+       ========================================================================== */
+    function renderFinalBadges() {
+      const container = document.getElementById('finalBadgesGrid');
+      container.innerHTML = '';
+
+      badgesData.forEach(b => {
+        const badge = document.createElement('div');
+        badge.className = 'badge-item';
+        badge.innerHTML = `<span>${b.icon}</span> <span>${b.name}</span>`;
+        container.appendChild(badge);
+      });
+    }
+
+    /* ==========================================================================
+       CONFETI ANIMADO
+       ========================================================================== */
+    function triggerConfetti() {
+      const container = document.getElementById('confettiContainer');
+      container.innerHTML = '';
+      const colors = ['#0059A6', '#00A8E8', '#A5C83F', '#FFEC01', '#E32085', '#833189'];
+
+      for (let i = 0; i < 80; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti-piece';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.animationDuration = (2 + Math.random() * 2.5) + 's';
+        confetti.style.animationDelay = (Math.random() * 0.5) + 's';
+        confetti.style.width = (8 + Math.random() * 8) + 'px';
+        confetti.style.height = (12 + Math.random() * 8) + 'px';
+        container.appendChild(confetti);
+      }
+    }
+
+    /* ==========================================================================
+       CONTROLES Y REINICIO
+       ========================================================================== */
+    function resetGame() {
+      gameState.level = 1;
+      gameState.lives = 3;
+      gameState.score = 0;
+      gameState.badges = [];
+      updateHUD();
+      showScreen('startScreen');
+    }
+
+    // Event Listeners Nav
+    document.getElementById('btnStartGame').addEventListener('click', () => {
+      playSound('click');
+      showScreen('gameScreen');
+      loadLevel(1);
+    });
+
+    document.getElementById('btnHome').addEventListener('click', () => {
+      playSound('click');
+      showScreen('startScreen');
+    });
+
+    document.getElementById('btnReset').addEventListener('click', () => {
+      playSound('click');
+      resetGame();
+    });
+
+    document.getElementById('btnSound').addEventListener('click', () => {
+      gameState.soundEnabled = !gameState.soundEnabled;
+      document.getElementById('btnSound').textContent = gameState.soundEnabled ? '🔊' : '🔇';
+    });
+
+    document.getElementById('btnHelp').addEventListener('click', () => {
+      playSound('click');
+      document.getElementById('helpModal').classList.add('active');
+    });
+
+    document.getElementById('btnCloseHelp').addEventListener('click', () => {
+      playSound('click');
+      document.getElementById('helpModal').classList.remove('active');
+    });
+
+    document.getElementById('btnPlayAgain').addEventListener('click', () => {
+      playSound('click');
+      resetGame();
+    });
+
+    // Inicializar HUD
+    updateHUD();
+  </script>
+</body>
+</html>

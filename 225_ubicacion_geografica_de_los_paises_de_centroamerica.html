@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover" />
+    <title>🗺️ Ruleta Geográfica de Centroamérica</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.5rem;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            max-width: 950px;
+            width: 100%;
+            background: #0c4a6e;
+            border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), inset 0 0 0 8px #fde047;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 8px solid #854d0e;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            padding: 1.5rem;
+            flex-direction: column;
+            align-items: center;
+        }
+        .screen.active {
+            display: flex;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* ===== INTRO ===== */
+        .intro-screen {
+            text-align: center;
+            background: radial-gradient(circle, #0284c7 0%, #0f172a 100%);
+            color: white;
+        }
+        .mascot {
+            font-size: 6rem;
+            margin-bottom: 0.5rem;
+            animation: float 2.5s infinite ease-in-out;
+            filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.4));
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+        h1 {
+            font-size: 2.8rem;
+            color: #fde047;
+            margin-bottom: 0.8rem;
+            text-shadow: 3px 3px 0px #854d0e;
+            text-transform: uppercase;
+        }
+        .instruction-box {
+            background: rgba(0, 0, 0, 0.35);
+            border: 3px dashed #fde047;
+            padding: 1.5rem;
+            border-radius: 20px;
+            font-size: 1.25rem;
+            color: #ffffff;
+            margin-bottom: 1.8rem;
+            text-align: center;
+            line-height: 1.6;
+            max-width: 700px;
+        }
+        .highlight { color: #fde047; font-weight: bold; }
+
+        .btn-start {
+            background: #facc15;
+            color: #713f12;
+            font-size: 1.8rem;
+            font-weight: bold;
+            padding: 15px 45px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #a16207;
+            transition: all 0.1s;
+            text-transform: uppercase;
+        }
+        .btn-start:active {
+            transform: translateY(8px);
+            box-shadow: 0 0 0 #a16207;
+        }
+
+        /* ===== JUEGO ===== */
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #082f49;
+            padding: 12px 20px;
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 1rem;
+            border: 3px solid #fde047;
+        }
+        .status-text {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #fde047;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .main-area {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Ruleta Visual */
+        .wheel-container {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -15px;
+            z-index: 10;
+            font-size: 2.5rem;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+        }
+
+        .roulette-canvas {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 6px solid #fde047;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            transition: transform 4s cubic-bezier(0.15, 0.9, 0.2, 1);
+        }
+
+        .spin-btn {
+            position: absolute;
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            background: #ef4444;
+            color: white;
+            border: 4px solid #ffffff;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #991b1b, 0 10px 20px rgba(0,0,0,0.4);
+            z-index: 5;
+            transition: all 0.1s;
+        }
+        .spin-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 0 #991b1b;
+        }
+
+        /* Panel de Países / Preguntas */
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 480px;
+        }
+
+        .display-card {
+            background: #f8fafc;
+            border: 4px solid #38bdf8;
+            padding: 1.2rem;
+            border-radius: 18px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            text-align: center;
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .card-title {
+            color: #0369a1;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .card-text {
+            color: #0f172a;
+            font-size: 1.35rem;
+            font-weight: bold;
+            line-height: 1.3;
+        }
+
+        .country-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        .country-btn {
+            background: #0369a1;
+            color: white;
+            border: 3px solid #fde047;
+            padding: 10px 6px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 4px 0 #075985;
+            transition: all 0.1s;
+        }
+        .country-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #075985;
+        }
+
+        /* Botones de Modos */
+        .mode-buttons {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .mode-btn {
+            background: #0f172a;
+            border: 3px solid #38bdf8;
+            padding: 10px 25px;
+            font-size: 1.15rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            color: #f0f9ff;
+            transition: all 0.2s;
+        }
+        .mode-btn.active {
+            background: #fde047;
+            color: #713f12;
+            border-color: #ffffff;
+            box-shadow: 0 5px 0 #a16207;
+        }
+
+        /* ====== MODAL INVASIVO ====== */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active {
+            display: flex;
+            animation: popInModal 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popInModal {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 2.2rem;
+            border-radius: 25px;
+            text-align: center;
+            max-width: 90%;
+            width: 530px;
+            border: 7px solid #333;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        }
+        .modal-content.info { border-color: #0284c7; }
+        .modal-content.success { border-color: #16a34a; }
+        .modal-content.error { border-color: #dc2626; }
+
+        .modal-title { font-size: 2rem; margin-bottom: 1rem; text-transform: uppercase; }
+        .info .modal-title { color: #0369a1; }
+        .success .modal-title { color: #15803d; }
+        .error .modal-title { color: #b91c1c; }
+
+        .modal-text {
+            font-size: 1.3rem;
+            margin-bottom: 1.8rem;
+            line-height: 1.5;
+            color: #0f172a;
+            white-space: pre-line;
+        }
+
+        .modal-close {
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            font-size: 1.25rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.1s;
+        }
+        .modal-close:active { transform: translateY(5px); box-shadow: none !important; }
+        .info .modal-close { background: #0284c7; box-shadow: 0 5px 0 #0369a1; }
+        .success .modal-close { background: #16a34a; box-shadow: 0 5px 0 #15803d; }
+        .error .modal-close { background: #dc2626; box-shadow: 0 5px 0 #991b1b; }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .mascot { font-size: 4.5rem; }
+            .main-area { flex-direction: column; }
+            .wheel-container { width: 260px; height: 260px; }
+            .roulette-canvas { width: 240px; height: 240px; }
+            .spin-btn { width: 65px; height: 65px; font-size: 0.95rem; }
+            .right-panel { width: 100%; max-width: 100%; }
+            .card-text { font-size: 1.1rem; }
+            .modal-content { padding: 1.5rem; }
+            .modal-title { font-size: 1.6rem; }
+            .modal-text { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- ===== MODAL INVASIVO ===== -->
+        <div id="feedbackModal" class="modal-overlay">
+            <div id="modalBox" class="modal-content">
+                <h2 id="modalTitle" class="modal-title">Título</h2>
+                <p id="modalText" class="modal-text">Texto de explicación</p>
+                <button id="modalBtn" class="modal-close">¡Entendido!</button>
+            </div>
+        </div>
+
+        <!-- ===== INTRO ===== -->
+        <div id="introScreen" class="screen intro-screen active">
+            <div class="mascot">🗺️🧭🌋</div>
+            <h1>Ruleta Centroamericana</h1>
+            <div class="instruction-box">
+                ¡Gira la ruleta y explora los 7 países de Centroamérica!<br><br>
+                Aprende sobre:<br>
+                🇬🇹 <span class="highlight">Guatemala</span> • 🇧🇿 <span class="highlight">Belice</span> • 🇸🇻 <span class="highlight">El Salvador</span><br>
+                🇭🇳 <span class="highlight">Honduras</span> • 🇳🇮 <span class="highlight">Nicaragua</span> • 🇨🇷 <span class="highlight">Costa Rica</span><br>
+                🇵🇦 <span class="highlight">Panamá</span> (Capitales, banderas y datos geográficos).
+            </div>
+            <button class="btn-start" id="startBtn">▶ ¡Girar y Explorar!</button>
+        </div>
+
+        <!-- ===== JUEGO ===== -->
+        <div id="gameScreen" class="screen">
+            <div class="header">
+                <div class="status-text" id="statusText">👨‍🏫 Gira la ruleta o toca un país para aprender</div>
+            </div>
+
+            <div class="main-area">
+                
+                <!-- Contenedor Ruleta -->
+                <div class="wheel-container">
+                    <div class="wheel-pointer">▼</div>
+                    <canvas id="rouletteCanvas" class="roulette-canvas" width="300" height="300"></canvas>
+                    <button class="spin-btn" id="spinBtn">GIRAR</button>
+                </div>
+
+                <!-- Panel Derecho -->
+                <div class="right-panel">
+                    <div class="display-card">
+                        <div class="card-title" id="cardTitle">📍 EXPEDICIÓN GEOGRÁFICA</div>
+                        <div class="card-text" id="cardText">¡Gira la ruleta para descubrir un país de Centroamérica!</div>
+                    </div>
+
+                    <div class="country-grid">
+                        <button class="country-btn" data-country="guatemala">🇬🇹 Guatemala</button>
+                        <button class="country-btn" data-country="belice">🇧🇿 Belice</button>
+                        <button class="country-btn" data-country="elsalvador">🇸🇻 El Salvador</button>
+                        <button class="country-btn" data-country="honduras">🇭🇳 Honduras</button>
+                        <button class="country-btn" data-country="nicaragua">🇳🇮 Nicaragua</button>
+                        <button class="country-btn" data-country="costarica">🇨🇷 Costa Rica</button>
+                        <button class="country-btn" data-country="panama" style="grid-column: span 2;">🇵🇦 Panamá</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Botones de Modo -->
+            <div class="mode-buttons">
+                <button class="mode-btn active" id="btnTeach">👨‍🏫 Modo Exploración</button>
+                <button class="mode-btn" id="btnPractice">🎯 Desafío Geográfico</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==== DATOS DE PAÍSES DE CENTROAMÉRICA ====
+        const countriesData = {
+            'guatemala': {
+                name: 'Guatemala',
+                flag: '🇬🇹',
+                capital: 'Ciudad de Guatemala',
+                color: '#0284c7',
+                fact: '**Capital:** Ciudad de Guatemala\n\n- Cuna de la gran **Civilización Maya** (Tikal).\n- Conocido como el país de los volcanes y el quetzal.'
+            },
+            'belice': {
+                name: 'Belice',
+                flag: '🇧🇿',
+                capital: 'Belmopán',
+                color: '#16a34a',
+                fact: '**Capital:** Belmopán\n\n- Único país centroamericano con el **inglés** como idioma oficial.\n- Famoso por su Gran Agujero Azul en el mar Caribe.'
+            },
+            'elsalvador': {
+                name: 'El Salvador',
+                flag: '🇸🇻',
+                capital: 'San Salvador',
+                color: '#2563eb',
+                fact: '**Capital:** San Salvador\n\n- Es el país con la **superficie más pequeña** de Centroamérica.\n- Llamado cariñosamente "El Pulgarcito de América".'
+            },
+            'honduras': {
+                name: 'Honduras',
+                flag: '🇭🇳',
+                capital: 'Tegucigalpa',
+                color: '#0d9488',
+                fact: '**Capital:** Tegucigalpa\n\n- Destaca por las impresionantes Ruinas Mayas de **Copán**.\n- Posee hermosas islas y arrecifes en el Caribe.'
+            },
+            'nicaragua': {
+                name: 'Nicaragua',
+                flag: '🇳🇮',
+                capital: 'Managua',
+                color: '#7c3aed',
+                fact: '**Capital:** Managua\n\n- Es el país con la **mayor extensión territorial** de Centroamérica.\n- Famosa tierra de lagos (Lago Cocibolca) y majestuosos volcanes.'
+            },
+            'costarica': {
+                name: 'Costa Rica',
+                flag: '🇨🇷',
+                capital: 'San José',
+                color: '#ea580c',
+                fact: '**Capital:** San José\n\n- Reconocido mundialmente por su rica **biodiversidad** y parques naturales.\n- Abolió el ejército en 1948 ("¡Pura Vida!").'
+            },
+            'panama': {
+                name: 'Panamá',
+                flag: '🇵🇦',
+                capital: 'Ciudad de Panamá',
+                color: '#dc2626',
+                fact: '**Capital:** Ciudad de Panamá\n\n- Famoso por el **Canal de Panamá**, paso interoceánico estratégico.\n- Conocido como "Puente del mundo, corazón del universo".'
+            }
+        };
+
+        const countryKeys = Object.keys(countriesData);
+
+        // ==== PREGUNTAS MODO PRÁCTICA ====
+        let practiceQuestions = [
+            {
+                question: '🎯 ¿Cuál es el país más extenso en superficie territorial de Centroamérica?',
+                correctKey: 'nicaragua',
+                errorTitle: '🧭 ¡Revisa la extensión territorial!',
+                hint: 'Su capital es Managua y es conocida como la tierra de lagos y volcanes.\n\n**País:** **Nicaragua**.'
+            },
+            {
+                question: '🎯 ¿En qué país de Centroamérica se encuentra el famoso Canal interoceánico?',
+                correctKey: 'panama',
+                errorTitle: '🧭 ¡Revisa el paso interoceánico!',
+                hint: 'Unir el Océano Atlántico y el Pacífico es la gran obra de este país.\n\n**País:** **Panamá**.'
+            },
+            {
+                question: '🎯 ¿Cuál es el único país centroamericano donde el idioma oficial es el inglés?',
+                correctKey: 'belice',
+                errorTitle: '🧭 ¡Atención al idioma!',
+                hint: 'Su capital es Belmopán y se ubica al norte del istmo.\n\n**País:** **Belice**.'
+            },
+            {
+                question: '🎯 ¿Qué país es el de menor superficie territorial ("El Pulgarcito de América")?',
+                correctKey: 'elsalvador',
+                errorTitle: '🧭 ¡Analiza el tamaño del país!',
+                hint: 'Su capital es San Salvador y tiene gran densidad de volcanes.\n\n**País:** **El Salvador**.'
+            },
+            {
+                question: '🎯 ¿En qué país se ubica el sitio arqueológico maya de Tikal?',
+                correctKey: 'guatemala',
+                errorTitle: '🧭 ¡Sigue la huella maya!',
+                hint: 'Su capital es Ciudad de Guatemala y su ave nacional es el Quetzal.\n\n**País:** **Guatemala**.'
+            },
+            {
+                question: '🎯 ¿Cuál es el país famoso por sus parques naturales, biodiversidad y lema "Pura Vida"?',
+                correctKey: 'costarica',
+                errorTitle: '🧭 ¡Revisa la biodiversidad!',
+                hint: 'Su capital es San José y no tiene ejército desde 1948.\n\n**País:** **Costa Rica**.'
+            },
+            {
+                question: '🎯 ¿Qué país alberga el histórico sitio de ruinas mayas de Copán?',
+                correctKey: 'honduras',
+                errorTitle: '🧭 ¡Revisa la historia prehispánica!',
+                hint: 'Su capital es Tegucigalpa y posee hermosas Islas de la Bahía.\n\n**País:** **Honduras**.'
+            }
+        ];
+
+        let mode = 'teach';
+        let currentRotation = 0;
+        let isSpinning = false;
+        let currentQuestionIndex = 0;
+
+        // Elementos DOM
+        const screens = { intro: document.getElementById('introScreen'), game: document.getElementById('gameScreen') };
+        const statusText = document.getElementById('statusText');
+        const cardTitle = document.getElementById('cardTitle');
+        const cardText = document.getElementById('cardText');
+        const canvas = document.getElementById('rouletteCanvas');
+        const ctx = canvas.getContext('2d');
+        const spinBtn = document.getElementById('spinBtn');
+
+        // Modal Elements
+        const modalOverlay = document.getElementById('feedbackModal');
+        const modalBox = document.getElementById('modalBox');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalText = document.getElementById('modalText');
+        const modalBtn = document.getElementById('modalBtn');
+
+        // ==== AUDIO (Web Audio API) ====
+        let audioCtx;
+        function playSound(type) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'tick') { 
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.04);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(170, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.25);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.25);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+            } else if (type === 'win') {
+                [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+                    const oscN = audioCtx.createOscillator();
+                    const gainN = audioCtx.createGain();
+                    oscN.connect(gainN); gainN.connect(audioCtx.destination);
+                    oscN.frequency.value = f;
+                    gainN.gain.setValueAtTime(0.08, audioCtx.currentTime + i * 0.08);
+                    gainN.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.08 + 0.3);
+                    oscN.start(audioCtx.currentTime + i * 0.08);
+                    oscN.stop(audioCtx.currentTime + i * 0.08 + 0.3);
+                });
+            }
+        }
+
+        // ==== DIBUJAR RULETA EN CANVAS ====
+        function drawRoulette() {
+            const numSectors = countryKeys.length;
+            const arc = (2 * Math.PI) / numSectors;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = canvas.width / 2 - 5;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            countryKeys.forEach((key, i) => {
+                const country = countriesData[key];
+                const angle = i * arc;
+
+                // Sector
+                ctx.beginPath();
+                ctx.fillStyle = country.color;
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, angle, angle + arc);
+                ctx.lineTo(centerX, centerY);
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#ffffff';
+                ctx.stroke();
+
+                // Texto / Banderas
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(angle + arc / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 15px sans-serif";
+                ctx.fillText(`${country.flag} ${country.name}`, radius - 12, 5);
+                ctx.restore();
+            });
+        }
+
+        // ==== GIRAR RULETA ====
+        function spinWheel() {
+            if (isSpinning) return;
+            isSpinning = true;
+
+            const extraSpins = 5 + Math.floor(Math.random() * 5);
+            const randomSectorIndex = Math.floor(Math.random() * countryKeys.length);
+            const sectorAngle = 360 / countryKeys.length;
+            
+            // Ángulo para que el puntero superior (270deg) apunte al sector
+            const targetAngle = extraSpins * 360 + (360 - (randomSectorIndex * sectorAngle) - (sectorAngle / 2)) - 90;
+            currentRotation += targetAngle;
+
+            // Ticks de sonido simulados
+            let tickInterval = setInterval(() => playSound('tick'), 150);
+
+            canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+            setTimeout(() => {
+                clearInterval(tickInterval);
+                isSpinning = false;
+
+                const selectedKey = countryKeys[randomSectorIndex];
+                const country = countriesData[selectedKey];
+
+                if (mode === 'teach') {
+                    playSound('win');
+                    cardTitle.textContent = `${country.flag} ${country.name.toUpperCase()}`;
+                    cardText.textContent = `Capital: ${country.capital}`;
+                    showModal(`${country.flag} ${country.name.toUpperCase()}`, country.fact, 'info');
+                } else if (mode === 'practice') {
+                    cardTitle.textContent = `📍 SECTOR SELECCIONADO`;
+                    cardText.textContent = `Salió: ${country.flag} ${country.name}`;
+                }
+
+            }, 4000);
+        }
+
+        // ==== MOSTRAR MODAL INVASIVO ====
+        function showModal(title, text, type) {
+            modalBox.className = `modal-content ${type}`;
+            modalTitle.textContent = title;
+            modalText.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            modalOverlay.classList.add('active');
+        }
+
+        modalBtn.addEventListener('click', () => {
+            playSound('tick');
+            modalOverlay.classList.remove('active');
+        });
+
+        // ==== BOTONES DE PAÍSES ====
+        document.querySelectorAll('.country-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const countryKey = e.currentTarget.dataset.country;
+                const country = countriesData[countryKey];
+
+                if (mode === 'teach') {
+                    playSound('tick');
+                    cardTitle.textContent = `${country.flag} ${country.name.toUpperCase()}`;
+                    cardText.textContent = `Capital: ${country.capital}`;
+                    showModal(`${country.flag} ${country.name.toUpperCase()}`, country.fact, 'info');
+                } else if (mode === 'practice') {
+                    checkAnswer(countryKey);
+                }
+            });
+        });
+
+        // ==== LÓGICA MODO DESAFÍO GEOGRÁFICO ====
+        function loadQuestion() {
+            if (currentQuestionIndex >= practiceQuestions.length) {
+                statusText.textContent = "🏆 ¡EXCELENTE! Has completado el Mapa de Centroamérica.";
+                cardTitle.textContent = "🗺️ EXPEDICIÓN CONCLUIDA";
+                cardText.textContent = "¡Eres un experto Geógrafo Centroamericano!";
+                playSound('win');
+                return;
+            }
+
+            const q = practiceQuestions[currentQuestionIndex];
+            statusText.textContent = `Desafío #${currentQuestionIndex + 1}: Responde seleccionando el país correcto`;
+            cardTitle.textContent = "❓ PREGUNTA GEOGRÁFICA";
+            cardText.textContent = q.question;
+        }
+
+        function checkAnswer(selectedKey) {
+            if (currentQuestionIndex >= practiceQuestions.length) return;
+
+            const q = practiceQuestions[currentQuestionIndex];
+
+            if (selectedKey === q.correctKey) {
+                playSound('win');
+                const country = countriesData[selectedKey];
+                showModal('✅ ¡CORRECTO!', `¡Muy bien! **${country.name}** (${country.flag}) es la respuesta correcta.`, 'success');
+
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    loadQuestion();
+                }, 1200);
+            } else {
+                playSound('error');
+                showModal(q.errorTitle, q.hint, 'error');
+            }
+        }
+
+        // ==== CAMBIO DE MODO ====
+        function setMode(newMode) {
+            mode = newMode;
+
+            if (mode === 'teach') {
+                statusText.textContent = "👨‍🏫 Gira la ruleta o toca un país para aprender sus características";
+                document.getElementById('btnTeach').classList.add('active');
+                document.getElementById('btnPractice').classList.remove('active');
+                cardTitle.textContent = "📍 EXPEDICIÓN GEOGRÁFICA";
+                cardText.textContent = "¡Gira la ruleta para descubrir un país de Centroamérica!";
+            } else {
+                document.getElementById('btnPractice').classList.add('active');
+                document.getElementById('btnTeach').classList.remove('active');
+                practiceQuestions = practiceQuestions.sort(() => Math.random() - 0.5);
+                currentQuestionIndex = 0;
+                loadQuestion();
+            }
+        }
+
+        // ==== INICIALIZACIÓN ====
+        document.getElementById('startBtn').addEventListener('click', () => {
+            if (!audioCtx) playSound('tick');
+            screens.intro.classList.remove('active');
+            screens.game.classList.add('active');
+            drawRoulette();
+            setMode('teach');
+        });
+
+        spinBtn.addEventListener('click', spinWheel);
+        document.getElementById('btnTeach').addEventListener('click', () => setMode('teach'));
+        document.getElementById('btnPractice').addEventListener('click', () => setMode('practice'));
+
+    </script>
+</body>
+</html>

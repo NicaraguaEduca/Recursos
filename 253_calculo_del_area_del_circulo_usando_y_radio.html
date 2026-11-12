@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Área del Círculo - Aventura Mágica 6º Primaria</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Fredoka+One&display=swap" rel="stylesheet">
+    <!-- Librería GSAP para animaciones fluidas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <style>
+        :root {
+            --azul: #0288d1;
+            --azul-oscuro: #01579b;
+            --verde: #2ecc71;
+            --rojo: #e74c3c;
+            --amarillo: #FFD166;
+            --gris: #f4f9f9;
+            --texto: #2c3e50;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #87ceeb 0%, #e0f7fa 100%);
+            color: var(--texto);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 650px;
+            background: #fff;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            border: 6px solid #fff;
+        }
+
+        header {
+            background: var(--azul);
+            color: #fff;
+            padding: 1.2rem;
+            text-align: center;
+            font-family: 'Fredoka One', cursive, sans-serif;
+            font-size: 1.6rem;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            padding: 2rem;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        h2 {
+            color: var(--azul);
+            font-family: 'Fredoka One', cursive, sans-serif;
+            margin-top: 0;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        p {
+            font-size: 1.05rem;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        /* Canvas interactivo para el círculo */
+        .canvas-container {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 0.5rem auto;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .formula-box {
+            background: #e1f5fe;
+            border: 3px dashed var(--azul);
+            padding: 10px 20px;
+            border-radius: 15px;
+            font-size: 1.6rem;
+            font-weight: 800;
+            text-align: center;
+            color: var(--azul-oscuro);
+            margin: 1rem auto;
+            width: fit-content;
+        }
+
+        .progress-bar {
+            height: 12px;
+            background: #dfe6e9;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .progress {
+            height: 100%;
+            background: var(--verde);
+            width: 0%;
+            transition: width 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .drag-zone {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .draggable {
+            background: var(--azul);
+            color: #fff;
+            padding: 0.8rem 1.2rem;
+            border-radius: 15px;
+            cursor: grab;
+            font-weight: 600;
+            box-shadow: 0 4px 0 var(--azul-oscuro);
+            transition: transform 0.1s;
+        }
+
+        .draggable:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        .drop-zone {
+            min-height: 70px;
+            border: 3px dashed var(--azul);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 0.5rem;
+            background: #f9fbfc;
+            font-weight: 600;
+            color: #7f8c8d;
+            transition: background 0.3s;
+        }
+
+        .drop-zone.hover {
+            background: rgba(52, 152, 219, 0.15);
+        }
+
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 0.8rem;
+            border: 3px solid var(--azul);
+            border-radius: 15px;
+            font-size: 1.2rem;
+            text-align: center;
+            outline: none;
+            font-weight: 600;
+            color: var(--texto);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        button {
+            border: none;
+            padding: 0.8rem 1.6rem;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-family: 'Fredoka One', cursive, sans-serif;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 rgba(0,0,0,0.2);
+        }
+
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        }
+
+        .btn-check {
+            background: var(--verde);
+            color: #fff;
+            box-shadow: 0 6px 0 #27ae60;
+        }
+
+        .btn-next {
+            background: var(--amarillo);
+            color: #333;
+            box-shadow: 0 6px 0 #d9ae4c;
+        }
+
+        .btn-reset {
+            background: #bdc3c7;
+            color: var(--texto);
+            box-shadow: 0 6px 0 #7f8c8d;
+        }
+
+        .feedback {
+            margin-top: 1rem;
+            font-weight: 800;
+            font-size: 1.1rem;
+            text-align: center;
+            min-height: 30px;
+        }
+
+        .feedback.ok { color: var(--verde); }
+        .feedback.ko { color: var(--rojo); }
+
+        ul {
+            background: #f8f9fa;
+            padding: 15px 15px 15px 35px;
+            border-radius: 15px;
+            margin: 10px 0;
+        }
+
+        li { margin-bottom: 8px; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header>🎯 Aventura Geométrica: El Círculo</header>
+
+        <!-- PANTALLA 1: EXPLICACIÓN -->
+        <section id="exp" class="screen active">
+            <h2>¿Qué es el área de un círculo?</h2>
+            <div class="canvas-container">
+                <canvas id="demoCanvas"></canvas>
+            </div>
+            <p>El <strong>área</strong> es toda la superficie mágica que ocupa el círculo por dentro ✨.</p>
+            <div class="formula-box">Área = π × r²</div>
+            <ul>
+                <li><strong>π (pi)</strong> ≈ 3.14 (¡un número súper famoso!)</li>
+                <li><strong>r</strong> = radio (la distancia del centro exacto hasta cualquier borde)</li>
+            </ul>
+            <div class="btn-group">
+                <button class="btn-check" onclick="changeScreen('ex1')">¡Vamos a practicar! 🚀</button>
+            </div>
+        </section>
+
+        <!-- EJERCICIO 1 -->
+        <section id="ex1" class="screen">
+            <div class="progress-bar"><div class="progress" style="width:20%"></div></div>
+            <h2>1. Fórmula secreta</h2>
+            <p>Arrastra la fórmula correcta para calcular el área del círculo:</p>
+            <div class="drag-zone">
+                <div class="draggable" draggable="true" data-value="ok">π × r²</div>
+                <div class="draggable" draggable="true" data-value="ko">2 × π × r</div>
+                <div class="draggable" draggable="true" data-value="ko">π × d</div>
+            </div>
+            <div class="drop-zone" data-correct="ok">👉 Arrastra la fórmula aquí 👈</div>
+            <div id="feedback1" class="feedback"></div>
+            <div class="btn-group">
+                <button class="btn-check" onclick="checkDrag(1)">Comprobar 🎯</button>
+                <button id="next1" class="btn-next" style="display:none;" onclick="siguienteEjercicio()">Siguiente ➡️</button>
+            </div>
+        </section>
+
+        <!-- EJERCICIO 2 -->
+        <section id="ex2" class="screen">
+            <div class="progress-bar"><div class="progress" style="width:40%"></div></div>
+            <h2>2. ¡A calcular el área!</h2>
+            <p>Si el radio ($r$) mide <strong>4 cm</strong>, ¿cuál es su área?</p>
+            <p style="font-size: 0.9rem; color: #666;">(Usa $\pi \approx 3.14$)</p>
+            <input type="number" id="val2" placeholder="Ej: 50.24">
+            <div id="feedback2" class="feedback"></div>
+            <div class="btn-group">
+                <button class="btn-check" onclick="checkInput(2, 50.24)">Comprobar 🎯</button>
+                <button id="next2" class="btn-next" style="display:none;" onclick="siguienteEjercicio()">Siguiente ➡️</button>
+            </div>
+        </section>
+
+        <!-- EJERCICIO 3 -->
+        <section id="ex3" class="screen">
+            <div class="progress-bar"><div class="progress" style="width:60%"></div></div>
+            <h2>3. Conociendo el Radio</h2>
+            <p>¿Qué mide exactamente el <strong>radio (r)</strong>?</p>
+            <div class="drag-zone">
+                <div class="draggable" draggable="true" data-value="ok">Del centro al borde</div>
+                <div class="draggable" draggable="true" data-value="ko">De un lado al otro pasando por el centro</div>
+                <div class="draggable" draggable="true" data-value="ko">El contorno del círculo</div>
+            </div>
+            <div class="drop-zone" data-correct="ok">👉 Arrastra la respuesta aquí 👈</div>
+            <div id="feedback3" class="feedback"></div>
+            <div class="btn-group">
+                <button class="btn-check" onclick="checkDrag(3)">Comprobar 🎯</button>
+                <button id="next3" class="btn-next" style="display:none;" onclick="siguienteEjercicio()">Siguiente ➡️</button>
+            </div>
+        </section>
+
+        <!-- EJERCICIO 4 -->
+        <section id="ex4" class="screen">
+            <div class="progress-bar"><div class="progress" style="width:80%"></div></div>
+            <h2>4. El valor de Pi</h2>
+            <p>Completa el valor aproximado de π (pi):</p>
+            <div style="font-size: 1.3rem; font-weight: bold; text-align: center; margin-bottom: 10px;">π ≈ ?</div>
+            <input type="text" id="val4" placeholder="Ej: 3.14">
+            <div id="feedback4" class="feedback"></div>
+            <div class="btn-group">
+                <button class="btn-check" onclick="checkInputText(4, '3.14')">Comprobar 🎯</button>
+                <button id="next4" class="btn-next" style="display:none;" onclick="siguienteEjercicio()">Siguiente ➡️</button>
+            </div>
+        </section>
+
+        <!-- EJERCICIO 5 -->
+        <section id="ex5" class="screen">
+            <div class="progress-bar"><div class="progress" style="width:100%"></div></div>
+            <h2>5. ¡Último reto!</h2>
+            <p>Si el radio ($r$) es de <strong>3 cm</strong>, calcula el área:</p>
+            <input type="number" id="val5" placeholder="Ej: 28.26">
+            <div id="feedback5" class="feedback"></div>
+            <div class="btn-group">
+                <button class="btn-check" onclick="checkInput(5, 28.26)">Comprobar 🎯</button>
+                <button id="next5" class="btn-next" style="display:none;" onclick="siguienteEjercicio()">Ver resultado 🏆</button>
+            </div>
+        </section>
+
+        <!-- RESULTADO FINAL -->
+        <section id="final" class="screen" style="text-align: center;">
+            <div style="font-size: 4rem; margin-bottom: 10px;">🏆</div>
+            <h2>¡Excelente Trabajo!</h2>
+            <p>Tu puntuación final es:</p>
+            <h1 id="scoreFinal" style="color: var(--azul); font-size: 3rem; margin: 10px 0; font-family: 'Fredoka One', cursive;">0 / 100</h1>
+            <p id="mensajeFinal" style="font-weight: 600; margin-bottom: 20px;"></p>
+            <button class="btn-reset" onclick="location.reload()">Jugar de nuevo 🔄</button>
+        </section>
+    </div>
+
+    <script>
+        let puntaje = 0;
+        let ejercicioActual = 1;
+
+        // Renderizado animado del círculo en la pantalla de bienvenida con Canvas
+        const canvas = document.getElementById('demoCanvas');
+        const ctx = canvas.getContext('2d');
+        let angle = 0;
+
+        function drawDemoCircle() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 60;
+
+            // Círculo base
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.fillStyle = '#e1f5fe';
+            ctx.fill();
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#0288d1';
+            ctx.stroke();
+
+            // Radio animado girando
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            let x = centerX + radius * Math.cos(angle);
+            let y = centerY + radius * Math.sin(angle);
+            ctx.lineTo(x, y);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#e74c3c';
+            ctx.stroke();
+
+            // Centro
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = '#e74c3c';
+            ctx.fill();
+
+            angle += 0.02;
+            requestAnimationFrame(drawDemoCircle);
+        }
+        
+        // Ajustar tamaño del canvas dinámicamente
+        canvas.width = 180;
+        canvas.height = 180;
+        drawDemoCircle();
+
+        // Control de transiciones de pantalla con GSAP
+        function changeScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const nextScreen = document.getElementById(id);
+            nextScreen.classList.add('active');
+            
+            // Animación de entrada con GSAP
+            gsap.fromTo(nextScreen, { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.2)" });
+        }
+
+        /* LÓGICA DRAG & DROP MEJORADA */
+        let dragged = null;
+        document.addEventListener('dragstart', e => {
+            if (e.target.classList.contains('draggable')) {
+                dragged = e.target;
+            }
+        });
+        document.addEventListener('dragover', e => {
+            if (e.target.classList.contains('drop-zone')) {
+                e.preventDefault();
+                e.target.classList.add('hover');
+            }
+        });
+        document.addEventListener('dragleave', e => {
+            if (e.target.classList.contains('drop-zone')) {
+                e.target.classList.remove('hover');
+            }
+        });
+        document.addEventListener('drop', e => {
+            if (e.target.classList.contains('drop-zone')) {
+                e.preventDefault();
+                e.target.classList.remove('hover');
+                if (dragged) {
+                    e.target.innerHTML = '';
+                    e.target.appendChild(dragged);
+                    gsap.fromTo(dragged, { scale: 0.5 }, { scale: 1, duration: 0.3, ease: "elastic.out(1, 0.4)" });
+                }
+            }
+        });
+
+        function checkDrag(n) {
+            const zone = document.querySelector(`#ex${n} .drop-zone`);
+            const val = zone.querySelector('.draggable')?.dataset.value;
+            const feedback = document.getElementById(`feedback${n}`);
+            if (val === zone.dataset.correct) {
+                puntaje += 20;
+                feedback.textContent = '🌟 ¡Excelente! ¡Lo lograste con éxito!';
+                feedback.className = 'feedback ok';
+                gsap.fromTo(feedback, { y: -10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3 });
+            } else {
+                feedback.textContent = '❌ Ups, la respuesta correcta es π × r². ¡Inténtalo de nuevo mentalmente!';
+                feedback.className = 'feedback ko';
+                gsap.fromTo(zone, { x: -10 }, { x: 10, duration: 0.1, yoyo: true, repeat: 3 });
+            }
+            document.getElementById(`next${n}`).style.display = 'inline-block';
+        }
+
+        function checkInput(n, correcto) {
+            const valInput = document.getElementById(`val${n}`).value.trim();
+            const feedback = document.getElementById(`feedback${n}`);
+            
+            if(valInput === "") {
+                feedback.textContent = '❗ Por favor, escribe un número antes de comprobar.';
+                feedback.className = 'feedback ko';
+                return;
+            }
+
+            const val = parseFloat(valInput);
+            if (Math.abs(val - correcto) < 0.1) {
+                puntaje += 20;
+                feedback.textContent = '🎉 ¡Impresionante! ¡Cálculo perfecto!';
+                feedback.className = 'feedback ok';
+                gsap.fromTo(feedback, { scale: 0.8 }, { scale: 1, duration: 0.3, ease: "back.out(1.5)" });
+            } else {
+                feedback.textContent = `💡 Casi lo tienes. El resultado correcto era ${correcto}.`;
+                feedback.className = 'feedback ko';
+            }
+            document.getElementById(`next${n}`).style.display = 'inline-block';
+        }
+
+        function checkInputText(n, correcto) {
+            const val = document.getElementById(`val${n}`).value.trim();
+            const feedback = document.getElementById(`feedback${n}`);
+            if (val === correcto) {
+                puntaje += 20;
+                feedback.textContent = '🌟 ¡Correcto! Pi vale aproximadamente 3.14.';
+                feedback.className = 'feedback ok';
+            } else {
+                feedback.textContent = '💡 Recuerda que el valor clásico de π es 3.14.';
+                feedback.className = 'feedback ko';
+            }
+            document.getElementById(`next${n}`).style.display = 'inline-block';
+        }
+
+        function siguienteEjercicio() {
+            if (ejercicioActual < 5) {
+                ejercicioActual++;
+                changeScreen(`ex${ejercicioActual}`);
+            } else {
+                mostrarFinal();
+            }
+        }
+
+        function mostrarFinal() {
+            changeScreen('final');
+            document.getElementById('scoreFinal').textContent = `${puntaje} / 100`;
+            const msg = puntaje >= 80
+                ? '🌟 ¡Eres un verdadero genio de las matemáticas y la geometría!'
+                : puntaje >= 60
+                ? '👍 ¡Muy bien hecho! Tienes muy claras las bases del área del círculo.'
+                : '💪 ¡Buen intento! Repasa la fórmula del área y vuelve a intentarlo para romper tu récord.';
+            document.getElementById('mensajeFinal').textContent = msg;
+            
+            // Animación del puntaje final
+            gsap.fromTo("#scoreFinal", { scale: 0.5 }, { scale: 1, duration: 0.8, ease: "elastic.out(1, 0.3)" });
+        }
+    </script>
+</body>
+</html>

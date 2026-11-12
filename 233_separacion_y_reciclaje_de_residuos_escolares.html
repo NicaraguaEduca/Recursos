@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Guardianes del Reciclaje Escolar</title>
+    <style>
+        /* ==========================================================================
+           VARIABLES DE COLOR Y FUENTES
+           ========================================================================== */
+        :root {
+            --azul: #0059A6;
+            --celeste: #00A8E8;
+            --verde: #A5C83F;
+            --amarillo: #FFEC01;
+            --fucsia: #E32085;
+            --morado: #833189;
+            --fondo: #f0f8ff;
+            --texto: #333333;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700&display=swap');
+
+        /* ==========================================================================
+           ESTILOS GLOBALES (SIN SCROLL)
+           ========================================================================== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--fondo);
+            color: var(--texto);
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden; /* SIN SCROLL */
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Fredoka One', cursive;
+            text-align: center;
+            text-shadow: 2px 2px 0px rgba(255,255,255,0.7);
+        }
+
+        /* ==========================================================================
+           INTERFAZ SUPERIOR (HUD)
+           ========================================================================== */
+        #hud {
+            display: none; /* Se activa al jugar */
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: var(--azul);
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+        
+        #hud h1 { font-size: 1.8rem; text-shadow: none; margin: 0; color: var(--amarillo); }
+        .hud-stats { display: flex; gap: 20px; font-weight: bold; }
+        .stat-badge { background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px; display: flex; align-items: center; gap: 5px; }
+
+        /* ==========================================================================
+           CONTENEDORES DE PANTALLAS
+           ========================================================================== */
+        .screen {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* ==========================================================================
+           BOTONES
+           ========================================================================== */
+        button {
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.8rem;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 6px 0px rgba(0,0,0,0.2);
+            margin: 10px;
+        }
+
+        button:active {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0px rgba(0,0,0,0.2);
+        }
+
+        .btn-start { background-color: var(--verde); font-size: 2.5rem; animation: pulse 2s infinite; }
+        .btn-next { background-color: var(--celeste); display: none; margin-top: 20px;}
+        .btn-restart { background-color: var(--fucsia); font-size: 1.2rem; }
+
+        /* ==========================================================================
+           NIVEL 1: ARRASTRAR Y SOLTAR (Modificado a Tocar y Tocar para accesibilidad)
+           ========================================================================== */
+        .bins-container { display: flex; gap: 15px; margin-top: 20px; width: 100%; justify-content: center;}
+        .bin {
+            width: 120px; height: 160px;
+            border-radius: 15px 15px 5px 5px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: white; font-weight: bold; font-size: 1.2rem; text-align: center;
+            box-shadow: inset 0 -10px 0 rgba(0,0,0,0.2), 0 5px 10px rgba(0,0,0,0.3);
+            cursor: pointer; transition: transform 0.2s;
+        }
+        .bin:active { transform: scale(0.95); }
+        .bin-azul { background-color: var(--azul); }
+        .bin-amarillo { background-color: var(--amarillo); color: var(--texto); }
+        .bin-verde { background-color: var(--verde); }
+        .bin-rojo { background-color: #d32f2f; }
+
+        .items-container { display: flex; gap: 15px; margin-bottom: 30px; min-height: 100px; flex-wrap: wrap; justify-content: center;}
+        .item {
+            font-size: 4rem; cursor: pointer; transition: transform 0.3s;
+            background: white; border-radius: 50%; width: 90px; height: 90px;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .item.selected { transform: scale(1.2); box-shadow: 0 0 20px var(--amarillo); border: 4px solid var(--fucsia); }
+
+        /* ==========================================================================
+           NIVEL 2: SÍ O NO
+           ========================================================================== */
+        .big-item { font-size: 8rem; animation: float 3s ease-in-out infinite; margin: 30px 0; }
+        .yes-no-btns { display: flex; gap: 20px; }
+        .btn-yes { background-color: var(--verde); }
+        .btn-no { background-color: var(--fucsia); }
+
+        /* ==========================================================================
+           NIVEL 3: MEMORIA
+           ========================================================================== */
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-width: 600px;
+            margin: auto;
+        }
+        .memory-card {
+            width: 80px; height: 80px;
+            background-color: var(--celeste);
+            border-radius: 10px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 3rem; cursor: pointer; color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: transform 0.3s; transform-style: preserve-3d;
+        }
+        .memory-card.flipped { background-color: white; transform: rotateY(180deg); }
+        .memory-card.matched { visibility: hidden; opacity: 0; transition: opacity 0.5s; }
+        .memory-card .content { display: none; transform: rotateY(180deg); }
+        .memory-card.flipped .content { display: block; }
+
+        /* ==========================================================================
+           NIVEL 4: BUSCA EL RECICLABLE
+           ========================================================================== */
+        #catch-area {
+            width: 100%; max-width: 800px; flex: 1; min-height: 300px;
+            background: white; border: 4px dashed var(--celeste); border-radius: 20px;
+            position: relative; overflow: hidden; margin-bottom: 20px;
+        }
+        .catch-item {
+            position: absolute; font-size: 3.5rem; cursor: pointer;
+            transition: transform 0.1s; animation: popIn 0.3s ease-out;
+        }
+        .catch-item:active { transform: scale(0.8); }
+
+        /* ==========================================================================
+           NIVEL 5: EXPLORA LA ESCUELA
+           ========================================================================== */
+        .school-map {
+            display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-bottom: 20px;
+        }
+        .place-btn {
+            background-color: var(--morado); display: flex; flex-direction: column; align-items: center;
+            width: 140px; height: 140px; justify-content: center; border-radius: 20px; font-size: 1.2rem;
+        }
+        .place-btn span { font-size: 3rem; }
+        .place-btn.done { background-color: gray; opacity: 0.5; pointer-events: none; }
+
+        /* ==========================================================================
+           QUIZ FINAL
+           ========================================================================== */
+        .quiz-container { background: white; padding: 30px; border-radius: 20px; text-align: center; max-width: 600px; width: 90%; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .quiz-question { font-size: 1.8rem; color: var(--azul); margin-bottom: 10px; }
+        .quiz-options { display: flex; flex-direction: column; gap: 15px; }
+        .quiz-option { background-color: var(--celeste); font-size: 1.4rem; padding: 15px; }
+        #quiz-feedback { font-size: 5rem; height: 80px; margin-bottom: 15px; display: none; animation: popIn 0.4s ease-out; }
+
+        /* ==========================================================================
+           MODALES Y FEEDBACK
+           ========================================================================== */
+        #feedback-msg { font-size: 2rem; color: var(--fucsia); height: 40px; font-weight: bold; margin-bottom: 10px; text-align: center;}
+        
+        #confetti-canvas { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 999; }
+
+        /* ==========================================================================
+           ANIMACIONES
+           ========================================================================== */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-20px); } 100% { transform: translateY(0px); } }
+        @keyframes popIn { 0% { transform: scale(0); } 80% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-10px);} 75% {transform: translateX(10px);} }
+        .shake { animation: shake 0.4s ease-in-out; }
+
+    </style>
+</head>
+<body>
+
+    <!-- HUD (Heads Up Display) -->
+    <div id="hud">
+        <h1>♻️ Guardianes</h1>
+        <div class="hud-stats">
+            <div class="stat-badge">⏱️ <span id="time-display">00:00</span></div>
+            <div class="stat-badge">🪙 <span id="score-display">0</span></div>
+            <div class="stat-badge">⭐ <span id="stars-display">0</span></div>
+        </div>
+    </div>
+
+    <!-- PANTALLA INICIAL -->
+    <div id="screen-start" class="screen active" style="background-color: var(--celeste); color: white;">
+        <div style="font-size: 6rem; animation: float 3s infinite;">🌎</div>
+        <h1 style="font-size: 3.5rem; margin-bottom: 20px; color: var(--amarillo);">Guardianes del Reciclaje Escolar</h1>
+        <h2 style="font-size: 1.8rem; font-family: 'Nunito', sans-serif; font-weight: bold; max-width: 800px; margin-bottom: 40px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+            ¡El director necesita tu ayuda! Ayudemos a clasificar los residuos para salvar nuestro planeta. Completa las misiones y gana la medalla de Guardián.
+        </h2>
+        <button class="btn-start" onclick="startGame()">¡COMENZAR!</button>
+    </div>
+
+    <!-- NIVEL 1: CLASIFICACIÓN -->
+    <div id="screen-lvl1" class="screen">
+        <h2 style="color: var(--azul); font-size: 2.5rem;">Nivel 1: ¡A Separar!</h2>
+        <p style="font-size: 1.5rem; text-align: center;">Toca un objeto y luego toca el basurero correcto.</p>
+        <div id="feedback-lvl1" style="height: 30px; font-size: 1.5rem; font-weight:bold; color: var(--fucsia);"></div>
+        
+        <div class="items-container" id="lvl1-items">
+            <!-- Generado por JS -->
+        </div>
+
+        <div class="bins-container">
+            <div class="bin bin-azul" onclick="checkBin('papel')"><span>🟦</span>Papel y Cartón</div>
+            <div class="bin bin-amarillo" onclick="checkBin('plastico')"><span>🟨</span>Plástico</div>
+            <div class="bin bin-verde" onclick="checkBin('vidrio')"><span>🟩</span>Vidrio</div>
+            <div class="bin bin-rojo" onclick="checkBin('metal')"><span>🟥</span>Metal</div>
+        </div>
+        
+        <button id="btn-next-lvl1" class="btn-next" onclick="nextLevel(2)">Siguiente Misión ➔</button>
+        <button class="btn-restart" style="position: absolute; bottom: 10px; right: 10px;" onclick="initLevel1()">🔄 Reiniciar Nivel</button>
+    </div>
+
+    <!-- NIVEL 2: ¿SE RECICLA O NO? -->
+    <div id="screen-lvl2" class="screen" style="background-color: var(--amarillo);">
+        <h2 style="color: var(--texto); font-size: 2.5rem;">Nivel 2: ¿Va al reciclaje?</h2>
+        <div id="feedback-lvl2" style="height: 30px; font-size: 1.5rem; font-weight:bold; color: var(--fucsia);"></div>
+        
+        <h3 id="lvl2-name" style="font-size: 2rem; color: var(--azul);">Cargando...</h3>
+        <div id="lvl2-item" class="big-item">🍎</div>
+        
+        <div class="yes-no-btns" id="lvl2-btns">
+            <button class="btn-yes" onclick="checkLvl2(true)">♻ Sí se recicla</button>
+            <button class="btn-no" onclick="checkLvl2(false)">🗑 No se recicla</button>
+        </div>
+
+        <button id="btn-next-lvl2" class="btn-next" onclick="nextLevel(3)">Siguiente Misión ➔</button>
+    </div>
+
+    <!-- NIVEL 3: MEMORIA -->
+    <div id="screen-lvl3" class="screen" style="background-color: var(--verde);">
+        <h2 style="color: white; font-size: 2.5rem;">Nivel 3: Memoria Reciclable</h2>
+        <p style="color: white; font-size: 1.2rem; margin-bottom: 10px;">Encuentra la pareja: Objeto y su basurero correcto.</p>
+        
+        <div class="memory-grid" id="memory-board">
+            <!-- Generado por JS -->
+        </div>
+
+        <button id="btn-next-lvl3" class="btn-next" onclick="nextLevel(4)">Siguiente Misión ➔</button>
+    </div>
+
+    <!-- NIVEL 4: CAZADOR DE RECICLABLES -->
+    <div id="screen-lvl4" class="screen" style="background-color: var(--fondo);">
+        <h2 style="color: var(--morado); font-size: 2.5rem;">Nivel 4: ¡Atrapa lo Reciclable!</h2>
+        <p style="font-size: 1.2rem;">Toca <b>SOLO</b> los objetos que se pueden reciclar. ¡Cuidado con la basura normal!</p>
+        <h3 style="color: var(--fucsia);">Tiempo: <span id="lvl4-timer">30</span>s</h3>
+        
+        <div id="catch-area">
+            <!-- Elementos caen aquí -->
+            <div id="catch-overlay" style="position:absolute; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:10; display:flex; justify-content:center; align-items:center;">
+                <button class="btn-start" onclick="startLevel4Game()">¡Empezar a Atrapaar!</button>
+            </div>
+        </div>
+
+        <button id="btn-next-lvl4" class="btn-next" onclick="nextLevel(5)">Siguiente Misión ➔</button>
+    </div>
+
+    <!-- NIVEL 5: EXPLORA LA ESCUELA -->
+    <div id="screen-lvl5" class="screen" style="background-color: var(--azul);">
+        <h2 style="color: var(--amarillo); font-size: 2.5rem;">Nivel 5: Limpiando la Escuela</h2>
+        <p style="color: white; font-size: 1.5rem; margin-bottom: 20px;">Visita cada lugar y ayuda a reciclar lo que encuentres.</p>
+        <div id="feedback-lvl5" style="height: 30px; font-size: 1.5rem; font-weight:bold; color: var(--amarillo);"></div>
+        
+        <div class="school-map" id="lvl5-map">
+            <button class="place-btn" id="place-0" onclick="explorePlace(0)"><span>📚</span>Biblioteca</button>
+            <button class="place-btn" id="place-1" onclick="explorePlace(1)"><span>🏫</span>Aula</button>
+            <button class="place-btn" id="place-2" onclick="explorePlace(2)"><span>🍎</span>Cafetería</button>
+            <button class="place-btn" id="place-3" onclick="explorePlace(3)"><span>🏀</span>Patio</button>
+            <button class="place-btn" id="place-4" onclick="explorePlace(4)"><span>🧪</span>Lab</button>
+        </div>
+
+        <!-- Mini Modal para clasificar -->
+        <div id="lvl5-action" style="display: none; background: white; padding: 20px; border-radius: 20px; text-align:center;">
+            <h3 style="color: var(--morado);">Encontraste: <span id="lvl5-obj-name">...</span></h3>
+            <div style="font-size: 5rem;" id="lvl5-obj-icon">📄</div>
+            <p>¿A qué contenedor va?</p>
+            <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
+                <button style="background:var(--azul); font-size:1.2rem; padding:10px 20px;" onclick="checkLvl5('papel')">Papel</button>
+                <button style="background:var(--amarillo); color:black; font-size:1.2rem; padding:10px 20px;" onclick="checkLvl5('plastico')">Plástico</button>
+                <button style="background:var(--verde); font-size:1.2rem; padding:10px 20px;" onclick="checkLvl5('vidrio')">Vidrio</button>
+                <button style="background:#d32f2f; font-size:1.2rem; padding:10px 20px;" onclick="checkLvl5('metal')">Metal</button>
+            </div>
+        </div>
+
+        <button id="btn-next-lvl5" class="btn-next" onclick="nextLevel(6)">Ir al Gran Quiz ➔</button>
+    </div>
+
+    <!-- NIVEL FINAL: QUIZ -->
+    <div id="screen-lvl6" class="screen" style="background-color: var(--celeste);">
+        <h2 style="color: white; font-size: 2.5rem;">Gran Quiz Final</h2>
+        <div class="quiz-container">
+            <div style="width: 100%; background: #ddd; height: 15px; border-radius: 10px; margin-bottom: 20px;">
+                <div id="quiz-progress" style="width: 10%; background: var(--verde); height: 100%; border-radius: 10px; transition: width 0.3s;"></div>
+            </div>
+            <div class="quiz-question" id="quiz-q">Pregunta aquí</div>
+            
+            <!-- Contenedor para la carita feliz/triste -->
+            <div id="quiz-feedback"></div>
+
+            <div class="quiz-options" id="quiz-opts">
+                <!-- Botones JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA DE VICTORIA -->
+    <div id="screen-end" class="screen" style="background-color: var(--morado); color: white;">
+        <h1 style="font-size: 4rem; color: var(--amarillo);">¡MISIÓN CUMPLIDA!</h1>
+        <div style="font-size: 8rem; animation: pulse 1.5s infinite;">🥇</div>
+        <h2>¡Eres un Guardián del Reciclaje Escolar!</h2>
+        <p style="font-size: 1.5rem; max-width: 600px; text-align: center; margin-top: 20px;">
+            Has recolectado <span id="final-coins" style="color:var(--amarillo); font-weight:bold;">0</span> monedas ecológicas y el director está muy orgulloso. ¡El planeta te lo agradece!
+        </p>
+        <button class="btn-start" onclick="location.reload()" style="margin-top:30px;">Jugar de Nuevo</button>
+    </div>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- ==========================================================================
+         CÓDIGO JAVASCRIPT
+         ========================================================================== -->
+    <script>
+        // --- SISTEMA DE AUDIO (Web Audio API) ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'correct') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime); // A4
+                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1); // A5
+                gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+                gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'pop') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'win') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime + 0.1);
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            }
+        }
+
+        // --- SISTEMA DE CONFETI ---
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let confettis = [];
+        let confettiActive = false;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function throwConfetti() {
+            for (let i = 0; i < 100; i++) {
+                confettis.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    size: Math.random() * 10 + 5,
+                    color: ['#0059A6', '#00A8E8', '#A5C83F', '#FFEC01', '#E32085'][Math.floor(Math.random() * 5)],
+                    speedY: Math.random() * 3 + 2,
+                    speedX: Math.random() * 2 - 1,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: Math.random() * 10 - 5
+                });
+            }
+            if (!confettiActive) {
+                confettiActive = true;
+                animateConfetti();
+            }
+        }
+
+        function animateConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let activeCount = 0;
+            confettis.forEach(c => {
+                c.y += c.speedY;
+                c.x += c.speedX;
+                c.rotation += c.rotationSpeed;
+                if (c.y < canvas.height) activeCount++;
+                
+                ctx.save();
+                ctx.translate(c.x, c.y);
+                ctx.rotate(c.rotation * Math.PI / 180);
+                ctx.fillStyle = c.color;
+                ctx.fillRect(-c.size / 2, -c.size / 2, c.size, c.size);
+                ctx.restore();
+            });
+
+            if (activeCount > 0) {
+                requestAnimationFrame(animateConfetti);
+            } else {
+                confettiActive = false;
+                confettis = [];
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+
+        // --- ESTADO GLOBAL ---
+        let score = 0;
+        let stars = 0;
+
+        function updateHUD(points = 0) {
+            score += points;
+            if(points > 0) stars++;
+            document.getElementById('score-display').innerText = score;
+            document.getElementById('stars-display').innerText = stars;
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function startGame() {
+            initAudio();
+            playSound('pop');
+            document.getElementById('hud').style.display = 'flex';
+            initLevel1();
+            showScreen('screen-lvl1');
+        }
+
+        function nextLevel(lvlIndex) {
+            playSound('pop');
+            if (lvlIndex === 2) { initLevel2(); showScreen('screen-lvl2'); }
+            if (lvlIndex === 3) { initLevel3(); showScreen('screen-lvl3'); }
+            if (lvlIndex === 4) { initLevel4(); showScreen('screen-lvl4'); }
+            if (lvlIndex === 5) { initLevel5(); showScreen('screen-lvl5'); }
+            if (lvlIndex === 6) { initQuiz(); showScreen('screen-lvl6'); }
+        }
+
+        // ==========================================================
+        // NIVEL 1 LÓGICA
+        // ==========================================================
+        const lvl1Data = [
+            { id: 1, emoji: '📄', name: 'Hojas Usadas', bin: 'papel' },
+            { id: 2, emoji: '🍾', name: 'Botella de Vidrio', bin: 'vidrio' },
+            { id: 3, emoji: '🥫', name: 'Lata de Refresco', bin: 'metal' },
+            { id: 4, emoji: '🥤', name: 'Vaso de Plástico', bin: 'plastico' },
+            { id: 5, emoji: '📦', name: 'Caja de Cartón', bin: 'papel' }
+        ];
+        let lvl1ItemsLeft = 0;
+        let selectedItemIndex = null;
+
+        function initLevel1() {
+            const container = document.getElementById('lvl1-items');
+            container.innerHTML = '';
+            document.getElementById('btn-next-lvl1').style.display = 'none';
+            document.getElementById('feedback-lvl1').innerText = '';
+            lvl1ItemsLeft = lvl1Data.length;
+            selectedItemIndex = null;
+
+            lvl1Data.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.innerText = item.emoji;
+                div.id = `l1-item-${index}`;
+                div.onclick = () => selectItem(index);
+                container.appendChild(div);
+            });
+        }
+
+        function selectItem(index) {
+            playSound('pop');
+            document.querySelectorAll('.item').forEach(el => el.classList.remove('selected'));
+            document.getElementById(`l1-item-${index}`).classList.add('selected');
+            selectedItemIndex = index;
+            document.getElementById('feedback-lvl1').innerText = `Seleccionaste: ${lvl1Data[index].name}. Ahora toca un basurero.`;
+            document.getElementById('feedback-lvl1').style.color = 'var(--texto)';
+        }
+
+        function checkBin(binColor) {
+            if (selectedItemIndex === null) return;
+            const item = lvl1Data[selectedItemIndex];
+            const feedback = document.getElementById('feedback-lvl1');
+
+            if (item.bin === binColor) {
+                playSound('correct');
+                throwConfetti();
+                updateHUD(10);
+                document.getElementById(`l1-item-${selectedItemIndex}`).style.visibility = 'hidden';
+                selectedItemIndex = null;
+                lvl1ItemsLeft--;
+                feedback.innerText = '¡Correcto! ¡Sigue así!';
+                feedback.style.color = 'var(--verde)';
+                
+                if (lvl1ItemsLeft === 0) {
+                    playSound('win');
+                    feedback.innerText = '¡Excelente! Limpiaste esta zona.';
+                    document.getElementById('btn-next-lvl1').style.display = 'inline-block';
+                }
+            } else {
+                playSound('wrong');
+                const el = document.getElementById(`l1-item-${selectedItemIndex}`);
+                el.classList.add('shake');
+                setTimeout(() => el.classList.remove('shake'), 400);
+                feedback.innerText = 'Observa mejor el material... Intenta de nuevo.';
+                feedback.style.color = 'var(--fucsia)';
+            }
+        }
+
+        // ==========================================================
+        // NIVEL 2 LÓGICA
+        // ==========================================================
+        const lvl2Data = [
+            { emoji: '🧻', name: 'Servilletas Sucias', recycles: false },
+            { emoji: '🗞️', name: 'Periódico Viejo', recycles: true },
+            { emoji: '🍎', name: 'Restos de Manzana', recycles: false },
+            { emoji: '📓', name: 'Cuaderno Terminado', recycles: true },
+            { emoji: '🔋', name: 'Pilas Gastadas', recycles: false } 
+        ];
+        let lvl2Current = 0;
+
+        function initLevel2() {
+            lvl2Current = 0;
+            document.getElementById('btn-next-lvl2').style.display = 'none';
+            document.getElementById('lvl2-btns').style.display = 'flex';
+            document.getElementById('feedback-lvl2').innerText = '';
+            showLvl2Item();
+        }
+
+        function showLvl2Item() {
+            if (lvl2Current >= lvl2Data.length) {
+                document.getElementById('lvl2-name').innerText = '¡Completado!';
+                document.getElementById('lvl2-item').innerText = '🌟';
+                document.getElementById('lvl2-btns').style.display = 'none';
+                document.getElementById('btn-next-lvl2').style.display = 'inline-block';
+                playSound('win');
+                throwConfetti();
+                return;
+            }
+            document.getElementById('lvl2-name').innerText = lvl2Data[lvl2Current].name;
+            document.getElementById('lvl2-item').innerText = lvl2Data[lvl2Current].emoji;
+            document.getElementById('feedback-lvl2').innerText = '';
+        }
+
+        function checkLvl2(answer) {
+            const item = lvl2Data[lvl2Current];
+            const feedback = document.getElementById('feedback-lvl2');
+            
+            if (answer === item.recycles) {
+                playSound('correct');
+                updateHUD(10);
+                feedback.innerText = '¡Muy bien!';
+                feedback.style.color = 'var(--verde)';
+                lvl2Current++;
+                setTimeout(showLvl2Item, 1000);
+            } else {
+                playSound('wrong');
+                document.getElementById('lvl2-item').classList.add('shake');
+                setTimeout(() => document.getElementById('lvl2-item').classList.remove('shake'), 400);
+                feedback.innerText = item.recycles ? '¡Cuidado! Este SÍ se recicla.' : '¡Ojo! Este NO debe ir al reciclaje normal.';
+                feedback.style.color = 'var(--fucsia)';
+            }
+        }
+
+        // ==========================================================
+        // NIVEL 3 LÓGICA (Memoria)
+        // ==========================================================
+        const lvl3Pairs = [
+            { id: 1, type: 'obj', val: '🍾', match: 1 }, { id: 2, type: 'bin', val: '🟩', match: 1 },
+            { id: 3, type: 'obj', val: '🗞️', match: 2 }, { id: 4, type: 'bin', val: '🟦', match: 2 },
+            { id: 5, type: 'obj', val: '🥤', match: 3 }, { id: 6, type: 'bin', val: '🟨', match: 3 },
+            { id: 7, type: 'obj', val: '🥫', match: 4 }, { id: 8, type: 'bin', val: '🟥', match: 4 } 
+        ];
+        let flippedCards = [];
+        let matchedPairs = 0;
+
+        function initLevel3() {
+            const board = document.getElementById('memory-board');
+            board.innerHTML = '';
+            matchedPairs = 0;
+            flippedCards = [];
+            document.getElementById('btn-next-lvl3').style.display = 'none';
+
+            // Barajar
+            const shuffled = [...lvl3Pairs].sort(() => Math.random() - 0.5);
+
+            shuffled.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'memory-card';
+                card.dataset.index = index;
+                card.dataset.match = item.match;
+                
+                const content = document.createElement('div');
+                content.className = 'content';
+                content.innerText = item.val;
+                
+                card.appendChild(content);
+                card.onclick = () => flipCard(card, item.match);
+                board.appendChild(card);
+            });
+        }
+
+        function flipCard(card, matchId) {
+            if (flippedCards.length >= 2 || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+            
+            playSound('pop');
+            card.classList.add('flipped');
+            flippedCards.push({ card, matchId });
+
+            if (flippedCards.length === 2) {
+                setTimeout(checkMatch, 800);
+            }
+        }
+
+        function checkMatch() {
+            const [c1, c2] = flippedCards;
+            if (c1.matchId === c2.matchId) {
+                playSound('correct');
+                updateHUD(20);
+                c1.card.classList.add('matched');
+                c2.card.classList.add('matched');
+                matchedPairs++;
+                if (matchedPairs === 4) {
+                    playSound('win');
+                    throwConfetti();
+                    document.getElementById('btn-next-lvl3').style.display = 'inline-block';
+                }
+            } else {
+                playSound('wrong');
+                c1.card.classList.remove('flipped');
+                c2.card.classList.remove('flipped');
+            }
+            flippedCards = [];
+        }
+
+        // ==========================================================
+        // NIVEL 4 LÓGICA (Cazador)
+        // ==========================================================
+        let lvl4Timer = 30;
+        let lvl4Interval;
+        let lvl4Generator;
+        const allItemsLvl4 = [
+            { e: '📄', r: true }, { e: '📦', r: true }, { e: '🍾', r: true }, { e: '🥫', r: true }, { e: '🥤', r: true },
+            { e: '🍎', r: false }, { e: '🧻', r: false }, { e: '👞', r: false }, { e: '👕', r: false }, { e: '💡', r: false }
+        ];
+
+        function initLevel4() {
+            document.getElementById('lvl4-timer').innerText = '30';
+            document.getElementById('catch-overlay').style.display = 'flex';
+            document.getElementById('btn-next-lvl4').style.display = 'none';
+            document.getElementById('catch-area').querySelectorAll('.catch-item').forEach(el => el.remove());
+        }
+
+        function startLevel4Game() {
+            document.getElementById('catch-overlay').style.display = 'none';
+            lvl4Timer = 30;
+            playSound('pop');
+            
+            lvl4Interval = setInterval(() => {
+                lvl4Timer--;
+                document.getElementById('lvl4-timer').innerText = lvl4Timer;
+                if (lvl4Timer <= 0) endLevel4();
+            }, 1000);
+
+            lvl4Generator = setInterval(createCatchItem, 800);
+        }
+
+        function createCatchItem() {
+            const area = document.getElementById('catch-area');
+            const itemDef = allItemsLvl4[Math.floor(Math.random() * allItemsLvl4.length)];
+            
+            const el = document.createElement('div');
+            el.className = 'catch-item';
+            el.innerText = itemDef.e;
+            
+            // Posición aleatoria dentro del área
+            const maxX = area.clientWidth - 50;
+            const maxY = area.clientHeight - 50;
+            el.style.left = Math.random() * maxX + 'px';
+            el.style.top = Math.random() * maxY + 'px';
+
+            el.onclick = () => {
+                if (itemDef.r) {
+                    playSound('correct');
+                    updateHUD(5);
+                    el.innerText = '✨';
+                    setTimeout(() => el.remove(), 300);
+                } else {
+                    playSound('wrong');
+                    lvl4Timer = Math.max(0, lvl4Timer - 3); // penalidad
+                    document.getElementById('lvl4-timer').innerText = lvl4Timer;
+                    el.innerText = '❌';
+                    el.classList.add('shake');
+                    setTimeout(() => el.remove(), 300);
+                }
+            };
+
+            area.appendChild(el);
+            
+            setTimeout(() => { if(el.parentNode) el.remove(); }, 2500);
+        }
+
+        function endLevel4() {
+            clearInterval(lvl4Interval);
+            clearInterval(lvl4Generator);
+            document.getElementById('catch-area').querySelectorAll('.catch-item').forEach(el => el.remove());
+            playSound('win');
+            throwConfetti();
+            document.getElementById('btn-next-lvl4').style.display = 'inline-block';
+        }
+
+        // ==========================================================
+        // NIVEL 5 LÓGICA (Explora)
+        // ==========================================================
+        const placesData = [
+            { obj: 'Revistas Viejas', e: '📚', bin: 'papel' },
+            { obj: 'Hojas Usadas', e: '📄', bin: 'papel' },
+            { obj: 'Envase de Jugo', e: '🧃', bin: 'plastico' },
+            { obj: 'Botella Plástica', e: '🥤', bin: 'plastico' },
+            { obj: 'Frasco de Vidrio', e: '🫙', bin: 'vidrio' }
+        ];
+        let currentPlace = null;
+        let placesDone = 0;
+
+        function initLevel5() {
+            placesDone = 0;
+            document.getElementById('btn-next-lvl5').style.display = 'none';
+            document.getElementById('lvl5-action').style.display = 'none';
+            document.getElementById('feedback-lvl5').innerText = '';
+            for(let i=0; i<5; i++){
+                document.getElementById(`place-${i}`).classList.remove('done');
+            }
+        }
+
+        function explorePlace(index) {
+            playSound('pop');
+            currentPlace = index;
+            document.getElementById('lvl5-obj-name').innerText = placesData[index].obj;
+            document.getElementById('lvl5-obj-icon').innerText = placesData[index].e;
+            document.getElementById('lvl5-action').style.display = 'block';
+            document.getElementById('feedback-lvl5').innerText = '';
+        }
+
+        function checkLvl5(binType) {
+            if (currentPlace === null) return;
+            const data = placesData[currentPlace];
+            const feedback = document.getElementById('feedback-lvl5');
+            
+            if (data.bin === binType) {
+                playSound('correct');
+                updateHUD(15);
+                document.getElementById(`place-${currentPlace}`).classList.add('done');
+                document.getElementById('lvl5-action').style.display = 'none';
+                feedback.innerText = '¡Guardado correctamente!';
+                placesDone++;
+                if (placesDone === 5) {
+                    playSound('win');
+                    throwConfetti();
+                    document.getElementById('btn-next-lvl5').style.display = 'inline-block';
+                    feedback.innerText = '¡Limpiaste toda la escuela!';
+                }
+            } else {
+                playSound('wrong');
+                feedback.innerText = 'Ese no es su lugar. ¡Piénsalo bien!';
+            }
+        }
+
+        // ==========================================================
+        // NIVEL FINAL (Quiz) - CON CARITAS DE FEEDBACK
+        // ==========================================================
+        const quizData = [
+            { q: "¿En qué color de basurero va el cartón?", opts: ["Azul", "Amarillo", "Verde"], a: 0 },
+            { q: "¿Las servilletas sucias se reciclan?", opts: ["Sí, siempre", "No, van a la basura", "Solo si están mojadas"], a: 1 },
+            { q: "¿Qué hacemos con las botellas plásticas?", opts: ["Las tiramos al suelo", "Al basurero Amarillo", "Al basurero Verde"], a: 1 },
+            { q: "¿Los frascos de vidrio van en el basurero...?", opts: ["Verde", "Rojo", "Azul"], a: 0 },
+            { q: "¿Qué material va en el contenedor Rojo?", opts: ["Plástico", "Papel", "Metal (Latas)"], a: 2 },
+            { q: "Si te comes una manzana, ¿dónde va el resto?", opts: ["Contenedor de Reciclaje", "Basurero Orgánico", "Al patio"], a: 1 },
+            { q: "¿Podemos reciclar cuadernos viejos?", opts: ["Sí, en el contenedor Azul", "No, nunca", "En el Amarillo"], a: 0 },
+            { q: "¿Las cajas de cereal de qué material son?", opts: ["Plástico", "Cartón (Azul)", "Metal"], a: 1 },
+            { q: "Antes de reciclar una botella, ¿qué es mejor hacer?", opts: ["Romperla", "Vaciarla y aplastarla", "Llenarla de tierra"], a: 1 },
+            { q: "Ser un Guardián del Reciclaje ayuda a...", opts: ["Tener más basura", "Salvar el planeta", "Nada"], a: 1 }
+        ];
+        let quizIndex = 0;
+
+        function initQuiz() {
+            quizIndex = 0;
+            loadQuizQuestion();
+        }
+
+        function loadQuizQuestion() {
+            // Limpiar y ocultar la carita de la pregunta anterior
+            const feedbackDiv = document.getElementById('quiz-feedback');
+            feedbackDiv.style.display = 'none';
+            feedbackDiv.innerText = '';
+
+            if (quizIndex >= quizData.length) {
+                showScreen('screen-end');
+                document.getElementById('final-coins').innerText = score;
+                document.getElementById('hud').style.display = 'none';
+                playSound('win');
+                throwConfetti();
+                setInterval(throwConfetti, 2000); // Fiesta final
+                return;
+            }
+
+            const qData = quizData[quizIndex];
+            document.getElementById('quiz-q').innerText = `${quizIndex + 1}. ${qData.q}`;
+            document.getElementById('quiz-progress').style.width = `${(quizIndex / 10) * 100}%`;
+
+            const optsContainer = document.getElementById('quiz-opts');
+            optsContainer.innerHTML = '';
+            
+            qData.opts.forEach((optText, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'quiz-option';
+                btn.innerText = optText;
+                btn.onclick = () => checkQuiz(idx, qData.a);
+                optsContainer.appendChild(btn);
+            });
+        }
+
+        function checkQuiz(selected, correct) {
+            const feedbackDiv = document.getElementById('quiz-feedback');
+            feedbackDiv.style.display = 'block'; // Mostrar contenedor de carita
+
+            // Bloquear botones para evitar múltiples clics
+            document.querySelectorAll('.quiz-option').forEach(btn => btn.style.pointerEvents = 'none');
+
+            if (selected === correct) {
+                playSound('correct');
+                updateHUD(20);
+                feedbackDiv.innerText = '😊'; // Carita feliz
+            } else {
+                playSound('wrong');
+                feedbackDiv.innerText = '😢'; // Carita triste
+            }
+
+            quizIndex++;
+            
+            // Esperar 1.5 segundos para que vean la carita antes de pasar a la siguiente
+            setTimeout(loadQuizQuestion, 1500);
+        }
+
+    </script>
+</body>
+</html>

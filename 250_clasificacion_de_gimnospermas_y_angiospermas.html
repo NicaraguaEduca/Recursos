@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 Aventura Botánica</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --color-gimno: #d97706; /* Naranja para piñas/madera */
+            --color-angio: #ec4899; /* Rosa para flores */
+            --color-correct: #22c55e;
+            --color-incorrect: #ef4444;
+        }
+
+        body {
+            background-color: #fefce8; /* Amarillo muy suave */
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border-radius: 2rem;
+            border: 6px solid #fde047;
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            max-width: 900px;
+            width: 100%;
+            animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .interactive-element {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .interactive-element:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .option-button {
+            border: 3px solid #e5e7eb;
+            font-size: 1.1rem;
+        }
+
+        .correct-feedback {
+            background-color: var(--color-correct) !important;
+            color: white !important;
+            border-color: #166534 !important;
+            animation: bounce 0.5s ease;
+        }
+
+        .incorrect-feedback {
+            background-color: var(--color-incorrect) !important;
+            color: white !important;
+            border-color: #991b1b !important;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        /* Drag & Drop Styles */
+        .drop-target {
+            min-height: 150px;
+            border: 5px dashed #cbd5e1;
+            transition: all 0.3s ease;
+        }
+
+        .target-gimno { border-color: #fcd34d; background-color: #fffbeb; }
+        .target-angio { border-color: #fbcfe8; background-color: #fdf2f8; }
+        
+        .drop-target.drag-over {
+            transform: scale(1.05);
+            border-style: solid;
+        }
+
+        .drag-item {
+            cursor: grab;
+            background-color: #f1f5f9;
+            border: 3px solid #cbd5e1;
+            font-size: 1.1rem;
+            color: #334155;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .drag-item:active { cursor: grabbing; transform: scale(0.95); }
+
+        #quiz-section, #drag-drop-section, #results-section { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+
+        <!-- HEADER -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-blue-600 mb-4 drop-shadow-sm">
+                🌱 ¡Misión Semillas! 🌸
+            </h1>
+            <p class="text-xl text-gray-600">
+                Aprende a diferenciar las plantas como un verdadero detective de la naturaleza.
+            </p>
+        </header>
+
+        <!-- SECCIÓN DE INICIO -->
+        <div id="start-section" class="flex flex-col items-center space-y-6">
+            <div class="flex gap-4 text-6xl my-4">🌲 🍎 🌻 🌰</div>
+            <p class="text-center text-lg text-gray-700 max-w-lg">
+                ¿Sabías que las plantas se dividen en dos grandes equipos secretos? ¡Prepárate para jugar, responder preguntas y clasificar pistas!
+            </p>
+            <button id="start-quiz-button"
+                class="bg-blue-500 hover:bg-blue-600 text-white text-2xl font-bold py-4 px-8 rounded-full interactive-element shadow-lg border-b-4 border-blue-700">
+                ¡Empezar a Jugar! 🚀
+            </button>
+        </div>
+
+        <!-- SECCIÓN 1: CUESTIONARIO -->
+        <div id="quiz-section" class="space-y-6">
+            <div class="flex items-center justify-between border-b-4 border-blue-200 pb-4 mb-6">
+                <h2 class="text-3xl font-bold text-blue-800">Parte 1: Juego de Preguntas 🎮</h2>
+                <span class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-bold" id="quiz-progress">1/5</span>
+            </div>
+            
+            <div id="quiz-container" class="bg-blue-50 rounded-2xl p-6 border-2 border-blue-100">
+                <!-- Preguntas aquí -->
+            </div>
+            
+            <div id="quiz-feedback-box" class="hidden p-4 rounded-xl text-xl text-center font-bold"></div>
+            
+            <div class="flex justify-end mt-6">
+                <button id="next-quiz-button" disabled
+                    class="bg-gray-300 text-gray-500 text-xl font-bold py-3 px-8 rounded-full disabled:opacity-50 transition-all duration-200 border-b-4 border-gray-400">
+                    Siguiente Pregunta ➡️
+                </button>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 2: DRAG & DROP -->
+        <div id="drag-drop-section" class="space-y-6">
+            <h2 class="text-3xl font-bold text-purple-700 border-b-4 border-purple-200 pb-4 mb-4">
+                Parte 2: ¡Ordena las Pistas! 🧩
+            </h2>
+            <p class="text-xl text-gray-700 text-center mb-6">
+                Arrastra cada tarjeta a su equipo correcto.
+            </p>
+
+            <!-- Elementos para arrastrar -->
+            <div id="drag-items-container" class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+                <!-- Se llenan con JS -->
+            </div>
+
+            <!-- Cajas de destino -->
+            <div id="drag-drop-container" class="flex flex-col md:flex-row gap-6">
+                <!-- Gimnospermas -->
+                <div id="Gimnosperma-target" data-category="Gimnosperma"
+                     class="drop-target target-gimno flex-1 p-6 rounded-2xl flex flex-col items-center shadow-inner relative">
+                    <div class="text-5xl absolute -top-6">🌲</div>
+                    <h3 class="text-2xl font-bold text-amber-700 mt-4">Gimnospermas</h3>
+                    <p class="text-amber-600 font-medium">¡Las que tienen piñas!</p>
+                    <div class="dropped-items flex flex-col gap-3 mt-4 w-full"></div>
+                </div>
+
+                <!-- Angiospermas -->
+                <div id="Angiosperma-target" data-category="Angiosperma"
+                     class="drop-target target-angio flex-1 p-6 rounded-2xl flex flex-col items-center shadow-inner relative">
+                    <div class="text-5xl absolute -top-6">🌸</div>
+                    <h3 class="text-2xl font-bold text-pink-700 mt-4">Angiospermas</h3>
+                    <p class="text-pink-600 font-medium">¡Las que dan frutas y flores!</p>
+                    <div class="dropped-items flex flex-col gap-3 mt-4 w-full"></div>
+                </div>
+            </div>
+
+            <div id="drag-drop-feedback-box" class="hidden mt-6 p-4 rounded-xl text-xl text-center font-bold"></div>
+
+            <div class="flex justify-center mt-8">
+                <button id="check-drag-drop-button"
+                    class="bg-green-500 hover:bg-green-600 text-white text-xl font-bold py-4 px-10 rounded-full interactive-element shadow-lg border-b-4 border-green-700">
+                    Revisar mis respuestas ✅
+                </button>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 3: RESULTADOS -->
+        <div id="results-section" class="text-center space-y-8 py-8">
+            <div class="text-7xl mb-4">🏆</div>
+            <h2 class="text-4xl font-extrabold text-gray-800">
+                ¡Misión Completada!
+            </h2>
+            <p id="final-message" class="text-2xl font-bold"></p>
+            
+            <div class="flex justify-center gap-6 text-xl font-bold mt-8">
+                <div class="p-6 rounded-2xl bg-blue-100 text-blue-800 flex-1 max-w-[200px] border-4 border-blue-200">
+                    <p class="text-4xl mb-2" id="quiz-score-display">0/0</p>
+                    <p>Preguntas</p>
+                </div>
+                <div class="p-6 rounded-2xl bg-purple-100 text-purple-800 flex-1 max-w-[200px] border-4 border-purple-200">
+                    <p class="text-4xl mb-2" id="dd-score-display">0/0</p>
+                    <p>Pistas</p>
+                </div>
+            </div>
+
+            <button onclick="window.location.reload()"
+                class="mt-10 bg-orange-500 hover:bg-orange-600 text-white text-2xl font-bold py-4 px-8 rounded-full interactive-element shadow-lg border-b-4 border-orange-700">
+                ¡Jugar Otra Vez! 🔄
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- PREGUNTAS (Adaptadas para niños) ---
+        const quizQuestions = [
+            {
+                question: "¿Quiénes tienen sus semillas bien protegidas dentro de frutas deliciosas? 🍎",
+                options: ["Gimnospermas", "Angiospermas"],
+                answer: "Angiospermas"
+            },
+            {
+                question: "¿Verdadero o Falso? Las Gimnospermas, como los grandes pinos, tienen flores de muchos colores. 🌲",
+                options: ["¡Verdadero!", "¡Falso!"],
+                answer: "¡Falso!"
+            },
+            {
+                question: "¿Dónde esconden sus semillas las Gimnospermas? 🐿️",
+                options: ["En flores bonitas", "En piñas o conos de madera"],
+                answer: "En piñas o conos de madera"
+            },
+            {
+                question: "¿Qué planta crees que usaría sus flores coloridas para llamar a las abejas y mariposas? 🐝",
+                options: ["Angiospermas", "Gimnospermas"],
+                answer: "Angiospermas"
+            },
+            {
+                question: "Si te comes una jugosa naranja... ¿de qué tipo de planta viene? 🍊",
+                options: ["Gimnospermas", "Angiospermas"],
+                answer: "Angiospermas"
+            }
+        ];
+
+        // --- PISTAS PARA ARRASTRAR (Adaptadas para niños) ---
+        const dragDropItems = [
+            { id: 'dd1', text: 'Semilla desnuda (sin fruta) 🥜', category: 'Gimnosperma' },
+            { id: 'dd2', text: 'Tienen flores muy hermosas 🌸', category: 'Angiosperma' },
+            { id: 'dd3', text: 'Nos dan frutas ricas para comer 🍓', category: 'Angiosperma' },
+            { id: 'dd4', text: 'Tienen piñas de madera 🌰', category: 'Gimnosperma' },
+            { id: 'dd5', text: 'Llaman a las abejas para polinizar 🐝', category: 'Angiosperma' },
+            { id: 'dd6', text: 'Hojas que parecen agujitas verdes 🌲', category: 'Gimnosperma' }
+        ];
+
+        // --- VARIABLES DE ESTADO ---
+        let currentQuizIndex = 0;
+        let quizScore = 0;
+        
+        const feedbackAnimo = [
+            "¡Ups! Casi, casi. ¡Intenta con la otra! 😉",
+            "¡No pasa nada! Piensa un poquito más y dale de nuevo. 🤔",
+            "¡Sigue intentando, tú puedes ser un experto! 💪"
+        ];
+
+        // --- ELEMENTOS DEL DOM ---
+        const startSection = document.getElementById('start-section');
+        const quizSection = document.getElementById('quiz-section');
+        const dragDropSection = document.getElementById('drag-drop-section');
+        const resultsSection = document.getElementById('results-section');
+
+        const quizContainer = document.getElementById('quiz-container');
+        const nextQuizButton = document.getElementById('next-quiz-button');
+        const quizFeedbackBox = document.getElementById('quiz-feedback-box');
+        const quizProgress = document.getElementById('quiz-progress');
+
+        const dragItemsContainer = document.getElementById('drag-items-container');
+        const checkDragDropButton = document.getElementById('check-drag-drop-button');
+        const ddFeedbackBox = document.getElementById('drag-drop-feedback-box');
+
+        // Empezar el juego
+        document.getElementById('start-quiz-button').addEventListener('click', () => {
+            startSection.style.display = 'none';
+            quizSection.style.display = 'block';
+            loadQuizQuestion();
+        });
+
+        // --- LÓGICA DEL CUESTIONARIO ---
+        function loadQuizQuestion() {
+            if (currentQuizIndex >= quizQuestions.length) {
+                quizSection.style.display = 'none';
+                dragDropSection.style.display = 'block';
+                initializeDragDrop();
+                return;
+            }
+
+            quizProgress.textContent = `${currentQuizIndex + 1} / ${quizQuestions.length}`;
+            const qData = quizQuestions[currentQuizIndex];
+            
+            quizContainer.innerHTML = `
+                <p class="text-2xl font-bold text-gray-800 mb-6">${qData.question}</p>
+                <div class="flex flex-col gap-4">
+                    ${qData.options.map((option, index) => `
+                        <button class="option-button interactive-element p-4 rounded-xl bg-white text-gray-700 font-bold shadow-sm"
+                            data-answer="${option}">
+                            ${option}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+            
+            nextQuizButton.disabled = true;
+            nextQuizButton.className = "bg-gray-300 text-gray-500 text-xl font-bold py-3 px-8 rounded-full mt-4 border-b-4 border-gray-400";
+            quizFeedbackBox.classList.add('hidden');
+
+            document.querySelectorAll('.option-button').forEach(button => {
+                button.addEventListener('click', handleQuizAnswer);
+            });
+        }
+
+        function handleQuizAnswer(event) {
+            const selectedButton = event.currentTarget;
+            const selectedAnswer = selectedButton.dataset.answer;
+            const correctAnswer = quizQuestions[currentQuizIndex].answer;
+            const isCorrect = selectedAnswer === correctAnswer;
+
+            // Bloquear otras opciones
+            document.querySelectorAll('.option-button').forEach(btn => {
+                btn.removeEventListener('click', handleQuizAnswer);
+                btn.classList.remove('interactive-element');
+            });
+
+            quizFeedbackBox.classList.remove('hidden', 'correct-feedback', 'incorrect-feedback');
+
+            if (isCorrect) {
+                quizScore++;
+                selectedButton.classList.add('correct-feedback');
+                quizFeedbackBox.textContent = "¡Súper bien! ¡Acertaste! 🌟";
+                quizFeedbackBox.classList.add('correct-feedback');
+                
+                // Activar botón siguiente
+                nextQuizButton.disabled = false;
+                nextQuizButton.className = "bg-green-500 hover:bg-green-600 text-white text-xl font-bold py-3 px-8 rounded-full shadow-lg transition-all border-b-4 border-green-700";
+            } else {
+                selectedButton.classList.add('incorrect-feedback');
+                quizFeedbackBox.textContent = feedbackAnimo[Math.floor(Math.random() * feedbackAnimo.length)];
+                quizFeedbackBox.classList.add('incorrect-feedback');
+
+                // Permitir intentar de nuevo
+                setTimeout(() => {
+                    document.querySelectorAll('.option-button').forEach(btn => {
+                        if(btn !== selectedButton) {
+                            btn.addEventListener('click', handleQuizAnswer);
+                            btn.classList.add('interactive-element');
+                        }
+                    });
+                }, 500);
+            }
+        }
+
+        nextQuizButton.addEventListener('click', () => {
+            if (!nextQuizButton.disabled) {
+                currentQuizIndex++;
+                loadQuizQuestion();
+            }
+        });
+
+        // --- LÓGICA DE ARRASTRAR Y SOLTAR ---
+        function initializeDragDrop() {
+            dragItemsContainer.innerHTML = dragDropItems.map(item => `
+                <div id="${item.id}" draggable="true" data-category="${item.category}"
+                     class="drag-item p-4 rounded-xl text-center font-bold interactive-element">
+                    ${item.text}
+                </div>
+            `).join('');
+
+            document.querySelectorAll('.drag-item').forEach(item => {
+                item.addEventListener('dragstart', dragStart);
+                item.addEventListener('dragend', dragEnd);
+            });
+
+            document.querySelectorAll('.drop-target').forEach(target => {
+                target.addEventListener('dragover', dragOver);
+                target.addEventListener('dragleave', dragLeave);
+                target.addEventListener('drop', drop);
+            });
+            
+            ddFeedbackBox.classList.add('hidden');
+        }
+
+        let draggedItem = null;
+
+        function dragStart(e) {
+            draggedItem = e.target;
+            e.dataTransfer.setData('text/plain', e.target.id);
+            setTimeout(() => e.target.style.opacity = '0.5', 0);
+        }
+
+        function dragEnd(e) {
+            e.target.style.opacity = '1';
+        }
+
+        function dragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function dragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+
+            const id = e.dataTransfer.getData('text/plain');
+            const item = document.getElementById(id);
+            const droppedItemsContainer = e.currentTarget.querySelector('.dropped-items');
+
+            if (item && droppedItemsContainer) {
+                droppedItemsContainer.appendChild(item);
+                // Limpiamos colores si lo mueven de nuevo
+                item.classList.remove('correct-feedback', 'incorrect-feedback');
+            }
+        }
+
+        checkDragDropButton.addEventListener('click', () => {
+            let allCorrect = true;
+            let itemsPlaced = 0;
+
+            document.querySelectorAll('.drag-item').forEach(item => {
+                item.classList.remove('correct-feedback', 'incorrect-feedback');
+                
+                const itemCategory = item.dataset.category;
+                const parentTarget = item.closest('.drop-target');
+                
+                if (parentTarget) {
+                    itemsPlaced++;
+                    const targetCategory = parentTarget.dataset.category;
+
+                    if (itemCategory === targetCategory) {
+                        item.classList.add('correct-feedback');
+                    } else {
+                        item.classList.add('incorrect-feedback');
+                        allCorrect = false;
+                    }
+                } else {
+                    allCorrect = false;
+                }
+            });
+
+            ddFeedbackBox.classList.remove('hidden', 'correct-feedback', 'incorrect-feedback');
+
+            if (itemsPlaced < dragDropItems.length) {
+                ddFeedbackBox.textContent = "¡Faltan pistas por acomodar! Pon todas en su lugar. 🕵️‍♂️";
+                ddFeedbackBox.classList.add('incorrect-feedback');
+            } else if (allCorrect) {
+                ddFeedbackBox.textContent = "¡Increíble! Eres un maestro botánico. 🎉";
+                ddFeedbackBox.classList.add('correct-feedback');
+                checkDragDropButton.disabled = true;
+                setTimeout(showResults, 2000);
+            } else {
+                ddFeedbackBox.textContent = "Algunas pistas están en el equipo equivocado (están en rojo). ¡Cámbialas de lugar! 🔄";
+                ddFeedbackBox.classList.add('incorrect-feedback');
+            }
+        });
+
+        // --- PANTALLA DE RESULTADOS ---
+        function showResults() {
+            dragDropSection.style.display = 'none';
+            resultsSection.style.display = 'block';
+
+            document.getElementById('quiz-score-display').textContent = `${quizScore}/${quizQuestions.length}`;
+            document.getElementById('dd-score-display').textContent = `${dragDropItems.length}/${dragDropItems.length}`;
+
+            const finalMessage = document.getElementById('final-message');
+            finalMessage.textContent = "¡Lo lograste! Ahora ya sabes cómo diferenciar a las Gimnospermas de las Angiospermas. ¡Felicidades, Detective! 🥇";
+            finalMessage.className = "text-2xl font-bold text-green-600";
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Máquina de Respirar - Simulador Interactivo de Ciencias Naturales</title>
+    <!-- Tailwind CSS para el diseño premium y responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fuentes amigables y profesionales -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Material+Icons&display=swap" rel="stylesheet">
+    <!-- Confeti para celebrar los logros de los alumnos -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #0EA5E9;
+            --primary-dark: #0284C7;
+            --accent: #F43F5E;
+            --lungs-pink: #FDA4AF;
+            --lungs-red: #E11D48;
+            --diaphragm-purple: #8B5CF6;
+            --anatomy-bg: #0F172A;
+            --ff-title: 'Fredoka', sans-serif;
+            --ff-sans: 'Quicksand', sans-serif;
+        }
+
+        body {
+            font-family: var(--ff-sans);
+            background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+            min-height: 100vh;
+        }
+
+        .title-font {
+            font-family: var(--ff-title);
+        }
+
+        /* Efecto 3D amigable para tarjetas y botones */
+        .btn-interactive {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-bottom: 4px solid rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-interactive:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+
+        /* Animación suave para partículas de oxígeno */
+        @keyframes flow-down {
+            0% { transform: translateY(-20px); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(120px); opacity: 0; }
+        }
+
+        @keyframes flow-up {
+            0% { transform: translateY(120px); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-20px); opacity: 0; }
+        }
+
+        .particle-in {
+            animation: flow-down 1.8s infinite linear;
+        }
+
+        .particle-out {
+            animation: flow-up 1.8s infinite linear;
+        }
+
+        /* Estilo personalizado para el slider de diafragma vertical */
+        .vertical-slider {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 100%;
+            background: #E2E8F0;
+            outline: none;
+            border-radius: 6px;
+        }
+
+        .vertical-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--diaphragm-purple);
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+            transition: background 0.15s;
+        }
+
+        .vertical-slider::-webkit-slider-thumb:hover {
+            background: #7C3AED;
+        }
+
+        /* Ocultar barra de scroll estéticamente */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F0F9FF;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #bae6fd;
+            border-radius: 99px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #7dd3fc;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- HUD principal del estudiante (Estilo Laboratorio Escolar) -->
+    <header class="bg-white border-b-4 border-sky-200 shadow-md py-4 px-6 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-sky-500 p-3 rounded-2xl border-2 border-sky-400 shadow-inner text-white flex items-center justify-center">
+                    <span class="material-icons text-3xl animate-pulse">science</span>
+                </div>
+                <div>
+                    <h1 class="title-font text-2xl md:text-3xl text-sky-900 font-bold leading-tight flex items-center gap-2">
+                        Máquina de Respirar <span class="text-sm bg-rose-500 text-white font-bold py-1 px-2.5 rounded-full uppercase tracking-wider">Simulador Lab</span>
+                    </h1>
+                    <p class="text-xs md:text-sm text-sky-600 font-semibold uppercase tracking-wider">🧪 Ciencias Naturales • III Unidad Pedagógica (5.º y 6.º Grado)</p>
+                </div>
+            </div>
+
+            <!-- Dashboard de logros rápidos -->
+            <div class="flex items-center gap-3 w-full md:w-auto justify-end">
+                <div class="bg-rose-50 border-2 border-rose-200 rounded-xl px-4 py-2 flex items-center gap-2.5 shadow-sm text-rose-800">
+                    <span class="text-xl">❤️</span>
+                    <div>
+                        <div class="text-[10px] uppercase font-bold text-rose-500">Capacidad Pulmonar</div>
+                        <div class="text-sm font-black title-font" id="hud-capacity">100% Saludable</div>
+                    </div>
+                </div>
+                <div class="bg-indigo-50 border-2 border-indigo-200 rounded-xl px-4 py-2 flex items-center gap-2.5 shadow-sm text-indigo-800">
+                    <span class="text-xl">🏆</span>
+                    <div>
+                        <div class="text-[10px] uppercase font-bold text-indigo-500">Insignias Logradas</div>
+                        <div class="text-sm font-black title-font" id="hud-badges">0 / 4 Insignias</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenedor general del laboratorio -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
+        
+        <!-- Menú de pestañas de navegación dinámicas -->
+        <nav class="flex flex-wrap gap-2.5 justify-center md:justify-start">
+            <button onclick="switchTab('tab-build')" id="btn-tab-build" class="btn-interactive bg-sky-500 text-white font-bold py-3 px-6 rounded-2xl flex items-center gap-2 active-tab">
+                <span class="material-icons">handyman</span>
+                <span>1. Construir la Máquina</span>
+            </button>
+            <button onclick="switchTab('tab-simulator')" id="btn-tab-simulator" class="btn-interactive bg-white border-2 border-sky-300 text-sky-800 font-bold py-3 px-6 rounded-2xl flex items-center gap-2">
+                <span class="material-icons">air</span>
+                <span>2. Laboratorio y Anatomía</span>
+            </button>
+            <button onclick="switchTab('tab-challenge')" id="btn-tab-challenge" class="btn-interactive bg-white border-2 border-sky-300 text-sky-800 font-bold py-3 px-6 rounded-2xl flex items-center gap-2">
+                <span class="material-icons">quiz</span>
+                <span>3. Desafío Fisiólogo</span>
+            </button>
+        </nav>
+
+        <!-- SECCIÓN 1: CONSTRUIBLE DIY -->
+        <section id="tab-build" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            
+            <!-- Panel izquierdo: El espacio de montaje del experimento -->
+            <div class="lg:col-span-7 bg-white rounded-3xl p-6 shadow-md border-2 border-sky-100 flex flex-col justify-between">
+                <div>
+                    <span class="bg-amber-100 text-amber-800 font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider mb-2 inline-block">Mesa de Trabajo</span>
+                    <h2 class="title-font text-2xl text-sky-900 font-bold mb-4">Montaje de la Máquina de Respirar Casera</h2>
+                    <p class="text-slate-600 text-sm mb-6">
+                        Para entender la mecánica respiratoria, los científicos recrean el cuerpo con materiales comunes. Sigue las instrucciones de nuestro asistente virtual para unir las piezas y crear tu modelo interactivo de respiración pulmonar.
+                    </p>
+
+                    <!-- Zona interactiva de arrastre/construcción -->
+                    <div class="bg-sky-50/50 border-4 border-dashed border-sky-200 rounded-3xl p-4 flex flex-col items-center justify-center min-h-[340px] relative overflow-hidden" id="build-stage">
+                        
+                        <!-- SVG interactivo que evoluciona según la etapa de construcción -->
+                        <svg class="w-72 h-80 transition-all duration-300" viewBox="0 0 200 240" id="bottle-builder-svg">
+                            <!-- Botella de plástico transparente (Caja torácica) -->
+                            <path id="build-bottle" d="M60,40 L60,80 C60,80 50,90 50,110 L50,190 L150,190 L150,110 C150,90 140,80 140,80 L140,40 Z" fill="rgba(14, 165, 233, 0.05)" stroke="#94A3B8" stroke-width="3" stroke-dasharray="4,4" class="opacity-30" />
+                            
+                            <!-- Pajillas de aire (Tráquea y Bronquios) -->
+                            <g id="build-straws" class="hidden">
+                                <!-- Tráquea principal -->
+                                <rect x="95" y="10" width="10" height="70" fill="#E2E8F0" stroke="#64748B" stroke-width="2" />
+                                <!-- Bronquio izquierdo -->
+                                <path d="M100,80 Q85,100 70,115" fill="none" stroke="#64748B" stroke-width="2" />
+                                <!-- Bronquio derecho -->
+                                <path d="M100,80 Q115,100 130,115" fill="none" stroke="#64748B" stroke-width="2" />
+                            </g>
+
+                            <!-- Globos internos (Pulmones) -->
+                            <g id="build-balloons" class="hidden">
+                                <!-- Pulmón Izquierdo -->
+                                <ellipse cx="68" cy="128" rx="14" ry="20" fill="var(--lungs-pink)" stroke="var(--lungs-red)" stroke-width="2" />
+                                <!-- Pulmón Derecho -->
+                                <ellipse cx="132" cy="128" rx="14" ry="20" fill="var(--lungs-pink)" stroke="var(--lungs-red)" stroke-width="2" />
+                            </g>
+
+                            <!-- Sello de plastilina en la tapa (Hermetismo) -->
+                            <ellipse id="build-clay" cx="100" cy="40" rx="18" ry="8" fill="#F59E0B" class="hidden" />
+
+                            <!-- Globo inferior estirado (Diafragma) -->
+                            <path id="build-diaphragm" d="M50,190 Q100,195 150,190 L150,200 Q100,205 50,200 Z" fill="var(--diaphragm-purple)" class="hidden" />
+                        </svg>
+
+                        <!-- Indicadores de piezas arrastrables o listas -->
+                        <div class="absolute bottom-4 left-4 bg-white/90 border border-slate-200 px-3 py-1.5 rounded-xl shadow-sm text-xs font-bold text-slate-700" id="assembly-status">
+                            Progreso de montaje: 0%
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botonera de control del montaje de piezas -->
+                <div class="flex flex-col sm:flex-row gap-3 mt-6">
+                    <button onclick="resetAssembly()" class="btn-interactive bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 px-6 rounded-2xl text-sm flex items-center justify-center gap-2">
+                        <span class="material-icons">restart_alt</span>
+                        <span>Reiniciar</span>
+                    </button>
+                    <button onclick="advanceAssembly()" id="btn-assemble-next" class="btn-interactive bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-2xl text-sm flex-grow flex items-center justify-center gap-2">
+                        <span class="material-icons" id="icon-assemble-next">extension</span>
+                        <span id="text-assemble-next">Acoplar Botella (Caja Torácica)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panel derecho: El asistente interactivo que explica la física de cada órgano -->
+            <div class="lg:col-span-5 flex flex-col gap-6">
+                <!-- Tarjeta del Asistente Virtual -->
+                <div class="bg-white rounded-3xl p-6 shadow-md border-2 border-sky-100 flex flex-col justify-between items-start relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-sky-50 rounded-bl-full -z-10"></div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-4xl animate-bounce">🤖</span>
+                        <div>
+                            <h3 class="title-font text-lg text-sky-950 font-bold">Bobi, tu Tutor Científico</h3>
+                            <p class="text-xs text-sky-500 font-semibold">Te guía paso a paso en el laboratorio</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-sky-50 border border-sky-100 p-4 rounded-2xl mb-4 w-full">
+                        <p class="text-slate-800 text-sm font-medium leading-relaxed" id="bobi-instructions">
+                            ¡Hola científico! Bienvenido al laboratorio de biología. Para empezar a estudiar cómo respiramos, primero debemos fabricar un modelo físico de simulación. <br><br> Haz clic en <strong>"Acoplar Botella"</strong> para preparar la estructura protectora de nuestros pulmones.
+                        </p>
+                    </div>
+
+                    <!-- Cuadro de analogías dinámicas en tiempo real -->
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl w-full" id="analogy-box">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Relación Órgano-Material</span>
+                        <div class="flex items-center gap-3">
+                            <div class="text-2xl" id="analogy-icon">❓</div>
+                            <div>
+                                <h4 class="font-bold text-sm text-slate-800" id="analogy-title">Estructura Vacía</h4>
+                                <p class="text-xs text-slate-500" id="analogy-desc">Espera a colocar una pieza para descubrir qué órgano real del sistema respiratorio representa en la maqueta.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta de Desafío de Montaje -->
+                <div class="bg-gradient-to-r from-sky-500 to-indigo-600 rounded-3xl p-6 shadow-md text-white flex flex-col justify-between h-full">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="bg-white/20 text-white font-bold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider">Desafío Rápido</span>
+                            <span class="material-icons text-yellow-300">lightbulb</span>
+                        </div>
+                        <h4 class="title-font text-lg font-bold mb-2">La importancia del Hermetismo</h4>
+                        <p class="text-xs text-sky-100 leading-relaxed">
+                            En un pulmón sano real, la cavidad que los rodea (cavidad pleural) debe ser hermética. Si entrara aire exterior directamente a la botella (por ejemplo, por un agujero en la tapa), la diferencia de presiones se anularía y los globos-pulmones no lograrían inflarse. A esto se le conoce en medicina como neumotórax.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-white/20 flex justify-between items-center text-xs text-sky-100">
+                        <span>¿Preparado para experimentar?</span>
+                        <span class="font-black underline cursor-pointer" onclick="switchTab('tab-simulator')">Ir al Simulador ➔</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: SIMULADOR & ANATOMÍA -->
+        <section id="tab-simulator" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            
+            <!-- Panel izquierdo: La Máquina de Respirar Interactiva por Flujo de Presión -->
+            <div class="lg:col-span-4 bg-white rounded-3xl p-6 shadow-md border-2 border-sky-100 flex flex-col justify-between">
+                <div class="text-center">
+                    <span class="bg-purple-100 text-purple-800 font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider mb-2 inline-block">Modelo de Simulación</span>
+                    <h2 class="title-font text-xl text-sky-900 font-bold mb-4">Mecánica del Diafragma</h2>
+                </div>
+
+                <!-- Contenedor del SVG interactivo y el slider vertical para tirar -->
+                <div class="flex items-center justify-center gap-6 my-4 relative">
+                    <!-- Efecto visual de dirección del aire (Flecha dinámica) -->
+                    <div class="absolute top-4 left-4 flex flex-col items-center gap-1" id="flow-indicator-left">
+                        <span class="material-icons text-3xl text-sky-500 animate-bounce" id="flow-arrow-icon">arrow_downward</span>
+                        <span class="text-[10px] font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded-full" id="flow-arrow-text">AIRE ENTRA</span>
+                    </div>
+
+                    <!-- El simulador SVG de la botella con globos -->
+                    <div class="relative bg-sky-50/30 rounded-2xl p-4 border border-slate-100">
+                        <!-- Partículas flotantes de aire -->
+                        <div class="absolute inset-x-0 top-12 bottom-16 pointer-events-none overflow-hidden" id="particle-container">
+                            <!-- Se generan partículas dinámicamente con JS -->
+                        </div>
+
+                        <svg class="w-64 h-80 overflow-visible" viewBox="0 0 200 240" id="interactive-model-svg">
+                            <!-- Pajillas estables -->
+                            <rect x="94" y="10" width="12" height="70" fill="#E2E8F0" stroke="#475569" stroke-width="2" />
+                            <path d="M100,80 Q85,100 70,115" fill="none" stroke="#475569" stroke-width="2.5" />
+                            <path d="M100,80 Q115,100 130,115" fill="none" stroke="#475569" stroke-width="2.5" />
+
+                            <!-- Globos dinámicos (Pulmones) -->
+                            <!-- Pulmón Izquierdo -->
+                            <ellipse id="sim-lung-left" cx="68" cy="128" rx="14" ry="20" fill="var(--lungs-pink)" stroke="var(--lungs-red)" stroke-width="2" class="transition-all duration-150 origin-top" />
+                            <!-- Pulmón Derecho -->
+                            <ellipse id="sim-lung-right" cx="132" cy="128" rx="14" ry="20" fill="var(--lungs-pink)" stroke="var(--lungs-red)" stroke-width="2" class="transition-all duration-150 origin-top" />
+
+                            <!-- Botella protectora estable -->
+                            <path d="M60,40 L60,80 C60,80 50,90 50,110 L50,190 L150,190 L150,110 C150,90 140,80 140,80 L140,40 Z" fill="rgba(14, 165, 233, 0.05)" stroke="#64748B" stroke-width="3.5" />
+                            <ellipse cx="100" cy="40" rx="18" ry="8" fill="#F59E0B" />
+
+                            <!-- Diafragma elástico inferior interactivo -->
+                            <path id="sim-diaphragm" d="M50,190 Q100,190 150,190 L150,210 Q100,210 50,210 Z" fill="var(--diaphragm-purple)" class="transition-all duration-150" />
+                        </svg>
+                    </div>
+
+                    <!-- Control Deslizante de tracción vertical -->
+                    <div class="flex flex-col items-center h-72 justify-between">
+                        <span class="text-[10px] font-black text-slate-400">SUBIR</span>
+                        <input type="range" min="0" max="100" value="0" class="vertical-slider" id="diaphragm-slider" style="transform: rotate(180deg); writing-mode: bt-lr; -webkit-appearance: slider-vertical;" oninput="updateBreathingVolume(this.value)">
+                        <span class="text-[10px] font-black text-purple-600">TIRAR</span>
+                    </div>
+                </div>
+
+                <!-- Tablero de datos físicos en tiempo real -->
+                <div class="grid grid-cols-2 gap-2 text-center mt-3 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                    <div class="border-r border-slate-200">
+                        <span class="text-[9px] uppercase font-black text-slate-400">Volumen Interno</span>
+                        <p class="text-sm font-extrabold text-sky-800" id="sim-data-volume">Normal</p>
+                    </div>
+                    <div>
+                        <span class="text-[9px] uppercase font-black text-slate-400">Presión de Aire</span>
+                        <p class="text-sm font-extrabold text-sky-800" id="sim-data-pressure">Equilibrada</p>
+                    </div>
+                </div>
+
+                <!-- Botones de automatización y ayuda sonora -->
+                <div class="mt-4 flex gap-2">
+                    <button onclick="toggleAutoBreathing()" id="btn-auto" class="btn-interactive bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-xl text-xs flex-grow flex items-center justify-center gap-1">
+                        <span class="material-icons text-sm" id="icon-auto">play_arrow</span>
+                        <span id="text-auto">Ciclo Automático</span>
+                    </button>
+                    <button onclick="playBreathingSound()" class="btn-interactive bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center" title="Escuchar respiración sonora">
+                        <span class="material-icons text-sm">volume_up</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panel derecho: El Modelo Anatómico y de Intercambio de Gases -->
+            <div class="lg:col-span-8 bg-slate-900 rounded-3xl p-6 shadow-md text-white flex flex-col justify-between border-2 border-slate-800">
+                
+                <!-- Encabezado del visor anatómico -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+                    <div>
+                        <span class="bg-teal-500/20 text-teal-300 border border-teal-500/30 font-bold text-[10px] px-3 py-1 rounded-full uppercase tracking-wider">Visor Biológico Interactivo</span>
+                        <h3 class="title-font text-2xl font-bold text-white mt-1">Sincronización con el Cuerpo Humano</h3>
+                    </div>
+                    
+                    <!-- Botonera para alternar entre el pulmón y el alvéolo -->
+                    <div class="flex gap-1.5 bg-slate-800 p-1 rounded-xl">
+                        <button onclick="setView('anatomy')" id="btn-view-anatomy" class="bg-teal-500 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1">
+                            <span class="material-icons text-xs">accessibility_new</span>
+                            <span>Pulmones</span>
+                        </button>
+                        <button onclick="setView('alveoli')" id="btn-view-alveoli" class="text-slate-400 hover:text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1">
+                            <span class="material-icons text-xs">bubble_chart</span>
+                            <span>Alvéolos</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Escenario dinámico de visualización biológica -->
+                <div class="bg-slate-950 rounded-2xl p-4 min-h-[360px] flex items-center justify-center relative overflow-hidden" id="biology-viewport">
+                    
+                    <!-- VISTA A: Anatomía Completa sincronizada -->
+                    <div id="view-anatomy" class="w-full h-full flex flex-col md:flex-row items-center justify-around gap-6">
+                        <!-- El Cuerpo Humano SVG con órganos dinámicos -->
+                        <div class="relative">
+                            <svg class="w-60 h-80 overflow-visible" viewBox="0 0 160 220" id="human-anatomy-svg">
+                                <!-- Silueta del torso humano -->
+                                <path d="M40,50 Q80,20 120,50 L125,90 Q130,130 115,190 L45,190 Q30,130 35,90 Z" fill="rgba(255, 255, 255, 0.05)" stroke="#334155" stroke-width="2" />
+                                <circle cx="80" cy="30" r="18" fill="rgba(255, 255, 255, 0.05)" stroke="#334155" stroke-width="2" />
+
+                                <!-- Fosas Nasales, Faringe y Tráquea humana -->
+                                <path d="M80,38 L80,95" fill="none" stroke="#60A5FA" stroke-width="4" />
+                                <path d="M78,34 Q85,32 82,38" fill="none" stroke="#60A5FA" stroke-width="2" />
+
+                                <!-- Bronquios -->
+                                <path d="M80,95 Q68,110 55,120" fill="none" stroke="#60A5FA" stroke-width="2.5" />
+                                <path d="M80,95 Q92,110 105,120" fill="none" stroke="#60A5FA" stroke-width="2.5" />
+
+                                <!-- Pulmones humanos interactivos en sincronía -->
+                                <!-- Pulmón izquierdo -->
+                                <path id="human-lung-left" d="M80,95 C60,105 45,115 45,135 C45,160 65,165 78,160 C80,158 80,110 80,95 Z" fill="#FDA4AF" stroke="#F43F5E" stroke-width="2" class="transition-all duration-150 origin-[80px_95px]" />
+                                <!-- Pulmón derecho -->
+                                <path id="human-lung-right" d="M80,95 C100,105 115,115 115,135 C115,160 95,165 82,160 C80,158 80,110 80,95 Z" fill="#FDA4AF" stroke="#F43F5E" stroke-width="2" class="transition-all duration-150 origin-[80px_95px]" />
+
+                                <!-- Diafragma muscular dinámico -->
+                                <path id="human-diaphragm" d="M42,175 Q80,170 118,175" fill="none" stroke="var(--diaphragm-purple)" stroke-width="5" stroke-linecap="round" class="transition-all duration-150" />
+                            </svg>
+
+                            <!-- Hotspots anatómicos clicables -->
+                            <button onclick="showAnatomyInfo('fosas')" class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-sky-500/80 hover:bg-sky-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm transition-all border border-sky-300">Fosas Nasales</button>
+                            <button onclick="showAnatomyInfo('traquea')" class="absolute top-24 left-1/2 transform -translate-x-1/2 bg-sky-500/80 hover:bg-sky-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm transition-all border border-sky-300">Tráquea</button>
+                            <button onclick="showAnatomyInfo('bronquios')" class="absolute top-36 left-[35%] bg-sky-500/80 hover:bg-sky-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm transition-all border border-sky-300">Bronquios</button>
+                            <button onclick="showAnatomyInfo('pulmones')" class="absolute top-48 left-[15%] bg-sky-500/80 hover:bg-sky-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm transition-all border border-sky-300">Pulmones</button>
+                            <button onclick="showAnatomyInfo('diafragma')" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-purple-500/80 hover:bg-purple-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm transition-all border border-purple-300">Diafragma</button>
+                        </div>
+
+                        <!-- Panel descriptivo interactivo del órgano seleccionado -->
+                        <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl w-full md:w-80 flex flex-col justify-between">
+                            <div>
+                                <span class="text-[9px] font-black text-teal-400 uppercase tracking-widest block mb-1">Información del Órgano</span>
+                                <h4 class="title-font text-lg font-bold text-teal-300" id="anatomy-name">Explora los órganos</h4>
+                                <p class="text-xs text-slate-300 leading-relaxed mt-2" id="anatomy-desc">
+                                    Haz clic en cualquiera de los botones de color azul o púrpura sobre la silueta humana para estudiar qué función cumple cada parte de tu cuerpo en la respiración.
+                                </p>
+                            </div>
+                            <div class="mt-4 pt-3 border-t border-slate-800 flex items-center gap-2.5 text-xs text-slate-400" id="anatomy-analogy-box">
+                                <span class="material-icons text-sm text-amber-400">compare_arrows</span>
+                                <span id="anatomy-analogy-text">Descubre la analogía con los materiales.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VISTA B: Intercambio de Gases Alveolar (Gas Exchange) -->
+                    <div id="view-alveoli" class="hidden w-full h-full flex flex-col md:flex-row items-center justify-around gap-6">
+                        
+                        <!-- El Alvéolo pulmonar e intercambio O2 / CO2 SVG -->
+                        <div class="relative bg-slate-900/55 p-4 rounded-3xl border border-slate-800/40">
+                            <!-- Partículas viajeras del intercambio -->
+                            <div class="absolute inset-0 pointer-events-none overflow-hidden" id="gas-particles-stage">
+                                <!-- Se animan moléculas rojas y azules -->
+                            </div>
+
+                            <svg class="w-64 h-64" viewBox="0 0 100 100">
+                                <!-- Capilar sanguíneo que abraza al alvéolo -->
+                                <path d="M10,20 C40,0 80,40 50,90" fill="none" stroke="#EF4444" stroke-width="12" stroke-linecap="round" opacity="0.3" />
+                                <path d="M10,20 C40,0 80,40 50,90" fill="none" stroke="#EF4444" stroke-width="1.5" stroke-dasharray="2,2" />
+
+                                <!-- Vaso venoso (azul) que se convierte en arterial (rojo) -->
+                                <path d="M10,20 Q30,10 40,25" fill="none" stroke="#3B82F6" stroke-width="12" stroke-linecap="round" />
+                                <path d="M40,25 C55,40 75,50 50,90" fill="none" stroke="#EF4444" stroke-width="12" stroke-linecap="round" />
+
+                                <!-- El saco Alveolar (Especie de uva porosa) -->
+                                <circle cx="50" cy="50" r="24" fill="rgba(224, 242, 254, 0.15)" stroke="#38BDF8" stroke-width="3" />
+                                <path d="M45,26 C48,15 52,15 55,26" fill="none" stroke="#38BDF8" stroke-width="2" />
+                            </g>
+                            </svg>
+                        </div>
+
+                        <!-- Explicación pedagógica de la hematosis -->
+                        <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl w-full md:w-80">
+                            <span class="text-[9px] font-black text-rose-400 uppercase tracking-widest block mb-1">Mundo Microscópico</span>
+                            <h4 class="title-font text-lg font-bold text-rose-300">Los Alvéolos y la Sangre</h4>
+                            <p class="text-xs text-slate-300 leading-relaxed mt-2">
+                                En la punta de los bronquiolos existen millones de saquitos llamados <strong>alvéolos</strong>. <br><br>
+                                Aquí ocurre la magia de la vida: el oxígeno (<span class="text-sky-400 font-bold">O₂</span>) fresco que entró en la inhalación cruza las paredes microscópicas para entrar a la sangre, mientras que el dióxido de carbono (<span class="text-amber-400 font-bold">CO₂</span>) de desecho sale de la sangre para ser exhalado al exterior.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Guía dinámica interactiva del proceso actual -->
+                <div class="mt-4 pt-4 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-teal-400 animate-ping"></span>
+                        <span class="text-xs font-bold text-slate-400" id="simulation-status">Diafragma relajado. Los pulmones humanos están en equilibrio de reposo.</span>
+                    </div>
+                    <div class="text-xs text-slate-400 bg-slate-800/55 px-3 py-1.5 rounded-xl border border-slate-700/50">
+                        * Tira del diafragma de la botella para ver el intercambio de gases.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 3: DESAFÍO CLÍNICO -->
+        <section id="tab-challenge" class="hidden bg-white rounded-3xl p-6 shadow-md border-2 border-sky-100 max-w-4xl mx-auto w-full">
+            <div class="text-center mb-8">
+                <span class="bg-indigo-100 text-indigo-800 font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider mb-2 inline-block">Evaluación Lúdica</span>
+                <h2 class="title-font text-3xl text-sky-900 font-bold">Examen Clínico de Fisiología</h2>
+                <p class="text-slate-600 text-sm max-w-lg mx-auto">
+                    ¡Demuestra tus conocimientos médicos y mecánicos! Responde las preguntas de Bobi para ganar tu Certificado de Científico de la Respiración.
+                </p>
+            </div>
+
+            <!-- Caja de preguntas del Quiz -->
+            <div class="bg-sky-50/50 border-2 border-sky-100 rounded-3xl p-6 md:p-8 mb-6 relative overflow-hidden">
+                <!-- Barra de progreso interna -->
+                <div class="w-full bg-sky-100 h-2 rounded-full overflow-hidden mb-6">
+                    <div class="bg-indigo-600 h-full transition-all duration-300" id="quiz-progress-bar" style="width: 20%"></div>
+                </div>
+
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-xs font-bold text-indigo-600 uppercase tracking-widest" id="quiz-question-number">Pregunta 1 de 5</span>
+                    <span class="text-xs font-black bg-white border border-sky-200 text-sky-800 px-3 py-1 rounded-full shadow-sm" id="quiz-score">Puntuación: 0</span>
+                </div>
+
+                <!-- Enunciado -->
+                <h3 class="title-font text-lg md:text-xl text-sky-900 font-bold mb-6" id="quiz-question-text">
+                    ¿Qué órgano del cuerpo humano representa el globo interno de nuestra máquina de respirar casera?
+                </h3>
+
+                <!-- Opciones de respuesta -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="quiz-options-container">
+                    <!-- Se generan dinámicamente con JS -->
+                </div>
+            </div>
+
+            <!-- Pantalla final del diploma de logros (Se activa al culminar) -->
+            <div id="quiz-congratulations" class="hidden bg-gradient-to-br from-[#FFF9E6] to-[#E3FAF9] border-4 border-amber-400 p-8 rounded-[2.5rem] shadow-2xl text-center relative max-w-xl mx-auto my-6">
+                <div class="absolute top-4 left-4 w-8 h-8 border-t-4 border-l-4 border-rose-500 rounded-tl-xl"></div>
+                <div class="absolute top-4 right-4 w-8 h-8 border-t-4 border-r-4 border-rose-500 rounded-tr-xl"></div>
+                <div class="absolute bottom-4 left-4 w-8 h-8 border-b-4 border-l-4 border-rose-500 rounded-bl-xl"></div>
+                <div class="absolute bottom-4 right-4 w-8 h-8 border-b-4 border-r-4 border-rose-500 rounded-br-xl"></div>
+
+                <span class="text-6xl block animate-bounce mb-3">🏆</span>
+                <h3 class="title-font text-3xl text-rose-500 font-black">DIPLOMA ACADÉMICO</h3>
+                <p class="text-[10px] text-teal-600 font-bold uppercase tracking-widest mb-4">Otorgado por Bobi, el Robot Tutor</p>
+                
+                <p class="text-xs text-amber-900 uppercase tracking-wider font-extrabold">Felicidades al Alumno Científico de</p>
+                <h4 class="title-font text-3xl text-teal-600 my-2 font-black" id="diploma-username">Explorador de la Ciencia</h4>
+                
+                <p class="text-xs md:text-sm text-teal-900 max-w-sm mx-auto leading-relaxed font-semibold">
+                    Por demostrar un entendimiento increíble del diafragma, los alvéolos pulmonares y la mecánica de diferencia de presiones en el cuerpo. ¡Sigue explorando!
+                </p>
+
+                <!-- Puntuaciones finales -->
+                <div class="grid grid-cols-2 gap-4 mt-6 pt-4 border-t-2 border-dashed border-rose-200">
+                    <div>
+                        <span class="text-[9px] text-teal-600 uppercase font-black block">Calificación</span>
+                        <span class="title-font text-xl text-rose-500 font-bold" id="final-score">500 / 500 Puntos</span>
+                    </div>
+                    <div>
+                        <span class="text-[9px] text-teal-600 uppercase font-black block">Insignias Logradas</span>
+                        <span class="title-font text-xl text-amber-500 font-bold">⭐⭐⭐⭐⭐</span>
+                    </div>
+                </div>
+
+                <button onclick="restartQuiz()" class="btn-interactive bg-teal-500 hover:bg-teal-600 text-white font-black py-3 px-8 rounded-2xl text-sm mt-6 shadow-md uppercase tracking-wider">
+                    Reiniciar Desafío
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Sección de soporte educativo y pie de página -->
+    <footer class="bg-white border-t-2 border-sky-100 py-6 mt-8">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6 items-center text-center md:text-left">
+            <div>
+                <span class="font-bold text-sky-900 title-font">Guía rápida de uso:</span>
+                <p class="text-xs text-slate-500 mt-1">Sigue el montaje, arrastra el diafragma morado de la botella, estudia los pulmones reales y completa la autoevaluación.</p>
+            </div>
+            <div class="flex justify-center gap-3">
+                <span class="text-xs bg-sky-50 text-sky-700 border border-sky-100 py-1.5 px-3 rounded-xl font-bold">Volumen ⬆ = Presión ⬇</span>
+                <span class="text-xs bg-purple-50 text-purple-700 border border-purple-100 py-1.5 px-3 rounded-xl font-bold">Volumen ⬇ = Presión ⬆</span>
+            </div>
+            <div class="text-xs text-slate-400 md:text-right">
+                Desarrollado para la Unidad Pedagógica Escolar de Ciencias Naturales • 2026
+            </div>
+        </div>
+    </footer>
+
+    <!-- Control lógico e interactivo -->
+    <script>
+        // --- BASE DE DATOS DE ANATOMÍA ---
+        const anatomyDatabase = {
+            fosas: {
+                name: "Fosas Nasales (Cavidad Nasal)",
+                desc: "Es el punto de entrada natural del aire. Aquí, unos pequeños vellos y la mucosa calientan, humedecen y filtran el aire del exterior para proteger los pulmones de bacterias y polvo.",
+                analogy: "Parte superior de la pajilla exterior.",
+                analogyText: "Representa el conducto superior que toma el aire limpio fuera de la botella."
+            },
+            traquea: {
+                name: "La Tráquea",
+                desc: "Un tubo cartilaginoso fuerte que conduce el aire desde la laringe hacia los bronquios. Se divide en dos en la cavidad del pecho.",
+                analogy: "La pajilla plástica principal.",
+                analogyText: "Su cuerpo rígido evita que colapse por la presión, igual que el plástico de la pajilla."
+            },
+            bronquios: {
+                name: "Los Bronquios",
+                desc: "Dos conductos principales que nacen de la división de la tráquea. Cada bronquio entra a un pulmón, dividiéndose luego en millones de pequeños bronquiolos.",
+                analogy: "La división en 'Y' de las pajillas.",
+                analogyText: "Divide el aire entrante para alimentar equitativamente ambos globos."
+            },
+            pulmones: {
+                name: "Los Pulmones",
+                desc: "Estructuras esponjosas que albergan la red de bronquiolos y alvéolos. Aquí se expanden miles de ramificaciones para absorber oxígeno.",
+                analogy: "Los globos rosados interiores.",
+                analogyText: "Sus paredes de látex elástico simulan el tejido pulmonar que se expande con el aire."
+            },
+            diafragma: {
+                name: "El Diafragma",
+                desc: "Músculo plano en forma de bóveda que separa el pecho del abdomen. Al contraerse (bajar), genera el vacío que succiona el aire exterior hacia los pulmones.",
+                analogy: "El globo cortado de la base.",
+                analogyText: "Al estirar este globo hacia abajo, agrandamos el espacio interno simulando la inhalación."
+            }
+        };
+
+        // --- BASE DE DATOS DEL MONTAJE (CONSTRUCTOR) ---
+        const assemblySteps = [
+            {
+                elementId: "build-bottle",
+                bobi: "¡Perfecto! Hemos colocado la **Botella plástica**. En el cuerpo humano, la botella representa la **Caja Torácica** (tus costillas y esternón). Su función es proteger los pulmones y dar estructura hermética.",
+                status: "Progreso: 20%",
+                btnText: "Insertar Pajillas (Tráquea)",
+                analogy: { icon: "🧴", title: "Caja Torácica", desc: "Estructura protectora hermética." }
+            },
+            {
+                elementId: "build-straws",
+                bobi: "¡Muy bien hecho! Añadimos las **pajillas bifurcadas en 'Y'**. Esto representa la **Tráquea y los Bronquios**. Conducen el aire del exterior directamente a cada lado de tu cuerpo sin dejar que colapse el camino.",
+                status: "Progreso: 40%",
+                btnText: "Acoplar Globos (Pulmones)",
+                analogy: { icon: "🥤", title: "Tráquea y Bronquios", desc: "Tuberías de conducción rígidas." }
+            },
+            {
+                elementId: "build-balloons",
+                bobi: "¡Impresionante! Hemos atado dos **globos rosados** a las pajillas. Obviamente, representan los **Pulmones**. Son bolsas elásticas que se inflarán cuando logremos generar presión negativa.",
+                status: "Progreso: 60%",
+                btnText: "Poner Tapa de Plastilina",
+                analogy: { icon: "🎈", title: "Pulmones", desc: "Bolsas elásticas de captación de aire." }
+            },
+            {
+                elementId: "build-clay",
+                bobi: "¡Excelente! Hemos colocado la **tapa de plastilina (arcilla)**. Esto representa el **Sello Hermético de la Caja Pleural**. Si hubiera una fuga de aire por arriba, ¡el diafragma no podría generar el vacío necesario!",
+                status: "Progreso: 80%",
+                btnText: "Añadir Membrana (Diafragma)",
+                analogy: { icon: "🧱", title: "Sello Pleural", desc: "Garantiza que la cavidad interna no tenga fugas." }
+            },
+            {
+                elementId: "build-diaphragm",
+                bobi: "¡Felicidades, el modelo está listo! Colocamos el **globo inferior cortado** como el músculo **Diafragma**. Al tirar de él hacia abajo, el aire entrará solo por la tráquea. ¡Visita la pestaña 'Laboratorio y Anatomía' para hacerlo funcionar!",
+                status: "Progreso: 100% (¡Listo!)",
+                btnText: "Ir al Laboratorio Fisiológico ➔",
+                analogy: { icon: "💜", title: "Músculo Diafragma", desc: "El gran motor mecánico de la respiración." }
+            }
+        ];
+
+        // --- BASE DE DATOS DEL QUIZ ---
+        const quizQuestions = [
+            {
+                question: "¿Qué ocurre con el volumen interno de la caja torácica cuando el diafragma se contrae (se mueve hacia abajo)?",
+                options: [
+                    { text: "El volumen aumenta", correct: true },
+                    { text: "El volumen disminuye", correct: false },
+                    { text: "El volumen se mantiene igual", correct: false },
+                    { text: "Los pulmones desaparecen", correct: false }
+                ]
+            },
+            {
+                question: "Según la física de la respiración, al aumentar el volumen dentro de la cavidad hermética, la presión interna...",
+                options: [
+                    { text: "Aumenta, expulsando el aire", correct: false },
+                    { text: "Disminuye, provocando la succión del aire exterior", correct: true },
+                    { text: "Se neutraliza por completo", correct: false },
+                    { text: "Hace que los bronquios se rompan", correct: false }
+                ]
+            },
+            {
+                question: "¿Qué elemento del modelo de botella casero representa a la Tráquea?",
+                options: [
+                    { text: "La pajilla principal de entrada", correct: true },
+                    { text: "Los globos rosados interiores", correct: false },
+                    { text: "La botella transparente", correct: false },
+                    { text: "La plastilina selladora", correct: false }
+                ]
+            },
+            {
+                question: "¿En qué minúsculos saquitos del sistema respiratorio ocurre el intercambio real de oxígeno por dióxido de carbono con la sangre?",
+                options: [
+                    { text: "En los alvéolos", correct: true },
+                    { text: "En la faringe", correct: false },
+                    { text: "En las costillas", correct: false },
+                    { text: "En las fosas nasales", correct: false }
+                ]
+            },
+            {
+                question: "¿Qué problema ocurre si el sello de la plastilina (tapa de la botella) se rompe o tiene fugas?",
+                options: [
+                    { text: "Los pulmones se inflan el doble", correct: false },
+                    { text: "Se pierde el vacío hermético y los globos-pulmones no logran inflarse", correct: true },
+                    { text: "La botella se derrite", correct: false },
+                    { text: "El diafragma se vuelve automático", correct: false }
+                ]
+            }
+        ];
+
+        // --- ESTADO GENERAL DEL JUEGO ---
+        let assemblyProgress = -1; // -1 significa que no se ha colocado nada
+        let soundAllowed = true;
+        let isAutoBreathing = false;
+        let autoInterval = null;
+        let autoStep = 0;
+        let currentQuizIndex = 0;
+        let quizScore = 0;
+        let earnedBadges = new Set();
+
+        // Sintetizador de audio nativo para evitar dependencias
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // --- FUNCIONES DE AUDIO CREATIVAS (Sintetizador Fisiológico) ---
+        function playTone(freq, type, duration, volume = 0.1) {
+            if (!soundAllowed) return;
+            try {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {
+                console.log("Audio bloqueado temporalmente.");
+            }
+        }
+
+        // Simula sonido realista de inhalación/exhalación filtrando ruido blanco
+        function playBreathingSound(isInhalation = true) {
+            if (!soundAllowed) return;
+            try {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const bufferSize = audioCtx.sampleRate * 1.5;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                
+                // Genera ruido blanco puro
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+
+                // Filtro paso bajo dinámico para simular el paso del aire
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                
+                if (isInhalation) {
+                    // El tono sube levemente simulando el aire llenando la cavidad
+                    filter.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    filter.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 1.2);
+                } else {
+                    // El tono baja simulando el escape relajado
+                    filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+                    filter.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 1.2);
+                }
+
+                const gain = audioCtx.createGain();
+                gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.4);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                noise.start();
+            } catch (e) {
+                console.log("Error al reproducir el efecto de respiración pulmonar.");
+            }
+        }
+
+        // --- SISTEMA DE PESTAÑAS (NAVEGACIÓN) ---
+        function switchTab(tabId) {
+            // Ocultar todas las secciones
+            document.getElementById('tab-build').classList.add('hidden');
+            document.getElementById('tab-simulator').classList.add('hidden');
+            document.getElementById('tab-challenge').classList.add('hidden');
+            
+            // Remover estilos de pestaña activa
+            document.querySelectorAll('nav button').forEach(btn => {
+                btn.className = "btn-interactive bg-white border-2 border-sky-300 text-sky-800 font-bold py-3 px-6 rounded-2xl flex items-center gap-2";
+            });
+
+            // Mostrar pestaña activa
+            document.getElementById(tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            activeBtn.className = "btn-interactive bg-sky-500 text-white font-bold py-3 px-6 rounded-2xl flex items-center gap-2 active-tab";
+            
+            playTone(400, 'sine', 0.1, 0.05);
+
+            // Si entra a simulador, inicializa partículas de flujo
+            if (tabId === 'tab-simulator') {
+                generateParticlesFlow();
+                syncBiolgicalVisuals(0);
+            }
+        }
+
+        // --- LÓGICA DE LA ETAPA DE MONTAJE (TAB 1) ---
+        function advanceAssembly() {
+            if (assemblyProgress >= assemblySteps.length - 1) {
+                // Montaje completado, redirige al simulador interactivo
+                switchTab('tab-simulator');
+                addBadge('badge-construct');
+                return;
+            }
+
+            assemblyProgress++;
+            const step = assemblySteps[assemblyProgress];
+            
+            // Hacer visible el elemento del SVG
+            document.getElementById(step.elementId).classList.remove('opacity-30', 'hidden');
+            
+            // Actualizar textos e indicaciones
+            document.getElementById('bobi-instructions').innerHTML = step.bobi;
+            document.getElementById('assembly-status').innerText = step.status;
+            
+            // Actualizar analogía
+            document.getElementById('analogy-icon').innerText = step.analogy.icon;
+            document.getElementById('analogy-title').innerText = step.analogy.title;
+            document.getElementById('analogy-desc').innerText = step.analogy.desc;
+
+            // Sonido de encaje
+            playTone(300 + (assemblyProgress * 100), 'triangle', 0.25, 0.15);
+
+            // Ajustar el botón para la siguiente pieza
+            const nextButton = document.getElementById('btn-assemble-next');
+            const nextText = document.getElementById('text-assemble-next');
+            const nextIcon = document.getElementById('icon-assemble-next');
+
+            if (assemblyProgress < assemblySteps.length - 1) {
+                const nextStep = assemblySteps[assemblyProgress + 1];
+                nextText.innerText = nextStep.btnText;
+                nextIcon.innerText = "extension";
+            } else {
+                nextText.innerText = "¡Probar mi Simulador! 🚀";
+                nextIcon.innerText = "sports_esports";
+                nextButton.className = "btn-interactive bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-2xl text-sm flex-grow flex items-center justify-center gap-2";
+                confetti({ particleCount: 60, spread: 50, origin: { y: 0.8 } });
+            }
+        }
+
+        function resetAssembly() {
+            assemblyProgress = -1;
+            
+            // Ocultar y atenuar todas las piezas del SVG
+            document.getElementById('build-bottle').classList.add('opacity-30');
+            document.getElementById('build-straws').classList.add('hidden');
+            document.getElementById('build-balloons').classList.add('hidden');
+            document.getElementById('build-clay').classList.add('hidden');
+            document.getElementById('build-diaphragm').classList.add('hidden');
+
+            document.getElementById('bobi-instructions').innerHTML = "¡Hola científico! Bienvenido al laboratorio de biología. Para empezar a estudiar cómo respiramos, primero debemos fabricar un modelo físico de simulación. <br><br> Haz clic en <strong>\"Acoplar Botella\"</strong> para preparar la estructura protectora de nuestros pulmones.";
+            document.getElementById('assembly-status').innerText = "Progreso de montaje: 0%";
+            
+            document.getElementById('analogy-icon').innerText = "❓";
+            document.getElementById('analogy-title').innerText = "Estructura Vacía";
+            document.getElementById('analogy-desc').innerText = "Espera a colocar una pieza para descubrir qué órgano real del sistema respiratorio representa en la maqueta.";
+
+            const nextButton = document.getElementById('btn-assemble-next');
+            document.getElementById('text-assemble-next').innerText = "Acoplar Botella (Caja Torácica)";
+            document.getElementById('icon-assemble-next').innerText = "extension";
+            nextButton.className = "btn-interactive bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-2xl text-sm flex-grow flex items-center justify-center gap-2";
+            
+            playTone(180, 'sawtooth', 0.15, 0.1);
+        }
+
+        // --- LÓGICA DE LA SIMULACIÓN DE AIRE Y DIAFRAGMA (TAB 2) ---
+        function updateBreathingVolume(val) {
+            // Convierte el valor de 0 a 100 de forma numérica
+            const numVal = parseInt(val);
+            
+            // 1. Modificar el diafragma elástico inferior (SVG Maqueta)
+            // Cambia la curva de curvatura del diafragma
+            const baseCurveY = 190 + (numVal * 0.3); // baja hasta 220
+            const simDiaphragm = document.getElementById('sim-diaphragm');
+            simDiaphragm.setAttribute('d', `M50,190 Q100,${baseCurveY} 150,190 L150,210 Q100,${baseCurveY + 12} 50,210 Z`);
+
+            // 2. Modificar el volumen de los globos (SVG Maqueta)
+            // Los globos cambian de tamaño radial
+            const scaleX = 14 + (numVal * 0.16); // escala desde 14 a 30
+            const scaleY = 20 + (numVal * 0.18); // escala desde 20 a 38
+            
+            document.getElementById('sim-lung-left').setAttribute('rx', scaleX);
+            document.getElementById('sim-lung-left').setAttribute('ry', scaleY);
+            document.getElementById('sim-lung-right').setAttribute('rx', scaleX);
+            document.getElementById('sim-lung-right').setAttribute('ry', scaleY);
+
+            // 3. Modificar datos de presión y volumen
+            const volumeDisplay = document.getElementById('sim-data-volume');
+            const pressureDisplay = document.getElementById('sim-data-pressure');
+            const flowArrowText = document.getElementById('flow-arrow-text');
+            const flowArrowIcon = document.getElementById('flow-arrow-icon');
+            const simStatus = document.getElementById('simulation-status');
+
+            if (numVal > 15) {
+                volumeDisplay.innerText = "Aumentando (Vacío)";
+                volumeDisplay.className = "text-sm font-extrabold text-emerald-600";
+                pressureDisplay.innerText = "Baja (Negativa)";
+                pressureDisplay.className = "text-sm font-extrabold text-emerald-600";
+                
+                flowArrowText.innerText = "AIRE ENTRA";
+                flowArrowText.className = "text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200";
+                flowArrowIcon.innerText = "arrow_downward";
+                flowArrowIcon.className = "material-icons text-3xl text-emerald-500 animate-bounce";
+                
+                simStatus.innerText = "Inhalación activa. El diafragma baja, la presión disminuye y los pulmones absorben oxígeno.";
+                triggerInflowParticles(true);
+                addBadge('badge-experiment');
+            } else {
+                volumeDisplay.innerText = "Reduciendo (Reposo)";
+                volumeDisplay.className = "text-sm font-extrabold text-sky-800";
+                pressureDisplay.innerText = "Equilibrada";
+                pressureDisplay.className = "text-sm font-extrabold text-sky-800";
+                
+                flowArrowText.innerText = "AIRE SALE";
+                flowArrowText.className = "text-[10px] font-black text-sky-600 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-200";
+                flowArrowIcon.innerText = "arrow_upward";
+                flowArrowIcon.className = "material-icons text-3xl text-sky-500";
+                
+                simStatus.innerText = "Exhalación pasiva. El diafragma vuelve a su posición y el aire de desecho es expulsado.";
+                triggerInflowParticles(false);
+            }
+
+            // Sincronizar el cuerpo humano anatómico
+            syncBiolgicalVisuals(numVal);
+        }
+
+        // Sincroniza las visualizaciones del modelo anatómico y molecular
+        function syncBiolgicalVisuals(numVal) {
+            // 1. Modificar diafragma humano
+            const curveY = 175 + (numVal * 0.15); // baja la curva
+            const humanDiaphragm = document.getElementById('human-diaphragm');
+            if (humanDiaphragm) {
+                humanDiaphragm.setAttribute('d', `M42,175 Q80,${curveY} 118,175`);
+            }
+
+            // 2. Modificar pulmones humanos (escalas 3D con SVG)
+            const lungScale = 1 + (numVal * 0.0018); // escala del pulmón
+            const humanLungLeft = document.getElementById('human-lung-left');
+            const humanLungRight = document.getElementById('human-lung-right');
+            
+            if (humanLungLeft && humanLungRight) {
+                humanLungLeft.style.transform = `scale(${lungScale})`;
+                humanLungRight.style.transform = `scale(${lungScale})`;
+            }
+
+            // 3. Flujo en el alvéolo (Vista microscópica si está activa)
+            const particleStage = document.getElementById('gas-particles-stage');
+            if (particleStage && numVal > 30) {
+                // Al tirar, aumentan los globos moleculares en el capilar
+                if (Math.random() * 100 > 75) {
+                    createGasMolecule();
+                }
+            }
+        }
+
+        // Partículas en el capilar microscópico del alvéolo
+        function createGasMolecule() {
+            const stage = document.getElementById('gas-particles-stage');
+            if (!stage) return;
+
+            const bubble = document.createElement('div');
+            const isOxygen = Math.random() * 100 > 50;
+            
+            bubble.className = isOxygen 
+                ? "absolute w-2.5 h-2.5 bg-sky-400 rounded-full border border-white" 
+                : "absolute w-2.5 h-2.5 bg-amber-400 rounded-full border border-white";
+            
+            bubble.style.left = `${Math.random() * 80 + 10}%`;
+            bubble.style.top = `100%`;
+            bubble.style.transition = "all 1.6s ease-out";
+
+            stage.appendChild(bubble);
+
+            setTimeout(() => {
+                bubble.style.top = `-20px`;
+                bubble.style.transform = `translateX(${Math.random() * 30 - 15}px)`;
+                bubble.style.opacity = "0";
+            }, 50);
+
+            setTimeout(() => { bubble.remove(); }, 1800);
+        }
+
+        // Genera partículas flotando por la tráquea y pulmones
+        function generateParticlesFlow() {
+            const container = document.getElementById('particle-container');
+            if (!container) return;
+            container.innerHTML = "";
+
+            for (let i = 0; i < 8; i++) {
+                const p = document.createElement('div');
+                p.className = "absolute w-2.5 h-2.5 bg-sky-400/80 rounded-full border border-white pointer-events-none particle-in";
+                p.style.left = `${95 + (Math.random() * 6 - 3)}px`;
+                p.style.top = `${-20 + (i * 25)}px`;
+                p.style.animationDelay = `${i * 0.25}s`;
+                container.appendChild(p);
+            }
+        }
+
+        function triggerInflowParticles(isIncoming) {
+            const container = document.getElementById('particle-container');
+            if (!container) return;
+            
+            // Cambiar clase de animación según la dirección física
+            container.querySelectorAll('div').forEach(p => {
+                if (isIncoming) {
+                    p.className = "absolute w-2.5 h-2.5 bg-sky-400/80 rounded-full border border-white pointer-events-none particle-in";
+                } else {
+                    p.className = "absolute w-2.5 h-2.5 bg-rose-400/80 rounded-full border border-white pointer-events-none particle-out";
+                }
+            });
+        }
+
+        // --- SISTEMA DE VISORES DE TRABAJO (ANATOMÍA VS ALVÉOLO) ---
+        function setView(viewMode) {
+            document.getElementById('view-anatomy').classList.add('hidden');
+            document.getElementById('view-alveoli').classList.add('hidden');
+            
+            document.getElementById('btn-view-anatomy').className = "text-slate-400 hover:text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1";
+            document.getElementById('btn-view-alveoli').className = "text-slate-400 hover:text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1";
+
+            if (viewMode === 'anatomy') {
+                document.getElementById('view-anatomy').classList.remove('hidden');
+                document.getElementById('btn-view-anatomy').className = "bg-teal-500 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1";
+            } else {
+                document.getElementById('view-alveoli').classList.remove('hidden');
+                document.getElementById('btn-view-alveoli').className = "bg-rose-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1";
+            }
+
+            playTone(420, 'triangle', 0.12, 0.05);
+        }
+
+        // Muestra información dinámica en el visor anatómico derecho
+        function showAnatomyInfo(organKey) {
+            const info = anatomyDatabase[organKey];
+            if (!info) return;
+
+            document.getElementById('anatomy-name').innerText = info.name;
+            document.getElementById('anatomy-desc').innerText = info.desc;
+            document.getElementById('anatomy-analogy-text').innerText = `En maqueta: ${info.analogyText}`;
+
+            playTone(600, 'sine', 0.15, 0.08);
+            addBadge('badge-explore');
+        }
+
+        // Ciclo automático de simulación respiratoria
+        function toggleAutoBreathing() {
+            const btn = document.getElementById('btn-auto');
+            const text = document.getElementById('text-auto');
+            const icon = document.getElementById('icon-auto');
+            const slider = document.getElementById('diaphragm-slider');
+
+            isAutoBreathing = !isAutoBreathing;
+
+            if (isAutoBreathing) {
+                text.innerText = "Detener Ciclo";
+                icon.innerText = "pause";
+                btn.className = "btn-interactive bg-rose-500 hover:bg-rose-600 text-white font-bold py-2 px-4 rounded-xl text-xs flex-grow flex items-center justify-center gap-1";
+                
+                // Intervalo de respiración automático
+                let targetVal = 0;
+                let direction = 1;
+
+                autoInterval = setInterval(() => {
+                    if (direction === 1) {
+                        targetVal += 5;
+                        if (targetVal >= 90) {
+                            direction = -1;
+                            playBreathingSound(true); // sonido inhalar
+                        }
+                    } else {
+                        targetVal -= 5;
+                        if (targetVal <= 5) {
+                            direction = 1;
+                            playBreathingSound(false); // sonido exhalar
+                        }
+                    }
+                    slider.value = targetVal;
+                    updateBreathingVolume(targetVal);
+                }, 80);
+
+            } else {
+                clearInterval(autoInterval);
+                text.innerText = "Ciclo Automático";
+                icon.innerText = "play_arrow";
+                btn.className = "btn-interactive bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-xl text-xs flex-grow flex items-center justify-center gap-1";
+                slider.value = 0;
+                updateBreathingVolume(0);
+            }
+        }
+
+        // --- SISTEMA DE LOGRO DE INSIGNIAS Y RECOMPENSAS ---
+        function addBadge(badgeId) {
+            if (earnedBadges.has(badgeId)) return;
+            earnedBadges.add(badgeId);
+
+            // Recompensar con sonido y confeti
+            confetti({ particleCount: 30, spread: 35, origin: { y: 0.6 } });
+            playTone(800, 'sine', 0.3, 0.25);
+
+            // Actualizar el marcador de insignias del HUD
+            const badgesText = document.getElementById('hud-badges');
+            badgesText.innerText = `${earnedBadges.size} / 4 Insignias`;
+            badgesText.className = "text-sm font-black title-font text-emerald-600 animate-bounce";
+            
+            setTimeout(() => {
+                badgesText.className = "text-sm font-black title-font text-indigo-800";
+            }, 1800);
+        }
+
+        // --- LÓGICA DE EXAMEN CLÍNICO (TAB 3 QUIZ) ---
+        function renderQuizQuestion() {
+            const questionData = quizQuestions[currentQuizIndex];
+            
+            // Actualizar textos
+            document.getElementById('quiz-question-number').innerText = `Pregunta ${currentQuizIndex + 1} de ${quizQuestions.length}`;
+            document.getElementById('quiz-question-text').innerText = questionData.question;
+            document.getElementById('quiz-score').innerText = `Puntuación: ${quizScore}`;
+
+            // Actualizar barra de progreso del quiz
+            const progressPct = ((currentQuizIndex + 1) / quizQuestions.length) * 100;
+            document.getElementById('quiz-progress-bar').style.width = `${progressPct}%`;
+
+            // Cargar botones de opciones
+            const container = document.getElementById('quiz-options-container');
+            container.innerHTML = "";
+
+            questionData.options.forEach((opt, idx) => {
+                const optBtn = document.createElement('button');
+                optBtn.className = "btn-interactive bg-white border-2 border-sky-200 hover:border-indigo-400 text-slate-800 font-bold py-4 px-6 rounded-2xl text-left transition-all text-sm";
+                optBtn.innerText = opt.text;
+                optBtn.onclick = () => checkQuizAnswer(opt.correct, optBtn);
+                container.appendChild(optBtn);
+            });
+        }
+
+        function checkQuizAnswer(isCorrect, element) {
+            // Impedir que se haga doble clic
+            const allButtons = document.getElementById('quiz-options-container').querySelectorAll('button');
+            allButtons.forEach(btn => btn.disabled = true);
+
+            if (isCorrect) {
+                element.className = "btn-interactive bg-emerald-500 text-white font-bold py-4 px-6 rounded-2xl text-left text-sm border-emerald-600";
+                quizScore += 100;
+                playTone(900, 'sine', 0.25, 0.2);
+            } else {
+                element.className = "btn-interactive bg-rose-500 text-white font-bold py-4 px-6 rounded-2xl text-left text-sm border-rose-600";
+                playTone(180, 'square', 0.4, 0.15);
+            }
+
+            // Siguiente pregunta después de una breve pausa
+            setTimeout(() => {
+                if (currentQuizIndex < quizQuestions.length - 1) {
+                    currentQuizIndex++;
+                    renderQuizQuestion();
+                } else {
+                    finishQuiz();
+                }
+            }, 1500);
+        }
+
+        function finishQuiz() {
+            // Ocultar caja de preguntas
+            document.getElementById('quiz-question-number').parentElement.parentElement.classList.add('hidden');
+            
+            // Mostrar diploma final
+            const congratulations = document.getElementById('quiz-congratulations');
+            congratulations.classList.remove('hidden');
+            
+            document.getElementById('final-score').innerText = `${quizScore} / 500 Puntos`;
+            
+            if (quizScore >= 400) {
+                addBadge('badge-quiz');
+                confetti({ particleCount: 120, spread: 80, origin: { y: 0.55 } });
+            }
+        }
+
+        function restartQuiz() {
+            currentQuizIndex = 0;
+            quizScore = 0;
+            
+            // Ocultar diploma y volver a mostrar el panel de preguntas
+            document.getElementById('quiz-congratulations').classList.add('hidden');
+            document.getElementById('quiz-question-number').parentElement.parentElement.classList.remove('hidden');
+            
+            renderQuizQuestion();
+            playTone(400, 'sine', 0.15, 0.1);
+        }
+
+        // --- INICIALIZADOR DEL DOM ---
+        window.addEventListener('DOMContentLoaded', () => {
+            switchTab('tab-build');
+            renderQuizQuestion();
+        });
+    </script>
+</body>
+</html>

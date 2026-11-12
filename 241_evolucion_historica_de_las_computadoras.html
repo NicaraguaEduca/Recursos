@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏛️ Museo de la Evolución de la Computadora</title>
+    <style>
+        /* ==========================================================================
+           MÓDULO DE ESTILOS: DISEÑO FUTURISTA, PALETA MINED Y ACCESIBILIDAD
+           ========================================================================== */
+        :root {
+            --azul-institucional: #0056A3;
+            --celeste-institucional: #4BB4E6;
+            --blanco: #FFFFFF;
+            --gris-claro: #F5F7FA;
+            --azul-oscuro: #003C75;
+            --verde-tec: #43A047;
+            --amarillo: #FFD54F;
+            --naranja: #FF9800;
+            --neon-glow: 0 0 15px rgba(75, 180, 230, 0.6);
+            --fuente-sistema: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--fuente-sistema);
+        }
+
+        body {
+            background-color: var(--azul-oscuro);
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(0, 86, 163, 0.4) 0%, rgba(0, 60, 117, 0.9) 100%),
+                radial-gradient(white, rgba(255,255,255,.15) 2px, transparent 40px);
+            background-size: 100% 100%, 450px 450px;
+            background-attachment: fixed;
+            color: var(--blanco);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .vista {
+            display: none;
+            min-height: 100vh;
+            padding: 20px;
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+
+        .vista.activa {
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(0, 60, 117, 0.85);
+            border-bottom: 4px solid var(--celeste-institucional);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 0 15px 15px;
+            box-shadow: var(--neon-glow);
+            backdrop-filter: blur(10px);
+        }
+
+        .hud-panel {
+            display: flex;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: 1px solid var(--celeste-institucional);
+        }
+
+        .hud-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.95rem;
+            font-weight: bold;
+        }
+
+        .btn-ui {
+            background: linear-gradient(135deg, var(--azul-institucional), var(--celeste-institucional));
+            color: var(--blanco);
+            border: none;
+            padding: 12px 28px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+        }
+
+        .btn-ui:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--neon-glow);
+            filter: brightness(1.1);
+        }
+
+        .btn-voz {
+            background: var(--naranja);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            padding: 0;
+            justify-content: center;
+        }
+
+        .panel-museo {
+            background: rgba(255, 255, 255, 0.95);
+            color: var(--azul-oscuro);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-left: 8px solid var(--azul-institucional);
+            margin-top: 20px;
+        }
+
+        .mapa-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 1200px;
+            align-self: center;
+        }
+
+        .sala-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .sala-card.desbloqueada:hover {
+            background: rgba(75, 180, 230, 0.25);
+            border-color: var(--celeste-institucional);
+            transform: translateY(-5px);
+            box-shadow: var(--neon-glow);
+        }
+
+        .sala-card.bloqueada {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: rgba(0,0,0,0.4);
+        }
+
+        .guia-box {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: linear-gradient(135deg, rgba(0, 60, 117, 0.9), rgba(0, 86, 163, 0.9));
+            border: 2px solid var(--celeste-institucional);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px 0;
+            box-shadow: var(--neon-glow);
+        }
+
+        .guia-avatar {
+            font-size: 3.5rem;
+            animation: flotar 3s ease-in-out infinite;
+        }
+
+        .vitrina-contenedor {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: radial-gradient(circle, rgba(0,86,163,0.2) 0%, rgba(0,0,0,0.6) 100%);
+            border: 3px solid var(--celeste-institucional);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .objeto-3d {
+            font-size: 5rem;
+            margin: 20px;
+            transition: transform 0.1s linear;
+            cursor: grab;
+            display: inline-block;
+        }
+
+        .timeline-scroll {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding: 20px 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+
+        .timeline-nodo {
+            background: var(--blanco);
+            color: var(--azul-oscuro);
+            padding: 15px;
+            border-radius: 10px;
+            min-width: 180px;
+            text-align: center;
+            cursor: pointer;
+            border-top: 5px solid var(--azul-institucional);
+        }
+
+        .zona-juego {
+            background: #EEEEEE;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 15px;
+            color: #333333;
+        }
+
+        .opciones-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .btn-opcion {
+            background: var(--blanco);
+            border: 2px solid var(--azul-institucional);
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--azul-oscuro);
+        }
+
+        .btn-opcion:hover {
+            background: var(--celeste-institucional);
+            color: var(--blanco);
+        }
+
+        #canvasInvento {
+            background: var(--blanco);
+            border: 3px solid var(--azul-oscuro);
+            border-radius: 10px;
+            width: 100%;
+            max-width: 600px;
+            height: 350px;
+        }
+
+        .sim-pantalla {
+            width: 100%;
+            height: 250px;
+            background: #222;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #00FF00;
+            font-family: monospace;
+            padding: 20px;
+        }
+
+        .certificado-envoltura {
+            background: #FFF5E1;
+            color: #3E2723;
+            border: 10px double #8D6E63;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 700px;
+            margin: 20px auto;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes flotar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        @media (max-width: 768px) {
+            header { flex-direction: column; gap: 10px; }
+            .opciones-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <section id="vistaBienvenida" class="vista activa" style="justify-content: center; align-items: center; text-align: center;">
+        <div style="background: rgba(0, 60, 117, 0.85); padding: 40px; border-radius: 25px; border: 3px solid var(--celeste-institucional); max-width: 600px; box-shadow: var(--neon-glow);">
+            <div style="font-size: 5rem; margin-bottom: 20px; animation: flotar 4s ease-in-out infinite;">💻🏛️</div>
+            <h1 style="font-size: 2.3rem; margin-bottom: 10px;">Museo Digital de la Computación</h1>
+            <p style="font-size: 1.2rem; color: var(--celeste-institucional); font-weight: bold; margin-bottom: 30px;">Descubriendo los inventos que crearon la era digital</p>
+            <button class="btn-ui" onclick="cambiarVista('vistaMapa')">🚀 Iniciar Recorrido</button>
+        </div>
+    </section>
+
+    <section id="vistaMapa" class="vista">
+        <header>
+            <h2>🗺️ Salas del Museo de Cómputo</h2>
+            <div class="hud-panel">
+                <div class="hud-item">📊 Progreso: <span id="hudProgreso">0%</span></div>
+                <div class="hud-item">⭐ Puntos: <span id="hudPuntos">0</span></div>
+                <div class="hud-item">🏆 Rango: <span id="hudNivel">Explorador</span></div>
+            </div>
+        </header>
+
+        <div class="guia-box">
+            <div class="guia-avatar">🤖</div>
+            <div>
+                <p class="guia-texto" id="textoGuiaMapa">¡Hola! Soy tu guía informático. Elige la <strong>Sala 1</strong> para descubrir los primeros pasos del cálculo mecánico. ¡Cada sala superada desbloquea la siguiente!</p>
+                <button class="btn-ui btn-voz" onclick="hablarId('textoGuiaMapa')" style="margin-top: 5px;">🔊</button>
+            </div>
+        </div>
+
+        <div class="mapa-grid" id="contenedorMapa"></div>
+
+        <div style="margin-top: 30px; text-align: center; display: none;" id="bloqueRetoFinal">
+            <button class="btn-ui" style="background: linear-gradient(135deg, var(--naranja), var(--amarillo));" onclick="cambiarVista('vistaRetoFinal')">🎯 Ir al Reto Final: Diseña la Computadora del Futuro</button>
+        </div>
+    </section>
+
+    <section id="vistaSala" class="vista">
+        <header>
+            <h2 id="salaTitulo">Sala</h2>
+            <button class="btn-ui" onclick="cambiarVista('vistaMapa')">🗺️ Volver al Mapa</button>
+        </header>
+
+        <div class="guia-box">
+            <div class="guia-avatar" id="salaGuiaAvatar">💻</div>
+            <div>
+                <p class="guia-texto" id="salaGuiaTexto">Instrucciones...</p>
+                <button class="btn-ui btn-voz" onclick="hablarId('salaGuiaTexto')">🔊 Escuchar Guía</button>
+            </div>
+        </div>
+
+        <div class="panel-museo">
+            <h3>📖 Lección Histórica</h3>
+            <div id="salaContenidoInfo" style="margin-top: 10px; font-size: 1.1rem; line-height: 1.6;"></div>
+            
+            <div class="vitrina-contenedor" id="vitrinaObjeto">
+                <span style="font-size: 0.8rem; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 5px; color:#FFF;">👓 Mantén presionado y arrastra para rotar</span>
+                <div class="objeto-3d" id="objeto3D" onmousedown="iniciarRotacion(event)" onmousemove="rotar(event)" onmouseup="detenerRotacion()" ontouchstart="iniciarRotacionTouch(event)" ontouchmove="rotarTouch(event)" ontouchend="detenerRotacion()">🧮</div>
+                <p id="objeto3DInfo" style="font-weight: bold; margin-top: 5px;"></p>
+            </div>
+        </div>
+
+        <div class="panel-museo" id="panelTimeline" style="display:none;">
+            <h3>⏳ Línea del Tiempo de Componentes</h3>
+            <div class="timeline-scroll" id="timelineContenedor"></div>
+        </div>
+
+        <div class="panel-museo" id="panelExperimento" style="display:none;">
+            <h3>⚡ Laboratorio y Simulador Práctico</h3>
+            <div class="sim-pantalla" id="pantallaSimulacion"></div>
+            <div id="controlesExperimento" style="margin-top: 10px; display: flex; gap: 10px; justify-content: center;"></div>
+        </div>
+
+        <div class="panel-museo" style="border-left-color: var(--naranja);">
+            <h3 style="color: var(--naranja);">🎮 Reto Evaluativo de la Sala</h3>
+            <div class="zona-juego" id="zonaJuegoSala"></div>
+        </div>
+    </section>
+
+    <section id="vistaRetoFinal" class="vista">
+        <header>
+            <h2>🎯 Reto Final: Diseña una Supercomputadora para tu Comunidad</h2>
+            <button class="btn-ui" onclick="cambiarVista('vistaMapa')">🗺️ Mapa</button>
+        </header>
+
+        <div class="panel-museo" style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+            <div>
+                <h3>🎨 Dibuja tu Prototipo</h3>
+                <div style="margin-bottom:10px; display:flex; gap:10px;">
+                    <input type="color" id="canvasColor" value="#0056A3" style="width:40px; height:35px;">
+                    <button class="btn-ui" style="padding:5px 15px; font-size:0.9rem;" onclick="limpiarCanvas()">🧹 Limpiar</button>
+                </div>
+                <canvas id="canvasInvento" width="500" height="350"></canvas>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <h3>📋 Ficha de Ingeniería</h3>
+                <div>
+                    <label style="font-weight:bold;">Nombre del modelo:</label>
+                    <input type="text" id="invNombre" style="width:100%; padding:8px; margin-top:4px;">
+                </div>
+                <div>
+                    <label style="font-weight:bold;">¿Qué problema resolverá en tu escuela o comunidad?:</label>
+                    <textarea id="invProblema" style="width:100%; padding:8px; margin-top:4px; height:60px;"></textarea>
+                </div>
+                <div>
+                    <label style="font-weight:bold;">¿Qué componentes potentes usará?:</label>
+                    <input type="text" id="invMateriales" placeholder="Ej. Procesador cuántico, pantallas ecológicas..." style="width:100%; padding:8px; margin-top:4px;">
+                </div>
+                <button class="btn-ui" style="background: var(--verde-tec); margin-top:15px;" onclick="evaluarRetoFinal()">🚀 Enviar Patente e Imprimir Certificado</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="vistaClausura" class="vista" style="align-items: center; justify-content: center;">
+        <div class="certificado-envoltura">
+            <h2>🏆 CERTIFICADO EN CIENCIAS DE LA COMPUTACIÓN 🏆</h2>
+            <p style="margin: 20px 0; font-style: italic;">Se otorga el presente diploma al Joven Ingeniero(a) por recorrer las 8 eras del cómputo y patentar:</p>
+            <h3 id="certNombreInvento" style="color: var(--azul-institucional); font-size: 2rem; margin: 15px 0;"></h3>
+            <p style="font-weight: bold;">Rango Obtenido: <span id="certInsignia" style="color: var(--naranja);"></span></p>
+            <button class="btn-ui" style="margin-top:30px;" onclick="reiniciarTodo()">🔄 Volver a empezar</button>
+        </div>
+    </section>
+
+    <script>
+        // --- BASE DE DATOS MODIFICADA PARA COMPUTADORAS ---
+        const salasData = [
+            {
+                id: 1,
+                titulo: "Sala 1: Los Orígenes del Cálculo Mecánico",
+                guiaTexto: "¡Bienvenido! Al principio, los humanos usaban herramientas sencillas para contar. El Ábaco y la Pascalina de Blaise Pascal demostraron que las máquinas podían resolver operaciones aritméticas automáticas.",
+                avatar: "🧮",
+                info: "La Pascalina (1642) usaba engranajes mecánicos parecidos a los de un reloj para sumar y restar de forma exacta.",
+                objeto: "🧮",
+                objetoInfo: "Ábaco e Instrumental Primitivo",
+                tipoModulo: "timeline",
+                juego: {
+                    tipo: "trivia",
+                    pregunta: "¿Qué invento utilizaba ruedas con dientes y engranajes mecánicos para sumar en 1642?",
+                    opciones: ["El Smartphone", "La Pascalina", "La Memoria RAM", "El Microprocesador"],
+                    correcta: 1
+                }
+            },
+            {
+                id: 2,
+                titulo: "Sala 2: Primera Generación - Tubos al Vacío",
+                guiaTexto: "Las primeras computadoras modernas nacieron en los años 40. Eran tan gigantescas como habitaciones enteras debido a los Tubos al Vacío. ¡Consumían toneladas de electricidad!",
+                avatar: "📟",
+                info: "La ENIAC fue una de las primeras computadoras. Medía 30 metros de largo y se calentaba tanto que requería sistemas de enfriamiento especiales.",
+                objeto: "🏮",
+                objetoInfo: "Tubo al Vacío a Gran Escala",
+                tipoModulo: "trivia",
+                juego: {
+                    tipo: "vf",
+                    pregunta: "¿Las computadoras de primera generación eran portátiles y cabían en una mochila?",
+                    correcta: false
+                }
+            },
+            {
+                id: 3,
+                titulo: "Sala 3: Segunda Generación - El Transistor",
+                guiaTexto: "¡La gran revolución! En los años 50, el Transistor reemplazó a los tubos al vacío. Gracias a esto, las computadoras se volvieron mucho más pequeñas, rápidas y eficientes.",
+                avatar: "🔌",
+                info: "El transistor actúa como un interruptor electrónico diminuto que controla el paso de la corriente dentro de la computadora.",
+                objeto: "🔲",
+                objetoInfo: "Transistor de Silicio Antiguo",
+                tipoModulo: "experimento",
+                experimentoTipo: "binario",
+                juego: {
+                    tipo: "trivia",
+                    pregunta: "¿Qué componente fundamental permitió reducir el tamaño de las computadoras en la segunda generación?",
+                    opciones: ["La Rueda", "El Transistor", "La Manivela", "El Carbón"],
+                    correcta: 1
+                }
+            },
+            {
+                id: 4,
+                titulo: "Sala 4: Tercera Generación - Circuitos Integrados",
+                guiaTexto: "En los años 60 se inventaron los Chips o Circuitos Integrados. Al colocar miles de transistores juntos en una pequeña placa de silicio, nacieron las primeras minicomputadoras comerciales.",
+                avatar: "🎛️",
+                info: "Los circuitos integrados permitieron que la computadora ejecutara varios programas al mismo tiempo.",
+                objeto: "🟩",
+                objetoInfo: "Microchip de Silicio Integrado",
+                tipoModulo: "trivia",
+                juego: {
+                    tipo: "clasifica",
+                    pregunta: "Clasifica el Silicio en la fabricación de microchips modernos:",
+                    opciones: ["Material Conductor/Semiconductor", "Plástico Aislante"],
+                    correcta: 0
+                }
+            },
+            {
+                id: 5,
+                titulo: "Sala 5: Cuarta Generación - El Microprocesador",
+                guiaTexto: "En 1971 llegó el 'Cerebro' de la computadora: el Microprocesador. Un solo chip contenía toda la unidad central de procesamiento. ¡Esto dio origen a las Computadoras Personales (PC)!",
+                avatar: "💾",
+                info: "Gracias al microprocesador, marcas como Apple e IBM pudieron vender computadoras compactas para uso familiar y escolar.",
+                objeto: "💻",
+                objetoInfo: "Computadora Personal Clásica (1980)",
+                tipoModulo: "experimento",
+                experimentoTipo: "arquitectura",
+                juego: {
+                    tipo: "trivia",
+                    pregunta: "¿Cómo se le conoce popularmente al microprocesador dentro de la computadora?",
+                    opciones: ["El monitor", "El cerebro central (CPU)", "El teclado", "El ratón"],
+                    correcta: 1
+                }
+            },
+            {
+                id: 6,
+                titulo: "Sala 6: Quinta Generación - Internet y Laptops",
+                guiaTexto: "Las computadoras se vuelven portátiles y se conectan a una súper red mundial: el Internet. La comunicación global instantánea cambia la educación y la sociedad por completo.",
+                avatar: "🌐",
+                info: "El Internet permite compartir archivos, investigar tareas escolares y conectar equipos desde cualquier rincón del mundo en milisegundos.",
+                objeto: "💻",
+                objetoInfo: "Computadora Portátil y Antena Wi-Fi",
+                tipoModulo: "escape",
+                juego: {
+                    tipo: "escape",
+                    pregunta: "Descifra la contraseña de la red escolar. Si 'A=1', 'B=2', 'C=3'... ¿Cuál es el número de la palabra 'CONECTA' sumando sus posiciones? (C=3 + O=15 + N=14 + E=5 + C=3 + T=20 + A=1)",
+                    respuestaCorrecta: "61"
+                }
+            },
+            {
+                id: 7,
+                titulo: "Sala 7: Sexta Generación - Inteligencia Artificial",
+                guiaTexto: "Hoy en día, las computadoras usan Inteligencia Artificial y redes neuronales para aprender de nosotros, reconocer rostros, traducir idiomas y automatizar tareas complejas.",
+                avatar: "🧠",
+                info: "Las computadoras ya no solo guardan datos, sino que analizan millones de ejemplos para tomar decisiones inteligentes y ayudarnos en el día a día.",
+                objeto: "🤖",
+                objetoInfo: "Procesador Neuronal Avanzado",
+                tipoModulo: "experimento",
+                experimentoTipo: "programacion",
+                juego: {
+                    tipo: "trivia",
+                    pregunta: "¿En qué se basan las supercomputadoras modernas para procesar lenguaje y resolver problemas autónomamente?",
+                    opciones: ["Tubos de agua", "Inteligencia Artificial y Algoritmos", "Engranajes de reloj", "Combustible fósil"],
+                    correcta: 1
+                }
+            },
+            {
+                id: 8,
+                titulo: "Sala 8: Computación Sostenible y el Futuro",
+                guiaTexto: "El futuro exige que los sistemas informáticos sean amigables con la naturaleza. Aprenderemos sobre reciclaje de chatarra electrónica y eficiencia energética.",
+                avatar: "🌱",
+                info: "Fabricar computadoras usando materiales biodegradables y reducir el consumo eléctrico de los centros de datos previene el calentamiento global.",
+                objeto: "♻️",
+                objetoInfo: "Circuito Orgánico Reciclable",
+                tipoModulo: "trivia",
+                juego: {
+                    tipo: "trivia",
+                    pregunta: "¿Qué acción ayuda a mitigar el daño ambiental causado por las computadoras viejas?",
+                    opciones: ["Quemarlas en el patio", "Tirarlas al río", "Reciclar sus componentes electrónicos adecuadamente", "Guardarlas para siempre"],
+                    correcta: 2
+                }
+            }
+        ];
+
+        const timelineData = [
+            { año: "1642", invento: "Ruedas Dentadas", desc: "Base de engranajes mecánicos." },
+            { año: "1940", invento: "Válvulas electrónicas", desc: "Tubos que permitieron el paso de pulsos eléctricos." },
+            { año: "1947", invento: "Silicio Sólido", desc: "Aparición del transistor compacto." },
+            { año: "1971", invento: "Microchip Central", desc: "Todo el poder en un centímetro cuadrado." }
+        ];
+
+        let usuario = { puntos: 0, progresoMaximo: 1, salaActual: null, insignia: "Explorador Digital" };
+        let mousePresionado = false; let xAnterior = 0; let rotacionActualY = 0;
+
+        window.onload = function() {
+            renderizarMapa();
+            inicializarCanvasInvento();
+        };
+
+        function cambiarVista(idVista) {
+            document.querySelectorAll('.vista').forEach(v => v.classList.remove('activa'));
+            const destino = document.getElementById(idVista);
+            if(destino) destino.classList.add('activa');
+            if(idVista === 'vistaMapa') renderizarMapa();
+        }
+
+        function renderizarMapa() {
+            const contenedor = document.getElementById("contenedorMapa");
+            contenedor.innerHTML = "";
+            salasData.forEach(sala => {
+                const card = document.createElement("div");
+                const estaDesbloqueada = sala.id <= usuario.progresoMaximo;
+
+                if(estaDesbloqueada) {
+                    card.className = "sala-card desbloqueada";
+                    card.innerHTML = `<div style="font-size:2.5rem;">${sala.avatar}</div><h3>${sala.titulo}</h3>`;
+                    card.onclick = () => cargarSala(sala.id);
+                } else {
+                    card.className = "sala-card bloqueada";
+                    card.innerHTML = `<div style="font-size:2.5rem;">🔒</div><h3>${sala.titulo}</h3>`;
+                }
+                contenedor.appendChild(card);
+            });
+
+            let porc = Math.round(((usuario.progresoMaximo - 1) / salasData.length) * 100);
+            document.getElementById("hudProgreso").innerText = `${porc > 100 ? 100 : porc}%`;
+            document.getElementById("hudPuntos").innerText = usuario.puntos;
+
+            if(usuario.puntos >= 100) usuario.insignia = "Maestro de la Computación";
+            else if(usuario.puntos >= 45) usuario.insignia = "Técnico Junior";
+            document.getElementById("hudNivel").innerText = usuario.insignia;
+
+            if(usuario.progresoMaximo > salasData.length) {
+                document.getElementById("bloqueRetoFinal").style.display = "block";
+            }
+        }
+
+        function cargarSala(idSala) {
+            const sala = salasData.find(s => s.id === idSala);
+            usuario.salaActual = sala;
+            
+            document.getElementById("salaTitulo").innerText = sala.titulo;
+            document.getElementById("salaGuiaTexto").innerText = sala.guiaTexto;
+            document.getElementById("salaContenidoInfo").innerText = sala.info;
+            
+            document.getElementById("objeto3D").innerText = sala.objeto;
+            document.getElementById("objeto3DInfo").innerText = sala.objetoInfo;
+
+            document.getElementById("panelTimeline").style.display = (sala.tipoModulo === "timeline") ? "block" : "none";
+            document.getElementById("panelExperimento").style.display = (sala.tipoModulo === "experimento") ? "block" : "none";
+
+            if(sala.tipoModulo === "timeline") cargarTimeline();
+            if(sala.tipoModulo === "experimento") cargarExperimento(sala.experimentoTipo);
+
+            construirJuegoSala(sala.juego);
+            cambiarVista("vistaSala");
+        }
+
+        function cargarTimeline() {
+            const contenedor = document.getElementById("timelineContenedor");
+            contenedor.innerHTML = "";
+            timelineData.forEach(nodo => {
+                const item = document.createElement("div");
+                item.className = "timeline-nodo";
+                item.innerHTML = `<strong>${nodo.año}</strong><br>${nodo.invento}`;
+                item.onclick = () => alert(`${nodo.invento}: ${nodo.desc}`);
+                contenedor.appendChild(item);
+            });
+        }
+
+        function cargarExperimento(tipo) {
+            const pantalla = document.getElementById("pantallaSimulacion");
+            const controles = document.getElementById("controlesExperimento");
+            pantalla.innerHTML = ""; controles.innerHTML = "";
+
+            if(tipo === "binario") {
+                pantalla.innerHTML = "<div style='font-size:1.5rem;'>Código binario del chip: <span id='binTxt'>0 0 0</span></div>";
+                controles.innerHTML = `
+                    <button class='btn-ui' onclick='document.getElementById("binTxt").innerText="1 0 1";'>🔌 Encender Transistores</button>
+                    <button class='btn-ui' onclick='document.getElementById("binTxt").innerText="0 0 0";'>🔌 Apagar</button>
+                `;
+            }
+            else if(tipo === "arquitectura") {
+                pantalla.innerHTML = "<div style='text-align:left;'>[CPU] ---> Enviando datos... <br>[Memoria RAM] ---> Almacenando variables escolares.</div>";
+            }
+            else if(tipo === "programacion") {
+                pantalla.innerHTML = "<div id='progTxt'>> Haz clic abajo para compilar el algoritmo de Inteligencia Artificial</div>";
+                controles.innerHTML = `
+                    <button class='btn-ui' onclick='document.getElementById("progTxt").innerHTML="🤖 Computadora dice: ¡Hola Nicaragua! Aprendizaje completo.";'>💻 Ejecutar Algoritmo</button>
+                `;
+            }
+        }
+
+        function construirJuegoSala(juego) {
+            const zona = document.getElementById("zonaJuegoSala");
+            zona.innerHTML = "";
+
+            if(juego.tipo === "trivia" || juego.tipo === "clasifica") {
+                zona.innerHTML = `<p style='font-weight:bold; color:#111;'>${juego.pregunta}</p><div class='opciones-grid' id='opsG'></div>`;
+                juego.opciones.forEach((op, idx) => {
+                    const btn = document.createElement("button");
+                    btn.className = "btn-opcion";
+                    btn.innerText = op;
+                    btn.onclick = () => {
+                        if(idx === juego.correcta) { btn.style.background="#43A047"; aciertoJuego(); }
+                        else { btn.style.background="#F44336"; alert("Inténtalo de nuevo"); }
+                    };
+                    document.getElementById("opsG").appendChild(btn);
+                });
+            }
+            else if(juego.tipo === "vf") {
+                zona.innerHTML = `
+                    <p style='font-weight:bold; color:#111;'>${juego.pregunta}</p>
+                    <div class='opciones-grid'>
+                        <button class='btn-opcion' id='btnV'>VERDADERO</button>
+                        <button class='btn-opcion' id='btnF'>FALSO</button>
+                    </div>
+                `;
+                document.getElementById("btnV").onclick = () => { if(juego.correcta === true) acje(); else alert("Incorrecto"); };
+                document.getElementById("btnF").onclick = () => { if(juego.correcta === false) acje(); else alert("Incorrecto"); };
+                function acje() { aciertoJuego(); }
+            }
+            else if(juego.tipo === "escape") {
+                zona.innerHTML = `
+                    <p style='font-weight:bold; color:#111;'>${juego.pregunta}</p>
+                    <input type='text' id='inpEs' style='padding:8px; margin-right:10px;'>
+                    <button class='btn-ui' onclick='if(document.getElementById("inpEs").value=="61") aciertoJuego(); else alert("Código erróneo");'>🔓 Desbloquear</button>
+                `;
+            }
+        }
+
+        function aciertoJuego() {
+            alert("🎯 ¡Correcto! Avanzas a la siguiente era del cómputo. +15 Puntos.");
+            usuario.puntos += 15;
+            if(usuario.salaActual.id === usuario.progresoMaximo) usuario.progresoMaximo++;
+            cambiarVista("vistaMapa");
+        }
+
+        // --- MANIPULACIÓN ROTACIÓN INTERACTIVA ---
+        function iniciarRotacion(e) { mousePresionado = true; xAnterior = e.clientX; }
+        function iniciarRotacionTouch(e) { mousePresionado = true; xAnterior = e.touches[0].clientX; }
+        function detenerRotacion() { mousePresionado = false; }
+        function rotar(e) {
+            if (!mousePresionado) return;
+            let dX = e.clientX - xAnterior; xAnterior = e.clientX;
+            rotacionActualY += dX * 1.5;
+            document.getElementById("objeto3D").style.transform = `rotateY(${rotacionActualY}deg)`;
+        }
+        function rotarTouch(e) {
+            if (!mousePresionado) return;
+            let dX = e.touches[0].clientX - xAnterior; xAnterior = e.touches[0].clientX;
+            rotacionActualY += dX * 1.5;
+            document.getElementById("objeto3D").style.transform = `rotateY(${rotacionActualY}deg)`;
+        }
+
+        // --- LIENZO DIGITAL CANVAS ---
+        let lienzo, ctx, dibujando = false;
+        function inicializarCanvasInvento() {
+            lienzo = document.getElementById("canvasInvento"); ctx = lienzo.getContext("2d");
+            ctx.lineWidth = 4; ctx.lineCap = "round";
+            lienzo.onmousedown = (e) => { dibujando = true; dib(e); };
+            lienzo.onmousemove = dib; window.onmouseup = () => dibujando = false;
+            lienzo.ontouchstart = (e) => { dibujando = true; dibT(e); };
+            lienzo.ontouchmove = dibT; window.ontouchend = () => dibujando = false;
+        }
+        function dib(e) {
+            if(!dibujando) return; const r = lienzo.getBoundingClientRect();
+            ctx.strokeStyle = document.getElementById("canvasColor").value;
+            ctx.lineTo(e.clientX - r.left, e.clientY - r.top); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(e.clientX - r.left, e.clientY - r.top);
+        }
+        function dibT(e) {
+            if(!dibujando) return; e.preventDefault(); const r = lienzo.getBoundingClientRect();
+            ctx.strokeStyle = document.getElementById("canvasColor").value; const t = e.touches[0];
+            ctx.lineTo(t.clientX - r.left, t.clientY - r.top); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(t.clientX - r.left, t.clientY - r.top);
+        }
+        function limpiarCanvas() { ctx.clearRect(0, 0, lienzo.width, lienzo.height); ctx.beginPath(); }
+
+        function evaluarRetoFinal() {
+            const nom = document.getElementById("invNombre").value.trim();
+            if(!nom) { alert("Ponle un nombre a tu prototipo de computadora."); return; }
+            document.getElementById("certNombreInvento").innerText = nom;
+            document.getElementById("certInsignia").innerText = usuario.insignia;
+            cambiarVista("vistaClausura");
+        }
+
+        function hablarId(id) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                let txt = document.getElementById(id).innerText;
+                let u = new SpeechSynthesisUtterance(txt); u.lang = 'es-ES';
+                window.speechSynthesis.speak(u);
+            }
+        }
+
+        function reiniciarTodo() {
+            usuario = { puntos: 0, progresoMaximo: 1, salaActual: null, insignia: "Explorador Digital" };
+            document.getElementById("bloqueRetoFinal").style.display = "none";
+            limpiarCanvas();
+            cambiarVista("vistaBienvenida");
+        }
+    </script>
+</body>
+</html>

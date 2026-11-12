@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Medidor de Equidad - Derechos e Igualdad</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Ajuste de escala global para pantallas de celulares */
+        html {
+            font-size: 85%;
+        }
+        @media (min-width: 768px) {
+            html { font-size: 90%; }
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #fdf4ff; /* Fondo violeta ultra claro */
+            background-image: 
+                radial-gradient(#f3e8ff 3px, transparent 3px),
+                radial-gradient(#f3e8ff 3px, transparent 3px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            margin: 0;
+            padding: 0;
+            touch-action: pan-y;
+        }
+
+        /* --- Animaciones --- */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(1deg); }
+        }
+        .floating { animation: float 4s ease-in-out infinite; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+        .shake { animation: shake 0.4s ease-in-out; }
+
+        @keyframes popIn {
+            0% { transform: scale(0.6); opacity: 0; }
+            80% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop-in { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        /* Partículas de estrellas / celebración */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            animation: flyUp 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            z-index: 100;
+        }
+        @keyframes flyUp {
+            0% { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-150px) scale(1.8) rotate(360deg); opacity: 0; }
+        }
+
+        /* Medidor de Energía (Termómetro) */
+        .medidor-fill {
+            transition: height 1s cubic-bezier(0.4, 0, 0.2, 1), background-color 1s ease;
+        }
+
+        /* Botones de decisión */
+        .btn-decision {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .btn-decision:active {
+            transform: scale(0.95);
+        }
+
+        /* Tarjeta de Caso */
+        .tarjeta-caso {
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        .tarjeta-out-left { transform: translateX(-100%) rotate(-10deg); opacity: 0; }
+        .tarjeta-out-right { transform: translateX(100%) rotate(10deg); opacity: 0; }
+        .tarjeta-in { transform: translateX(0) rotate(0deg); opacity: 1; }
+
+    </style>
+</head>
+<body class="flex flex-col relative text-slate-800 select-none min-h-screen lg:h-screen lg:overflow-hidden pb-48 lg:pb-0">
+
+    <!-- ================= AUDIO ENGINE INTEGRADO (Web Audio API) ================= -->
+    <script>
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) {
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) audioCtx = new AudioContext();
+                } catch (e) { console.warn("Audio no soportado."); }
+            }
+        }
+
+        function playSound(tipo) {
+            if (!audioCtx) return;
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (tipo === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+                } else if (tipo === 'success') {
+                    const notas = [329.63, 392.00, 523.25]; // C mayor arpegio
+                    notas.forEach((freq, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g); g.connect(audioCtx.destination);
+                        o.type = 'triangle';
+                        o.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.1);
+                        g.gain.setValueAtTime(0.15, audioCtx.currentTime + idx * 0.1);
+                        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.1 + 0.5);
+                        o.start(audioCtx.currentTime + idx * 0.1);
+                        o.stop(audioCtx.currentTime + idx * 0.1 + 0.5);
+                    });
+                } else if (tipo === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(80, audioCtx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+                } else if (tipo === 'powerup') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.5);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+                }
+            } catch(e) {}
+        }
+    </script>
+
+    <!-- ================= PANTALLA DE INICIO ================= -->
+    <div id="pantalla-inicio" class="absolute inset-0 z-50 flex flex-col items-center justify-start lg:justify-center p-4 text-center bg-purple-50/95 backdrop-blur-md transition-opacity duration-500 overflow-y-auto">
+        
+        <div class="bg-purple-200 text-purple-800 rounded-full px-5 py-2 mb-4 font-bold tracking-widest border-2 border-purple-300 text-xs md:text-sm uppercase shrink-0 mt-8 lg:mt-0 shadow-sm">
+            FORMACIÓN CÍVICA Y ÉTICA • III UP (5º/6º GRADO)
+        </div>
+        
+        <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight flex flex-col items-center justify-center shrink-0">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600 py-1">Medidor de</span>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600 py-1 flex items-center justify-center gap-3">Equidad <span class="pop-in inline-block floating drop-shadow-md">⚖️</span></span>
+        </h1>
+        
+        <div class="w-full max-w-3xl bg-white p-6 sm:p-8 rounded-[2.5rem] shadow-2xl border-4 border-purple-300 mb-8 transform hover:scale-[1.01] transition-all relative overflow-hidden">
+            <h2 class="text-xl md:text-2xl font-black text-purple-700 mb-4 flex items-center justify-center gap-2">
+                <span>🦉🔎</span> Analistas de Justicia
+            </h2>
+            <p class="text-sm sm:text-base md:text-lg text-slate-600 leading-relaxed font-bold">
+                Para que un salón de clases sea feliz, todas las niñas y niños deben tener los <b>mismos derechos y oportunidades</b>.<br><br>
+                Lee las situaciones del colegio y calibra el medidor. Decide si la situación es <b class="text-green-600">Equitativa (Justa)</b> o si esconde prejuicios y es <b class="text-red-500">Inequitativa (Injusta)</b>.<br><br>
+                <span class="text-indigo-600 font-black">¡Rompamos los estereotipos de género! 💪</span>
+            </p>
+        </div>
+
+        <button onclick="initAudio(); playSound('click'); iniciarJuego();" class="relative inline-flex items-center justify-center px-10 py-5 text-xl font-black text-white bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full shadow-[0_6px_0_#4f46e5] active:translate-y-1 active:shadow-[0_2px_0_#4f46e5] transition-all shrink-0 mb-8">
+            ¡Calibrar Medidor! 🚀
+        </button>
+    </div>
+
+    <!-- ================= PANTALLA PRINCIPAL DEL JUEGO ================= -->
+    <div id="pantalla-juego" class="hidden flex-1 flex flex-col lg:h-full lg:overflow-hidden">
+        
+        <!-- Cabecera de Progreso -->
+        <div class="w-full flex justify-between items-center bg-white p-3 shadow-sm border-b-4 border-purple-200 z-30 shrink-0 sticky top-0">
+            <div class="flex items-center gap-2.5">
+                <span class="text-2xl bg-purple-100 p-1.5 rounded-2xl border border-purple-200 shadow-inner">🏫</span>
+                <div>
+                    <h2 class="text-sm sm:text-lg font-black text-slate-800 leading-tight">Tribunal Escolar</h2>
+                    <p class="hidden sm:block text-[9px] font-bold text-purple-600 uppercase tracking-widest leading-none">Derechos e Igualdad</p>
+                </div>
+            </div>
+            
+            <div class="flex flex-col items-end">
+                <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider leading-none mb-0.5">Casos Analizados</span>
+                <span id="contador-progreso" class="bg-purple-100 px-3.5 py-0.5 rounded-full text-purple-800 font-black border-2 border-purple-300 text-xs sm:text-base shadow-sm">0 / 5 📋</span>
+            </div>
+        </div>
+
+        <!-- Layout Adaptativo -->
+        <div class="flex-1 flex flex-col lg:flex-row gap-4 lg:gap-8 p-4 md:p-6 overflow-visible lg:overflow-hidden w-full max-w-6xl mx-auto">
+            
+            <!-- PANEL IZQUIERDO: El Medidor de Equidad -->
+            <div class="w-full lg:w-1/3 bg-white rounded-[2rem] border-4 border-slate-200 p-4 flex flex-col items-center relative shadow-sm shrink-0 h-48 lg:h-full">
+                
+                <h3 class="text-sm lg:text-lg font-black text-purple-900 uppercase tracking-widest bg-purple-50 px-4 py-2 rounded-xl border border-purple-100 mb-4 shadow-sm w-full text-center shrink-0">
+                    Medidor de Equidad
+                </h3>
+
+                <!-- Contenedor del Termómetro/Medidor -->
+                <div class="flex-1 flex flex-row lg:flex-col items-end lg:items-center justify-center w-full lg:w-32 bg-slate-100 rounded-[2rem] border-4 border-slate-300 p-2 relative overflow-hidden shadow-inner">
+                    
+                    <!-- Porcentaje Textual -->
+                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 text-3xl lg:text-5xl font-black text-white drop-shadow-md select-none" id="porcentaje-texto">
+                        0%
+                    </div>
+
+                    <!-- Llenado del medidor -->
+                    <div id="barra-llenado" class="w-0 lg:w-full h-full lg:h-0 bg-red-400 rounded-xl medidor-fill absolute bottom-0 left-0 lg:left-auto"></div>
+                    
+                    <!-- Marcas de escala (Opcional visual) -->
+                    <div class="absolute inset-0 flex flex-row lg:flex-col justify-between p-4 opacity-30 z-10 pointer-events-none">
+                        <div class="w-0.5 lg:w-full h-full lg:h-0.5 bg-slate-800"></div>
+                        <div class="w-0.5 lg:w-full h-full lg:h-0.5 bg-slate-800"></div>
+                        <div class="w-0.5 lg:w-full h-full lg:h-0.5 bg-slate-800"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- PANEL DERECHO: Tarjeta de Caso y Botones de Decisión -->
+            <div class="w-full lg:w-2/3 flex flex-col justify-between relative min-h-[400px] lg:h-full shrink-0">
+                
+                <!-- Área de la Tarjeta del Caso -->
+                <div class="flex-1 relative perspective-1000 flex items-center justify-center mb-4">
+                    <div id="tarjeta-caso" class="w-full bg-white rounded-[2.5rem] border-4 border-purple-300 shadow-xl p-6 lg:p-10 flex flex-col items-center justify-center text-center tarjeta-in z-20 relative overflow-hidden">
+                        
+                        <!-- Etiqueta decorativa -->
+                        <div class="absolute top-0 left-1/2 transform -translate-x-1/2 bg-purple-500 text-white font-black text-[10px] px-4 py-1 rounded-b-xl shadow-sm uppercase tracking-wider">
+                            Expediente Escolar
+                        </div>
+
+                        <span id="emoji-caso" class="text-6xl md:text-7xl mb-4 mt-2 drop-shadow-md filter floating">⚽</span>
+                        <h4 id="texto-caso" class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-700 leading-relaxed">
+                            Cargando caso...
+                        </h4>
+
+                    </div>
+                </div>
+
+                <!-- Botones de Decisión -->
+                <div class="flex gap-3 md:gap-5 w-full shrink-0">
+                    <button id="btn-injusto" onclick="evaluarCaso(false)" class="btn-decision flex-1 py-4 md:py-6 bg-rose-50 border-4 border-rose-400 rounded-3xl shadow-[0_6px_0_#fb7185] flex flex-col items-center justify-center gap-1 group hover:bg-rose-100">
+                        <span class="text-3xl md:text-4xl group-hover:scale-110 transition-transform">🚫</span>
+                        <span class="font-black text-rose-700 text-sm md:text-lg uppercase tracking-wide">Injusto<br><span class="text-[10px] md:text-xs opacity-80">(Inequidad)</span></span>
+                    </button>
+                    
+                    <button id="btn-justo" onclick="evaluarCaso(true)" class="btn-decision flex-1 py-4 md:py-6 bg-emerald-50 border-4 border-emerald-400 rounded-3xl shadow-[0_6px_0_#34d399] flex flex-col items-center justify-center gap-1 group hover:bg-emerald-100">
+                        <span class="text-3xl md:text-4xl group-hover:scale-110 transition-transform">✅</span>
+                        <span class="font-black text-emerald-700 text-sm md:text-lg uppercase tracking-wide">Justo<br><span class="text-[10px] md:text-xs opacity-80">(Equidad)</span></span>
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= PANEL DE RETROALIMENTACIÓN (BÚHO-JUEZ) ================= -->
+    <div id="burbuja-pedagogica" class="fixed bottom-0 left-0 w-full bg-white border-t-[10px] border-purple-400 shadow-[0_-15px_40px_rgba(0,0,0,0.2)] z-[100] transform translate-y-full transition-transform duration-500 flex flex-col md:flex-row items-center justify-between p-5 md:px-8 md:py-6 rounded-t-3xl">
+        <div class="flex items-center gap-4 w-full md:w-3/4 mb-4 md:mb-0">
+            <!-- Búho -->
+            <div class="relative w-16 h-16 md:w-24 md:h-24 bg-purple-50 rounded-full border-4 border-purple-200 flex items-center justify-center shrink-0 shadow-inner">
+                <span id="burbuja-icono" class="text-4xl md:text-6xl select-none font-bold block floating">🦉</span>
+            </div>
+            <div>
+                <h3 id="burbuja-titulo" class="text-xl md:text-3xl font-black text-purple-700 mb-1 select-none leading-none">Búho Analista</h3>
+                <p id="burbuja-mensaje" class="text-sm md:text-lg font-bold text-slate-600 leading-snug select-none">Explicación...</p>
+            </div>
+        </div>
+        <div id="burbuja-boton-container" class="w-full md:w-auto shrink-0 flex justify-end">
+            <!-- Botón interactivo se inyecta aquí -->
+        </div>
+    </div>
+
+    <!-- ================= PANTALLA FINAL ================= -->
+    <div id="pantalla-final" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-white/95 backdrop-blur-md transition-opacity duration-500 overflow-y-auto">
+        <div class="flex gap-4 justify-center text-7xl md:text-9xl mb-8 floating select-none drop-shadow-md">
+            <span>⚖️</span>
+            <span>🏆</span>
+            <span>✨</span>
+        </div>
+
+        <h1 class="text-4xl sm:text-6xl md:text-7xl font-black mb-6 leading-tight text-slate-800 drop-shadow-sm">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-500">¡DEFENSOR DE</span><br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-500">LA IGUALDAD!</span>
+        </h1>
+        <p class="text-lg sm:text-xl md:text-3xl text-slate-600 max-w-4xl mb-10 font-bold leading-relaxed bg-purple-50 p-6 rounded-3xl border border-purple-200">
+            ¡Llenaste el Medidor de Equidad al 100%! <br>
+            Identificaste los prejuicios y demostraste que en un salón de clases feliz, <b>las niñas y los niños tienen exactamente los mismos derechos, obligaciones y oportunidades</b> para soñar en grande. 🌟🤝
+        </p>
+        
+        <button onclick="reiniciarJuego()" class="group relative inline-flex items-center justify-center px-10 py-5 text-xl font-black text-white bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full overflow-hidden shadow-[0_8px_0_#4338ca] active:shadow-[0_0px_0_#4338ca] active:translate-y-2 transition-all shrink-0">
+            <span class="relative flex items-center gap-2">Calibrar de nuevo <span class="text-2xl transition-transform duration-500 group-hover:rotate-180">🔄</span></span>
+        </button>
+    </div>
+
+    <!-- ================= LÓGICA DEL JUEGO ================= -->
+    <script>
+        // --- BASE DE DATOS DE CASOS (Igualdad de Género y Derechos) ---
+        const casos = [
+            {
+                id: 1,
+                emoji: "⚽",
+                situacion: "El profesor de física dice que solo los niños pueden jugar en la cancha principal de fútbol porque 'juegan más rudo', y envía a las niñas a saltar la cuerda a un lado.",
+                esEquitativo: false,
+                feedbackCorrecto: "¡Veredicto Correcto! El deporte no tiene género. Las niñas y los niños tienen el mismo derecho a usar la cancha principal y disfrutar del fútbol. 🚫⚽",
+                feedbackError: "¡Espera! Pensar que las niñas son frágiles o no pueden jugar deportes rudos es un **estereotipo**. Todas las personas tienen derecho a usar los espacios por igual."
+            },
+            {
+                id: 2,
+                emoji: "🧹",
+                situacion: "A la hora de limpiar el salón antes del recreo, la maestra organiza equipos donde tanto niños como niñas barren, ordenan libros y limpian los pupitres.",
+                esEquitativo: true,
+                feedbackCorrecto: "¡Veredicto Correcto! Mantener limpio el salón es responsabilidad de todos, sin importar si eres niño o niña. ¡El trabajo en equipo es equidad! ✅🤝",
+                feedbackError: "¡Revisa bien! En este caso, el trabajo se dividió de forma justa entre todos. A veces pensamos que limpiar es solo tarea de niñas, ¡pero eso es un error que debemos borrar!"
+            },
+            {
+                id: 3,
+                emoji: "🤖",
+                situacion: "Un grupo de niños no deja que Ana se una a su club de robótica escolar porque dicen que 'las computadoras y armar máquinas es cosa de hombres'.",
+                esEquitativo: false,
+                feedbackCorrecto: "¡Veredicto Correcto! La inteligencia y la capacidad para la ciencia y tecnología no dependen del género. ¡Las mujeres son científicas e ingenieras brillantes! 🚫💻",
+                feedbackError: "¡Cuidado! Excluir a alguien de la ciencia por ser niña es una gran injusticia. Las niñas tienen todo el talento y derecho para programar y construir robots."
+            },
+            {
+                id: 4,
+                emoji: "🗣️",
+                situacion: "Para el debate escolar, se eligen como líderes a los estudiantes que tienen las mejores propuestas y se esfuerzan más, incluyendo tanto a niños como a niñas.",
+                esEquitativo: true,
+                feedbackCorrecto: "¡Veredicto Correcto! El liderazgo y la capacidad de hablar en público no tienen género. Elegir por habilidades y no por prejuicios es verdadera equidad. ✅🎤",
+                feedbackError: "¡Fíjate bien! Aquí no hubo discriminación. Se eligió a los líderes valorando el esfuerzo de cada uno, dándole la misma oportunidad a niñas y niños de expresarse."
+            },
+            {
+                id: 5,
+                emoji: "😢",
+                situacion: "Cuando Tomás se cae en el patio y raspa su rodilla, sus amigos le dicen que se levante y no llore, porque 'los niños valientes no lloran como niñas'.",
+                esEquitativo: false,
+                feedbackCorrecto: "¡Veredicto Correcto! Expresar tristeza o dolor es un derecho humano. Decir que llorar 'es de niñas' es un estereotipo que lastima las emociones de los niños. 🚫❤️‍🩹",
+                feedbackError: "¡Piénsalo! Obligar a un niño a esconder sus sentimientos con la frase 'no llores como niña' fomenta el machismo y le quita su derecho a expresar dolor."
+            }
+        ];
+
+        let casoActualIdx = 0;
+        let porcentajeEquidad = 0;
+        let bloqueandoAccion = false;
+        let callbackContinuar = null;
+
+        // Elementos DOM
+        const pantallaInicio = document.getElementById('pantalla-inicio');
+        const pantallaJuego = document.getElementById('pantalla-juego');
+        const pantallaFinal = document.getElementById('pantalla-final');
+        const contadorProgreso = document.getElementById('contador-progreso');
+        const burbujaPedagogica = document.getElementById('burbuja-pedagogica');
+        
+        // Medidor
+        const barraLlenado = document.getElementById('barra-llenado');
+        const porcentajeTexto = document.getElementById('porcentaje-texto');
+
+        // Tarjeta
+        const tarjetaCaso = document.getElementById('tarjeta-caso');
+        const emojiCaso = document.getElementById('emoji-caso');
+        const textoCaso = document.getElementById('texto-caso');
+
+        // --- INICIALIZACIÓN ---
+
+        function iniciarJuego() {
+            if (pantallaInicio) {
+                pantallaInicio.classList.add('opacity-0');
+                setTimeout(() => {
+                    pantallaInicio.classList.add('hidden');
+                    if (pantallaJuego) pantallaJuego.classList.remove('hidden');
+                    
+                    casoActualIdx = 0;
+                    porcentajeEquidad = 0;
+                    bloqueandoAccion = false;
+                    callbackContinuar = null;
+
+                    actualizarMedidorUI();
+                    actualizarProgreso();
+                    cargarCaso();
+                }, 500);
+            }
+        }
+
+        function reiniciarJuego() {
+            if (pantallaFinal) {
+                pantallaFinal.classList.add('opacity-0');
+                setTimeout(() => window.location.reload(), 300);
+            }
+        }
+
+        function actualizarProgreso() {
+            if (contadorProgreso) {
+                contadorProgreso.innerText = `${casoActualIdx} / ${casos.length} 📋`;
+            }
+        }
+
+        function actualizarMedidorUI() {
+            // Actualizar número
+            porcentajeTexto.innerText = `${porcentajeEquidad}%`;
+            
+            // Actualizar barra (soporta móvil horizontal y PC vertical)
+            if (window.innerWidth >= 1024) {
+                // Desktop: Vertical
+                barraLlenado.style.width = '100%';
+                barraLlenado.style.height = `${porcentajeEquidad}%`;
+            } else {
+                // Mobile: Horizontal
+                barraLlenado.style.height = '100%';
+                barraLlenado.style.width = `${porcentajeEquidad}%`;
+            }
+
+            // Cambiar color térmico según avance
+            if (porcentajeEquidad < 40) {
+                barraLlenado.style.backgroundColor = '#f87171'; // Red
+            } else if (porcentajeEquidad < 80) {
+                barraLlenado.style.backgroundColor = '#fbbf24'; // Yellow/Orange
+            } else {
+                barraLlenado.style.backgroundColor = '#34d399'; // Green
+            }
+        }
+
+        // Detectar resize para reajustar barra de medidor
+        window.addEventListener('resize', actualizarMedidorUI);
+
+        // --- CARGAR NUEVO CASO ---
+
+        function cargarCaso() {
+            if (casoActualIdx >= casos.length) {
+                finalizarJuego();
+                return;
+            }
+
+            bloqueandoAccion = false;
+            ocultarBurbujaPedagogica();
+            actualizarProgreso();
+
+            const c = casos[casoActualIdx];
+            
+            // Animación de entrada de la tarjeta
+            tarjetaCaso.className = "w-full bg-white rounded-[2.5rem] border-4 border-purple-300 shadow-xl p-6 lg:p-10 flex flex-col items-center justify-center text-center tarjeta-in z-20 relative overflow-hidden";
+
+            emojiCaso.innerText = c.emoji;
+            textoCaso.innerText = `"${c.situacion}"`;
+        }
+
+        // --- EVALUAR CASO ---
+
+        function evaluarCaso(esJuicioEquitativo) {
+            if (bloqueandoAccion) return;
+            bloqueandoAccion = true;
+
+            const c = casos[casoActualIdx];
+            const esCorrecto = (esJuicioEquitativo === c.esEquitativo);
+
+            if (esCorrecto) {
+                playSound('success');
+                
+                // Animación de salida exitosa
+                tarjetaCaso.classList.remove('tarjeta-in');
+                if (esJuicioEquitativo) {
+                    tarjetaCaso.classList.add('tarjeta-out-right', 'border-emerald-400', 'bg-emerald-50');
+                } else {
+                    tarjetaCaso.classList.add('tarjeta-out-left', 'border-rose-400', 'bg-rose-50');
+                }
+
+                // Subir energía del medidor
+                playSound('powerup');
+                porcentajeEquidad += 20; // 5 casos = 20% cada uno
+                actualizarMedidorUI();
+
+                // Lluvia de justicia
+                crearParticulas(tarjetaCaso.getBoundingClientRect());
+
+                // Reemplazamos **texto** por negritas
+                let textoExplicativo = c.feedbackCorrecto.replace(/\*\*(.*?)\*\*/g, '<b class="text-indigo-600">$1</b>');
+
+                lanzarBurbujaPedagogica(
+                    true,
+                    "⚖️✨",
+                    "¡Veredicto Correcto!",
+                    textoExplicativo,
+                    "border-green-400 text-green-600",
+                    () => {
+                        casoActualIdx++;
+                        cargarCaso();
+                    }
+                );
+
+            } else {
+                playSound('error');
+                tarjetaCaso.classList.add('shake', 'border-red-400');
+
+                let textoExplicativo = c.feedbackError.replace(/\*\*(.*?)\*\*/g, '<b class="text-rose-600">$1</b>');
+
+                lanzarBurbujaPedagogica(
+                    false,
+                    "🦉💡",
+                    "¡Analicemos mejor!",
+                    textoExplicativo,
+                    "border-orange-400 text-orange-600"
+                );
+
+                setTimeout(() => {
+                    tarjetaCaso.classList.remove('shake', 'border-red-400');
+                }, 600);
+            }
+        }
+
+        // --- BURBUJA DE RETROALIMENTACIÓN ---
+
+        function lanzarBurbujaPedagogica(esExito, icono, titulo, mensaje, clasesColor, callback = null) {
+            if (!burbujaPedagogica) return;
+            const colorBorde = clasesColor.split(' ')[0];
+            const colorTexto = clasesColor.split(' ')[1];
+
+            burbujaPedagogica.className = `fixed bottom-0 left-0 w-full bg-white border-t-[10px] ${colorBorde} shadow-[0_-15px_40px_rgba(0,0,0,0.2)] z-[100] transform translate-y-0 transition-transform duration-500 flex flex-col md:flex-row items-center justify-between p-5 md:px-8 md:py-6 rounded-t-3xl`;
+            
+            const bIcono = document.getElementById('burbuja-icono');
+            const bTitulo = document.getElementById('burbuja-titulo');
+            const bMensaje = document.getElementById('burbuja-mensaje');
+            const btnContainer = document.getElementById('burbuja-boton-container');
+
+            if (bIcono) bIcono.innerText = icono;
+            if (bTitulo) {
+                bTitulo.className = `text-xl md:text-3xl font-black ${colorTexto} mb-1 select-none leading-none`;
+                bTitulo.innerText = titulo;
+            }
+
+            if (bMensaje) {
+                bMensaje.innerHTML = mensaje;
+            }
+
+            if (!btnContainer) return;
+
+            if (esExito) {
+                // Acierto: Botón Continuar
+                callbackContinuar = callback;
+                burbujaPedagogica.style.pointerEvents = 'auto';
+                btnContainer.innerHTML = `
+                    <button onclick="ejecutarContinuar()" class="px-8 py-3.5 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-black text-base md:text-xl rounded-full shadow-[0_4px_0_#4f46e5] active:translate-y-1.5 active:shadow-[0_0px_0_transparent] transition-all animate-bounce select-none w-full md:w-auto mt-3 md:mt-0">
+                        Siguiente Caso ➡️
+                    </button>
+                `;
+            } else {
+                // Error: Botón "¡Entendido!" para desbloquear instantáneamente
+                callbackContinuar = () => {
+                    bloqueandoAccion = false;
+                };
+                burbujaPedagogica.style.pointerEvents = 'auto';
+                btnContainer.innerHTML = `
+                    <button onclick="ejecutarContinuar()" class="px-8 py-3 bg-slate-100 hover:bg-slate-200 border-2 border-orange-200 text-orange-600 font-black text-base rounded-full shadow-sm active:translate-y-1 transition-all select-none w-full md:w-auto mt-3 md:mt-0">
+                        ¡Entendido! 👍
+                    </button>
+                `;
+            }
+        }
+
+        function ocultarBurbujaPedagogica() {
+            if (burbujaPedagogica) {
+                burbujaPedagogica.classList.remove('translate-y-0');
+                burbujaPedagogica.classList.add('translate-y-full');
+            }
+        }
+
+        function ejecutarContinuar() {
+            ocultarBurbujaPedagogica();
+            if (callbackContinuar) {
+                const cb = callbackContinuar;
+                callbackContinuar = null; 
+                cb();
+            }
+        }
+
+        // --- EFECTOS VISUALES Y CELEBRACIÓN ---
+
+        function crearParticulas(rect) {
+            const emojis = ['⚖️', '✨', '💜', '💪', '🌟'];
+            const container = document.body;
+
+            for (let i = 0; i < 15; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                const posX = rect.left + (rect.width / 2) + (Math.random() * 120 - 60);
+                const posY = rect.top + (rect.height / 2) + (Math.random() * 60 - 30);
+                
+                p.style.left = `${posX}px`;
+                p.style.top = `${posY}px`;
+                p.style.fontSize = `${Math.random() * 15 + 20}px`;
+                p.style.animationDelay = `${Math.random() * 0.2}s`;
+                
+                container.appendChild(p);
+                setTimeout(() => p.remove(), 1500);
+            }
+        }
+
+        function finalizarJuego() {
+            if (pantallaJuego) pantallaJuego.classList.add('opacity-0');
+            setTimeout(() => {
+                if (pantallaJuego) pantallaJuego.classList.add('hidden');
+                if (pantallaFinal) {
+                    pantallaFinal.classList.remove('hidden');
+                    setTimeout(() => pantallaFinal.classList.remove('opacity-0'), 50);
+                }
+                
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        const fakeRect = { left: window.innerWidth / 2 - 50, width: 100, top: window.innerHeight / 2 - 100, height: 100 };
+                        crearParticulas(fakeRect);
+                    }, i * 250);
+                }
+            }, 500);
+        }
+
+        // --- CARGA INICIAL ---
+        document.addEventListener('DOMContentLoaded', () => {
+            if (pantallaInicio) {
+                pantallaInicio.classList.remove('hidden');
+                setTimeout(() => {
+                    pantallaInicio.classList.remove('opacity-0');
+                }, 50);
+            }
+        });
+
+    </script>
+</body>
+</html>

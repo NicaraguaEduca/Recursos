@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historia de los Primeros Pobladores - Web App</title>
+    <style>
+        /* Estilos Generales y Reset */
+        :root {
+            --color-principal: #34495e; /* Azul oscuro */
+            --color-secundario: #f39c12; /* Naranja/Ámbar */
+            --color-fondo: #ecf0f1; /* Gris claro */
+            --color-texto: #2c3e50; /* Gris muy oscuro */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--color-fondo);
+            color: var(--color-texto);
+            line-height: 1.6;
+        }
+
+        /* Contenedor Principal */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        /* Encabezado */
+        header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--color-secundario);
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: var(--color-principal);
+            font-size: 2.5em;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            color: var(--color-secundario);
+            font-size: 1.1em;
+            font-style: italic;
+        }
+
+        /* Navegación (Menú de Secciones) */
+        nav {
+            background-color: var(--color-principal);
+            padding: 10px 0;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s, color 0.3s;
+            margin: 0 5px;
+            border-radius: 3px;
+        }
+
+        nav button:hover, nav button.active {
+            background-color: var(--color-secundario);
+            color: var(--color-texto);
+        }
+
+        /* Estilo de Contenido por Sección */
+        .section-content {
+            display: none; /* Ocultar todas las secciones por defecto */
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s;
+        }
+
+        .section-content.active {
+            display: block; /* Mostrar solo la sección activa */
+        }
+
+        /* Títulos de Sección */
+        h2 {
+            color: var(--color-principal);
+            border-left: 5px solid var(--color-secundario);
+            padding-left: 10px;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        h3 {
+            color: var(--color-secundario);
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 1.4em;
+        }
+
+        /* Listas */
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        li {
+            padding-left: 1.5em;
+            text-indent: -1.5em;
+            margin-bottom: 8px;
+        }
+
+        li::before {
+            content: "•";
+            color: var(--color-secundario);
+            font-weight: bold;
+            display: inline-block;
+            width: 1.5em;
+        }
+
+        /* Animación */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+                padding: 15px;
+            }
+            nav button {
+                display: block;
+                width: 100%;
+                margin: 5px 0;
+            }
+            header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>🌍 Primeros Pobladores: Formas de Vida y Organización</h1>
+            <p>Una Mirada Pedagógica al Paleolítico y Neolítico</p>
+        </header>
+
+        <nav id="nav-menu">
+            <button class="nav-btn active" data-target="paleolitico">Paleolítico (Vida Nómada)</button>
+            <button class="nav-btn" data-target="neolitico">Neolítico (Revolución Agrícola)</button>
+            <button class="nav-btn" data-target="herramientas">Herramientas y Tecnología</button>
+            <button class="nav-btn" data-target="arte">Arte Rupestre</button>
+            <button class="nav-btn" data-target="transicion">La Gran Transición</button>
+        </nav>
+
+        <section id="paleolitico" class="section-content active">
+            <h2>🚶‍♂️ El Paleolítico: La Vida de los Primeros Pobladores</h2>
+            <p>La etapa inicial de la humanidad se caracteriza por el **nomadismo** y una **economía de subsistencia**.</p>
+            
+            <h3>Modo de Vida: Nómadas</h3>
+            <ul>
+                <li>**Desplazamiento Constante:** Se movían en busca de recursos, ya que agotaban la comida de cada área.</li>
+                <li>**Economía Depredadora:** Basada en la **caza, pesca y recolección**. No producían alimentos.</li>
+                <li>**Refugios Temporales:** Utilizaban cuevas, abrigos rocosos o campamentos hechos con ramas y pieles.</li>
+            </ul>
+
+            <h3>Organización Social: Horda y Clan</h3>
+            <ul>
+                <li>**La Horda:** Unidad social básica, formada por **pequeños grupos** (menos de 40 personas) con fuertes lazos de parentesco.</li>
+                <li>**Igualdad Social:** Pocas o nulas diferencias de estatus. Recursos y trabajo compartidos.</li>
+                <li>**División del Trabajo (Sexo y Edad):** Hombres generalmente a la **caza mayor**, y mujeres y niños a la **recolección** (la base de la dieta) y el cuidado del grupo.</li>
+            </ul>
+        </section>
+
+        <section id="neolitico" class="section-content">
+            <h2>🌾 El Neolítico: La Primera Gran Revolución</h2>
+            <p>El "Nuevo" Período de la Piedra (hace unos 10,000 años) trae consigo la mayor transformación de la historia humana: la producción de alimentos.</p>
+
+            <h3>El Sedentarismo</h3>
+            <ul>
+                <li>**Origen:** El descubrimiento de la **agricultura** y la **ganadería** permitió producir alimentos cerca del asentamiento.</li>
+                <li>**Asentamientos Fijos:** Se construyen las primeras **aldeas** permanentes, dando paso al **sedentarismo**.</li>
+            </ul>
+
+            <h3>Organización Social más Compleja</h3>
+            <ul>
+                <li>**Aumento Demográfico:** La estabilidad alimentaria permite el crecimiento de la población.</li>
+                <li>**Especialización del Trabajo:** Aparecen artesanos, alfareros y tejedores al haber excedentes de alimentos.</li>
+                <li>**Jerarquización:** Surgen líderes, chamanes y, eventualmente, la **propiedad privada** y los primeros signos de estatus social.</li>
+            </ul>
+        </section>
+
+        <section id="herramientas" class="section-content">
+            <h2>🛠️ Herramientas: La Tecnología de la Supervivencia</h2>
+            <p>La evolución tecnológica define las distintas etapas de los primeros pobladores.</p>
+
+            <h3>Tecnología Lítica</h3>
+            <ul>
+                <li>**Piedra Tallada:** Técnica de percusión para obtener filos (lascas). Característica del Paleolítico.</li>
+                <li>**El Bifaz (Hacha de Mano):** Pieza de piedra tallada por ambas caras, multiuso (cortar, cavar).</li>
+                <li>**Puntas de Proyectil:** Piedras afiladas que se ataban a lanzas para aumentar la eficiencia de la caza.</li>
+            </ul>
+
+            <h3>Materiales Complementarios</h3>
+            <ul>
+                <li>**Hueso y Asta:** Utilizados para fabricar herramientas más finas como **agujas** (para coser pieles y hacer ropa) y **arpones** (para la pesca).</li>
+            </ul>
+        </section>
+
+        <section id="arte" class="section-content">
+            <h2>🎨 Arte Rupestre: Expresión, Magia y Cosmovisión</h2>
+            <p>Las pinturas y grabados en cuevas (como Altamira y Lascaux) son la ventana a la mente de los primeros humanos.</p>
+
+            <h3>Características</h3>
+            <ul>
+                <li>**Temas Dominantes:** Grandes figuras de **animales** (bisontes, mamuts, ciervos) con gran realismo.</li>
+                <li>**Localización:** Interior profundo y oscuro de las cuevas, sugiriendo un carácter **ritual** o de santuario.</li>
+                <li>**Pigmentos:** Utilización de óxidos de hierro (**rojo**), carbón (**negro**) y óxido de manganeso.</li>
+            </ul>
+
+            <h3>Función Principal</h3>
+            <p>Se cree que el arte tenía una **función mágico-religiosa**:</p>
+            <ul>
+                <li>**Magia de Caza:** Creencia de que pintar el animal les otorgaría control mágico sobre él para asegurar una caza exitosa.</li>
+                <li>**Ritos:** Podría estar ligado a ceremonias de iniciación o transmisión de conocimientos.</li>
+            </ul>
+        </section>
+
+        <section id="transicion" class="section-content">
+            <h2>🔄 La Gran Transición: Del Paleolítico al Neolítico</h2>
+            <p>El paso de depredador a productor, el cambio fundamental que sentó las bases de la civilización.</p>
+
+            <h3>Causas del Cambio</h3>
+            <ul>
+                <li>**Cambio Climático:** Final de las glaciaciones, creando climas más templados favorables para cereales silvestres.</li>
+                <li>**Presión Demográfica:** La necesidad de alimentar a una población creciente con el método nómada.</li>
+                <li>**Observación:** La experimentación y conocimiento profundo del entorno llevaron a la domesticación de plantas y animales.</li>
+            </ul>
+
+            <h3>Pasos Clave</h3>
+            <ul>
+                <li>**Domesticación:** Inicio del cultivo de cereales (trigo, cebada) y cría de animales (cabra, oveja).</li>
+                <li>**Sedentarización:** El establecimiento de poblados fijos para cuidar los cultivos y el ganado.</li>
+                <li>**Origen de la Civilización:** El excedente permitió el desarrollo de estructuras sociales complejas.</li>
+            </ul>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const navMenu = document.getElementById('nav-menu');
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const sections = document.querySelectorAll('.section-content');
+
+            /**
+             * Función para manejar la navegación entre secciones
+             */
+            function showSection(targetId) {
+                // 1. Ocultar todas las secciones
+                sections.forEach(section => {
+                    section.classList.remove('active');
+                });
+
+                // 2. Mostrar la sección objetivo
+                const targetSection = document.getElementById(targetId);
+                if (targetSection) {
+                    targetSection.classList.add('active');
+                }
+            }
+
+            /**
+             * Función para manejar los estilos activos de los botones
+             */
+            function setActiveButton(clickedButton) {
+                // Remover 'active' de todos los botones
+                navButtons.forEach(button => {
+                    button.classList.remove('active');
+                });
+                // Agregar 'active' al botón clicado
+                clickedButton.classList.add('active');
+            }
+
+            // Asignar el evento click a cada botón de navegación
+            navButtons.forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const targetId = event.target.getAttribute('data-target');
+                    showSection(targetId);
+                    setActiveButton(event.target);
+                });
+            });
+
+            // Asegurar que la primera sección se muestre al cargar
+            if (sections.length > 0) {
+                showSection('paleolitico');
+            }
+        });
+    </script>
+</body>
+</html>

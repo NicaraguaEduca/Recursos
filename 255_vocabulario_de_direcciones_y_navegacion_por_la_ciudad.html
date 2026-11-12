@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D City Map - Enhanced Visuals</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --accent: #f59e0b;
+            --text-dark: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+        }
+
+        #viewport {
+            flex: 1.8;
+            height: 100%;
+            position: relative;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+        }
+
+        #webgl-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: grab;
+        }
+
+        #webgl-canvas:active {
+            cursor: grabbing;
+        }
+
+        #control-panel {
+            flex: 1;
+            min-width: 380px;
+            max-width: 450px;
+            background-color: var(--panel-bg);
+            box-shadow: -12px 0 30px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            padding: 35px 30px;
+            z-index: 10;
+            border-left: 1px solid #334155;
+        }
+
+        .header-title {
+            font-size: 26px;
+            font-weight: 900;
+            color: #f8fafc;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+        }
+
+        .header-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 25px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card {
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .card-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .card-question {
+            font-size: 16px;
+            font-weight: 700;
+            color: #f8fafc;
+            line-height: 1.5;
+        }
+
+        .instruction-box {
+            background-color: #1e3a8a;
+            border-left: 5px solid var(--primary);
+            border-radius: 6px;
+            padding: 18px;
+            margin-bottom: 25px;
+        }
+
+        .step-tag {
+            font-size: 12px;
+            font-weight: 800;
+            color: #93c5fd;
+            margin-bottom: 6px;
+        }
+
+        .step-text {
+            font-size: 15px;
+            font-weight: 600;
+            color: #ffffff;
+            line-height: 1.4;
+        }
+
+        .progress-tracker {
+            font-size: 13px;
+            font-weight: 700;
+            color: #cbd5e1;
+            margin-top: 10px;
+        }
+
+        .d-pad-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin: 15px 0 25px 0;
+        }
+
+        .d-pad-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .nav-btn {
+            width: 95px;
+            height: 55px;
+            background-color: #334155;
+            border: 2px solid #475569;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
+            font-size: 14px;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background-color: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .nav-btn:disabled {
+            background-color: #1e293b;
+            color: #475569;
+            border-color: #334155;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .feedback {
+            padding: 14px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .feedback.success {
+            display: block;
+            background-color: #064e3b;
+            color: #a7f3d0;
+            border: 1px solid #059669;
+        }
+
+        .feedback.error {
+            display: block;
+            background-color: #7f1d1d;
+            color: #fecaca;
+            border: 1px solid #dc2626;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 18px;
+            background-color: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: auto;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .action-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
+        }
+
+        .map-legend {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            padding: 14px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+            font-weight: 700;
+            color: #f8fafc;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            pointer-events: none;
+            z-index: 5;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="viewport">
+        <div class="map-legend">
+            🧭 Navigation Control<br>
+            <span style="color: #94a3b8; font-size: 11px; font-weight: 600;">Left Click: Rotate | Right Click: Pan | Scroll: Zoom</span>
+        </div>
+        <canvas id="webgl-canvas"></canvas>
+    </div>
+
+    <div id="control-panel">
+        <div class="header-title">City Explorer Pro</div>
+        <div class="header-subtitle">3D Directions Practice</div>
+
+        <div class="card">
+            <div class="card-label">Your Destination</div>
+            <div id="question-text" class="card-question">
+                Click "Start Mission" to receive your navigation challenge.
+            </div>
+        </div>
+
+        <div class="instruction-box">
+            <div id="step-tag" class="step-tag">Awaiting Mission</div>
+            <div id="step-text" class="step-text">Press the button below to begin.</div>
+            <div id="progress-text" class="progress-tracker">Blocks remaining: -</div>
+        </div>
+
+        <div class="d-pad-container">
+            <button id="btn-north" class="nav-btn" disabled>NORTH</button>
+            <div class="d-pad-row">
+                <button id="btn-west" class="nav-btn" disabled>WEST</button>
+                <button id="btn-east" class="nav-btn" disabled>EAST</button>
+            </div>
+            <button id="btn-south" class="nav-btn" disabled>SOUTH</button>
+        </div>
+
+        <div id="feedback-box" class="feedback"></div>
+
+        <button id="action-btn" class="action-btn">Start Mission</button>
+    </div>
+
+    <script>
+        const BLOCK_SIZE = 14; 
+        
+        const nodes = {
+            '1,1': { id: '1,1', x: -BLOCK_SIZE, z: -BLOCK_SIZE, links: { SOUTH: '1,2', EAST: '3,1' } },
+            '3,1': { id: '3,1', x: 0,           z: -BLOCK_SIZE, links: { WEST: '1,1', EAST: '5,1', SOUTH: '3,2' } },
+            '5,1': { id: '5,1', x: BLOCK_SIZE,  z: -BLOCK_SIZE, links: { WEST: '3,1', SOUTH: '5,2' } },
+            
+            '0,2': { id: '0,2', x: -BLOCK_SIZE*1.8, z: 0,       links: { EAST: '1,2' } }, 
+            '1,2': { id: '1,2', x: -BLOCK_SIZE, z: 0,           links: { NORTH: '1,1', SOUTH: '1,3', WEST: '0,2', EAST: '3,2' } },
+            '3,2': { id: '3,2', x: 0,           z: 0,           links: { NORTH: '3,1', SOUTH: '3,3', WEST: '1,2', EAST: '5,2' } }, 
+            '5,2': { id: '5,2', x: BLOCK_SIZE,  z: 0,           links: { NORTH: '5,1', SOUTH: '5,3', WEST: '3,2', EAST: '6,2' } },
+            '6,2': { id: '6,2', x: BLOCK_SIZE*1.8,  z: 0,       links: { WEST: '5,2' } }, 
+
+            '1,3': { id: '1,3', x: -BLOCK_SIZE, z: BLOCK_SIZE,  links: { NORTH: '1,2', EAST: '3,3' } },
+            '3,3': { id: '3,3', x: 0,           z: BLOCK_SIZE,  links: { NORTH: '3,2', WEST: '1,3', EAST: '5,3' } }, 
+            '5,3': { id: '5,3', x: BLOCK_SIZE,  z: BLOCK_SIZE,  links: { NORTH: '5,2', WEST: '3,3' } },
+        };
+
+        const START_NODE = '3,3';
+
+        const missions = [
+            {
+                destination: 'HOSPITAL',
+                question: "Excuse me, how can I get to the Hospital?",
+                steps: [
+                    { dir: 'WEST',  blocks: 1, desc: "Go West on Garden Road for 1 block." },
+                    { dir: 'NORTH', blocks: 1, desc: "Turn North on River Road and walk 1 block." },
+                    { dir: 'WEST',  blocks: 1, desc: "Turn West onto Little Street and go 1 block." }
+                ],
+                targetNode: '0,2'
+            },
+            {
+                destination: 'SHOPPING CENTRE',
+                question: "Could you tell me the way to the Shopping Centre?",
+                steps: [
+                    { dir: 'EAST',  blocks: 1, desc: "Walk East on Garden Road for 1 block." },
+                    { dir: 'NORTH', blocks: 2, desc: "Turn North on Green Street and walk 2 blocks." },
+                    { dir: 'NORTH', blocks: 0, desc: "You have arrived at the Shopping Centre on the corner!" }
+                ],
+                targetNode: '5,1'
+            },
+            {
+                destination: 'BANK',
+                question: "Where is the Bank located from here?",
+                steps: [
+                    { dir: 'NORTH', blocks: 1, desc: "Walk North through the Park Walkway for 1 block." },
+                    { dir: 'WEST',  blocks: 1, desc: "Turn West and walk 1 block." },
+                    { dir: 'NORTH', blocks: 1, desc: "Turn North on River Road and go 1 block." }
+                ],
+                targetNode: '1,1'
+            },
+            {
+                destination: 'MARKET',
+                question: "How do I reach the Market?",
+                steps: [
+                    { dir: 'EAST',  blocks: 1, desc: "Go East on Garden Road for 1 block." },
+                    { dir: 'NORTH', blocks: 1, desc: "Turn North on Green Street and walk 1 block." },
+                    { dir: 'EAST',  blocks: 1, desc: "Turn East onto Market Street and go 1 block." }
+                ],
+                targetNode: '6,2'
+            },
+            {
+                destination: 'CAMERA SHOP',
+                question: "Can you give me directions to the Camera Shop?",
+                steps: [
+                    { dir: 'WEST',  blocks: 1, desc: "Go West on Garden Road for 1 block." },
+                    { dir: 'NORTH', blocks: 2, desc: "Turn North on River Road and walk 2 blocks." },
+                    { dir: 'NORTH', blocks: 0, desc: "The Camera Shop is on the top left corner!" }
+                ],
+                targetNode: '1,1'
+            }
+        ];
+
+        let scene, camera, renderer, controls;
+        let avatarMesh;
+        let currentMission = null;
+        let currentStepIndex = 0;
+        let blocksRemainingForStep = 0;
+        let currentNode = START_NODE;
+        let isAnimMoving = false;
+
+        function init3D() {
+            const container = document.getElementById('viewport');
+            const canvas = document.getElementById('webgl-canvas');
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0f172a);
+
+            const aspect = container.clientWidth / container.clientHeight;
+            const d = 35;
+            camera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, 1, 1000);
+            camera.position.set(45, 55, 50);
+            camera.lookAt(0, 0, 0);
+
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2 - 0.05;
+            controls.minZoom = 0.6;
+            controls.maxZoom = 2.2;
+
+            // Dim ambient light for darker contrast & deeper shadows
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
+            scene.add(ambientLight);
+
+            // Key Light creating sharp, prominent drop shadows
+            const dirLight = new THREE.DirectionalLight(0xfffbeb, 1.1);
+            dirLight.position.set(30, 70, 40);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 4096;
+            dirLight.shadow.mapSize.height = 4096;
+            dirLight.shadow.camera.left = -50;
+            dirLight.shadow.camera.right = 50;
+            dirLight.shadow.camera.top = 50;
+            dirLight.shadow.camera.bottom = -50;
+            dirLight.shadow.bias = -0.0005;
+            dirLight.shadow.radius = 2; // Subtle shadow blur
+            scene.add(dirLight);
+
+            // Secondary subtle fill light for ambient contrast
+            const fillLight = new THREE.DirectionalLight(0x38bdf8, 0.25);
+            fillLight.position.set(-30, 20, -30);
+            scene.add(fillLight);
+
+            buildEnvironment();
+            buildAvatar();
+
+            window.addEventListener('resize', onWindowResize);
+            animate();
+        }
+
+        // Texture generators for dynamic labels and dashed road markings
+        function createTextTexture(text, bgColor, textColor, fontSize = 24) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, 256, 256);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+            ctx.strokeRect(0, 0, 256, 256);
+
+            ctx.fillStyle = textColor;
+            ctx.font = `900 ${fontSize}px Inter, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            const words = text.split('\n');
+            if(words.length === 1) {
+                ctx.fillText(text, 128, 128);
+            } else {
+                ctx.fillText(words[0], 128, 100);
+                ctx.fillText(words[1], 128, 156);
+            }
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        // Helper to generate seamless dashed road texture
+        function createRoadTexture(isVertical = true) {
+            const canvas = document.createElement('canvas');
+            canvas.width = isVertical ? 64 : 512;
+            canvas.height = isVertical ? 512 : 64;
+            const ctx = canvas.getContext('2d');
+
+            // Asphalt dark grey
+            ctx.fillStyle = '#2d3748';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Dashed center line
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([20, 20]);
+            
+            ctx.beginPath();
+            if (isVertical) {
+                ctx.moveTo(32, 0);
+                ctx.lineTo(32, 512);
+            } else {
+                ctx.moveTo(0, 32);
+                ctx.lineTo(512, 32);
+            }
+            ctx.stroke();
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            return texture;
+        }
+
+        function buildEnvironment() {
+            // 1. Vibrant Green Grass Base Floor
+            const baseGeo = new THREE.PlaneGeometry(120, 120);
+            const baseMat = new THREE.MeshStandardMaterial({ 
+                color: 0x2e7d32, // Lush Green Ground
+                roughness: 0.9,
+                metalness: 0.1
+            });
+            const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+            baseMesh.rotation.x = -Math.PI / 2;
+            baseMesh.position.y = -0.1;
+            baseMesh.receiveShadow = true;
+            scene.add(baseMesh);
+
+            // 2. Grey Asphalt Roads with White Center Lines
+            const roadMatV = new THREE.MeshStandardMaterial({ 
+                map: createRoadTexture(true), 
+                roughness: 0.6,
+                metalness: 0.1
+            });
+            const roadMatH = new THREE.MeshStandardMaterial({ 
+                map: createRoadTexture(false), 
+                roughness: 0.6,
+                metalness: 0.1
+            });
+
+            const roadWidth = 6;
+            
+            // Vertical Roads (River Rd, ParkWalk, Green St)
+            const r1 = new THREE.Mesh(new THREE.PlaneGeometry(roadWidth, 80), roadMatV);
+            r1.rotation.x = -Math.PI/2; r1.position.set(-BLOCK_SIZE, 0.01, 0); r1.receiveShadow = true; scene.add(r1);
+            
+            const r2 = new THREE.Mesh(new THREE.PlaneGeometry(roadWidth, 80), roadMatV);
+            r2.rotation.x = -Math.PI/2; r2.position.set(BLOCK_SIZE, 0.01, 0); r2.receiveShadow = true; scene.add(r2);
+            
+            const rWalk = new THREE.Mesh(new THREE.PlaneGeometry(roadWidth, 80), roadMatV); 
+            rWalk.rotation.x = -Math.PI/2; rWalk.position.set(0, 0.01, 0); rWalk.receiveShadow = true; scene.add(rWalk);
+
+            // Horizontal Roads (High St, Little/Market, Garden Rd)
+            const h1 = new THREE.Mesh(new THREE.PlaneGeometry(80, roadWidth), roadMatH);
+            h1.rotation.x = -Math.PI/2; h1.position.set(0, 0.02, -BLOCK_SIZE); h1.receiveShadow = true; scene.add(h1);
+            
+            const h2 = new THREE.Mesh(new THREE.PlaneGeometry(80, roadWidth), roadMatH);
+            h2.rotation.x = -Math.PI/2; h2.position.set(0, 0.02, 0); h2.receiveShadow = true; scene.add(h2);
+            
+            const h3 = new THREE.Mesh(new THREE.PlaneGeometry(80, roadWidth), roadMatH);
+            h3.rotation.x = -Math.PI/2; h3.position.set(0, 0.02, BLOCK_SIZE); h3.receiveShadow = true; scene.add(h3);
+
+            // 3. Central Park Patch (Slightly lighter grass for accent)
+            const parkGeo = new THREE.PlaneGeometry(BLOCK_SIZE - roadWidth, BLOCK_SIZE * 2 - roadWidth);
+            const parkMat = new THREE.MeshStandardMaterial({ color: 0x4caf50, roughness: 0.8 });
+            const park = new THREE.Mesh(parkGeo, parkMat);
+            park.rotation.x = -Math.PI/2;
+            park.position.set(0, 0.03, 0);
+            park.receiveShadow = true;
+            scene.add(park);
+
+            // Park Trees
+            for(let i = 0; i < 7; i++) {
+                const treeGroup = new THREE.Group();
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.4, 2), new THREE.MeshStandardMaterial({color: 0x5d4037, roughness: 0.9}));
+                trunk.position.y = 1;
+                trunk.castShadow = true;
+                
+                const leaves = new THREE.Mesh(new THREE.SphereGeometry(1.5, 8, 8), new THREE.MeshStandardMaterial({color: 0x1b5e20, roughness: 0.6}));
+                leaves.position.y = 2.5;
+                leaves.castShadow = true;
+                
+                treeGroup.add(trunk, leaves);
+                treeGroup.position.set((Math.random()-0.5)*5, 0.03, (Math.random()-0.5)*18);
+                scene.add(treeGroup);
+            }
+
+            // 4. Buildings (Matching exact reference image layout)
+            const bData = [
+                // Top Row
+                { text: 'Camera\nShop', x: -BLOCK_SIZE*1.6, z: -BLOCK_SIZE*1.6, w: 7, d: 7, h: 6, bg: '#fde047', tc: '#1e293b' },
+                { text: 'Clothes\n& Toys', x: 0, z: -BLOCK_SIZE*1.6, w: 10, d: 7, h: 8, bg: '#fcd34d', tc: '#1e293b' },
+                { text: 'Shopping\nCentre', x: BLOCK_SIZE*1.6, z: -BLOCK_SIZE*1.6, w: 9, d: 7, h: 10, bg: '#38bdf8', tc: '#0f172a' },
+                
+                // Middle Row
+                { text: 'HOSPITAL', x: -BLOCK_SIZE*1.8, z: -BLOCK_SIZE*0.5, w: 8, d: 6, h: 12, bg: '#e0f2fe', tc: '#0369a1' },
+                { text: 'BANK', x: -BLOCK_SIZE*0.5, z: -BLOCK_SIZE*0.5, w: 6, d: 6, h: 9, bg: '#fca5a5', tc: '#7f1d1d' },
+                { text: 'CINEMA', x: BLOCK_SIZE*0.5, z: -BLOCK_SIZE*0.5, w: 5, d: 7, h: 11, bg: '#fde047', tc: '#b45309' },
+                { text: 'MARKET', x: BLOCK_SIZE*1.8, z: -BLOCK_SIZE*0.5, w: 8, d: 6, h: 5, bg: '#f472b6', tc: '#831843' },
+                
+                // Lower Middle Row
+                { text: 'THEATRE', x: -BLOCK_SIZE*1.8, z: BLOCK_SIZE*0.5, w: 8, d: 6, h: 8, bg: '#d9f99d', tc: '#3f6212' },
+                { text: 'Post\nOffice', x: -BLOCK_SIZE*0.5, z: BLOCK_SIZE*0.5, w: 6, d: 6, h: 6, bg: '#fef08a', tc: '#854d0e' },
+                
+                // Bottom Row
+                { text: 'Book\nShop', x: -BLOCK_SIZE*1.8, z: BLOCK_SIZE*1.6, w: 7, d: 7, h: 7, bg: '#60a5fa', tc: '#1e3a8a' },
+                { text: 'LIBRARY', x: -BLOCK_SIZE*0.5, z: BLOCK_SIZE*1.6, w: 8, d: 7, h: 9, bg: '#cbd5e1', tc: '#1e293b' },
+                { text: 'SCHOOL', x: BLOCK_SIZE*0.5, z: BLOCK_SIZE*1.6, w: 8, d: 7, h: 10, bg: '#818cf8', tc: '#1e1b4b' },
+                { text: 'Sports\nCentre', x: BLOCK_SIZE*1.8, z: BLOCK_SIZE*1.6, w: 9, d: 7, h: 12, bg: '#a3e635', tc: '#1a2e05' }
+            ];
+
+            bData.forEach(b => {
+                const geo = new THREE.BoxGeometry(b.w, b.h, b.d);
+                const wallMat = new THREE.MeshStandardMaterial({ color: b.bg, roughness: 0.5, metalness: 0.1 });
+                const roofMat = new THREE.MeshStandardMaterial({ 
+                    map: createTextTexture(b.text, b.bg, b.tc),
+                    roughness: 0.3 
+                });
+                const materials = [wallMat, wallMat, roofMat, wallMat, wallMat, wallMat];
+                const mesh = new THREE.Mesh(geo, materials);
+                mesh.position.set(b.x, b.h / 2, b.z);
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                scene.add(mesh);
+            });
+
+            // Start Location Indicator
+            const startNodeData = nodes[START_NODE];
+            const startGeo = new THREE.TorusGeometry(1.8, 0.4, 16, 32);
+            const startMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+            const startMarker = new THREE.Mesh(startGeo, startMat);
+            startMarker.rotation.x = -Math.PI / 2;
+            startMarker.position.set(startNodeData.x, 0.2, startNodeData.z);
+            scene.add(startMarker);
+        }
+
+        function buildAvatar() {
+            const avatarGroup = new THREE.Group();
+            
+            // Body
+            const bodyGeo = new THREE.CylinderGeometry(0.8, 1.2, 3, 16);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6, roughness: 0.2 });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.position.y = 1.5;
+            body.castShadow = true;
+            avatarGroup.add(body);
+
+            // Head
+            const headGeo = new THREE.SphereGeometry(1.0, 16, 16);
+            const headMat = new THREE.MeshStandardMaterial({ color: 0xfcd34d, roughness: 0.3 });
+            const head = new THREE.Mesh(headGeo, headMat);
+            head.position.y = 3.5;
+            head.castShadow = true;
+            avatarGroup.add(head);
+
+            avatarMesh = avatarGroup;
+            
+            const startPos = nodes[START_NODE];
+            avatarMesh.position.set(startPos.x, 0, startPos.z);
+            scene.add(avatarMesh);
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('viewport');
+            const aspect = container.clientWidth / container.clientHeight;
+            const d = 35;
+            camera.left = -d * aspect;
+            camera.right = d * aspect;
+            camera.top = d;
+            camera.bottom = -d;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        const questionText = document.getElementById('question-text');
+        const stepTag = document.getElementById('step-tag');
+        const stepText = document.getElementById('step-text');
+        const progressText = document.getElementById('progress-text');
+        const feedbackBox = document.getElementById('feedback-box');
+        const actionBtn = document.getElementById('action-btn');
+
+        const navBtns = {
+            'NORTH': document.getElementById('btn-north'),
+            'SOUTH': document.getElementById('btn-south'),
+            'EAST':  document.getElementById('btn-east'),
+            'WEST':  document.getElementById('btn-west')
+        };
+
+        function setNavButtonsEnabled(enabled) {
+            Object.values(navBtns).forEach(btn => btn.disabled = !enabled);
+        }
+
+        function showFeedback(msg, isSuccess) {
+            feedbackBox.textContent = msg;
+            feedbackBox.className = `feedback ${isSuccess ? 'success' : 'error'}`;
+        }
+
+        function hideFeedback() {
+            feedbackBox.className = 'feedback';
+        }
+
+        function startMission() {
+            hideFeedback();
+            currentNode = START_NODE;
+            
+            const startPos = nodes[START_NODE];
+            avatarMesh.position.set(startPos.x, 0, startPos.z);
+
+            const randomIndex = Math.floor(Math.random() * missions.length);
+            currentMission = missions[randomIndex];
+            currentStepIndex = 0;
+            blocksRemainingForStep = currentMission.steps[0].blocks;
+
+            questionText.textContent = `"${currentMission.question}"`;
+            actionBtn.textContent = "Restart Mission";
+
+            setNavButtonsEnabled(true);
+            updateStepUI();
+        }
+
+        function updateStepUI() {
+            const step = currentMission.steps[currentStepIndex];
+            stepTag.textContent = `Step ${currentStepIndex + 1} of ${currentMission.steps.length}`;
+            stepText.textContent = step.desc;
+
+            if (step.blocks > 0) {
+                progressText.textContent = `Blocks remaining for this step: ${blocksRemainingForStep}`;
+            } else {
+                progressText.textContent = `Final Check: Confirm your arrival!`;
+            }
+        }
+
+        function movePlayer(direction) {
+            if (isAnimMoving || !currentMission) return;
+
+            const currentStep = currentMission.steps[currentStepIndex];
+
+            if (direction !== currentStep.dir) {
+                showFeedback(`Wrong direction! Instruction says to go ${currentStep.dir}.`, false);
+                return;
+            }
+
+            const nodeData = nodes[currentNode];
+            const nextNodeId = nodeData.links[direction];
+
+            if (!nextNodeId) {
+                showFeedback("You can't go that way! There is no street here.", false);
+                return;
+            }
+
+            const targetData = nodes[nextNodeId];
+            currentNode = nextNodeId;
+            
+            isAnimMoving = true;
+            hideFeedback();
+
+            const startPos = { x: avatarMesh.position.x, z: avatarMesh.position.z };
+            let progress = 0;
+
+            function animateMove() {
+                progress += 0.08;
+                if (progress >= 1) {
+                    avatarMesh.position.x = targetData.x;
+                    avatarMesh.position.z = targetData.z;
+                    isAnimMoving = false;
+
+                    blocksRemainingForStep--;
+                    showFeedback(`Correct! Walked 1 block ${direction}.`, true);
+
+                    if (blocksRemainingForStep <= 0) {
+                        currentStepIndex++;
+                        if (currentStepIndex < currentMission.steps.length) {
+                            blocksRemainingForStep = currentMission.steps[currentStepIndex].blocks;
+                        } else {
+                            if(currentNode === currentMission.targetNode) {
+                                setNavButtonsEnabled(false);
+                                showFeedback("Excellent! You navigated to the exact destination successfully.", true);
+                            } else {
+                                showFeedback("Mission completed, but you seem lost. Restart to try again.", false);
+                            }
+                        }
+                    }
+                    updateStepUI();
+                } else {
+                    avatarMesh.position.x = THREE.MathUtils.lerp(startPos.x, targetData.x, progress);
+                    avatarMesh.position.z = THREE.MathUtils.lerp(startPos.z, targetData.z, progress);
+                    requestAnimationFrame(animateMove);
+                }
+            }
+
+            animateMove();
+        }
+
+        Object.keys(navBtns).forEach(dir => {
+            navBtns[dir].addEventListener('click', () => movePlayer(dir));
+        });
+
+        actionBtn.addEventListener('click', startMission);
+
+        window.addEventListener('load', init3D);
+    </script>
+</body>
+</html>

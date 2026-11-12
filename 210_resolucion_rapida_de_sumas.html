@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>🏁 Carrera de Sumas Rápidas | 1º/2º Grado</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #87CEEB 0%, #4A90D9 100%);
+            font-family: 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', 'Patrick Hand', 'Segoe UI Emoji', cursive, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+        }
+
+        .app-container {
+            max-width: 1100px;
+            width: 100%;
+            background: #fef9e8;
+            border-radius: 70px;
+            box-shadow: 0 30px 40px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .screen {
+            display: none;
+            padding: 2rem;
+            animation: fadeSlide 0.4s ease;
+        }
+        .screen.active { display: block; }
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* INTRO */
+        .intro-screen {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            text-align: center;
+        }
+        .title-badge {
+            background: #e63946;
+            display: inline-block;
+            padding: 8px 28px;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 5px 0 #b91c2c;
+        }
+        h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 15px 0;
+        }
+        .grade {
+            background: #2d4059;
+            display: inline-block;
+            padding: 5px 25px;
+            border-radius: 40px;
+            color: white;
+            font-size: 1.2rem;
+        }
+        .objective-card {
+            background: rgba(255,250,225,0.92);
+            border-radius: 50px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-left: 12px solid #f39c12;
+            text-align: center;
+        }
+        .btn-start {
+            background: linear-gradient(90deg, #f39c12, #e67e22);
+            color: white;
+            font-size: 1.6rem;
+            font-weight: bold;
+            padding: 12px 35px;
+            border: none;
+            border-radius: 80px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #b45f1b;
+            transition: 0.07s linear;
+            margin: 15px 0;
+        }
+        .btn-start:active { transform: translateY(4px); box-shadow: 0 4px 0 #b45f1b; }
+
+        /* JUEGO */
+        .game-screen {
+            background: #e8f5e9;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: #ffd966;
+            border-radius: 60px;
+            padding: 10px 20px;
+            margin-bottom: 1.5rem;
+        }
+        .stats {
+            background: white;
+            border-radius: 50px;
+            padding: 5px 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .message-area {
+            background: #2d4059;
+            color: white;
+            border-radius: 50px;
+            padding: 8px 20px;
+            font-weight: bold;
+        }
+
+        /* Pista de carreras */
+        .track-container {
+            background: #a5d6a7;
+            border-radius: 50px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: inset 0 0 0 4px #fff9e8, 0 8px 20px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .track {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .lane {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #c8e6c9;
+            border-radius: 40px;
+            padding: 6px 12px;
+            min-height: 60px;
+            position: relative;
+        }
+        .lane-label {
+            font-size: 1.5rem;
+            width: 50px;
+            text-align: center;
+        }
+        .lane-track {
+            flex: 1;
+            height: 40px;
+            background: #a5d6a7;
+            border-radius: 40px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #6f9e6f;
+        }
+        .lane-progress {
+            height: 100%;
+            width: 0%;
+            background: #ffd966;
+            border-radius: 40px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 6px;
+            font-size: 1.2rem;
+        }
+        .animal-icon {
+            font-size: 2.2rem;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: calc(0% + 5px);
+            transition: left 0.5s ease;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.2));
+        }
+        .animal-icon.bot {
+            opacity: 0.7;
+        }
+        .meta-flag {
+            position: absolute;
+            right: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.8rem;
+        }
+
+        /* Zona de suma */
+        .sum-container {
+            background: #fff3e0;
+            border-radius: 60px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        }
+        .sum-display {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #2d4059;
+            margin-bottom: 1rem;
+        }
+        .options {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .option-btn {
+            background: white;
+            border: 3px solid #ffcd94;
+            border-radius: 60px;
+            padding: 12px 30px;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.07s linear;
+            box-shadow: 0 6px 0 #b97f48;
+            min-width: 100px;
+            color: #2d4059;
+        }
+        .option-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 3px 0 #b97f48;
+        }
+        .option-btn:hover {
+            background: #fff9e8;
+        }
+        .option-btn.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* Feedback */
+        .feedback-panel {
+            background: #fff0cf;
+            border-radius: 50px;
+            padding: 12px 20px;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* Botones de acción */
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        .btn-action {
+            background: #2a9d8f;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #1e6b61;
+            transition: 0.07s linear;
+        }
+        .btn-action:active { transform: translateY(3px); box-shadow: 0 2px 0 #1e6b61; }
+        .btn-action.reset { background: #e76f51; box-shadow: 0 5px 0 #b3543a; }
+
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            margin-top: 1.2rem;
+            color: #b87a4a;
+        }
+
+        /* Animaciones */
+        @keyframes bounceAnimal {
+            0% { transform: translateY(-50%) scale(1); }
+            30% { transform: translateY(-70%) scale(1.2); }
+            60% { transform: translateY(-50%) scale(0.9); }
+            100% { transform: translateY(-50%) scale(1); }
+        }
+        .animal-bounce {
+            animation: bounceAnimal 0.4s ease;
+        }
+
+        @keyframes confettiDrop {
+            0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(80vh) rotate(720deg); opacity: 0; }
+        }
+        .confetti {
+            position: fixed;
+            font-size: 2rem;
+            pointer-events: none;
+            z-index: 1000;
+            animation: confettiDrop 1.5s ease-out forwards;
+        }
+
+        @media (max-width: 650px) {
+            .sum-display { font-size: 2.5rem; }
+            .option-btn { font-size: 1.5rem; padding: 8px 20px; min-width: 70px; }
+            .animal-icon { font-size: 1.8rem; }
+            .lane-label { font-size: 1.2rem; width: 40px; }
+            .header { flex-direction: column; align-items: stretch; text-align: center; }
+            .stats { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <!-- INTRO -->
+    <div id="introScreen" class="screen intro-screen active">
+        <div class="title-badge">🏁 Matemáticas - Cálculo Mental 🏁</div>
+        <h1>🏎️ Carrera de Sumas Rápidas 🏎️</h1>
+        <div class="grade">📖 1º / 2º Grado</div>
+        <div class="objective-card">
+            <p>🎯 <strong>¡Acelera tu mente!</strong><br>
+            Resuelve sumas rápidamente para que tu animalito avance.<br>
+            🐶 El primero en llegar a la meta gana. ¡Pon a prueba tu cálculo mental!</p>
+        </div>
+        <button class="btn-start" id="startGameBtn">🏁 ¡A correr! 🏁</button>
+        <footer>✨ Resuelve sumas y ayuda a tu corredor a ganar ✨</footer>
+    </div>
+
+    <!-- JUEGO -->
+    <div id="gameScreen" class="screen game-screen">
+        <div class="header">
+            <div class="stats">
+                <span>🏆 Aciertos: <span id="scoreCount">0</span></span>
+                <span>❌ Errores: <span id="errorCount">0</span></span>
+                <span>🏁 Meta: <span id="progressDisplay">0</span>/10</span>
+            </div>
+            <div class="message-area" id="mainMessage">🏁 ¡Resuelve la suma para avanzar!</div>
+        </div>
+
+        <!-- Pista de carreras -->
+        <div class="track-container">
+            <div class="track" id="trackContainer">
+                <!-- Las líneas se generan dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Suma y opciones -->
+        <div class="sum-container">
+            <div class="sum-display" id="sumDisplay">3 + 4 = ?</div>
+            <div class="options" id="optionsContainer"></div>
+        </div>
+
+        <div id="feedbackPanel" class="feedback-panel">💡 Elige la respuesta correcta para avanzar.</div>
+
+        <div class="action-buttons">
+            <button class="btn-action reset" id="resetGameBtn">🔄 Reiniciar carrera</button>
+        </div>
+        <footer>🏁 Gana el que llegue primero a la meta. ¡Concentración y velocidad mental!</footer>
+    </div>
+</div>
+
+<script>
+    // --- CONFIGURACIÓN ---
+    const META_POSICION = 10; // casillas para llegar a la meta
+    const NUM_BOTS = 3;       // 3 competidores (bots)
+
+    // Nombres y emojis de los corredores
+    const CORREDORES = [
+        { nombre: "Tú", emoji: "🐶", esJugador: true },
+        { nombre: "Gato", emoji: "🐱", esJugador: false },
+        { nombre: "Conejo", emoji: "🐰", esJugador: false },
+        { nombre: "Panda", emoji: "🐼", esJugador: false }
+    ];
+
+    // Estado del juego
+    let gameState = {
+        corredores: [],          // array de objetos { emoji, progreso, esJugador, nombre }
+        jugadorIndex: 0,
+        turno: 0,
+        juegoTerminado: false,
+        puntaje: 0,
+        errores: 0,
+        sumaActual: null,        // { num1, num2, respuestaCorrecta }
+        opciones: [],
+        esperandoRespuesta: false,
+        ronda: 0
+    };
+
+    // Elementos DOM
+    const introDiv = document.getElementById('introScreen');
+    const gameDiv = document.getElementById('gameScreen');
+    const startBtn = document.getElementById('startGameBtn');
+    const resetBtn = document.getElementById('resetGameBtn');
+    const trackContainer = document.getElementById('trackContainer');
+    const sumDisplay = document.getElementById('sumDisplay');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const feedbackPanel = document.getElementById('feedbackPanel');
+    const mainMessage = document.getElementById('mainMessage');
+    const scoreSpan = document.getElementById('scoreCount');
+    const errorSpan = document.getElementById('errorCount');
+    const progressSpan = document.getElementById('progressDisplay');
+
+    // Audio
+    let audioCtx = null;
+    let soundEnabled = false;
+
+    function initAudio() {
+        if (audioCtx) return;
+        try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+    }
+
+    function playSound(type) {
+        if (!audioCtx || !soundEnabled) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        if (type === 'correct') {
+            osc.frequency.value = 880;
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+            osc.start();
+            osc.stop(now + 0.2);
+            setTimeout(() => {
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.connect(gain2);
+                gain2.connect(audioCtx.destination);
+                osc2.frequency.value = 1108.73;
+                gain2.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain2.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.15);
+                osc2.start();
+                osc2.stop(audioCtx.currentTime + 0.15);
+            }, 100);
+        } else if (type === 'wrong') {
+            osc.frequency.value = 440;
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+            osc.start();
+            osc.stop(now + 0.3);
+        } else if (type === 'win') {
+            [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+                const oscN = audioCtx.createOscillator();
+                const gainN = audioCtx.createGain();
+                oscN.connect(gainN);
+                gainN.connect(audioCtx.destination);
+                oscN.frequency.value = f;
+                gainN.gain.setValueAtTime(0.25, now + i * 0.12);
+                gainN.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.12 + 0.3);
+                oscN.start(now + i * 0.12);
+                oscN.stop(now + i * 0.12 + 0.3);
+            });
+        } else if (type === 'move') {
+            osc.frequency.value = 659.25;
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+            osc.start();
+            osc.stop(now + 0.15);
+        }
+    }
+
+    function enableSound() {
+        if (!audioCtx) initAudio();
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        soundEnabled = true;
+        playSound('move');
+    }
+
+    // --- FUNCIONES DEL JUEGO ---
+
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    // Inicializar o reiniciar el juego
+    function initGame() {
+        gameState.corredores = CORREDORES.map((c, idx) => ({
+            nombre: c.nombre,
+            emoji: c.emoji,
+            esJugador: c.esJugador,
+            progreso: 0,
+            index: idx
+        }));
+        gameState.jugadorIndex = gameState.corredores.findIndex(c => c.esJugador);
+        gameState.juegoTerminado = false;
+        gameState.puntaje = 0;
+        gameState.errores = 0;
+        gameState.ronda = 0;
+        gameState.turno = 0;
+        gameState.esperandoRespuesta = false;
+        scoreSpan.innerText = '0';
+        errorSpan.innerText = '0';
+        progressSpan.innerText = '0';
+        feedbackPanel.innerHTML = '🏁 ¡La carrera comienza! Resuelve sumas para avanzar.';
+        mainMessage.innerHTML = '🏁 ¡Resuelve la suma para avanzar!';
+        renderTrack();
+        generarNuevaSuma();
+    }
+
+    // Renderizar la pista
+    function renderTrack() {
+        trackContainer.innerHTML = '';
+        gameState.corredores.forEach((corredor, idx) => {
+            const laneDiv = document.createElement('div');
+            laneDiv.className = 'lane';
+            const label = document.createElement('div');
+            label.className = 'lane-label';
+            label.textContent = corredor.emoji;
+            laneDiv.appendChild(label);
+
+            const trackDiv = document.createElement('div');
+            trackDiv.className = 'lane-track';
+            trackDiv.id = `track-${idx}`;
+
+            // Barra de progreso
+            const progressBar = document.createElement('div');
+            progressBar.className = 'lane-progress';
+            progressBar.id = `progress-${idx}`;
+            const pct = Math.min((corredor.progreso / META_POSICION) * 100, 100);
+            progressBar.style.width = pct + '%';
+            if (corredor.progreso > 0) {
+                progressBar.textContent = corredor.progreso;
+            }
+
+            // Animal icon (posición absoluta)
+            const animalSpan = document.createElement('span');
+            animalSpan.className = 'animal-icon' + (corredor.esJugador ? '' : ' bot');
+            animalSpan.id = `animal-${idx}`;
+            animalSpan.textContent = corredor.emoji;
+            const leftPos = Math.min((corredor.progreso / META_POSICION) * 100, 100) - 2;
+            animalSpan.style.left = `calc(${leftPos}% + 5px)`;
+
+            // Bandera de meta
+            const flag = document.createElement('span');
+            flag.className = 'meta-flag';
+            flag.textContent = '🏁';
+
+            trackDiv.appendChild(progressBar);
+            trackDiv.appendChild(animalSpan);
+            trackDiv.appendChild(flag);
+            laneDiv.appendChild(trackDiv);
+            trackContainer.appendChild(laneDiv);
+        });
+    }
+
+    // Actualizar la pista (después de movimientos)
+    function updateTrack() {
+        gameState.corredores.forEach((corredor, idx) => {
+            const progressBar = document.getElementById(`progress-${idx}`);
+            if (progressBar) {
+                const pct = Math.min((corredor.progreso / META_POSICION) * 100, 100);
+                progressBar.style.width = pct + '%';
+                if (corredor.progreso > 0) {
+                    progressBar.textContent = corredor.progreso;
+                } else {
+                    progressBar.textContent = '';
+                }
+            }
+            const animal = document.getElementById(`animal-${idx}`);
+            if (animal) {
+                const leftPos = Math.min((corredor.progreso / META_POSICION) * 100, 100) - 2;
+                animal.style.left = `calc(${leftPos}% + 5px)`;
+                // Efecto de salto si es el jugador y acaba de avanzar
+                if (corredor.esJugador && gameState.ultimoMovimientoJugador) {
+                    animal.classList.remove('animal-bounce');
+                    void animal.offsetWidth;
+                    animal.classList.add('animal-bounce');
+                    gameState.ultimoMovimientoJugador = false;
+                }
+            }
+        });
+        // Actualizar progreso del jugador en el header
+        const jugador = gameState.corredores[gameState.jugadorIndex];
+        progressSpan.innerText = jugador.progreso;
+        scoreSpan.innerText = gameState.puntaje;
+        errorSpan.innerText = gameState.errores;
+    }
+
+    // Generar una nueva suma con opciones
+    function generarNuevaSuma() {
+        if (gameState.juegoTerminado) return;
+
+        const num1 = Math.floor(Math.random() * 9) + 1;
+        const num2 = Math.floor(Math.random() * 9) + 1;
+        const respuestaCorrecta = num1 + num2;
+
+        // Generar opciones (3 opciones, incluyendo la correcta)
+        let opciones = new Set();
+        opciones.add(respuestaCorrecta);
+        while (opciones.size < 3) {
+            let offset = Math.floor(Math.random() * 7) - 3; // -3 a +3
+            let valor = respuestaCorrecta + offset;
+            if (valor >= 1 && valor <= 20) {
+                opciones.add(valor);
+            }
+        }
+        let opcionesArray = shuffleArray([...opciones]);
+
+        gameState.sumaActual = { num1, num2, respuestaCorrecta };
+        gameState.opciones = opcionesArray;
+        gameState.esperandoRespuesta = true;
+
+        // Mostrar en pantalla
+        sumDisplay.textContent = `${num1} + ${num2} = ?`;
+        optionsContainer.innerHTML = '';
+        opcionesArray.forEach(val => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = val;
+            btn.addEventListener('click', () => responderSuma(val));
+            optionsContainer.appendChild(btn);
+        });
+
+        // Habilitar opciones
+        document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('disabled'));
+        feedbackPanel.innerHTML = '🤔 ¿Cuál es la respuesta correcta?';
+    }
+
+    // Responder a la suma
+    function responderSuma(respuesta) {
+        if (!gameState.esperandoRespuesta || gameState.juegoTerminado) return;
+        gameState.esperandoRespuesta = false;
+        const correcta = gameState.sumaActual.respuestaCorrecta;
+
+        // Deshabilitar botones temporalmente
+        document.querySelectorAll('.option-btn').forEach(b => b.classList.add('disabled'));
+
+        if (respuesta === correcta) {
+            // Acierto
+            gameState.puntaje++;
+            gameState.ultimoMovimientoJugador = true;
+            // Avanzar al jugador
+            const jugador = gameState.corredores[gameState.jugadorIndex];
+            if (jugador.progreso < META_POSICION) {
+                jugador.progreso++;
+                if (soundEnabled) playSound('correct');
+                feedbackPanel.innerHTML = `✅ ¡Correcto! ${jugador.emoji} avanza una casilla. 🎉`;
+            }
+            updateTrack();
+            // Verificar si el jugador ganó
+            if (jugador.progreso >= META_POSICION) {
+                terminarJuego(true);
+                return;
+            }
+        } else {
+            // Error
+            gameState.errores++;
+            if (soundEnabled) playSound('wrong');
+            feedbackPanel.innerHTML = `❌ ¡Ups! La respuesta era ${correcta}. Sigue intentando.`;
+            // No avanza, pero se muestra el error
+            updateTrack();
+        }
+
+        // Turno de los bots (solo si el juego no ha terminado)
+        setTimeout(() => {
+            if (!gameState.juegoTerminado) {
+                moverBots();
+                // Verificar si algún bot ganó
+                const ganadorBot = gameState.corredores.find(c => !c.esJugador && c.progreso >= META_POSICION);
+                if (ganadorBot) {
+                    terminarJuego(false, ganadorBot);
+                    return;
+                }
+                // Generar nueva suma después de un breve retraso
+                setTimeout(() => {
+                    if (!gameState.juegoTerminado) {
+                        generarNuevaSuma();
+                        // Habilitar botones
+                        document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('disabled'));
+                    }
+                }, 600);
+            }
+        }, 600);
+    }
+
+    // Movimiento de los bots (con cierta probabilidad de avanzar)
+    function moverBots() {
+        gameState.corredores.forEach((corredor, idx) => {
+            if (corredor.esJugador) return;
+            if (corredor.progreso >= META_POSICION) return;
+            // Probabilidad de avanzar: 70% para hacerlo más interesante
+            if (Math.random() < 0.7) {
+                corredor.progreso = Math.min(corredor.progreso + 1, META_POSICION);
+                if (soundEnabled) playSound('move');
+            }
+        });
+        updateTrack();
+    }
+
+    // Terminar el juego
+    function terminarJuego(ganoJugador, ganadorBot = null) {
+        if (gameState.juegoTerminado) return;
+        gameState.juegoTerminado = true;
+        gameState.esperandoRespuesta = false;
+
+        // Deshabilitar opciones
+        document.querySelectorAll('.option-btn').forEach(b => b.classList.add('disabled'));
+
+        let mensaje = '';
+        if (ganoJugador) {
+            mensaje = '🎉🏆 ¡FELICIDADES! Has ganado la carrera. ¡Eres el campeón de las sumas! 🏆🎉';
+            if (soundEnabled) playSound('win');
+            lanzarConfeti();
+        } else {
+            const nombreBot = ganadorBot ? ganadorBot.nombre : 'un competidor';
+            mensaje = `😅 ¡El ${nombreBot} llegó primero! Sigue practicando, ¡la próxima será tuya! 💪`;
+            if (soundEnabled) playSound('wrong');
+        }
+        feedbackPanel.innerHTML = mensaje;
+        mainMessage.innerHTML = '🏁 ¡Carrera terminada! Presiona "Reiniciar" para jugar de nuevo.';
+        // Mostrar podio de posiciones
+        mostrarPodio();
+    }
+
+    // Mostrar podio con las posiciones finales
+    function mostrarPodio() {
+        const sorted = [...gameState.corredores].sort((a, b) => b.progreso - a.progreso);
+        let podioHTML = '🏆 Clasificación final: ';
+        sorted.forEach((c, idx) => {
+            const medalla = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '🏅';
+            podioHTML += `${medalla} ${c.emoji} (${c.progreso}) `;
+        });
+        feedbackPanel.innerHTML += `<br><span style="font-size:0.9rem;">${podioHTML}</span>`;
+    }
+
+    // Lanzar confeti
+    function lanzarConfeti() {
+        const emojis = ['🎉','🌟','⭐','🎊','✨','💫','🏆','🥇','🎈'];
+        for (let i = 0; i < 60; i++) {
+            setTimeout(() => {
+                const conf = document.createElement('div');
+                conf.className = 'confetti';
+                conf.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                conf.style.left = Math.random() * 100 + '%';
+                conf.style.top = '-10%';
+                conf.style.fontSize = (Math.random() * 28 + 20) + 'px';
+                conf.style.animationDuration = (Math.random() * 1 + 1.2) + 's';
+                document.body.appendChild(conf);
+                setTimeout(() => conf.remove(), 2500);
+            }, i * 40);
+        }
+    }
+
+    // Reiniciar juego
+    function resetGame() {
+        initGame();
+        if (soundEnabled) playSound('move');
+    }
+
+    // Iniciar desde intro
+    function startGame() {
+        enableSound();
+        introDiv.classList.remove('active');
+        gameDiv.classList.add('active');
+        initGame();
+    }
+
+    // Eventos
+    startBtn.addEventListener('click', startGame);
+    resetBtn.addEventListener('click', resetGame);
+
+    initAudio();
+    document.body.addEventListener('click', function firstEnable() {
+        if (!soundEnabled) enableSound();
+    }, { once: true });
+</script>
+</body>
+</html>

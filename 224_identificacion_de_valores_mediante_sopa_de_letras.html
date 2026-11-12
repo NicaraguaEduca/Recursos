@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover" />
+    <title>🌟 Sopa de Letras: Creciendo en Valores</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'Segoe UI', Roboto, 'Comic Sans MS', sans-serif;
+            background: linear-gradient(135deg, #4a148c 0%, #311b92 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.5rem;
+        }
+
+        .app-container {
+            max-width: 950px;
+            width: 100%;
+            background: #6a1b9a;
+            border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), inset 0 0 0 8px #ffd54f;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 8px solid #280659;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            padding: 1.5rem;
+            flex-direction: column;
+            align-items: center;
+        }
+        .screen.active {
+            display: flex;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* ===== INTRO ===== */
+        .intro-screen {
+            text-align: center;
+            background: radial-gradient(circle, #7b1fa2 0%, #4a148c 100%);
+            color: white;
+        }
+        .mascot {
+            font-size: 6rem;
+            margin-bottom: 0.5rem;
+            animation: float 2.5s infinite ease-in-out;
+            filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.4));
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+        h1 {
+            font-size: 3rem;
+            color: #ffd54f;
+            margin-bottom: 0.8rem;
+            text-shadow: 3px 3px 0px #280659;
+        }
+        .instruction-box {
+            background: rgba(255, 255, 255, 0.12);
+            border: 3px dashed #ffd54f;
+            padding: 1.5rem;
+            border-radius: 20px;
+            font-size: 1.25rem;
+            color: #ffffff;
+            margin-bottom: 1.8rem;
+            text-align: center;
+            line-height: 1.6;
+            max-width: 700px;
+        }
+        .highlight { color: #ffd54f; font-weight: bold; }
+
+        .btn-start {
+            background: #ffd54f;
+            color: #4a148c;
+            font-size: 1.8rem;
+            font-weight: bold;
+            padding: 15px 45px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #ff8f00;
+            transition: all 0.1s;
+            text-transform: uppercase;
+        }
+        .btn-start:active {
+            transform: translateY(8px);
+            box-shadow: 0 0 0 #ff8f00;
+        }
+
+        /* ===== JUEGO ===== */
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #280659;
+            padding: 12px 20px;
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 1rem;
+            border: 3px solid #ffd54f;
+        }
+        .status-text {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #ffd54f;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .main-area {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        /* Lista de Palabras */
+        .words-panel {
+            flex: 1;
+            max-width: 250px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 3px solid #ab47bc;
+            border-radius: 20px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .words-panel-title {
+            color: #ffd54f;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
+            text-transform: uppercase;
+            border-bottom: 2px dashed #ab47bc;
+            padding-bottom: 5px;
+        }
+        .word-card {
+            background: #4a148c;
+            color: white;
+            border: 2px solid #ffd54f;
+            padding: 10px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.05rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s;
+        }
+        .word-card:hover { background: #6a1b9a; }
+        .word-card.found {
+            background: #2e7d32;
+            border-color: #81c784;
+            text-decoration: line-through;
+            opacity: 0.9;
+        }
+
+        /* Rejilla Sopa de Letras */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            gap: 4px;
+            background: #280659;
+            padding: 12px;
+            border-radius: 20px;
+            border: 4px solid #ffd54f;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            max-width: 460px;
+            width: 100%;
+        }
+        .grid-cell {
+            aspect-ratio: 1;
+            background: #4a148c;
+            color: #ffffff;
+            font-size: 1.3rem;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+            box-shadow: inset 0 -3px 0 rgba(0,0,0,0.3);
+        }
+        .grid-cell:hover { background: #7b1fa2; }
+        .grid-cell.selected {
+            background: #ff9800 !important;
+            color: #fff !important;
+            transform: scale(1.1);
+            z-index: 2;
+        }
+        .grid-cell.found-cell {
+            background: #2e7d32 !important;
+            color: #ffd54f !important;
+        }
+
+        /* Botones de Modos */
+        .mode-buttons {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .mode-btn {
+            background: #311b92;
+            border: 3px solid #b388ff;
+            padding: 10px 25px;
+            font-size: 1.15rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            color: #f3e5f5;
+            transition: all 0.2s;
+        }
+        .mode-btn.active {
+            background: #ffd54f;
+            color: #4a148c;
+            border-color: #ffffff;
+            box-shadow: 0 5px 0 #ff8f00;
+        }
+
+        /* ====== MODAL INVASIVO ====== */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active {
+            display: flex;
+            animation: popInModal 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popInModal {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 2.2rem;
+            border-radius: 25px;
+            text-align: center;
+            max-width: 90%;
+            width: 530px;
+            border: 7px solid #333;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        }
+        .modal-content.info { border-color: #ab47bc; }
+        .modal-content.success { border-color: #2e7d32; }
+        .modal-content.error { border-color: #e53935; }
+
+        .modal-title { font-size: 2.2rem; margin-bottom: 1rem; text-transform: uppercase; }
+        .info .modal-title { color: #6a1b9a; }
+        .success .modal-title { color: #2e7d32; }
+        .error .modal-title { color: #c62828; }
+
+        .modal-text {
+            font-size: 1.35rem;
+            margin-bottom: 1.8rem;
+            line-height: 1.5;
+            color: #212121;
+            white-space: pre-line;
+        }
+
+        .modal-close {
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            font-size: 1.3rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.1s;
+        }
+        .modal-close:active { transform: translateY(5px); box-shadow: none !important; }
+        .info .modal-close { background: #ab47bc; box-shadow: 0 5px 0 #6a1b9a; }
+        .success .modal-close { background: #2e7d32; box-shadow: 0 5px 0 #1b5e20; }
+        .error .modal-close { background: #e53935; box-shadow: 0 5px 0 #b71c1c; }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; }
+            .mascot { font-size: 4.5rem; }
+            .main-area { flex-direction: column-reverse; align-items: center; }
+            .words-panel { max-width: 100%; width: 100%; flex-direction: row; flex-wrap: wrap; justify-content: center; }
+            .word-card { flex: 1 1 130px; justify-content: center; gap: 6px; }
+            .grid-cell { font-size: 1.05rem; }
+            .modal-content { padding: 1.5rem; }
+            .modal-title { font-size: 1.7rem; }
+            .modal-text { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- ===== MODAL INVASIVO ===== -->
+        <div id="feedbackModal" class="modal-overlay">
+            <div id="modalBox" class="modal-content">
+                <h2 id="modalTitle" class="modal-title">Título</h2>
+                <p id="modalText" class="modal-text">Texto de explicación</p>
+                <button id="modalBtn" class="modal-close">¡Entendido!</button>
+            </div>
+        </div>
+
+        <!-- ===== INTRO ===== -->
+        <div id="introScreen" class="screen intro-screen active">
+            <div class="mascot">🌟🤝💛</div>
+            <h1>Sopa de Valores</h1>
+            <div class="instruction-box">
+                ¡Bienvenido al Mural de la Buena Convivencia!<br><br>
+                Encuentra en la sopa de letras los valores fundamentales:<br>
+                🌟 <span class="highlight">Honestidad</span> (Decir siempre la verdad)<br>
+                🤝 <span class="highlight">Solidaridad</span> (Ayudar a los demás)<br>
+                💛 <span class="highlight">Amistad</span> (Compartir con cariño)<br>
+                🕊️ <span class="highlight">Respeto</span> y ❤️ <span class="highlight">Amor</span>
+            </div>
+            <button class="btn-start" id="startBtn">▶ ¡Iniciar Búsqueda!</button>
+        </div>
+
+        <!-- ===== JUEGO ===== -->
+        <div id="gameScreen" class="screen">
+            <div class="header">
+                <div class="status-text" id="statusText">👨‍🏫 Haz clic en un valor para aprender su significado</div>
+            </div>
+
+            <div class="main-area">
+                
+                <!-- Panel de Palabras -->
+                <div class="words-panel">
+                    <div class="words-panel-title">Valores a Buscar</div>
+                    <div class="word-card" id="card-HONESTIDAD" data-word="HONESTIDAD">
+                        <span>🌟 HONESTIDAD</span>
+                    </div>
+                    <div class="word-card" id="card-SOLIDARIDAD" data-word="SOLIDARIDAD">
+                        <span>🤝 SOLIDARIDAD</span>
+                    </div>
+                    <div class="word-card" id="card-AMISTAD" data-word="AMISTAD">
+                        <span>💛 AMISTAD</span>
+                    </div>
+                    <div class="word-card" id="card-RESPETO" data-word="RESPETO">
+                        <span>🕊️ RESPETO</span>
+                    </div>
+                    <div class="word-card" id="card-AMOR" data-word="AMOR">
+                        <span>❤️ AMOR</span>
+                    </div>
+                </div>
+
+                <!-- Rejilla de Sopa de Letras -->
+                <div class="grid-container" id="gridContainer"></div>
+
+            </div>
+
+            <!-- Botones de Modo -->
+            <div class="mode-buttons">
+                <button class="mode-btn active" id="btnTeach">👨‍🏫 Aprender Valores</button>
+                <button class="mode-btn" id="btnPractice">🔍 Buscar en la Sopa</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==== DATOS DE VALORES ====
+        const valuesData = {
+            'HONESTIDAD': {
+                start: [4, 0], end: [4, 9],
+                title: '🌟 HONESTIDAD',
+                text: '**¡Decir y vivir siempre con la verdad!**\n\nLa honestidad es actuar con sinceridad, decir la verdad sin miedo, no engañar y devolver las cosas que no son nuestras.'
+            },
+            'SOLIDARIDAD': {
+                start: [1, 0], end: [1, 10],
+                title: '🤝 SOLIDARIDAD',
+                text: '**¡Ayudar con alegría a quien lo necesita!**\n\nLa solidaridad es compartir lo que tenemos, brindar una mano amiga a nuestros compañeros y trabajar juntos en equipo.'
+            },
+            'AMISTAD': {
+                start: [7, 2], end: [7, 8],
+                title: '💛 AMISTAD',
+                text: '**¡Cuidar y querer a nuestros amigos!**\n\nLa amistad es cultivar el afecto, la empatía y la paz, jugando juntos con alegría y apoyándonos siempre.'
+            },
+            'RESPETO': {
+                start: [2, 10], end: [8, 10],
+                title: '🕊️ RESPETO',
+                text: '**¡Tratar a todos con amabilidad!**\n\nEl respeto es valorar a cada persona, escuchar sus ideas, tratar bien a los adultos y cuidar nuestro planeta.'
+            },
+            'AMOR': {
+                start: [6, 0], end: [9, 0],
+                title: '❤️ AMOR',
+                text: '**¡El motor de la buena convivencia!**\n\nEl amor es expresar cariño, bondad y ternura hacia nuestra familia, amigos, docentes y la naturaleza.'
+            }
+        };
+
+        // Matriz de letras 11x11
+        const gridMatrix = [
+            ['X', 'C', 'E', 'T', 'U', 'V', 'W', 'Y', 'Z', 'K', 'L'],
+            ['S', 'O', 'L', 'I', 'D', 'A', 'R', 'I', 'D', 'A', 'D'],
+            ['P', 'B', 'K', 'L', 'F', 'G', 'H', 'J', 'M', 'N', 'R'],
+            ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'E'],
+            ['H', 'O', 'N', 'E', 'S', 'T', 'I', 'D', 'A', 'D', 'S'],
+            ['J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'P'],
+            ['A', 'U', 'V', 'W', 'X', 'Y', 'Z', 'B', 'C', 'D', 'E'],
+            ['M', 'X', 'A', 'M', 'I', 'S', 'T', 'A', 'D', 'E', 'T'],
+            ['O', 'Y', 'B', 'Z', 'C', 'D', 'E', 'F', 'G', 'H', 'O'],
+            ['R', 'I', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S'],
+            ['T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'A', 'B', 'C', 'D']
+        ];
+
+        let mode = 'teach';
+        let foundWords = new Set();
+        let selectedStart = null;
+
+        // Elementos DOM
+        const screens = { intro: document.getElementById('introScreen'), game: document.getElementById('gameScreen') };
+        const statusText = document.getElementById('statusText');
+        const gridContainer = document.getElementById('gridContainer');
+        
+        // Modal Elements
+        const modalOverlay = document.getElementById('feedbackModal');
+        const modalBox = document.getElementById('modalBox');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalText = document.getElementById('modalText');
+        const modalBtn = document.getElementById('modalBtn');
+
+        // ==== AUDIO (Web Audio API) ====
+        let audioCtx;
+        function playSound(type) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'click') { 
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(520, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(850, audioCtx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(170, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(110, audioCtx.currentTime + 0.25);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.25);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+            } else if (type === 'win') {
+                [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+                    const oscN = audioCtx.createOscillator();
+                    const gainN = audioCtx.createGain();
+                    oscN.connect(gainN); gainN.connect(audioCtx.destination);
+                    oscN.frequency.value = f;
+                    gainN.gain.setValueAtTime(0.08, audioCtx.currentTime + i * 0.08);
+                    gainN.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.08 + 0.3);
+                    oscN.start(audioCtx.currentTime + i * 0.08);
+                    oscN.stop(audioCtx.currentTime + i * 0.08 + 0.3);
+                });
+            }
+        }
+
+        // ==== MOSTRAR MODAL INVASIVO ====
+        function showModal(title, text, type) {
+            modalBox.className = `modal-content ${type}`;
+            modalTitle.textContent = title;
+            modalText.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            modalOverlay.classList.add('active');
+        }
+
+        modalBtn.addEventListener('click', () => {
+            playSound('click');
+            modalOverlay.classList.remove('active');
+        });
+
+        // ==== RENDERIZAR REJILLA ====
+        function renderGrid() {
+            gridContainer.innerHTML = '';
+            for (let r = 0; r < 11; r++) {
+                for (let c = 0; c < 11; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    cell.textContent = gridMatrix[r][c];
+
+                    // Si forma parte de una palabra ya encontrada, se pinta verde
+                    if (isCellFound(r, c)) {
+                        cell.classList.add('found-cell');
+                    }
+
+                    cell.addEventListener('click', () => handleCellClick(r, c));
+                    gridContainer.appendChild(cell);
+                }
+            }
+        }
+
+        function isCellFound(r, c) {
+            for (let word of foundWords) {
+                const data = valuesData[word];
+                const [r1, c1] = data.start;
+                const [r2, c2] = data.end;
+
+                if (r1 === r2 && r === r1 && c >= Math.min(c1, c2) && c <= Math.max(c1, c2)) return true;
+                if (c1 === c2 && c === c1 && r >= Math.min(r1, r2) && r <= Math.max(r1, r2)) return true;
+            }
+            return false;
+        }
+
+        // ==== LÓGICA DE SELECCIÓN EN SOPA ====
+        function handleCellClick(r, c) {
+            if (mode === 'teach') {
+                playSound('click');
+                showModal('💡 MODO APRENDER', 'Cambia al modo **"🔍 Buscar en la Sopa"** para marcar palabras en la rejilla o toca una tarjeta de la izquierda para conocer su significado.', 'info');
+                return;
+            }
+
+            playSound('click');
+
+            if (!selectedStart) {
+                // Primer clic: seleccionar celda inicial
+                selectedStart = [r, c];
+                updateCellSelection(r, c, true);
+                statusText.textContent = `Toca la última letra de la palabra...`;
+            } else {
+                // Segundo clic: evaluar palabra
+                const [r1, c1] = selectedStart;
+                const r2 = r, c2 = c;
+
+                evaluateSelection(r1, c1, r2, c2);
+                selectedStart = null;
+                clearSelectionHighlights();
+            }
+        }
+
+        function updateCellSelection(r, c, isSelected) {
+            const index = r * 11 + c;
+            const cell = gridContainer.children[index];
+            if (cell) {
+                if (isSelected) cell.classList.add('selected');
+                else cell.classList.remove('selected');
+            }
+        }
+
+        function clearSelectionHighlights() {
+            document.querySelectorAll('.grid-cell.selected').forEach(c => c.classList.remove('selected'));
+        }
+
+        function evaluateSelection(r1, c1, r2, c2) {
+            let matchedWord = null;
+
+            for (let word in valuesData) {
+                const data = valuesData[word];
+                const [sr1, sc1] = data.start;
+                const [sr2, sc2] = data.end;
+
+                if ((r1 === sr1 && c1 === sc1 && r2 === sr2 && c2 === sc2) ||
+                    (r1 === sr2 && c1 === sc2 && r2 === sr1 && c2 === sc1)) {
+                    matchedWord = word;
+                    break;
+                }
+            }
+
+            if (matchedWord) {
+                if (foundWords.has(matchedWord)) {
+                    showModal('🔍 PALABRA YA ENCONTRADA', `Ya has localizado el valor **${matchedWord}**. ¡Sigue buscando los demás!`, 'info');
+                    return;
+                }
+
+                foundWords.add(matchedWord);
+                playSound('win');
+                
+                // Actualizar tarjeta
+                const card = document.getElementById(`card-${matchedWord}`);
+                if (card) card.classList.add('found');
+
+                renderGrid();
+
+                const data = valuesData[matchedWord];
+                showModal(data.title, data.text, 'success');
+
+                if (foundWords.size === Object.keys(valuesData).length) {
+                    setTimeout(() => {
+                        playSound('win');
+                        showModal('🏆 ¡SOPA COMPLETADA!', '¡Felicidades, Agente de Valores! Has encontrado todas las palabras y demostrado ser un ejemplo de convivencia.', 'success');
+                        statusText.textContent = '🎉 ¡Misión cumplida! Has completado el Mural de Valores.';
+                    }, 500);
+                } else {
+                    statusText.textContent = `¡Excelente! Encontraste: ${matchedWord}. ¡Busca la siguiente!`;
+                }
+
+            } else {
+                playSound('error');
+                showModal('❌ INTENTA DE NUEVO', 'Esa selección no corresponde a ningún valor de la lista. Selecciona la primera y última letra del valor.', 'error');
+                statusText.textContent = 'Selecciona la primera y última letra de una palabra.';
+            }
+        }
+
+        // ==== TARJETAS DE VALORES ====
+        document.querySelectorAll('.word-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                const word = e.currentTarget.dataset.word;
+                const data = valuesData[word];
+                playSound('click');
+                showModal(data.title, data.text, 'info');
+            });
+        });
+
+        // ==== CAMBIO DE MODO ====
+        function setMode(newMode) {
+            mode = newMode;
+            selectedStart = null;
+            clearSelectionHighlights();
+
+            if (mode === 'teach') {
+                statusText.textContent = "👨‍🏫 Haz clic en un valor para aprender su significado";
+                document.getElementById('btnTeach').classList.add('active');
+                document.getElementById('btnPractice').classList.remove('active');
+            } else {
+                document.getElementById('btnPractice').classList.add('active');
+                document.getElementById('btnTeach').classList.remove('active');
+                statusText.textContent = "🔍 Toca la letra inicial y luego la letra final de la palabra";
+            }
+        }
+
+        // ==== INICIALIZACIÓN ====
+        document.getElementById('startBtn').addEventListener('click', () => {
+            if (!audioCtx) playSound('click');
+            screens.intro.classList.remove('active');
+            screens.game.classList.add('active');
+            renderGrid();
+            setMode('teach');
+        });
+
+        document.getElementById('btnTeach').addEventListener('click', () => setMode('teach'));
+        document.getElementById('btnPractice').addEventListener('click', () => setMode('practice'));
+
+    </script>
+</body>
+</html>
